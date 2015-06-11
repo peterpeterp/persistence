@@ -12,9 +12,22 @@ location_finder <- function(station=0,lon=0,lat=0){
 	pdf(file="../plots/location.pdf")
 	plot(worldmap,xlim=c(dat$lon[q]-10,dat$lon[q]+10),ylim=c(dat$lat[q]-10,dat$lat[q]+10))
 	points(dat$lon[q],dat$lat[q],pch=15,col="red")
-
 }
 
+location_view <- function(station=0,lon=0,lat=0){
+	dat=dat_load("../data/mid_lat.nc")
+	library(rworldmap)
+	library(fields)
+	if (station!=0){
+		q=which(dat$ID==station)
+	}
+	worldmap = getMap(resolution = "low")
+	pdf(file="../plots/location.pdf")
+	plot(worldmap,xlim=c(-180,-5),ylim=c(35,60), asp = 3.5)
+	for (i in 1:length(dat$ID)){
+		text(dat$lon[i],dat$lat[i],label=dat$ID[i],col="red",cex=0.25)
+	}
+}
 
 map_plot <- function(dat,warm_trend,cold_trend,warm_trend_sig,cold_trend_sig,filename,newmap,ausschnitt){
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2] & ((is.na(warm_trend))==FALSE) & ((is.na(cold_trend))==FALSE))
@@ -116,4 +129,4 @@ if (1==2){
 	
 }
 
-location_finder(572)
+location_view(572)

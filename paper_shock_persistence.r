@@ -33,6 +33,11 @@ for (i in 1:1000){
 	Py=Py+(-0.7)^i
 }
 
+arma_x=arima(x,order=c(2,1,0),method="ML")
+print(arma_x)
+asdas
+
+
 print(Px)
 print(Py)
 

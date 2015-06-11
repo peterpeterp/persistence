@@ -7,28 +7,36 @@ void c_markov(int *data, double *warm, double *cold, int *size){
     double kalt_count=0;    
     double warm_per=0;
     double kalt_per=0;
-    for (i=0; i<((*size)-1); ++i)
+    if ((*data!=0) && (*(data+*size-1)!=0))
     {
-        if (*(data+i) == 1)
+        for (i=0; i<((*size)-1); ++i)
         {
-            warm_count = warm_count + 1;
-            if (*(data+i) == *(data+i+1))
+            if (*(data+i) == 1)
             {
-                warm_per = warm_per+1;
+                warm_count = warm_count + 1;
+                if (*(data+i) == *(data+i+1))
+                {
+                    warm_per = warm_per+1;
+                }
+            }
+            if (*(data+i) == -1)
+            {
+                kalt_count = kalt_count + 1;
+                if (*(data+i) == *(data+i+1))
+                {
+                    kalt_per = kalt_per+1;
+                }
             }
         }
-        if (*(data+i) == -1)
-        {
-            kalt_count = kalt_count + 1;
-            if (*(data+i) == *(data+i+1))
-            {
-                kalt_per = kalt_per+1;
-            }
-        }
+
+        *warm = warm_per/warm_count;
+        *cold = kalt_per/kalt_count; 
+    } else {
+        *warm = 99;
+        *cold = 99;
     }
 
-    *warm = warm_per/warm_count;
-    *cold = kalt_per/kalt_count;
+
 }
 
 void c_markov_season(int *data, double *warm_w, double *cold_w, double *warm_s, double *cold_s, int *start, int *season_length, int *season_number, int *size){
