@@ -26,12 +26,25 @@ c_calc_runmean_2D = function(y2D,nday,nyr)
     return(trend)
 }
 
-seasonal_bic <- function(dat,shift=100,interval=365,seasons=c(0,365),model="ar_2"){
+bic_selective <- function(x){
+    bic_tmp=c(bayesian_i_c(x,c(1,1,0)),bayesian_i_c(x,c(2,1,0)),bayesian_i_c(x,c(0,1,1)))
+    if (which(bic_tmp==min(bic_tmp))==1){
+        Py=shock_ar_1(x)
+    }
+    if (which(bic_tmp==min(bic_tmp))==2){
+        Py=shock_ar_2(x)
+    }
+    if (which(bic_tmp==min(bic_tmp))==3){
+        Py=shock_ma_1(x)
+    }
+    return(Py=Py,bic=min(bic_tmp))
+}
+
+seasonal <- function(dat,shift=100,interval=365,seasons=c(0,365),model="ar_2"){
     size=length(dat)
     x=seq(1, size, 1)
     i=100
     j=1
-
     summer=array(NA,62)
     winter=array(NA,62)
     bic_s=array(NA,62)
@@ -41,23 +54,21 @@ seasonal_bic <- function(dat,shift=100,interval=365,seasons=c(0,365),model="ar_2
         if ((is.na(dat[i])==FALSE) & (is.na(dat[i+interval])==FALSE)){
             for (sea in 1:(length(seasons)-1)){
                 x=dat[(seasons[sea]+i):(seasons[sea+1]+i)]
-                bic_tmp=c(bayesian_i_c(x,c(1,1,0)),bayesian_i_c(x,c(2,1,0)),bayesian_i_c(x,c(0,1,1)))
-                if (which(bic_tmp==min(bic_tmp))==1){
-                    Py=shock_ar_1(x)
-                }
-                if (which(bic_tmp==min(bic_tmp))==2){
-                    Py=shock_ar_2(x)
-                }
-                if (which(bic_tmp==min(bic_tmp))==3){
-                    Py=shock_ma_1(x)
-                }
+                tmp=model(x)
+
                 if (sea==1){
-                    summer[j]=Py
-                    bic_s[j]=which(bic_tmp==min(bic_tmp))
+                    summer[j]=tmp$Py
                 }
                 if (sea==2){
-                    winter[j+1]=Py
-                    bic_w[j+1]=which(bic_tmp==min(bic_tmp))
+                    winter[j+1]=tmp$Py
+                }
+                if (model==bic_selective){
+                    if (sea==1){
+                        bic_s[j]=tmp$bic
+                    }
+                    if (sea==2){
+                        bic_w[j+1]=tmp$bic
+                    }             
                 }
             }
         }
@@ -81,13 +92,13 @@ shock_ar_1 <- function(x){
     for (i in 1:100){
         Px=Px+ar_x^i
     }
-    return(Px)
+    return(Py=Px,bic=0)
 }
 
 shock_ma_1 <- function(x){
     arma_x=arima(x,order=c(0,1,1),method="ML")
     Px=arma_x$coef[1]+1
-    return(Px)
+    return(Py=Px,bic=0)
 }
 
 shock_ar_2 <- function(x){
@@ -108,7 +119,7 @@ shock_ar_2 <- function(x){
         }
         Px=Px+psi[i]
     }
-    return(Px)
+    return(Py=Px,bic=0)
 }
 
 calc_persistence = function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
@@ -141,7 +152,6 @@ calc_persistence = function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
 
     markov=array(99,dim=c(6,62))
 
-    #temp1 = .C("c_markov_run",data=as.integer(per_ind1D),warm=as.numeric(warm_per),cold=as.numeric(cold_per),size=as.integer(size),interval=as.integer(markov_window))
     temp=.C("c_markov_year",data=as.integer(per_ind1D),warm_y=as.numeric(markov[1,]),cold_y=as.numeric(markov[2,])
             ,start=as.integer(0),interval=as.integer(365),size=as.integer(size))
     markov[1,]=temp$warm_y

@@ -148,19 +148,20 @@ per_write <- function(filename,data3D,per)
 # -----------shock persistence
 
 #------------- bayesian info criterion
+    if (length(per$bic) != 0){
+        var.def.nc(nc,"bic_s","NC_FLOAT", c("ID","year"))
+        att.put.nc(nc, "bic_s", "missing_value", "NC_FLOAT", -9999.0)
 
-    var.def.nc(nc,"bic_s","NC_FLOAT", c("ID","year"))
-    att.put.nc(nc, "bic_s", "missing_value", "NC_FLOAT", -9999.0)
+        var.def.nc(nc,"bic_w","NC_FLOAT", c("ID","year"))
+        att.put.nc(nc, "bic_w", "missing_value", "NC_FLOAT", -9999.0)
 
-    var.def.nc(nc,"bic_w","NC_FLOAT", c("ID","year"))
-    att.put.nc(nc, "bic_w", "missing_value", "NC_FLOAT", -9999.0)
+        var.def.nc(nc,"bic_y","NC_FLOAT", c("ID","year"))
+        att.put.nc(nc, "bic_y", "missing_value", "NC_FLOAT", -9999.0)
 
-    var.def.nc(nc,"bic_y","NC_FLOAT", c("ID","year"))
-    att.put.nc(nc, "bic_y", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.put.nc(nc, "bic_s", per$bic[1:ntot,1,]) 
-    var.put.nc(nc, "bic_w", per$bic[1:ntot,2,])
-    var.put.nc(nc, "bic_y", per$bic[1:ntot,3,])
+        var.put.nc(nc, "bic_s", per$bic[1:ntot,1,]) 
+        var.put.nc(nc, "bic_w", per$bic[1:ntot,2,])
+        var.put.nc(nc, "bic_y", per$bic[1:ntot,3,])
+    }
 
 #------------- persistence
 
@@ -400,11 +401,13 @@ trend_write_part <-function(trend,dat_klein,qq,filename){
         trend_klein[i,,] = trend[q,,]
     }
     trend_write(filename,dat_klein,trend_klein)
+    return(trend_klein)
 }
 
 per_write_part <-function(per,dat_klein,qq,filename){
     size=length(qq)
-    per_klein = list(ind=array(NA,dim=c(size,365,62)),markov=array(NA,dim=c(size,6,62)),markov_mk=array(NA,dim=c(size,6)),markov_lr=array(NA,dim=c(size,6)),markov_mk_sig=array(NA,dim=c(size,6)),markov_lr_sig=array(NA,dim=c(size,6)))
+    per_klein = list(ind=array(NA,dim=c(size,365,62)),markov=array(NA,dim=c(size,6,62)),markov_mk=array(NA,dim=c(size,6)),markov_lr=array(NA,dim=c(size,6)),markov_mk_sig=array(NA,dim=c(size,6)),markov_lr_sig=array(NA,dim=c(size,6)),
+        shock=array(NA,dim=c(size,3,62)),shock_mk=array(NA,dim=c(size,3)),shock_lr=array(NA,dim=c(size,3)),shock_mk_sig=array(NA,dim=c(size,3)),shock_lr_sig=array(NA,dim=c(size,3)))
     for (i in 1:length(qq)){
         q=qq[i]
         per_klein$ind[i,,] = per$ind[q,,]
@@ -414,6 +417,14 @@ per_write_part <-function(per,dat_klein,qq,filename){
         per_klein$markov_lr[i,] = per$markov_lr[q,]
         per_klein$markov_lr_sig[i,] = per$markov_lr_sig[q,]
 
+        per_klein$shock[i,,] = per$shock[q,,]
+        per_klein$shock_mk[i,] = per$shock_mk[q,]
+        per_klein$shock_mk_sig[i,] = per$shock_mk_sig[q,]
+        per_klein$shock_lr[i,] = per$shock_lr[q,]
+        per_klein$shock_lr_sig[i,] = per$shock_lr_sig[q,]
+
+
     }
     per_write(filename,dat_klein,per_klein)
+    return(per_klein)
 }

@@ -1,7 +1,19 @@
 # teste teste
 source("write_load.r")
 
+location_finder <- function(station=0,lon=0,lat=0){
+	dat=dat_load("../data/mid_lat.nc")
+	library(rworldmap)
+	library(fields)
+	if (station!=0){
+		q=which(dat$ID==station)
+	}
+	worldmap = getMap(resolution = "low")
+	pdf(file="../plots/location.pdf")
+	plot(worldmap,xlim=c(dat$lon[q]-10,dat$lon[q]+10),ylim=c(dat$lat[q]-10,dat$lat[q]+10))
+	points(dat$lon[q],dat$lat[q],pch=15,col="red")
 
+}
 
 
 map_plot <- function(dat,warm_trend,cold_trend,warm_trend_sig,cold_trend_sig,filename,newmap,ausschnitt){
@@ -73,8 +85,7 @@ map_plot <- function(dat,warm_trend,cold_trend,warm_trend_sig,cold_trend_sig,fil
 }
 
 
-if (1==1){
-	library(RNetCDF)
+if (1==2){
 	dyn.load("persistence_tools.so")
 	library(rworldmap)
 	library(fields)
@@ -105,3 +116,4 @@ if (1==1){
 	
 }
 
+location_finder(572)
