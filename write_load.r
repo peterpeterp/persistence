@@ -36,44 +36,44 @@ per_load <- function(filename){
 
     per = list(ind=ind,markov=array(NA,dim=c(ntot,6,62)),markov_mk=array(NA,dim=c(ntot,6)),markov_lr=array(NA,dim=c(ntot,6)),markov_mk_sig=array(NA,dim=c(ntot,6)),markov_lr_sig=array(NA,dim=c(ntot,6)),
             shock=array(NA,dim=c(ntot,3,62)),shock_mk=array(NA,dim=c(ntot,3)),shock_lr=array(NA,dim=c(ntot,3)),shock_mk_sig=array(NA,dim=c(ntot,3)),shock_lr_sig=array(NA,dim=c(ntot,3)))
-    str_markov=c("year_warm","year_cold","win_warm","win_cold","sum_warm","sum_cold")
+    str_markov=c("year_warm","year_cold","sum_warm","sum_cold","win_warm","win_cold")
     for (i in 1:6){
         per$markov[1:ntot,i,]=var.get.nc(nc,str_markov[i])
     }
-    str_markov_mk=c("year_warm_mk","year_cold_mk","win_warm_mk","win_cold_mk","sum_warm_mk","sum_cold_mk")
+    str_markov_mk=c("year_warm_mk","year_cold_mk","sum_warm_mk","sum_cold_mk","win_warm_mk","win_cold_mk")
     for (i in 1:6){
         per$markov_mk[1:ntot,i]=var.get.nc(nc,str_markov_mk[i])
     }
-    str_markov_mk_sig=c("year_warm_mk_sig","year_cold_mk_sig","win_warm_mk_sig","win_cold_mk_sig","sum_warm_mk_sig","sum_cold_mk_sig")
+    str_markov_mk_sig=c("year_warm_mk_sig","year_cold_mk_sig","sum_warm_mk_sig","sum_cold_mk_sig","win_warm_mk_sig","win_cold_mk_sig")
     for (i in 1:6){
         per$markov_mk_sig[1:ntot,i]=var.get.nc(nc,str_markov_mk_sig[i])
     }
-    str_markov_lr=c("year_warm_lr","year_cold_lr","win_warm_lr","win_cold_lr","sum_warm_lr","sum_cold_lr")
+    str_markov_lr=c("year_warm_lr","year_cold_lr","sum_warm_lr","sum_cold_lr","win_warm_lr","win_cold_lr")
     for (i in 1:6){
         per$markov_lr[1:ntot,i]=var.get.nc(nc,str_markov_lr[i])
     }
-    str_markov_lr_sig=c("year_warm_lr_sig","year_cold_lr_sig","win_warm_lr_sig","win_cold_lr_sig","sum_warm_lr_sig","sum_cold_lr_sig")
+    str_markov_lr_sig=c("year_warm_lr_sig","year_cold_lr_sig","sum_warm_lr_sig","sum_cold_lr_sig","win_warm_lr_sig","win_cold_lr_sig")
     for (i in 1:6){
         per$markov_lr_sig[1:ntot,i]=var.get.nc(nc,str_markov_lr_sig[i])
     }
 
-    str_shock=c("shock_s","shock_w","shock_y")
+    str_shock=c("shock_y","shock_s","shock_w")
     for (i in 1:3){
         per$shock[1:ntot,i,]=var.get.nc(nc,str_shock[i])
     }
-    str_shock_mk=c("shock_s_mk","shock_w_mk","shock_y_mk")
+    str_shock_mk=c("shock_y_mk","shock_s_mk","shock_w_mk")
     for (i in 1:3){
         per$shock_mk[1:ntot,i]=var.get.nc(nc,str_shock_mk[i])
     }
-    str_shock_mk_sig=c("shock_s_mk_sig","shock_w_mk_sig","shock_y_mk_sig")
+    str_shock_mk_sig=c("shock_y_mk_sig","shock_s_mk_sig","shock_w_mk_sig")
     for (i in 1:3){
         per$shock_mk_sig[1:ntot,i]=var.get.nc(nc,str_shock_mk_sig[i])
     }
-    str_shock_lr=c("shock_s_lr","shock_w_lr","shock_y_lr")
+    str_shock_lr=c("shock_y_lr","shock_s_lr","shock_w_lr")
     for (i in 1:3){
         per$shock_lr[1:ntot,i]=var.get.nc(nc,str_shock_lr[i])
     }
-    str_shock_lr_sig=c("shock_s_lr_sig","shock_w_lr_sig","shock_y_lr_sig")
+    str_shock_lr_sig=c("shock_y_lr_sig","shock_s_lr_sig","shock_w_lr_sig")
     for (i in 1:3){
         per$shock_lr_sig[1:ntot,i]=var.get.nc(nc,str_shock_lr_sig[i])
     }
@@ -158,9 +158,9 @@ per_write <- function(filename,data3D,per)
         var.def.nc(nc,"bic_y","NC_FLOAT", c("ID","year"))
         att.put.nc(nc, "bic_y", "missing_value", "NC_FLOAT", -9999.0)
 
-        var.put.nc(nc, "bic_s", per$bic[1:ntot,1,]) 
-        var.put.nc(nc, "bic_w", per$bic[1:ntot,2,])
-        var.put.nc(nc, "bic_y", per$bic[1:ntot,3,])
+        var.put.nc(nc, "bic_y", per$bic[1:ntot,1,]) 
+        var.put.nc(nc, "bic_s", per$bic[1:ntot,2,])
+        var.put.nc(nc, "bic_w", per$bic[1:ntot,3,])
     }
 
 #------------- persistence
@@ -174,9 +174,9 @@ per_write <- function(filename,data3D,per)
     var.def.nc(nc,"shock_y","NC_FLOAT", c("ID","year"))
     att.put.nc(nc, "shock_y", "missing_value", "NC_FLOAT", -9999.0)
 
-    var.put.nc(nc, "shock_s", per$shock[1:ntot,1,]) 
-    var.put.nc(nc, "shock_w", per$shock[1:ntot,2,])
-    var.put.nc(nc, "shock_y", per$shock[1:ntot,3,])
+    var.put.nc(nc, "shock_y", per$shock[1:ntot,1,]) 
+    var.put.nc(nc, "shock_s", per$shock[1:ntot,2,])
+    var.put.nc(nc, "shock_w", per$shock[1:ntot,3,])
 
     var.def.nc(nc,"shock_s_mk","NC_FLOAT", c("ID"))
     att.put.nc(nc, "shock_s_mk", "missing_value", "NC_FLOAT", -9999.0)
@@ -187,9 +187,9 @@ per_write <- function(filename,data3D,per)
     var.def.nc(nc,"shock_y_mk","NC_FLOAT", c("ID"))
     att.put.nc(nc, "shock_y_mk", "missing_value", "NC_FLOAT", -9999.0)
 
-    var.put.nc(nc, "shock_s_mk", per$shock_mk[1:ntot,1]) 
-    var.put.nc(nc, "shock_w_mk", per$shock_mk[1:ntot,2])
-    var.put.nc(nc, "shock_y_mk", per$shock_mk[1:ntot,3])
+    var.put.nc(nc, "shock_y_mk", per$shock_mk[1:ntot,1]) 
+    var.put.nc(nc, "shock_s_mk", per$shock_mk[1:ntot,2])
+    var.put.nc(nc, "shock_w_mk", per$shock_mk[1:ntot,3])
 
     var.def.nc(nc,"shock_s_mk_sig","NC_FLOAT", c("ID"))
     att.put.nc(nc, "shock_s_mk_sig", "missing_value", "NC_FLOAT", -9999.0)
@@ -200,9 +200,9 @@ per_write <- function(filename,data3D,per)
     var.def.nc(nc,"shock_y_mk_sig","NC_FLOAT", c("ID"))
     att.put.nc(nc, "shock_y_mk_sig", "missing_value", "NC_FLOAT", -9999.0)
 
-    var.put.nc(nc, "shock_s_mk_sig", per$shock_mk_sig[1:ntot,1]) 
-    var.put.nc(nc, "shock_w_mk_sig", per$shock_mk_sig[1:ntot,2])
-    var.put.nc(nc, "shock_y_mk_sig", per$shock_mk_sig[1:ntot,3])
+    var.put.nc(nc, "shock_y_mk_sig", per$shock_mk_sig[1:ntot,1]) 
+    var.put.nc(nc, "shock_s_mk_sig", per$shock_mk_sig[1:ntot,2])
+    var.put.nc(nc, "shock_w_mk_sig", per$shock_mk_sig[1:ntot,3])
 
     var.def.nc(nc,"shock_s_lr","NC_FLOAT", c("ID"))
     att.put.nc(nc, "shock_s_lr", "missing_value", "NC_FLOAT", -9999.0)
@@ -213,9 +213,9 @@ per_write <- function(filename,data3D,per)
     var.def.nc(nc,"shock_y_lr","NC_FLOAT", c("ID"))
     att.put.nc(nc, "shock_y_lr", "missing_value", "NC_FLOAT", -9999.0)
 
-    var.put.nc(nc, "shock_s_lr", per$shock_lr[1:ntot,1]) 
-    var.put.nc(nc, "shock_w_lr", per$shock_lr[1:ntot,2])
-    var.put.nc(nc, "shock_y_lr", per$shock_lr[1:ntot,3])
+    var.put.nc(nc, "shock_y_lr", per$shock_lr[1:ntot,1]) 
+    var.put.nc(nc, "shock_s_lr", per$shock_lr[1:ntot,2])
+    var.put.nc(nc, "shock_w_lr", per$shock_lr[1:ntot,3])
 
     var.def.nc(nc,"shock_s_lr_sig","NC_FLOAT", c("ID"))
     att.put.nc(nc, "shock_s_lr_sig", "missing_value", "NC_FLOAT", -9999.0)
@@ -226,9 +226,9 @@ per_write <- function(filename,data3D,per)
     var.def.nc(nc,"shock_y_lr_sig","NC_FLOAT", c("ID"))
     att.put.nc(nc, "shock_y_lr_sig", "missing_value", "NC_FLOAT", -9999.0)
 
-    var.put.nc(nc, "shock_s_lr_sig", per$shock_lr_sig[1:ntot,1]) 
-    var.put.nc(nc, "shock_w_lr_sig", per$shock_lr_sig[1:ntot,2])
-    var.put.nc(nc, "shock_y_lr_sig", per$shock_lr_sig[1:ntot,3])
+    var.put.nc(nc, "shock_y_lr_sig", per$shock_lr_sig[1:ntot,1]) 
+    var.put.nc(nc, "shock_s_lr_sig", per$shock_lr_sig[1:ntot,2])
+    var.put.nc(nc, "shock_w_lr_sig", per$shock_lr_sig[1:ntot,3])
 
 #---------------- markov persistence
 
@@ -253,11 +253,11 @@ per_write <- function(filename,data3D,per)
     var.put.nc(nc, "year_warm", per$markov[1:ntot,1,])
     var.put.nc(nc, "year_cold", per$markov[1:ntot,2,])
 
-    var.put.nc(nc, "win_warm", per$markov[1:ntot,3,])
-    var.put.nc(nc, "win_cold", per$markov[1:ntot,4,])
+    var.put.nc(nc, "sum_warm", per$markov[1:ntot,3,])
+    var.put.nc(nc, "sum_cold", per$markov[1:ntot,4,])
 
-    var.put.nc(nc, "sum_warm", per$markov[1:ntot,5,])
-    var.put.nc(nc, "sum_cold", per$markov[1:ntot,6,])
+    var.put.nc(nc, "win_warm", per$markov[1:ntot,5,])
+    var.put.nc(nc, "win_cold", per$markov[1:ntot,6,])
 
 
     var.def.nc(nc, "sum_warm_mk", "NC_FLOAT", "ID")
@@ -281,11 +281,11 @@ per_write <- function(filename,data3D,per)
     var.put.nc(nc, "year_warm_mk",  per$markov_mk[1:ntot,1])
     var.put.nc(nc, "year_cold_mk",  per$markov_mk[1:ntot,2])
 
-    var.put.nc(nc, "win_warm_mk",  per$markov_mk[1:ntot,3])
-    var.put.nc(nc, "win_cold_mk",  per$markov_mk[1:ntot,4])
+    var.put.nc(nc, "sum_warm_mk",  per$markov_mk[1:ntot,3])
+    var.put.nc(nc, "sum_cold_mk",  per$markov_mk[1:ntot,4])
 
-    var.put.nc(nc, "sum_warm_mk",  per$markov_mk[1:ntot,5])
-    var.put.nc(nc, "sum_cold_mk",  per$markov_mk[1:ntot,6])
+    var.put.nc(nc, "win_warm_mk",  per$markov_mk[1:ntot,5])
+    var.put.nc(nc, "win_cold_mk",  per$markov_mk[1:ntot,6])
 
 
     var.def.nc(nc, "sum_warm_mk_sig", "NC_FLOAT", "ID")
@@ -309,11 +309,11 @@ per_write <- function(filename,data3D,per)
     var.put.nc(nc, "year_warm_mk_sig",  per$markov_mk_sig[1:ntot,1])
     var.put.nc(nc, "year_cold_mk_sig",  per$markov_mk_sig[1:ntot,2])
 
-    var.put.nc(nc, "win_warm_mk_sig",  per$markov_mk_sig[1:ntot,3])
-    var.put.nc(nc, "win_cold_mk_sig",  per$markov_mk_sig[1:ntot,4])
+    var.put.nc(nc, "sum_warm_mk_sig",  per$markov_mk_sig[1:ntot,3])
+    var.put.nc(nc, "sum_cold_mk_sig",  per$markov_mk_sig[1:ntot,4])
 
-    var.put.nc(nc, "sum_warm_mk_sig",  per$markov_mk_sig[1:ntot,5])
-    var.put.nc(nc, "sum_cold_mk_sig",  per$markov_mk_sig[1:ntot,6])
+    var.put.nc(nc, "win_warm_mk_sig",  per$markov_mk_sig[1:ntot,5])
+    var.put.nc(nc, "win_cold_mk_sig",  per$markov_mk_sig[1:ntot,6])
 
 
     var.def.nc(nc, "sum_warm_lr", "NC_FLOAT", "ID")
@@ -337,11 +337,11 @@ per_write <- function(filename,data3D,per)
     var.put.nc(nc, "year_warm_lr",  per$markov_lr[1:ntot,1])
     var.put.nc(nc, "year_cold_lr",  per$markov_lr[1:ntot,2])
 
-    var.put.nc(nc, "win_warm_lr",  per$markov_lr[1:ntot,3])
-    var.put.nc(nc, "win_cold_lr",  per$markov_lr[1:ntot,4])
+    var.put.nc(nc, "sum_warm_lr",  per$markov_lr[1:ntot,3])
+    var.put.nc(nc, "sum_cold_lr",  per$markov_lr[1:ntot,4])
 
-    var.put.nc(nc, "sum_warm_lr",  per$markov_lr[1:ntot,5])
-    var.put.nc(nc, "sum_cold_lr",  per$markov_lr[1:ntot,6])
+    var.put.nc(nc, "win_warm_lr",  per$markov_lr[1:ntot,5])
+    var.put.nc(nc, "win_cold_lr",  per$markov_lr[1:ntot,6])
 
 
     var.def.nc(nc, "sum_warm_lr_sig", "NC_FLOAT", "ID")
@@ -365,11 +365,11 @@ per_write <- function(filename,data3D,per)
     var.put.nc(nc, "year_warm_lr_sig",  per$markov_lr_sig[1:ntot,1])
     var.put.nc(nc, "year_cold_lr_sig",  per$markov_lr_sig[1:ntot,2])
 
-    var.put.nc(nc, "win_warm_lr_sig",  per$markov_lr_sig[1:ntot,3])
-    var.put.nc(nc, "win_cold_lr_sig",  per$markov_lr_sig[1:ntot,4])
+    var.put.nc(nc, "sum_warm_lr_sig",  per$markov_lr_sig[1:ntot,3])
+    var.put.nc(nc, "sum_cold_lr_sig",  per$markov_lr_sig[1:ntot,4])
 
-    var.put.nc(nc, "sum_warm_lr_sig",  per$markov_lr_sig[1:ntot,5])
-    var.put.nc(nc, "sum_cold_lr_sig",  per$markov_lr_sig[1:ntot,6])
+    var.put.nc(nc, "win_warm_lr_sig",  per$markov_lr_sig[1:ntot,5])
+    var.put.nc(nc, "win_cold_lr_sig",  per$markov_lr_sig[1:ntot,6])
 
 
 

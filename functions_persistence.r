@@ -41,7 +41,11 @@ bic_selective <- function(x){
 
 }
 
-seasonal <- function(dat,shift=100,interval=365,seasons=c(0,365),model="ar_2"){
+seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=markov_calc,shift=0,interval=365){
+    if (seasons[length(seasons)]>365){
+        shift=seasons[length(seasons)]-365
+        seasons[,]=seasons[,]-shift
+    }
     size=length(dat)
     x=seq(1, size, 1)
     i=shift
@@ -53,9 +57,9 @@ seasonal <- function(dat,shift=100,interval=365,seasons=c(0,365),model="ar_2"){
     bic_s=array(NA,62)
     bic_w=array(NA,62)
     while ((i+interval)<size){
-        if ((is.na(dat[i])==FALSE) & (is.na(dat[i+interval])==FALSE)){
-            for (sea in 1:(length(seasons)-1)){
-                x=dat[(seasons[sea]+i):(seasons[sea+1]+i)]
+        if ((is.na(dat[i+1])==FALSE) & (is.na(dat[i+interval])==FALSE)){
+            for (sea in 1:length(seasons[1,])){
+                x=dat[(seasons[1,sea]+i):(seasons[2,sea]+i)]
                 tmp=model(x)
                 if (sea==1){
                     summer_w[j]=tmp$P_w
@@ -87,7 +91,7 @@ bayesian_i_c <- function(x,order){
     return(bic)
 }
 
-markov <- function(x){
+markov_calc <- function(x){
     tmp=.C("c_markov",data=as.integer(x),warm=as.numeric(0.0),cold=as.numeric(0.0),size=as.integer(length(x)))
     if (tmp$warm == 99){
         tmp$warm <- NA
@@ -106,12 +110,6 @@ shock_ar_1 <- function(x){
     for (i in 1:100){
         Px=Px+ar_x^i
     }
-    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(1*log(length(x)))))
-}
-
-shock_ma_1 <- function(x){
-    arma_x=arima(x,order=c(0,1,1),method="ML")
-    Px=arma_x$coef[1]+1
     return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(1*log(length(x)))))
 }
 
@@ -135,6 +133,38 @@ shock_ar_2 <- function(x){
     }
     return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(2*log(length(x)))))
 }
+
+
+shock_ma_1 <- function(x){
+    ma_order=1
+    arma_x=arima(x,order=c(0,1,ma_order),method="ML")
+    Px=1
+    for (i in 1:ma_order){
+        Px=Px+arma_x$coef[i]
+    }
+    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(3*log(length(x)))))
+}
+
+shock_ma_2 <- function(x){
+    ma_order=2
+    arma_x=arima(x,order=c(0,1,ma_order),method="ML")
+    Px=1
+    for (i in 1:ma_order){
+        Px=Px+arma_x$coef[i]
+    }
+    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(3*log(length(x)))))
+}
+
+shock_ma_3 <- function(x){
+    ma_order=3
+    arma_x=arima(x,order=c(0,1,ma_order),method="ML")
+    Px=1
+    for (i in 1:ma_order){
+        Px=Px+arma_x$coef[i]
+    }
+    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(3*log(length(x)))))
+}
+
 
 calc_persistence = function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
 {   # Given 2D inputs of y[nday,nyr] and the smooth trend[nday,nyr],
@@ -165,30 +195,22 @@ calc_persistence = function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
     size=length(per_ind1D)
 
     markov=array(99,dim=c(6,62))
-
-    temp=.C("c_markov_year",data=as.integer(per_ind1D),warm_y=as.numeric(markov[1,]),cold_y=as.numeric(markov[2,])
-            ,start=as.integer(0),interval=as.integer(365),size=as.integer(size))
-    markov[1,]=temp$warm_y
-    markov[2,]=temp$cold_y
-
-    seasons=c(182,183)
-    start=100
-
-    win_warm = array(99,62)
-    win_cold = array(99,62)
-    sum_warm = array(99,62)
-    sum_cold = array(99,62)
-
-    temp=.C("c_markov_season",data=as.integer(per_ind1D),warm_w=as.numeric(markov[3,]),cold_w=as.numeric(markov[4,]),warm_s=as.numeric(markov[5,]),cold_s=as.numeric(markov[6,])
-            ,start=as.integer(start),season_length=as.integer(seasons),season_number=as.integer(length(seasons)),size=as.integer(size))
-
-    markov[3,]=temp$warm_w
-    markov[4,]=temp$cold_w
-    markov[5,]=temp$warm_s
-    markov[6,]=temp$cold_s
-
     markov_mk=array(NA,6)
     markov_mk_sig=array(NA,6)
+
+
+
+
+
+    tmp=seasonal(per_ind1D,array(c(1,365),dim=c(2,1)),markov_calc)
+    markov[1,]=tmp$summer_w
+    markov[2,]=tmp$summer_c
+
+    tmp=seasonal(per_ind1D,array(c(151,242,334,425),dim=c(2,2)),markov_calc)
+    markov[3,]=tmp$summer_w
+    markov[4,]=tmp$summer_c
+    markov[5,]=tmp$winter_w
+    markov[6,]=tmp$winter_c
 
     for (i in 1:6){
         markov[i,][markov[i,] == 99]=NA
@@ -201,14 +223,15 @@ calc_persistence = function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
     bic=array(NA,dim=c(3,62))
     shock_mk=array(NA,3)
     shock_mk_sig=array(NA,3)
-    tmp=seasonal_bic(y,seasons=c(0,182,365),model="ar_2")
-    shock[1,]=tmp$shock_s
-    shock[2,]=tmp$shock_w
+
+    tmp=seasonal(y,array(c(1,365),dim=c(2,1)),shock_ma_3)
+    shock[1,]=tmp$summer_w
     bic[1,]=tmp$bic_s
-    bic[2,]=tmp$bic_w
-    tmp=seasonal_bic(y,seasons=c(0,365),model="ar_2")
-    shock[3,]=tmp$shock_s
-    bic[3,]=tmp$bic_s
+    tmp=seasonal(y,array(c(151,242,334,425),dim=c(2,2)),shock_ma_3)
+    shock[2,]=tmp$summer_w
+    bic[2,]=tmp$bic_s
+    shock[3,]=tmp$winter_w
+    bic[3,]=tmp$bic_w
 
     for (i in 1:3) {
         out=MannKendall(shock[i,])

@@ -72,7 +72,6 @@ map_plot <- function(dat,warm_trend,cold_trend,warm_trend_sig,cold_trend_sig,fil
 	y[1]=-aushol
 	y[2]=aushol
 	facetcol <- cut(y,nbcol)
-	warnings()
 	plot(newmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5)
 	points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=1.2)
 	points(lon,lat,pch=warm_sig,col="black",cex=1.2)
@@ -80,8 +79,6 @@ map_plot <- function(dat,warm_trend,cold_trend,warm_trend_sig,cold_trend_sig,fil
 
 	y=array(NA,(size+2))
 	y[3:(size+2)]=cold
-	print(y[y>100])
-	print(y[abs(y)>100])
 	y[abs(y)>100*mean(y)]=NA
 
 	aushol=max(c(abs(max(cold)),abs(min(cold))))
@@ -98,7 +95,7 @@ map_plot <- function(dat,warm_trend,cold_trend,warm_trend_sig,cold_trend_sig,fil
 }
 
 
-if (1==2){
+if (1==1){
 	dyn.load("persistence_tools.so")
 	library(rworldmap)
 	library(fields)
@@ -113,20 +110,17 @@ if (1==2){
 	    for (nyr in nyrs){
 	        dat=dat_load("../data/mid_lat.nc")
 			trend=trend_load(sprintf("../data/%s_%s_trend.nc",nday,nyr))
-			per=per_load(sprintf("../data/%s_%s_per_shock_first_test.nc",nday,nyr))
-			#map_plot(dat,per$year_warm_lr,per$year_cold_lr,per$year_warm_lr_sig,per$year_cold_lr_sig,sprintf("../plots/%s_%s_year_lr.pdf",nday,nyr),worldmap,c(35,66))
-			#map_plot(dat,per$win_warm_lr,per$win_cold_lr,per$win_warm_lr_sig,per$win_cold_lr_sig,sprintf("../plots/%s_%s_winter_lr.pdf",nday,nyr),worldmap,c(35,66))
-			#map_plot(dat,per$sum_warm_lr,per$sum_cold_lr,per$sum_warm_lr_sig,per$sum_cold_lr_sig,sprintf("../plots/%s_%s_summer_lr.pdf",nday,nyr),worldmap,c(35,66))
-			#map_plot(dat,per$year_warm_mk,per$year_cold_mk,per$year_warm_mk_sig,per$year_cold_mk_sig,sprintf("../plots/%s_%s_year_mk.pdf",nday,nyr),worldmap,c(35,66))
-			#map_plot(dat,per$win_warm_mk,per$win_cold_mk,per$win_warm_mk_sig,per$win_cold_mk_sig,sprintf("../plots/%s_%s_winter_mk.pdf",nday,nyr),worldmap,c(35,66))
-			#map_plot(dat,per$sum_warm_mk,per$sum_cold_mk,per$sum_warm_mk_sig,per$sum_cold_mk_sig,sprintf("../plots/%s_%s_summer_mk.pdf",nday,nyr),worldmap,c(35,66))
-			
-			#map_plot(dat,per$shock_mk[,1],per$shock_mk[,2],per$shock_mk_sig[,1],per$shock_mk_sig[,2],sprintf("../plots/%s_%s_shock_mk.pdf",nday,nyr),worldmap,c(35,66))
-			map_plot(dat,per$shock_mk[,3],per$shock_lr[,3],per$shock_mk_sig[,3],per$shock_lr_sig[,3],sprintf("../plots/%s_%s_shock_year.pdf",nday,nyr),worldmap,c(35,66))
+			per=per_load(sprintf("../data/%s_%s_per_shock_ma_3.nc",nday,nyr))
+
+			map_plot(dat,per$shock_mk[,2],per$shock_mk[,3],per$shock_mk_sig[,2],per$shock_mk_sig[,3],sprintf("../plots/%s_%s_ma_3_mk.pdf",nday,nyr),worldmap,c(35,66))
+			map_plot(dat,per$shock_mk[,1],per$shock_lr[,1],per$shock_mk_sig[,1],per$shock_lr_sig[,1],sprintf("../plots/%s_%s_ma_3_year.pdf",nday,nyr),worldmap,c(35,66))			
+			map_plot(dat,per$markov_mk[,3],per$markov_mk[,4],per$markov_mk_sig[,3],per$markov_mk_sig[,4],sprintf("../plots/%s_%s_markov_s_mk.pdf",nday,nyr),worldmap,c(35,66))
+			map_plot(dat,per$markov_lr[,3],per$markov_lr[,4],per$markov_lr_sig[,3],per$markov_lr_sig[,4],sprintf("../plots/%s_%s_markov_s_lr.pdf",nday,nyr),worldmap,c(35,66))
+			#map_plot(dat,per$markov_mk[,1],per$markov_lr[,3],per$markov_mk_sig[,3],per$markov_lr_sig[,3],sprintf("../plots/%s_%s_markov_year.pdf",nday,nyr),worldmap,c(35,66))
 		}
 	}
 
 	
 }
 
-location_view(572)
+#location_view(572)

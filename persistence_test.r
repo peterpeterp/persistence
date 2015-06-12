@@ -27,25 +27,29 @@ persistence_test <- function(station,start=1,stop=62){
 
 	if (7==7){
 		time0=proc.time()[1]
-		tmp=seasonal(as.vector(data),100,365,c(0,182,365),shock_ar_2)
-		ar_2_s=tmp$summer_w
-		ar_2_bic=tmp$bic_s
-		print(tmp)
-		print(proc.time()[1]-time0)
-
-		time0=proc.time()[1]
-		tmp=seasonal(as.vector(data),100,365,c(0,182,365),shock_ma_1)
+		#tmp=seasonal(as.vector(data),100,365,c(0,182,365),shock_ma_1)
+		tmp=seasonal(as.vector(data),array(c(151,242),dim=c(2,1)),shock_ma_1)
 		ma_1_s=tmp$summer_w
 		ma_1_bic=tmp$bic_s
 		print(tmp)
 		print(proc.time()[1]-time0)
 
 		time0=proc.time()[1]
-		tmp=seasonal(as.vector(data),100,365,c(0,182,365),shock_ar_1)
-		ar_1_s=tmp$summer_w
-		ar_1_bic=tmp$bic_s
+		#tmp=seasonal(as.vector(data),100,365,c(0,182,365),shock_ma_2)
+		tmp=seasonal(as.vector(data),array(c(151,242),dim=c(2,1)),shock_ar_2)
+		ma_2_s=tmp$summer_w
+		ma_2_bic=tmp$bic_s
 		print(tmp)
 		print(proc.time()[1]-time0)
+
+		time0=proc.time()[1]
+		#tmp=seasonal(as.vector(data),100,365,c(0,182,365),shock_ma_3)
+		tmp=seasonal(as.vector(data),array(c(151,242),dim=c(2,1)),shock_ar_1)
+		ma_3_s=tmp$summer_w
+		ma_3_bic=tmp$bic_s
+		print(tmp)
+		print(proc.time()[1]-time0)
+
 	}
 
 
@@ -53,7 +57,8 @@ persistence_test <- function(station,start=1,stop=62){
 	if (2==2){
 		per_ind1D=as.vector(per$ind[station,1:365,start:stop])
 		time0=proc.time()[1]
-	    tmp=seasonal(per_ind1D,100,365,c(0,182,365),markov)
+	    #tmp=seasonal(per_ind1D,100,365,c(0,182,365),markov)
+	    tmp=seasonal(per_ind1D,array(c(151,242),dim=c(2,1)),markov_calc)
 	    markov_s_w=tmp$summer_w
 	    markov_s_c=tmp$summer_c
 		print(tmp)
@@ -68,18 +73,18 @@ persistence_test <- function(station,start=1,stop=62){
     pdf(file=sprintf("../plots/persistence_test/persistence_tests_%s_%s_%s.pdf",dat$lon[station],dat$lat[station],dat$ID[station]))
 	
     par(mfrow=c(2,1))
-    print(mean(ar_2_s,na.rm=TRUE))
     par(plt=c(0.12,0.95,0.1,0.95))
-    plot(NA,xlim=c(1950,2011),ylim=c(-0.5,0.5),ylab="persistence indices")
-	lines(dat$year,(ar_2_s-mean(ar_2_s,na.rm=TRUE)),lty=1,pch=15,col="red")
-	lines(dat$year,ma_1_s-mean(ma_1_s,na.rm=TRUE),lty=1,pch=15,col="blue")
-	lines(dat$year,ar_1_s-mean(ar_1_s,na.rm=TRUE),lty=1,pch=15,col="green")
+    plot(NA,xlim=c(1950,2011),ylim=c(-1,1),ylab="persistence indices")
+	lines(dat$year,(ma_1_s-mean(ma_1_s,na.rm=TRUE)),lty=1,pch=15,col="red")
+	lines(dat$year,(ma_2_s-mean(ma_2_s,na.rm=TRUE)),lty=1,pch=15,col="blue")
+	lines(dat$year,(ma_3_s-mean(ma_3_s,na.rm=TRUE)),lty=1,pch=15,col="green")
 	lines(dat$year,markov_s_w-mean(markov_s_w,na.rm=TRUE),lty=1,col="black")
 	lines(dat$year,markov_s_w+markov_s_c-mean(markov_s_w+markov_s_c,na.rm=TRUE),lty=2,col="black")
 	grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted",lwd = par("lwd"), equilogs = TRUE)
 	legend("topright", pch = c(15,15,15,15), col = c("black", "red", "blue","green"), 
-		legend = c("markov","ar 2","ma_1","ar_1"))
+		legend = c("markov","ma_1","ma_2","ma_3"))
     abline(v=2006)
+    abline(v=2003)
 
     par(new=TRUE,plt=c(0.13,0.35,0.7,0.9))
 	
@@ -98,18 +103,19 @@ persistence_test <- function(station,start=1,stop=62){
     if(2==2){
     	pdf(file=sprintf("../plots/persistence_test/bic_analysis/bic_tests_%s_%s_%s.pdf",dat$lon[station],dat$lat[station],dat$ID[station]))
 
-		plot(dat$year,ar_2_bic,pch=15,col="red",cex=0.0)
-		lines(dat$year,ar_2_bic,col="red")
-		abline(h=mean(ar_2_bic[1:61]),col="red")
+		plot(dat$year,ma_1_bic,pch=15,col="red",cex=0.0)
+		lines(dat$year,ma_1_bic,col="red")
+		abline(h=mean(ma_1_bic[1:61]),col="red")
 
-		lines(dat$year,ar_1_bic,col="blue")
-		abline(h=mean(ar_1_bic[1:61]),col="blue")
+		lines(dat$year,ma_2_bic,col="blue")
+		abline(h=mean(ma_2_bic[1:61]),col="blue")
 
-		lines(dat$year,ma_1_bic,col="green")
-		abline(h=mean(ma_1_bic[1:61]),col="green")
+		lines(dat$year,ma_3_bic,col="green")
+		abline(h=mean(ma_3_bic[1:61]),col="green")
+
+
 		legend("topright", pch = c(15,15,15), col = c("red", "blue","green"), 
-			legend = c(sprintf("ar 2 %f",mean(ar_2_bic[1:61])),sprintf("ar 1 %f",mean(ar_1_bic[1:61])), sprintf("ma 1 %f",mean(ma_1_bic[1:61]))))
-
+			legend = c(sprintf("ma 1 %f",mean(ma_1_bic[1:61])),sprintf("ma 2 %f",mean(ma_2_bic[1:61])), sprintf("ma 3 %f",mean(ma_3_bic[1:61]))))
 
 	}
 }
@@ -118,4 +124,4 @@ dat=dat_load("../data/mid_lat.nc")
 trend=trend_load("../data/91_5_trend.nc")
 per=per_load("../data/91_5_per_shock_first_test.nc")
 
-persistence_test(605)
+persistence_test(577)
