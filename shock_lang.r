@@ -1,4 +1,21 @@
 # teste teste
+
+a <- matrix(c(-0.7634849,1, -0.4833480,0),nrow=2,ncol=2)
+print(a)
+print(a %*%a)
+
+px=a[1]+1
+amul=a
+for (i in 1:1000){
+	amul=a %*% amul
+	px=px+amul[1]
+	print(amul[1])
+}
+print(px)
+
+
+
+
 source("write_load.r")
 library(Kendall)
 source("functions_persistence.r")
@@ -8,41 +25,99 @@ dyn.load("persistence_tools.so")
 
 persistence_test <- function(station,heat_waves=c(2003,2006),start=1,stop=62){
 	station=which(dat$ID==station)
-	data = dat$tas[station,1:365,start:stop]
-	size=length(data)
+	#data = dat$tas[station,1:365,start:stop]
 	shift=110
 	interval=365
 
-	first_dif=data*NA
-	for (i in 2:size){
-		first_dif[i]=data[i]-data[i-1]
+	if (2==2) {
+		tmp = read.table("ocean_anomalie.txt",sep="\t")
+		data=tmp[,2]
+		time=tmp[,1]
+		size=length(data)
+
+
+		first_dif=data*NA
+		for (i in 2:size){
+			first_dif[i]=data[i]-data[i-1]
+		}
+		pdf(file="../plots/land")
+		plot(NA,xlim=c(1878,2014),ylim=c(-0.7,1.2))
+		lines(time,data)
+		graphics.off()
+		print(data)
+		print(first_dif)
+		print(diff(data))
+		first_dif=diff(data)
+
 	}
+
+	if (8==9) {
+		laenge<-250
+		t<-seq(1,laenge,1)
+		x<-seq(1,laenge,1)
+		y<-seq(1,laenge,1)
+		ut<-seq(1,laenge,1)
+
+		for (i in 0:laenge){
+			ut[i]=runif(1,-1,1)
+		}
+
+
+		for (i in 0:laenge){
+			if(i<3){
+				y[i]=ut[i]
+				x[i]=ut[i]
+			}
+			if(i>2){
+				x[i]=1.7*x[i-1]-0.7*x[i-2]+ut[i]
+				y[i]=0.3*y[i-1]+0.7*y[i-2]+ut[i]
+			}
+			
+		}
+		first_dif=y
+
+	}
+
+
+
 
 	if (7==7){
 		time0=proc.time()[1]
-		#tmp=seasonal(as.vector(data),100,365,c(0,182,365),shock_ma_1)
-		tmp=seasonal(as.vector(first_dif),array(c(151,242),dim=c(2,1)),shock_ma,2)
+		tmp=shock_ma(as.vector(first_dif),1)
 		shock_1=tmp$summer_w
 		shock_1_bic=tmp$bic_s
 		print(tmp)
 		print(proc.time()[1]-time0)
 
 		time0=proc.time()[1]
-		#tmp=seasonal(as.vector(data),100,365,c(0,182,365),shock_ma_2)
-		tmp=seasonal(as.vector(first_dif),array(c(151,242),dim=c(2,1)),shock_ar_1)
+		tmp=shock_ma(as.vector(first_dif),2)
+		shock_1=tmp$summer_w
+		shock_1_bic=tmp$bic_s
+		print(tmp)
+		print(proc.time()[1]-time0)
+
+
+		time0=proc.time()[1]
+		tmp=shock_ma(as.vector(first_dif),3)
+		shock_1=tmp$summer_w
+		shock_1_bic=tmp$bic_s
+		print(tmp)
+		print(proc.time()[1]-time0)
+
+		time0=proc.time()[1]
+		tmp=shock_ar_2(as.vector(first_dif))
 		shock_2=tmp$summer_w
 		shock_2_bic=tmp$bic_s
 		print(tmp)
 		print(proc.time()[1]-time0)
 
 		time0=proc.time()[1]
-		#tmp=seasonal(as.vector(data),100,365,c(0,182,365),shock_ma_3)
-		tmp=seasonal(as.vector(first_dif),array(c(151,242),dim=c(2,1)),shock_ar_2)
+		tmp=shock_ar_1(as.vector(first_dif))
 		shock_3=tmp$summer_w
 		shock_3_bic=tmp$bic_s
 		print(tmp)
 		print(proc.time()[1]-time0)
-
+		sdfsdf
 	}
 
 
@@ -138,4 +213,4 @@ dat=dat_load("../data/mid_lat.nc")
 trend=trend_load("../data/91_5_trend.nc")
 per=per_load("../data/91_5_per_shock_first_test.nc")
 
-persistence_test(488,c(2003,2006))
+persistence_test(777,c(2003,2006))

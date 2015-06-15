@@ -1,5 +1,9 @@
 library(Kendall)
 library(stats)
+library(markovchain)
+#library(tseries)
+library(timsac)
+library(FitARMA)
 
 c_calc_runmean_2D = function(y2D,nday,nyr)
 {   # Input 2D array: y[day,year],
@@ -41,7 +45,7 @@ bic_selective <- function(x){
 
 }
 
-seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=markov_calc,shift=0,interval=365){
+seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=markov_calc,order=0,shift=0,interval=365){
     if (seasons[length(seasons)]>365){
         shift=seasons[length(seasons)]-365
         seasons[,]=seasons[,]-shift
@@ -60,7 +64,7 @@ seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=mark
         if ((is.na(dat[i+1])==FALSE) & (is.na(dat[i+interval])==FALSE)){
             for (sea in 1:length(seasons[1,])){
                 x=dat[(seasons[1,sea]+i):(seasons[2,sea]+i)]
-                tmp=model(x)
+                tmp=model(x,order)
                 if (sea==1){
                     summer_w[j]=tmp$P_w
                     summer_c[j]=tmp$P_c
@@ -85,13 +89,8 @@ seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=mark
     return(list(summer_w=summer_w,summer_c=summer_c,winter_w=winter_w,winter_c=winter_c,bic_s=bic_s,bic_w=bic_w))
 }   
 
-bayesian_i_c <- function(x,order){
-    arma_x=arima(x,order=order,method="ML")
-    bic=-2*arma_x$loglik+(sum(order)-1)*log(length(x))
-    return(bic)
-}
 
-markov_calc <- function(x){
+markov_calc <- function(x,order){
     tmp=.C("c_markov",data=as.integer(x),warm=as.numeric(0.0),cold=as.numeric(0.0),size=as.integer(length(x)))
     if (tmp$warm == 99){
         tmp$warm <- NA
@@ -102,8 +101,23 @@ markov_calc <- function(x){
     return(list(P_w=tmp$warm,P_c=tmp$cold,bic=0))
 }
 
-shock_ar_1 <- function(x){
-    arma_x=arima(x,order=c(1,1,0),method="ML")
+markov_chft <- function(x,order){
+    tmp=markovchainFit(data=x)
+    print(tmp)
+    return(list(P_w=tmp$estimate[2][2],P_c=tmp$estimate[1][1],bic=0))
+}
+
+
+bayesian_i_c <- function(x,order){
+    arma_x=arima(x,order=order,method="ML")
+    bic=-2*arma_x$loglik+(sum(order)-1)*log(length(x))
+    return(bic)
+}
+
+shock_ar_1 <- function(x,order){
+    arma_x=arima(x,order=c(1,0,0),method="ML")
+    print(arma_x)
+
     ar_x=arma_x$coef[1]
     Px=1
     psi=array(0,100)
@@ -113,57 +127,53 @@ shock_ar_1 <- function(x){
     return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(1*log(length(x)))))
 }
 
-shock_ar_2 <- function(x){
+shock_ar_2 <- function(x,order){
     arma_x=arima(x,order=c(2,1,0),method="ML")
-    ar_x=arma_x$coef[1:2]
-    wurzel=sqrt(ar_x[2]^2+4*ar_x[1])
-    y1=(-ar_x[2]+wurzel)/(2*ar_x[1])
-    y2=(-ar_x[2]-wurzel)/(2*ar_x[1])
+    print(arma_x)
+    arma_x=arima(x,order=c(2,1,0),method="CSS-ML")
+    print(arma_x)
+    arma_x=arima(x,order=c(2,1,0),method="CSS")
+    print(arma_x)
+    print(999999)
+    arma_x=FitARMA(x,order=c(2,1,0))#, demean = TRUE, MeanMLEQ = FALSE, pApprox = 30, MaxLag = 30)
+    print(arma_x$phiHat)
+    a=arma_x$coef[1]
+    b=arma_x$coef[2]
+
+    wurzel=sqrt(b^2+4*a)
+    y1=(-b+wurzel)/(2*a)
+    y2=(-b-wurzel)/(2*a)
+    print(y1)
+    print(y2)
     la1=1/y1
     la2=1/y2
-    c1=la1/(la1-la2)
-    c2=la2/(la2-la1)
     Px=1
     psi=array(0,100)
     for (i in 1:100){
         for (k in 0:i){
-            psi[i]=c1*la1^k+c2*la2^k
+            psi[i]=(la1^k)*(la2^(i-k))
         }
         Px=Px+psi[i]
     }
+    print(psi)
+    print(a*a+b)
     return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(2*log(length(x)))))
 }
 
 
-shock_ma_1 <- function(x){
-    ma_order=1
-    arma_x=arima(x,order=c(0,1,ma_order),method="ML")
+shock_ma <- function(x,ma_order){
+    arma_x=arima(x,order=c(0,0,ma_order),method="CSS-ML",include.mean=TRUE)
+    #arma_x=arma(x,order=c(0,ma_order))
     Px=1
+    print(arma_x)
     for (i in 1:ma_order){
         Px=Px+arma_x$coef[i]
     }
-    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(3*log(length(x)))))
+    print(Px)
+
+    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+ma_order*log(length(x))))
 }
 
-shock_ma_2 <- function(x){
-    ma_order=2
-    arma_x=arima(x,order=c(0,1,ma_order),method="ML")
-    Px=1
-    for (i in 1:ma_order){
-        Px=Px+arma_x$coef[i]
-    }
-    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(3*log(length(x)))))
-}
-
-shock_ma_3 <- function(x){
-    ma_order=3
-    arma_x=arima(x,order=c(0,1,ma_order),method="ML")
-    Px=1
-    for (i in 1:ma_order){
-        Px=Px+arma_x$coef[i]
-    }
-    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(3*log(length(x)))))
-}
 
 
 calc_persistence = function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
