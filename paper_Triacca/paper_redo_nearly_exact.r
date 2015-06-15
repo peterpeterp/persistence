@@ -9,7 +9,6 @@ amul=a
 for (i in 1:1000){
 	amul=a %*% amul
 	px=px+amul[1]
-	print(amul[1])
 }
 print(px)
 
@@ -40,14 +39,16 @@ persistence_test <- function(station,heat_waves=c(2003,2006),start=1,stop=62){
 		for (i in 2:size){
 			first_dif[i]=data[i]-data[i-1]
 		}
+
 		pdf(file="../plots/land")
-		plot(NA,xlim=c(1878,2014),ylim=c(-0.7,1.2))
+		plot(time,data,col="white")
 		lines(time,data)
+		#lines(time,first_dif,col="red")
 		graphics.off()
-		print(data)
-		print(first_dif)
-		print(diff(data))
+
 		first_dif=diff(data)
+		tmp=shock_ar(as.vector(first_dif),2)
+		print(tmp)
 
 	}
 
@@ -74,7 +75,7 @@ persistence_test <- function(station,heat_waves=c(2003,2006),start=1,stop=62){
 			}
 			
 		}
-		first_dif=y
+		first_dif=x
 
 	}
 
@@ -82,41 +83,28 @@ persistence_test <- function(station,heat_waves=c(2003,2006),start=1,stop=62){
 
 
 	if (7==7){
-		time0=proc.time()[1]
-		tmp=shock_ma(as.vector(first_dif),1)
-		shock_1=tmp$summer_w
-		shock_1_bic=tmp$bic_s
-		print(tmp)
-		print(proc.time()[1]-time0)
+		shock=array(NA,10)
+		bic=array(NA,10)
+		for (i in 1:5){
+			time0=proc.time()[1]
+			tmp=shock_ar(as.vector(data),i)
+			shock[i+5]=tmp$P_w
+			bic[i+5]=tmp$bic
+			print(proc.time()[1]-time0)
+		}		
 
-		time0=proc.time()[1]
-		tmp=shock_ma(as.vector(first_dif),2)
-		shock_1=tmp$summer_w
-		shock_1_bic=tmp$bic_s
-		print(tmp)
-		print(proc.time()[1]-time0)
+		for (i in 1:5){
+			time0=proc.time()[1]
+			tmp=shock_ma(as.vector(data),i)
+			shock[i]=tmp$P_w
+			bic[i]=tmp$bic
+			print(proc.time()[1]-time0)
+		}		
 
 
-		time0=proc.time()[1]
-		tmp=shock_ma(as.vector(first_dif),3)
-		shock_1=tmp$summer_w
-		shock_1_bic=tmp$bic_s
-		print(tmp)
-		print(proc.time()[1]-time0)
+		print(shock)
+		print(bic)
 
-		time0=proc.time()[1]
-		tmp=shock_ar_2(as.vector(first_dif))
-		shock_2=tmp$summer_w
-		shock_2_bic=tmp$bic_s
-		print(tmp)
-		print(proc.time()[1]-time0)
-
-		time0=proc.time()[1]
-		tmp=shock_ar_1(as.vector(first_dif))
-		shock_3=tmp$summer_w
-		shock_3_bic=tmp$bic_s
-		print(tmp)
-		print(proc.time()[1]-time0)
 		sdfsdf
 	}
 

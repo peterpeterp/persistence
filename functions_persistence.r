@@ -103,7 +103,6 @@ markov_calc <- function(x,order){
 
 markov_chft <- function(x,order){
     tmp=markovchainFit(data=x)
-    print(tmp)
     return(list(P_w=tmp$estimate[2][2],P_c=tmp$estimate[1][1],bic=0))
 }
 
@@ -115,9 +114,7 @@ bayesian_i_c <- function(x,order){
 }
 
 shock_ar_1 <- function(x,order){
-    arma_x=arima(x,order=c(1,0,0),method="ML")
-    print(arma_x)
-
+    arma_x=arima(x,order=c(1,1,0),method="ML")
     ar_x=arma_x$coef[1]
     Px=1
     psi=array(0,100)
@@ -127,50 +124,33 @@ shock_ar_1 <- function(x,order){
     return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(1*log(length(x)))))
 }
 
-shock_ar_2 <- function(x,order){
-    arma_x=arima(x,order=c(2,1,0),method="ML")
-    print(arma_x)
-    arma_x=arima(x,order=c(2,1,0),method="CSS-ML")
-    print(arma_x)
-    arma_x=arima(x,order=c(2,1,0),method="CSS")
-    print(arma_x)
-    print(999999)
-    arma_x=FitARMA(x,order=c(2,1,0))#, demean = TRUE, MeanMLEQ = FALSE, pApprox = 30, MaxLag = 30)
-    print(arma_x$phiHat)
-    a=arma_x$coef[1]
-    b=arma_x$coef[2]
-
-    wurzel=sqrt(b^2+4*a)
-    y1=(-b+wurzel)/(2*a)
-    y2=(-b-wurzel)/(2*a)
-    print(y1)
-    print(y2)
-    la1=1/y1
-    la2=1/y2
-    Px=1
-    psi=array(0,100)
-    for (i in 1:100){
-        for (k in 0:i){
-            psi[i]=(la1^k)*(la2^(i-k))
-        }
-        Px=Px+psi[i]
+shock_ar <- function(x,ar_order){
+    if (ar_order==1){
+        return(shock_ar_1(x))
     }
-    print(psi)
-    print(a*a+b)
-    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(2*log(length(x)))))
+    arma_x=arima(x,order=c(ar_order,1,0),method="ML")
+
+    A <- matrix(0,nrow=ar_order,ncol=ar_order)
+    A[1,]=arma_x$coef[1:ar_order]
+    for (i in 2:ar_order){
+        A[i,(i-1)]=1
+    }
+    Px=1+A[1]
+    amul=A
+    for (i in 1:1000){
+        amul=A %*% amul
+        Px=Px+amul[1]
+    }
+    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(ar_order*log(length(x)))))
 }
 
 
 shock_ma <- function(x,ma_order){
-    arma_x=arima(x,order=c(0,0,ma_order),method="CSS-ML",include.mean=TRUE)
-    #arma_x=arma(x,order=c(0,ma_order))
+    arma_x=arima(x,order=c(0,1,ma_order),method="ML")
     Px=1
-    print(arma_x)
     for (i in 1:ma_order){
         Px=Px+arma_x$coef[i]
     }
-    print(Px)
-
     return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+ma_order*log(length(x))))
 }
 
