@@ -97,6 +97,8 @@ nyrs = c(3)
 
 
 dat=dat_load("../data/mid_lat.nc")
+dat_write("../data/test.nc",dat)
+asdas
 
 
 for (nday in ndays){
