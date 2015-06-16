@@ -17,7 +17,8 @@ dat_load <- function(filename){
 }
 
 trend_load <- function(filename){
-    nc  = open.nc(filename)  
+    print(filename)
+    nc  = open.ncdf(filename)  
     trend  = get.var.ncdf(nc,"trend")
 
     return(trend)
@@ -25,7 +26,7 @@ trend_load <- function(filename){
 
 
 per_load <- function(filename){
-    nc=open.nc(filename)
+    nc=open.ncdf(filename)
     ind   = get.var.ncdf(nc,"ind")
     ntot=dim(ind)[1]
 
@@ -82,32 +83,24 @@ per_load <- function(filename){
 
 dat_write <- function(filename,data3D)
 {
-
-
     day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
     year <- dim.def.ncdf("year",units="year",vals=1:62, unlim=FALSE)
     ID <- dim.def.ncdf("ID",units="ID",vals=1:length(data3D$ID), unlim=FALSE)
 
     
-    reihen=c(data3D$lon,data3D$lat,data3D$tas)
+    reihen=list(data3D$lon,data3D$lat,data3D$tas)
     names=c("lon","lat","tas")
-    vars=c(NA,NA,NA)
-    for (i in 1:2){
-        varsi <- var.def.ncdf(name=names[i],units="bla",dim=ID, missval=-9999.0)
-        print(varsi)
 
-
-    }
-    for (i in 3:3){
-        vars[i] <- var.def.ncdf(name=names[i],units="bla",dim=list(ID,day,year), missval=-9999.0)
-        print(vars[i])
-    }    
+    varlon <- var.def.ncdf(name=names[1],units="bla",dim=ID, missval=-9999.0)
+    varlat <- var.def.ncdf(name=names[2],units="bla",dim=ID, missval=-9999.0)
+    vartas <- var.def.ncdf(name=names[3],units="bla",dim=list(ID,day,year), missval=-9999.0)
+    vars=list(varlon,varlat,vartas)
+   
     nc = create.ncdf(filename,vars)
-    for (i in 1:3){
-        print(i)
-        put.var.ncdf(nc,vars[i],reihen[i])
-    }
 
+    for (i in 1:3){
+        put.var.ncdf(nc,vars[[i]],reihen[[i]])
+    }
 
     close.ncdf(nc)    
 }
@@ -115,17 +108,15 @@ dat_write <- function(filename,data3D)
 
 trend_write <- function(filename,data3D,trend)
 {
-    nc = create.nc(filename)
-    dim.def.ncdf(nc, "day",  dimlength=length(data3D$day),  unlim=FALSE)
-    dim.def.ncdf(nc, "year", dimlength=length(data3D$year), unlim=FALSE)
-    dim.def.ncdf(nc, "ID",   dimlength=length(data3D$ID), unlim=FALSE)
+    day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
+    year <- dim.def.ncdf("year",units="year",vals=1:62, unlim=FALSE)
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:length(data3D$ID), unlim=FALSE)
 
-    var.def.ncdf(nc,"trend","NC_FLOAT", c("ID","day","year"))
-    att.put.ncdf(nc, "trend", "missing_value", "NC_FLOAT", -9999.0)
+    vartrend <- var.def.ncdf(name="trend",units="bla",dim=list(ID,day,year), missval=-9999.0)
+    nc = create.ncdf(filename,vartrend)
+    put.var.ncdf(nc,vartrend,trend)
 
-    var.put.nc(nc, "trend", trend)
-
-    close.nc(nc)
+    close.ncdf(nc)  
 }
 
 per_write <- function(filename,data3D,per)
