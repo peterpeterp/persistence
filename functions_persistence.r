@@ -1,9 +1,7 @@
-library(Kendall)
+#library(Kendall)
 library(stats)
-library(markovchain)
-#library(tseries)
-library(timsac)
-library(FitARMA)
+#library(markovchain)
+
 
 c_calc_runmean_2D = function(y2D,nday,nyr)
 {   # Input 2D array: y[day,year],
@@ -30,18 +28,24 @@ c_calc_runmean_2D = function(y2D,nday,nyr)
     return(trend)
 }
 
-bic_selective <- function(x){
-    bic_tmp=c(bayesian_i_c(x,c(1,1,0)),bayesian_i_c(x,c(2,1,0)),bayesian_i_c(x,c(0,1,1)))
-    if (which(bic_tmp==min(bic_tmp))==1){
-        return(list(P_w=shock_ar_1(x)$P_w,P_c=NA,bic=1))
+bic_selective <- function(x,order){
+    shock=array(NA,7)
+    bic=array(NA,7)
+#    for (i in 1:5){
+#        tmp=shock_ar(as.vector(x),i)
+#        shock[i]=tmp$P_w
+#        bic[i]=tmp$bic
+#    }   
+    for (ma in 1:7){
+        tmp=shock_ma(as.vector(x),ma)
+        shock[ma]=tmp$P_w
+        bic[ma]=tmp$bic
     }
-    if (which(bic_tmp==min(bic_tmp))==2){
-        return(list(P_w=shock_ar_2(x)$P_w,P_c=NA,bic=2))
-    }
-    if (which(bic_tmp==min(bic_tmp))==3){
-        return(list(P_w=shock_ma_1(x)$P_w,P_c=NA,bic=3))
-    }
-    return(list(P_w=NA,P_c=NA,bic=NA))
+    print(shock)
+    print(shock,na.rm=TRUE)
+    print(shock[which(bic==min(bic,na.rm=TRUE))])
+    print(which(bic==min(bic,na.rm=TRUE)))
+    return(list(P_w=shock[which(bic==min(bic,na.rm=TRUE))],P_c=NA,bic=which(bic==min(bic,na.rm=TRUE))))
 
 }
 
@@ -107,12 +111,6 @@ markov_chft <- function(x,order){
 }
 
 
-bayesian_i_c <- function(x,order){
-    arma_x=arima(x,order=order,method="ML")
-    bic=-2*arma_x$loglik+(sum(order)-1)*log(length(x))
-    return(bic)
-}
-
 shock_ar_1 <- function(x,order){
     arma_x=arima(x,order=c(1,1,0),method="ML")
     ar_x=arma_x$coef[1]
@@ -137,11 +135,11 @@ shock_ar <- function(x,ar_order){
     }
     Px=1+A[1]
     amul=A
-    for (i in 1:1000){
+    for (i in 1:100){
         amul=A %*% amul
         Px=Px+amul[1]
     }
-    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(ar_order*log(length(x)))))
+    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+ar_order*log(length(x))))
 }
 
 
@@ -204,9 +202,9 @@ calc_persistence = function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
 
     for (i in 1:6){
         markov[i,][markov[i,] == 99]=NA
-        out=MannKendall(markov[i,])
-        markov_mk[i]=out[1]$tau
-        markov_mk_sig[i]=out[2]$sl
+        #out=MannKendall(markov[i,])
+        #markov_mk[i]=out[1]$tau
+        #markov_mk_sig[i]=out[2]$sl
     }
 
     shock=array(NA,dim=c(3,62))
@@ -214,20 +212,20 @@ calc_persistence = function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
     shock_mk=array(NA,3)
     shock_mk_sig=array(NA,3)
 
-    tmp=seasonal(y,array(c(1,365),dim=c(2,1)),shock_ma_3)
+    tmp=seasonal((y-trend),array(c(1,365),dim=c(2,1)),shock_ma,3)
     shock[1,]=tmp$summer_w
     bic[1,]=tmp$bic_s
-    tmp=seasonal(y,array(c(151,242,334,425),dim=c(2,2)),shock_ma_3)
+    tmp=seasonal((y-trend),array(c(151,242,334,425),dim=c(2,2)),shock_ma,3)
     shock[2,]=tmp$summer_w
     bic[2,]=tmp$bic_s
     shock[3,]=tmp$winter_w
     bic[3,]=tmp$bic_w
 
-    for (i in 1:3) {
-        out=MannKendall(shock[i,])
-        shock_mk[i]=out[1]$tau
-        shock_mk_sig[i]=out[2]$sl
-    }
+    #for (i in 1:3) {
+        #out=MannKendall(shock[i,])
+        #shock_mk[i]=out[1]$tau
+        #shock_mk_sig[i]=out[2]$sl
+    #}
 
 
     return(list(ind=per_ind,markov=markov,markov_mk=markov_mk,markov_mk_sig=markov_mk_sig,shock=shock,shock_mk=shock_mk,shock_mk_sig=shock_mk_sig,bic=bic))

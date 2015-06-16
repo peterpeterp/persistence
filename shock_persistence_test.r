@@ -5,38 +5,39 @@ source("functions_persistence.r")
 dyn.load("persistence_tools.so")
 
 
+
 persistence_test <- function(station,heat_waves=c(2003,2006),start=1,stop=62){
 	station=which(dat$ID==station)
 	data = dat$tas[station,1:365,start:stop]-trend[station,1:365,start:stop]
-	size=length(data)
-	shift=110
-	interval=365
+
 
 
 	if (7==7){
-		time0=proc.time()[1]
-		#tmp=seasonal(as.vector(data),array(c(151,242),dim=c(2,1)),bic_selective)
-		tmp=seasonal(as.vector(data),array(c(151,242),dim=c(2,1)),bic_selective)
-		shock_1=tmp$summer_w
-		shock_1_bic=tmp$bic_s
-		print(tmp)
-		print(proc.time()[1]-time0)
+		shock=array(NA,12)
+		bic=array(NA,12)
+		for (i in 1:5){
+			time0=proc.time()[1]
+			tmp=shock_ar(as.vector(data),i)
+			shock[i]=tmp$P_w
+			bic[i]=tmp$bic
+			print(proc.time()[1]-time0)
+		}		
 
-		time0=proc.time()[1]
-		#tmp=seasonal(as.vector(data),array(c(151,242),dim=c(2,1)),bic_selective)
-		tmp=seasonal(as.vector(data),array(c(151,242),dim=c(2,1)),shock_ma,3)
-		shock_2=tmp$summer_w
-		shock_2_bic=tmp$bic_s
-		print(tmp)
-		print(proc.time()[1]-time0)
+		for (i in 1:7){
+			time0=proc.time()[1]
+			tmp=shock_ma(as.vector(data),i)
+			shock[i+5]=tmp$P_w
+			bic[i+5]=tmp$bic
+			print(proc.time()[1]-time0)
+		}		
 
-		time0=proc.time()[1]
-		#tmp=seasonal(as.vector(data),array(c(151,242),dim=c(2,1)),bic_selective)
-		tmp=seasonal(as.vector(data),array(c(151,242),dim=c(2,1)),shock_ar,1)
-		shock_3=tmp$summer_w
-		shock_3_bic=tmp$bic_s
-		print(tmp)
-		print(proc.time()[1]-time0)
+
+		print(shock)
+		print(bic)
+
+		print(shock[which(bic==min(bic))])
+
+		sdfsdf
 	}
 
 
@@ -78,8 +79,8 @@ persistence_test <- function(station,heat_waves=c(2003,2006),start=1,stop=62){
     #lines(time,dat$tas[station,,],col="red")
 
     par(plt=c(0.12,0.95,0.1,0.95))    
-    plot(NA,xlim=c(1950,2011),ylim=c(-0.7,0.7),ylab="persistence indix anomalie")
-	#lines(dat$year,(shock_1-mean(shock_1,na.rm=TRUE)),lty=1,pch=15,col="red")
+    plot(NA,xlim=c(1950,2011),ylim=c(-0.5,0.5),ylab="persistence indix anomalie")
+	lines(dat$year,(shock_1-mean(shock_1,na.rm=TRUE)),lty=1,pch=15,col="red")
 	lines(dat$year,(shock_2-mean(shock_2,na.rm=TRUE)),lty=1,pch=15,col="blue")
 	lines(dat$year,(shock_3-mean(shock_3,na.rm=TRUE)),lty=1,pch=15,col="green")
 	lines(dat$year,c_markov_s_w-mean(c_markov_s_w,na.rm=TRUE),lty=1,col="black")
@@ -101,18 +102,14 @@ persistence_test <- function(station,heat_waves=c(2003,2006),start=1,stop=62){
 	points(dat$lon[q],dat$lat[q],pch=15,col="red")
 
     par(plt=c(0.12,0.95,0.1,0.95))    
-	plot(dat$year,(shock_1),lty=1,pch=15,col="blue",cex=0)
-	for (i in 1:length(dat$year)){
-		text(dat$year[i],(shock_2)[i],label=3,col="blue",cex=0.7)
-		text(dat$year[i],(shock_3)[i],label=2,col="green",cex=0.7)
-		text(dat$year[i],(shock_1)[i],label=shock_1_bic[i],col="red",cex=0.7)
+	plot(dat$year,(shock_1-mean(shock_1,na.rm=TRUE)),lty=1,pch=15,col="blue")
 
-	}		
+
 	graphics.off()
 
 
 
-    if(2==3){
+    if(2==2){
     	pdf(file=sprintf("../plots/persistence_test/bic_analysis/bic_tests_%s_%s_%s.pdf",dat$lon[station],dat$lat[station],dat$ID[station]))
 
 		plot(dat$year,shock_1_bic,pch=15,col="red",cex=0.0)
@@ -136,4 +133,7 @@ dat=dat_load("../data/mid_lat.nc")
 trend=trend_load("../data/91_5_trend.nc")
 per=per_load("../data/91_5_per_shock_first_test.nc")
 
-persistence_test(190,c(2003,2006))
+#persistence_test(488,c(2003,2006),13,15)
+#persistence_test(488,c(2003,2006),23,25)
+persistence_test(488,c(2003,2006),57,58)
+persistence_test(488,c(2003,2006),53,54)

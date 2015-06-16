@@ -110,10 +110,10 @@ if (1==1){
 	    for (nyr in nyrs){
 	        dat=dat_load("../data/mid_lat.nc")
 			trend=trend_load(sprintf("../data/%s_%s_trend.nc",nday,nyr))
-			per=per_load(sprintf("../data/%s_%s_per_shock_ma_3.nc",nday,nyr))
+			per=per_load(sprintf("../data/%s_%s_per_shock_ma_3_neu.nc",nday,nyr))
 
-			map_plot(dat,per$shock_mk[,2],per$shock_mk[,3],per$shock_mk_sig[,2],per$shock_mk_sig[,3],sprintf("../plots/%s_%s_ma_3_mk.pdf",nday,nyr),worldmap,c(35,66))
-			map_plot(dat,per$shock_mk[,1],per$shock_lr[,1],per$shock_mk_sig[,1],per$shock_lr_sig[,1],sprintf("../plots/%s_%s_ma_3_year.pdf",nday,nyr),worldmap,c(35,66))			
+			map_plot(dat,per$shock_mk[,2],per$shock_mk[,3],per$shock_mk_sig[,2],per$shock_mk_sig[,3],sprintf("../plots/%s_%s_ma_3_mk_neu.pdf",nday,nyr),worldmap,c(35,66))
+			map_plot(dat,per$shock_mk[,1],per$shock_lr[,1],per$shock_mk_sig[,1],per$shock_lr_sig[,1],sprintf("../plots/%s_%s_ma_3_year_neu.pdf",nday,nyr),worldmap,c(35,66))			
 			map_plot(dat,per$markov_mk[,3],per$markov_mk[,4],per$markov_mk_sig[,3],per$markov_mk_sig[,4],sprintf("../plots/%s_%s_markov_s_mk.pdf",nday,nyr),worldmap,c(35,66))
 			map_plot(dat,per$markov_lr[,3],per$markov_lr[,4],per$markov_lr_sig[,3],per$markov_lr_sig[,4],sprintf("../plots/%s_%s_markov_s_lr.pdf",nday,nyr),worldmap,c(35,66))
 			#map_plot(dat,per$markov_mk[,1],per$markov_lr[,3],per$markov_mk_sig[,3],per$markov_lr_sig[,3],sprintf("../plots/%s_%s_markov_year.pdf",nday,nyr),worldmap,c(35,66))

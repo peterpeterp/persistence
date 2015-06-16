@@ -91,7 +91,7 @@ ndays = c(121,91,61,45)
 nyrs = c(7,5,3,1)
 
 ndays = c(91)
-nyrs = c(5)
+nyrs = c(3)
 
 
 
@@ -103,7 +103,9 @@ for (nday in ndays){
     for (nyr in nyrs){
         cat(sprintf("\n%s_%s   ",nday,nyr))
         cat("calculating trend \n")
-        #trend=calc_trend(dat,sprintf("../data/%s_%s_trend.nc",nday,nyr),nday,nyr)
+        trend=calc_trend(dat,sprintf("../data/%s_%s_trend.nc",nday,nyr),nday,nyr)
+
+        psdfsdfsdf
         trend=trend_load(sprintf("../data/%s_%s_trend.nc",nday,nyr))
         cat(sprintf("\n%s_%s    ",nday,nyr))
         cat("calculating persistence\n")      
