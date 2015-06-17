@@ -24,61 +24,42 @@ trend_load <- function(filename){
 }
 
 
-per_load <- function(filename){
+markov_load <- function(filename){
     nc=open.ncdf(filename)
     ind   = get.var.ncdf(nc,"ind")
     ntot=dim(ind)[1]
 
-    per = list(ind=ind,markov=array(NA,dim=c(ntot,6,62)),markov_mk=array(NA,dim=c(ntot,6)),markov_lr=array(NA,dim=c(ntot,6)),markov_mk_sig=array(NA,dim=c(ntot,6)),markov_lr_sig=array(NA,dim=c(ntot,6)),
-            shock=array(NA,dim=c(ntot,3,62)),shock_mk=array(NA,dim=c(ntot,3)),shock_lr=array(NA,dim=c(ntot,3)),shock_mk_sig=array(NA,dim=c(ntot,3)),shock_lr_sig=array(NA,dim=c(ntot,3)))
-    str_markov=c("year_warm","year_cold","sum_warm","sum_cold","win_warm","win_cold")
+    markov_per = list(ind=array(NA,dim=c(ntot,365,62)),markov=array(NA,dim=c(ntot,6,62)),markov_err=array(NA,dim=c(ntot,3,62)))
+    str_markov=c("markov_s_w","markov_s_k","markov_w_w","markov_w_k","markov_y_w","markov_y_k")
     for (i in 1:6){
-        per$markov[1:ntot,i,]=get.var.ncdf(nc,str_markov[i])
+        markov_per$markov[1:ntot,i,]=get.var.ncdf(nc,str_markov[i])
     }
-    str_markov_mk=c("year_warm_mk","year_cold_mk","sum_warm_mk","sum_cold_mk","win_warm_mk","win_cold_mk")
-    for (i in 1:6){
-        per$markov_mk[1:ntot,i]=get.var.ncdf(nc,str_markov_mk[i])
-    }
-    str_markov_mk_sig=c("year_warm_mk_sig","year_cold_mk_sig","sum_warm_mk_sig","sum_cold_mk_sig","win_warm_mk_sig","win_cold_mk_sig")
-    for (i in 1:6){
-        per$markov_mk_sig[1:ntot,i]=get.var.ncdf(nc,str_markov_mk_sig[i])
-    }
-    str_markov_lr=c("year_warm_lr","year_cold_lr","sum_warm_lr","sum_cold_lr","win_warm_lr","win_cold_lr")
-    for (i in 1:6){
-        per$markov_lr[1:ntot,i]=get.var.ncdf(nc,str_markov_lr[i])
-    }
-    str_markov_lr_sig=c("year_warm_lr_sig","year_cold_lr_sig","sum_warm_lr_sig","sum_cold_lr_sig","win_warm_lr_sig","win_cold_lr_sig")
-    for (i in 1:6){
-        per$markov_lr_sig[1:ntot,i]=get.var.ncdf(nc,str_markov_lr_sig[i])
+    str_markov_err=c("markov_s_err","markov_w_err","markov_y_err")
+    for (i in 1:3){
+        markov_per$markov_err[1:ntot,i,]=get.var.ncdf(nc,str_markov_err[i])
     }
 
-    str_shock=c("shock_y","shock_s","shock_w")
-    for (i in 1:3){
-        per$shock[1:ntot,i,]=get.var.ncdf(nc,str_shock[i])
-    }
-    str_shock_mk=c("shock_y_mk","shock_s_mk","shock_w_mk")
-    for (i in 1:3){
-        per$shock_mk[1:ntot,i]=get.var.ncdf(nc,str_shock_mk[i])
-    }
-    str_shock_mk_sig=c("shock_y_mk_sig","shock_s_mk_sig","shock_w_mk_sig")
-    for (i in 1:3){
-        per$shock_mk_sig[1:ntot,i]=get.var.ncdf(nc,str_shock_mk_sig[i])
-    }
-    str_shock_lr=c("shock_y_lr","shock_s_lr","shock_w_lr")
-    for (i in 1:3){
-        per$shock_lr[1:ntot,i]=get.var.ncdf(nc,str_shock_lr[i])
-    }
-    str_shock_lr_sig=c("shock_y_lr_sig","shock_s_lr_sig","shock_w_lr_sig")
-    for (i in 1:3){
-        per$shock_lr_sig[1:ntot,i]=get.var.ncdf(nc,str_shock_lr_sig[i])
-    }
+    markov_per$ind <- get.var.ncdf(nc,"ind")
 
-
-    per$ind <- get.var.ncdf(nc,"ind")
-
-    return(per)
+    return(markov_per)
 }
 
+shock_load <- function(filename){
+    nc=open.ncdf(filename)
+    ntot=819
+
+    shock_per = list(shock=array(NA,dim=c(ntot,6,62)),shock_bic=array(NA,dim=c(ntot,3,62)))
+    str_shock=c("shock_s","shock_w","shock_y")
+    for (i in 1:3){
+        shock_per$shock[1:ntot,i,]=get.var.ncdf(nc,str_shock[i])
+    }
+    str_bic=c("bic_s","bic_w","bic_y")
+    for (i in 1:3){
+        shock_per$shock_bic[1:ntot,i,]=get.var.ncdf(nc,str_bic[i])
+    }
+
+    return(shock_per)
+}
 
 dat_write <- function(filename,data3D)
 {
@@ -156,7 +137,6 @@ markov_write <- function(filename,data3D,per)
 shock_write <- function(filename,data3D,per)
 {
     ntot=length(data3D$ID)
-    day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
     year <- dim.def.ncdf("year",units="year",vals=1:62, unlim=FALSE)
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
@@ -182,56 +162,88 @@ shock_write <- function(filename,data3D,per)
 }
 
 
+markov_trend_write <- function(filename,per)
+{
+    ntot=819
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
+    mar_s_w_lr <- var.def.ncdf(name="mar_s_w_lr",units="bla",dim=list(ID), missval=-9999.0)
+    mar_s_k_lr <- var.def.ncdf(name="mar_s_k_lr",units="bla",dim=list(ID), missval=-9999.0)
+    mar_w_w_lr <- var.def.ncdf(name="mar_w_w_lr",units="bla",dim=list(ID), missval=-9999.0)
+    mar_w_k_lr <- var.def.ncdf(name="mar_w_k_lr",units="bla",dim=list(ID), missval=-9999.0)
+    mar_y_w_lr <- var.def.ncdf(name="mar_y_w_lr",units="bla",dim=list(ID), missval=-9999.0)
+    mar_y_k_lr <- var.def.ncdf(name="mar_y_k_lr",units="bla",dim=list(ID), missval=-9999.0)
 
-dat_write_part <-function(dat,qq,filename){
-    size=length(qq)
-    dat_klein = list(ID=array(NA,size),day=array(NA,365),year=array(NA,62),lon=array(NA,size),lat=array(NA,size),tas= array(NA,dim=c(size,365,62)))
-    dat_klein$day[] = dat$day[]
-    dat_klein$year[] = dat$year[]
-    for (i in 1:length(qq)){
-        q=qq[i]
-        dat_klein$ID[i] = q
-        dat_klein$lat[i] = dat$lat[q]
-        dat_klein$lon[i] = dat$lon[q]
-        dat_klein$tas[i,,] = dat$tas[q,,]
+    mar_s_w_lr_sig <- var.def.ncdf(name="mar_s_w_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
+    mar_s_k_lr_sig <- var.def.ncdf(name="mar_s_k_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
+    mar_w_w_lr_sig <- var.def.ncdf(name="mar_w_w_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
+    mar_w_k_lr_sig <- var.def.ncdf(name="mar_w_k_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
+    mar_y_w_lr_sig <- var.def.ncdf(name="mar_y_w_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
+    mar_y_k_lr_sig <- var.def.ncdf(name="mar_y_k_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
+
+    mar_s_w_mk <- var.def.ncdf(name="mar_s_w_mk",units="bla",dim=list(ID), missval=-9999.0)
+    mar_s_k_mk <- var.def.ncdf(name="mar_s_k_mk",units="bla",dim=list(ID), missval=-9999.0)
+    mar_w_w_mk <- var.def.ncdf(name="mar_w_w_mk",units="bla",dim=list(ID), missval=-9999.0)
+    mar_w_k_mk <- var.def.ncdf(name="mar_w_k_mk",units="bla",dim=list(ID), missval=-9999.0)
+    mar_y_w_mk <- var.def.ncdf(name="mar_y_w_mk",units="bla",dim=list(ID), missval=-9999.0)
+    mar_y_k_mk <- var.def.ncdf(name="mar_y_k_mk",units="bla",dim=list(ID), missval=-9999.0)
+
+    mar_s_w_mk_sig <- var.def.ncdf(name="mar_s_w_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
+    mar_s_k_mk_sig <- var.def.ncdf(name="mar_s_k_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
+    mar_w_w_mk_sig <- var.def.ncdf(name="mar_w_w_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
+    mar_w_k_mk_sig <- var.def.ncdf(name="mar_w_k_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
+    mar_y_w_mk_sig <- var.def.ncdf(name="mar_y_w_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
+    mar_y_k_mk_sig <- var.def.ncdf(name="mar_y_k_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
+
+    vars=list(mar_s_w_lr,mar_s_k_lr,mar_w_w_lr,mar_w_k_lr,mar_y_w_lr,mar_y_k_lr,
+        mar_s_w_lr_sig,mar_s_k_lr_sig,mar_w_w_lr_sig,mar_w_k_lr_sig,mar_y_w_lr_sig,mar_y_k_lr_sig,
+        mar_s_w_mk,mar_s_k_mk,mar_w_w_mk,mar_w_k_mk,mar_y_w_mk,mar_y_k_mk,
+        mar_s_w_mk_sig,mar_s_k_mk_sig,mar_w_w_mk_sig,mar_w_k_mk_sig,mar_y_w_mk_sig,mar_y_k_mk_sig)
+   
+    nc = create.ncdf(filename,vars)
+
+    for (j in 1:4){
+        for (i in 1:6){
+            put.var.ncdf(nc,vars[[i+(j-1)*6]],per[1:ntot,i,j])
+        }        
     }
-    dat_write(filename,dat_klein)
-    return(dat_klein)
+
+    close.ncdf(nc) 
 }
 
-trend_write_part <-function(trend,dat_klein,qq,filename){
-    size=length(qq)
-    trend_klein=array(NA,dim=c(size,365,62))  
-    for (i in 1:length(qq)){
-        q=qq[i]
-        trend_klein[i,,] = trend[q,,]
+shock_trend_write <- function(filename,per)
+{
+    ntot=819
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+
+    sho_s_lr <- var.def.ncdf(name="sho_s_lr",units="bla",dim=list(ID), missval=-9999.0)
+    sho_w_lr <- var.def.ncdf(name="sho_w_lr",units="bla",dim=list(ID), missval=-9999.0)
+    sho_y_lr <- var.def.ncdf(name="sho_y_lr",units="bla",dim=list(ID), missval=-9999.0)
+
+    sho_s_lr_sig <- var.def.ncdf(name="sho_s_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
+    sho_w_lr_sig <- var.def.ncdf(name="sho_w_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
+    sho_y_lr_sig <- var.def.ncdf(name="sho_y_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
+
+    sho_s_mk <- var.def.ncdf(name="sho_s_mk",units="bla",dim=list(ID), missval=-9999.0)
+    sho_w_mk <- var.def.ncdf(name="sho_w_mk",units="bla",dim=list(ID), missval=-9999.0)
+    sho_y_mk <- var.def.ncdf(name="sho_y_mk",units="bla",dim=list(ID), missval=-9999.0)
+
+    sho_s_mk_sig <- var.def.ncdf(name="sho_s_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
+    sho_w_mk_sig <- var.def.ncdf(name="sho_w_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
+    sho_y_mk_sig <- var.def.ncdf(name="sho_y_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
+
+    vars=list(sho_s_lr,sho_w_lr,sho_y_lr,
+        sho_s_lr_sig,sho_w_lr_sig,sho_y_lr_sig,
+        sho_s_mk,sho_w_mk,sho_y_mk,
+        sho_s_mk_sig,sho_w_mk_sig,sho_y_mk_sig)
+   
+    nc = create.ncdf(filename,vars)
+
+    for (j in 1:4){
+        for (i in 1:3){
+            put.var.ncdf(nc,vars[[i+(j-1)*3]],per[1:ntot,i,j])
+        }        
     }
-    trend_write(filename,dat_klein,trend_klein)
-    return(trend_klein)
-}
 
-per_write_part <-function(per,dat_klein,qq,filename){
-    size=length(qq)
-    per_klein = list(ind=array(NA,dim=c(size,365,62)),markov=array(NA,dim=c(size,6,62)),markov_mk=array(NA,dim=c(size,6)),markov_lr=array(NA,dim=c(size,6)),markov_mk_sig=array(NA,dim=c(size,6)),markov_lr_sig=array(NA,dim=c(size,6)),
-        shock=array(NA,dim=c(size,3,62)),shock_mk=array(NA,dim=c(size,3)),shock_lr=array(NA,dim=c(size,3)),shock_mk_sig=array(NA,dim=c(size,3)),shock_lr_sig=array(NA,dim=c(size,3)))
-    for (i in 1:length(qq)){
-        q=qq[i]
-        per_klein$ind[i,,] = per$ind[q,,]
-        per_klein$markov[i,,] = per$markov[q,,]
-        per_klein$markov_mk[i,] = per$markov_mk[q,]
-        per_klein$markov_mk_sig[i,] = per$markov_mk_sig[q,]
-        per_klein$markov_lr[i,] = per$markov_lr[q,]
-        per_klein$markov_lr_sig[i,] = per$markov_lr_sig[q,]
-
-        per_klein$shock[i,,] = per$shock[q,,]
-        per_klein$shock_mk[i,] = per$shock_mk[q,]
-        per_klein$shock_mk_sig[i,] = per$shock_mk_sig[q,]
-        per_klein$shock_lr[i,] = per$shock_lr[q,]
-        per_klein$shock_lr_sig[i,] = per$shock_lr_sig[q,]
-
-
-    }
-    per_write(filename,dat_klein,per_klein)
-    return(per_klein)
+    close.ncdf(nc) 
 }

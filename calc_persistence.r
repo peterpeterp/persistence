@@ -23,7 +23,7 @@ calc_trend <- function(dat,filename,nday,nyr){
 }
 
 
-calc_per <- function(dat,trend,filename,nday,nyr,what){
+calc_per <- function(dat,trend,filename_markov,filename_shock,nday,nyr,what){
     ## User parameters 
     trash = ((nyr-1)/2*365+(nday-1))
     ntot = length(dat$ID)
@@ -35,7 +35,7 @@ calc_per <- function(dat,trend,filename,nday,nyr,what){
     if ((what=="markov") | (what=="both")){
         markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,6,62)),markov_err=array(NA,dim=c(ntot,3,62)))
 
-        for (q in 1:1 ) { 
+        for (q in 1:ntot ) { 
             cat("-")
             if (length(which(is.na(dat$tas[q,,])))<(2*trash+730)){
 
@@ -75,13 +75,13 @@ calc_per <- function(dat,trend,filename,nday,nyr,what){
             }
      
         }
-        markov_write(filename,dat,markov_per) 
+        markov_write(filename_markov,dat,markov_per) 
     }
 
     if ((what=="shock") | (what=="both")){
         shock_per = list(shock=array(NA,dim=c(ntot,6,62)),shock_bic=array(NA,dim=c(ntot,3,62)))
 
-        for (q in 1:1 ) { 
+        for (q in 1:ntot ) { 
             cat("-")
             if (length(which(is.na(dat$tas[q,,])))<(2*trash+730)){
 
@@ -100,14 +100,60 @@ calc_per <- function(dat,trend,filename,nday,nyr,what){
             }
      
         }
-        shock_write(filename,dat,shock_per)       
+        shock_write(filename_shock,dat,shock_per)       
     }
 
     cat("done.\n")
     return(0)#list(markov_per=markov_per,shock_per=shock_per))
 }
 
+trend_analysis <- function(x,y){
+    library(Kendall)
+    if (is.na(min(y))){
+        return(list(slope=NA,slope_sig=NA,MK=NA,MK_sig=NA))
+    }
+    lm.r=lm(y~x)
+    slope=summary(lm.r)$coefficients[2]
+    slope_sig=summary(lm.r)$coefficients[8]
+    out=MannKendall(y)
+    MK=out[1]$tau
+    MK_sig=out[2]$sl
+    return(list(slope=slope,slope_sig=slope_sig,MK=MK,MK_sig=MK_sig))
+}
 
+global_trend <- function(filename_markov=99,filename_markov_neu=99,filename_shock=99,filename_shock_neu=99){
+    t=seq(1,62,1)
+    ntot=819
+    trend_markov=array(NA,dim=c(ntot,6,4))
+    if (filename_markov!=99){   
+        per=markov_load(filename_markov)
+        for (i in 1:6){
+            for (q in 1:ntot){
+                tmp=trend_analysis(t,per$markov[q,i,])
+                trend_markov[q,i,1]=tmp$slope
+                trend_markov[q,i,2]=tmp$slope_sig
+                trend_markov[q,i,3]=tmp$MK
+                trend_markov[q,i,4]=tmp$MK_sig
+            }
+        }
+        markov_trend_write(filename_markov_neu,trend_markov)
+    }
+    trend_shock=array(NA,dim=c(ntot,3,4))
+    if (filename_shock!=99){      
+        per=shock_load(filename_shock)
+        for (i in 1:3){
+            for (q in 1:ntot){
+                tmp=trend_analysis(t,per$shock[q,i,])
+                trend_shock[q,i,1]=tmp$slope
+                trend_shock[q,i,2]=tmp$slope_sig
+                trend_shock[q,i,3]=tmp$MK
+                trend_shock[q,i,4]=tmp$MK_sig
+            }
+        }
+        shock_trend_write(filename_shock_neu,trend_shock)
+    }
+    return(list(trend_markov=trend_markov,trend_shock=trend_shock))
+}
 
 ndays = c(121,91,61,45)
 nyrs = c(7,5,3,1)
@@ -116,8 +162,9 @@ ndays = c(91)
 nyrs = c(5)
 
 
-
-
+tmp=global_trend(filename_markov="../data/91_5_markov.nc",filename_markov_neu="../data/91_5_markov_trend.nc",
+    filename_shock="../data/91_5_shock_ma_3_.nc",filename_shock_neu="../data/91_5_shock_ma_3_trend.nc")
+asda
 dat=dat_load("../data/mid_lat.nc")
 
 
@@ -125,12 +172,10 @@ for (nday in ndays){
     for (nyr in nyrs){
         cat(sprintf("\n%s_%s   ",nday,nyr))
         cat("calculating trend \n")
-        #trend=calc_trend(dat,sprintf("../data/%s_%s_trend.nc",nday,nyr),nday,nyr)
-        #trend=trend_load(sprintf("../data/%s_%s_trend.nc",nday,nyr))
         trend=trend_load(sprintf("../data/%s_%s_trend.nc",nday,nyr))
         cat(sprintf("\n%s_%s    ",nday,nyr))
         cat("calculating persistence\n")      
-        per=calc_per(dat,trend,sprintf("../data/%s_%s_per_shock--------wow.nc",nday,nyr),nday,nyr,"shock")
+        per=calc_per(dat,trend,sprintf("../data/%s_%s_markov.nc",nday,nyr),sprintf("../data/%s_%s_shock_ma_3_.nc",nday,nyr),nday,nyr,"both")
     }
 }
 
