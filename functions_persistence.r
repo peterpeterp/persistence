@@ -1,6 +1,6 @@
-#library(Kendall)
+library(Kendall)
 library(stats)
-#library(markovchain)
+library(markovchain)
 
 
 c_calc_runmean_2D = function(y2D,nday,nyr)
@@ -41,11 +41,7 @@ bic_selective <- function(x,order){
         shock[ma]=tmp$P_w
         bic[ma]=tmp$bic
     }
-    print(shock)
-    print(shock,na.rm=TRUE)
-    print(shock[which(bic==min(bic,na.rm=TRUE))])
-    print(which(bic==min(bic,na.rm=TRUE)))
-    return(list(P_w=shock[which(bic==min(bic,na.rm=TRUE))],P_c=NA,bic=which(bic==min(bic,na.rm=TRUE))))
+    return(list(P_w=shock[which(bic==min(bic,na.rm=TRUE))],P_c=NA,error=0,bic=which(bic==min(bic,na.rm=TRUE))))
 
 }
 
@@ -62,6 +58,8 @@ seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=mark
     summer_c=array(NA,62)
     winter_w=array(NA,62)
     winter_c=array(NA,62)
+    error_s=array(NA,62)
+    error_w=array(NA,62)
     bic_s=array(NA,62)
     bic_w=array(NA,62)
     while ((i+interval)<size){
@@ -85,12 +83,20 @@ seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=mark
                         bic_w[j+1]=tmp$bic
                     }             
                 }
+                if (tmp$error!=0){
+                    if (sea==1){
+                        error_s[j]=tmp$error
+                    }
+                    if (sea==2){
+                        error_w[j+1]=tmp$error
+                    }             
+                }
             }
         }
         j=j+1
         i=i+interval
     }
-    return(list(summer_w=summer_w,summer_c=summer_c,winter_w=winter_w,winter_c=winter_c,bic_s=bic_s,bic_w=bic_w))
+    return(list(summer_w=summer_w,summer_c=summer_c,winter_w=winter_w,winter_c=winter_c,error_s=error_s,error_w=error_w,bic_s=bic_s,bic_w=bic_w))
 }   
 
 
@@ -102,12 +108,13 @@ markov_calc <- function(x,order){
     if (tmp$cold == 99){
         tmp$cold <- NA
     }
-    return(list(P_w=tmp$warm,P_c=tmp$cold,bic=0))
+    return(list(P_w=tmp$warm,P_c=tmp$cold,error=0,bic=0))
 }
 
 markov_chft <- function(x,order){
     tmp=markovchainFit(data=x)
-    return(list(P_w=tmp$estimate[2][2],P_c=tmp$estimate[1][1],bic=0))
+    print(tmp)
+    return(list(P_w=tmp$estimate[2][2],P_c=tmp$estimate[1][1],error=tmp$confidenceInterval$confidenceLevel,bic=0))
 }
 
 
@@ -119,7 +126,7 @@ shock_ar_1 <- function(x,order){
     for (i in 1:100){
         Px=Px+ar_x^i
     }
-    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+(1*log(length(x)))))
+    return(list(P_w=Px,P_c=NA,error=0,bic=-2*arma_x$loglik+(1*log(length(x)))))
 }
 
 shock_ar <- function(x,ar_order){
@@ -139,7 +146,7 @@ shock_ar <- function(x,ar_order){
         amul=A %*% amul
         Px=Px+amul[1]
     }
-    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+ar_order*log(length(x))))
+    return(list(P_w=Px,P_c=NA,error=0,bic=-2*arma_x$loglik+ar_order*log(length(x))))
 }
 
 
@@ -149,12 +156,12 @@ shock_ma <- function(x,ma_order){
     for (i in 1:ma_order){
         Px=Px+arma_x$coef[i]
     }
-    return(list(P_w=Px,P_c=NA,bic=-2*arma_x$loglik+ma_order*log(length(x))))
+    return(list(P_w=Px,P_c=NA,error=0,bic=-2*arma_x$loglik+ma_order*log(length(x))))
 }
 
 
 
-calc_persistence = function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
+calc_markov_per <- function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
 {   # Given 2D inputs of y[nday,nyr] and the smooth trend[nday,nyr],
     # calculate the persistence index (-1,0,1) and the persistence
     # vector per[nevents,nyr] and the event_day[nevents,nyr]
@@ -164,8 +171,6 @@ calc_persistence = function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
         cat("calc_persistence:: error: length of time vector does not match length of y.\n")
         return(NULL)
     }
-
-    time0=proc.time()[1]
 
     # Calculate persistence vector
     per_ind = y*0 
@@ -183,55 +188,52 @@ calc_persistence = function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
     size=length(per_ind1D)
 
     markov=array(99,dim=c(6,62))
-    markov_mk=array(NA,6)
-    markov_mk_sig=array(NA,6)
+    markov_err=array(99,dim=c(3,62))
 
-
-
-
-
-    tmp=seasonal(per_ind1D,array(c(1,365),dim=c(2,1)),markov_calc)
+    tmp=seasonal(per_ind1D,array(c(151,242,334,425),dim=c(2,2)),markov_chft)
     markov[1,]=tmp$summer_w
     markov[2,]=tmp$summer_c
+    markov[3,]=tmp$winter_w
+    markov[4,]=tmp$winter_c
+    markov_err[1,]=tmp$error_s
+    markov_err[2,]=tmp$error_s
 
-    tmp=seasonal(per_ind1D,array(c(151,242,334,425),dim=c(2,2)),markov_calc)
-    markov[3,]=tmp$summer_w
-    markov[4,]=tmp$summer_c
-    markov[5,]=tmp$winter_w
-    markov[6,]=tmp$winter_c
+    tmp=seasonal(per_ind1D,array(c(1,365),dim=c(2,1)),markov_chft)
+    markov[5,]=tmp$summer_w
+    markov[6,]=tmp$summer_c
+    markov_err[3,]=tmp$error_s
 
-    for (i in 1:6){
-        markov[i,][markov[i,] == 99]=NA
-        #out=MannKendall(markov[i,])
-        #markov_mk[i]=out[1]$tau
-        #markov_mk_sig[i]=out[2]$sl
-    }
-
-    shock=array(NA,dim=c(3,62))
-    bic=array(NA,dim=c(3,62))
-    shock_mk=array(NA,3)
-    shock_mk_sig=array(NA,3)
-
-    tmp=seasonal((y-trend),array(c(1,365),dim=c(2,1)),shock_ma,3)
-    shock[1,]=tmp$summer_w
-    bic[1,]=tmp$bic_s
-    tmp=seasonal((y-trend),array(c(151,242,334,425),dim=c(2,2)),shock_ma,3)
-    shock[2,]=tmp$summer_w
-    bic[2,]=tmp$bic_s
-    shock[3,]=tmp$winter_w
-    bic[3,]=tmp$bic_w
-
-    #for (i in 1:3) {
-        #out=MannKendall(shock[i,])
-        #shock_mk[i]=out[1]$tau
-        #shock_mk_sig[i]=out[2]$sl
-    #}
-
-
-    return(list(ind=per_ind,markov=markov,markov_mk=markov_mk,markov_mk_sig=markov_mk_sig,shock=shock,shock_mk=shock_mk,shock_mk_sig=shock_mk_sig,bic=bic))
+    return(list(ind=per_ind,markov=markov,markov_err=markov_err))
 
 }
 
+calc_shock_per <- function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
+{   # Given 2D inputs of y[nday,nyr] and the smooth trend[nday,nyr],
+    # calculate the persistence index (-1,0,1) and the persistence
+    # vector per[nevents,nyr] and the event_day[nevents,nyr]
+    # time should be a decimal-based vector 
+
+    if (length(y) != length(time)) {
+        cat("calc_persistence:: error: length of time vector does not match length of y.\n")
+        return(NULL)
+    }
+
+    shock=array(NA,dim=c(3,62))
+    shock_bic=array(NA,dim=c(3,62))
+
+    tmp=seasonal((y-trend),array(c(151,242,334,425),dim=c(2,2)),shock_ma,3)
+    shock[1,]=tmp$summer_w
+    shock_bic[1,]=tmp$bic_s
+    shock[2,]=tmp$winter_w
+    shock_bic[2,]=tmp$bic_w
+
+    tmp=seasonal((y-trend),array(c(1,365),dim=c(2,1)),shock_ma,3)
+    shock[3,]=tmp$summer_w
+    shock_bic[3,]=tmp$bic_s
+
+    return(list(ind=per_ind,markov=markov,markov_err=markov_err,shock=shock,shock_bic=shock_bic))
+
+}
 
 
 

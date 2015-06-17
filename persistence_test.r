@@ -9,11 +9,10 @@ persistence_test <- function(station,heat_waves=c(2003,2006),start=1,stop=62){
 	station=which(dat$ID==station)
 	data = dat$tas[station,1:365,start:stop]-trend[station,1:365,start:stop]
 	size=length(data)
-	shift=110
-	interval=365
+	per_ind1D=as.vector(per$ind[station,1:365,start:stop])
+	per_ind1D[per_ind1D==0]=NA
 
-
-	if (7==7){
+	if (7==8){
 		time0=proc.time()[1]
 		#tmp=seasonal(as.vector(data),array(c(151,242),dim=c(2,1)),bic_selective)
 		tmp=seasonal(as.vector(data),array(c(151,242),dim=c(2,1)),bic_selective)
@@ -39,11 +38,19 @@ persistence_test <- function(station,heat_waves=c(2003,2006),start=1,stop=62){
 		print(proc.time()[1]-time0)
 	}
 
+	if(3==3){
+		time0=proc.time()[1]
+		#tmp=seasonal(per_ind1D,100,365,c(0,182,365),markov)
+		tmp=seasonal(per_ind1D,array(c(151,242),dim=c(2,1)),markov_chft)
+	    markov_s_w=tmp$summer_w
+	    markov_s_c=tmp$summer_c
+		print(tmp)
+
+		print(proc.time()[1]-time0)
+		}
 
 
 	if (2==2){
-		per_ind1D=as.vector(per$ind[station,1:365,start:stop])
-		per_ind1D[per_ind1D==0]=NA
 		time0=proc.time()[1]
 	    #tmp=seasonal(per_ind1D,100,365,c(0,182,365),markov)
 	    tmp=seasonal(per_ind1D,array(c(151,242),dim=c(2,1)),markov_calc)
@@ -52,17 +59,6 @@ persistence_test <- function(station,heat_waves=c(2003,2006),start=1,stop=62){
 		print(tmp)
 
 		print(proc.time()[1]-time0)
-
-		if(3==4){
-			time0=proc.time()[1]
-		    #tmp=seasonal(per_ind1D,100,365,c(0,182,365),markov)
-		    tmp=seasonal(per_ind1D,array(c(151,242),dim=c(2,1)),markov_chft)
-		    markov_s_w=tmp$summer_w
-		    markov_s_c=tmp$summer_c
-			print(tmp)
-
-			print(proc.time()[1]-time0)
-		}
 	}
 
 

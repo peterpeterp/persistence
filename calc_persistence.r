@@ -23,7 +23,7 @@ calc_trend <- function(dat,filename,nday,nyr){
 }
 
 
-calc_per <- function(dat,trend,filename,nday,nyr){
+calc_per <- function(dat,trend,filename,nday,nyr,what){
     ## User parameters 
     trash = ((nyr-1)/2*365+(nday-1))
     ntot = length(dat$ID)
@@ -32,57 +32,79 @@ calc_per <- function(dat,trend,filename,nday,nyr){
     # Calculate persistence information
     #cat("Calculating persistence... ")
 
-    #per = list(ind=dat$tas*NA,dayp=dat$tas*NA,perp=dat$tas*NA,
-     #                  dayn=dat$tas*NA,pern=dat$tas*NA,year_warm=array(NA,dim=c(ntot,62)),year_cold=array(NA,dim=c(ntot,62)),year_warm_trend=array(NA,ntot),year_cold_trend=array(NA,ntot),
-      #                 winter_warm=array(NA,dim=c(ntot,62)),winter_cold=array(NA,dim=c(ntot,62)),summer_warm=array(NA,dim=c(ntot,62)),summer_cold=array(NA,dim=c(ntot,62)),sum_warm_trend=array(NA,ntot),sum_cold_trend=array(NA,ntot),
-       #                win_warm_trend=array(NA,ntot),win_cold_trend=array(NA,ntot))
+    if ((what=="markov") | (what=="both")){
+        markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,6,62)),markov_err=array(NA,dim=c(ntot,3,62)))
 
-    per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,6,62)),
-        markov_mk=array(NA,dim=c(ntot,6)),markov_lr=array(NA,dim=c(ntot,6)),markov_mk_sig=array(NA,dim=c(ntot,6)),markov_lr_sig=array(NA,dim=c(ntot,6)),
-        shock=array(NA,dim=c(ntot,6,62)),shock_mk=array(NA,dim=c(ntot,6)),shock_mk_sig=array(NA,dim=c(ntot,6)),shock_lr=array(NA,dim=c(ntot,6)),shock_lr_sig=array(NA,dim=c(ntot,6)),
-        bic=array(NA,dim=c(ntot,3,62)))
+        for (q in 1:1 ) { 
+            cat("-")
+            if (length(which(is.na(dat$tas[q,,])))<(2*trash+730)){
 
-    qq=which(dat$ID==209)
-
-    for (q in 1:ntot ) { #   1:ntot
-        cat("-")
-        if (length(which(is.na(dat$tas[q,,])))<(2*trash+730)){
-            tmp = calc_persistence(dat$tas[q,,],trend=trend[q,,],time=dat$time,nday=nday,nyr=nyr,trash=trash) 
-            
-            per$ind[q,,] =tmp$ind
-            per$markov[q,,] = tmp$markov
-            per$markov_mk[q,] = tmp$markov_mk
-            per$markov_mk_sig[q,] = tmp$markov_mk_sig
-
-            per$shock[q,,] = tmp$shock
-            per$shock_mk[q,] = tmp$shock_mk
-            per$shock_mk_sig[q,] = tmp$shock_mk_sig
+                # Calculate persistence vector
+                y = dat$tas[q,,]
+                per_ind = y*0 
 
 
-            per$bic[q,,]=tmp$bic
+                per_ind[y >= trend[q,,]]  =  1
+                per_ind[y <  trend[q,,]]  = -1 
+                per_ind[is.na(per_ind)] = 0  # To avoid NA values
 
-            for (i in 1:6){
-                lm.r=lm(tmp$markov[i,]~dat$year)
-                per$markov_lr[q,i]=summary(lm.r)$coefficients[2]
-                per$markov_lr_sig[q,i]=summary(lm.r)$coefficients[8]
+                markov_per$ind[q,,] = per_ind
+                # Go through vector and calculate persistent events 
+                # Perform this step on a 1D vector to avoid artificial cutoffs 
+                # at day 1 and day 365 of the year 
+                per_ind1D = as.vector(per_ind) 
+                per_ind1D[per_ind1D==0]=NA
+
+                size=length(per_ind1D)
+
+                tmp=seasonal(per_ind1D,array(c(151,242,334,425),dim=c(2,2)),markov_chft)
+                markov_per$markov[q,1,]=tmp$summer_w
+                markov_per$markov[q,2,]=tmp$summer_c
+                markov_per$markov[q,3,]=tmp$winter_w
+                markov_per$markov[q,4,]=tmp$winter_c
+                markov_per$markov_err[q,1,]=tmp$error_s
+                markov_per$markov_err[q,2,]=tmp$error_w
+
+                tmp=seasonal(per_ind1D,array(c(1,365),dim=c(2,1)),markov_chft)
+                markov_per$markov[q,5,]=tmp$summer_w
+                markov_per$markov[q,6,]=tmp$summer_c
+                markov_per$markov_err[q,3,]=tmp$error_s
+            } 
+            else {
+                cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[q],dat$lon[q],dat$lat[q]))
             }
-
-            for (i in 1:3){
-                lm.r=lm(tmp$shock[i,]~dat$year)
-                per$shock_lr[q,i]=summary(lm.r)$coefficients[2]
-                per$shock_lr_sig[q,i]=summary(lm.r)$coefficients[8]
-            }
-
-        } 
-        else {
-            cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[q],dat$lon[q],dat$lat[q]))
+     
         }
- 
+        markov_write(filename,dat,markov_per) 
     }
-    per_write(filename,dat,per)
+
+    if ((what=="shock") | (what=="both")){
+        shock_per = list(shock=array(NA,dim=c(ntot,6,62)),shock_bic=array(NA,dim=c(ntot,3,62)))
+
+        for (q in 1:1 ) { 
+            cat("-")
+            if (length(which(is.na(dat$tas[q,,])))<(2*trash+730)){
+
+                tmp=seasonal((dat$tas[q,,]-trend[q,,]),array(c(151,242,334,425),dim=c(2,2)),shock_ma,3)
+                shock_per$shock[q,1,]=tmp$summer_w
+                shock_per$shock[q,2,]=tmp$winter_w
+                shock_per$shock_bic[q,1,]=tmp$bic_s
+                shock_per$shock_bic[q,2,]=tmp$bic_s
+
+                tmp=seasonal((dat$tas[q,,]-trend[q,,]),array(c(1,365),dim=c(2,1)),shock_ma,3)
+                shock_per$shock[q,3,]=tmp$summer_w
+                shock_per$shock_bic[q,3,]=tmp$bic_s
+            } 
+            else {
+                cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[q],dat$lon[q],dat$lat[q]))
+            }
+     
+        }
+        shock_write(filename,dat,shock_per)       
+    }
 
     cat("done.\n")
-    return(per)
+    return(0)#list(markov_per=markov_per,shock_per=shock_per))
 }
 
 
@@ -108,7 +130,7 @@ for (nday in ndays){
         trend=trend_load(sprintf("../data/%s_%s_trend.nc",nday,nyr))
         cat(sprintf("\n%s_%s    ",nday,nyr))
         cat("calculating persistence\n")      
-        per=calc_per(dat,trend,sprintf("../data/%s_%s_per_shock--------wow.nc",nday,nyr),nday,nyr)
+        per=calc_per(dat,trend,sprintf("../data/%s_%s_per_shock--------wow.nc",nday,nyr),nday,nyr,"shock")
     }
 }
 

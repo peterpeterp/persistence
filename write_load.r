@@ -17,7 +17,6 @@ dat_load <- function(filename){
 }
 
 trend_load <- function(filename){
-    print(filename)
     nc  = open.ncdf(filename)  
     trend  = get.var.ncdf(nc,"trend")
 
@@ -119,251 +118,71 @@ trend_write <- function(filename,data3D,trend)
     close.ncdf(nc)  
 }
 
-per_write <- function(filename,data3D,per)
+markov_write <- function(filename,data3D,per)
 {
-    nc = create.nc(filename)
-    dim.def.ncdf(nc, "day",  dimlength=length(data3D$day),  unlim=FALSE)
-    dim.def.ncdf(nc, "year", dimlength=length(data3D$year), unlim=FALSE)
-    dim.def.ncdf(nc, "ID",   dimlength=length(data3D$ID), unlim=FALSE)
-
     ntot=length(data3D$ID)
+    day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
+    year <- dim.def.ncdf("year",units="year",vals=1:62, unlim=FALSE)
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
-    var.def.ncdf(nc, "ind", "NC_FLOAT", c("ID","day","year"))
-    att.put.ncdf(nc, "ind", "missing_value", "NC_FLOAT", -9999.0)
 
-    var.put.nc(nc, "ind",  per$ind)
+    ind <- var.def.ncdf(name="ind",units="bla",dim=list(ID,day,year), missval=-9999.0)
+    markov_s_w <- var.def.ncdf(name="markov_s_w",units="bla",dim=list(ID,year), missval=-9999.0)
+    markov_s_k <- var.def.ncdf(name="markov_s_k",units="bla",dim=list(ID,year), missval=-9999.0)
+    markov_w_w <- var.def.ncdf(name="markov_w_w",units="bla",dim=list(ID,year), missval=-9999.0)
+    markov_w_k <- var.def.ncdf(name="markov_w_k",units="bla",dim=list(ID,year), missval=-9999.0)
+    markov_y_w <- var.def.ncdf(name="markov_y_w",units="bla",dim=list(ID,year), missval=-9999.0)
+    markov_y_k <- var.def.ncdf(name="markov_y_k",units="bla",dim=list(ID,year), missval=-9999.0)
 
-# -----------shock persistence
+    markov_s_err <- var.def.ncdf(name="markov_s_err",units="bla",dim=list(ID,year), missval=-9999.0)
+    markov_w_err <- var.def.ncdf(name="markov_w_err",units="bla",dim=list(ID,year), missval=-9999.0)
+    markov_y_err <- var.def.ncdf(name="markov_y_err",units="bla",dim=list(ID,year), missval=-9999.0)
 
-#------------- bayesian info criterion
-    if (length(per$bic) != 0){
-        var.def.ncdf(nc,"bic_s","NC_FLOAT", c("ID","year"))
-        att.put.ncdf(nc, "bic_s", "missing_value", "NC_FLOAT", -9999.0)
+    vars=list(ind,markov_s_w,markov_s_k,markov_w_w,markov_w_k,markov_y_w,markov_y_k,markov_s_err,markov_w_err,markov_y_err)
+   
+    nc = create.ncdf(filename,vars)
 
-        var.def.ncdf(nc,"bic_w","NC_FLOAT", c("ID","year"))
-        att.put.ncdf(nc, "bic_w", "missing_value", "NC_FLOAT", -9999.0)
-
-        var.def.ncdf(nc,"bic_y","NC_FLOAT", c("ID","year"))
-        att.put.ncdf(nc, "bic_y", "missing_value", "NC_FLOAT", -9999.0)
-
-        var.put.nc(nc, "bic_y", per$bic[1:ntot,1,]) 
-        var.put.nc(nc, "bic_s", per$bic[1:ntot,2,])
-        var.put.nc(nc, "bic_w", per$bic[1:ntot,3,])
+    put.var.ncdf(nc,vars[[1]],per$ind)
+    for (i in 1:6){
+        put.var.ncdf(nc,vars[[i+1]],per$markov[1:ntot,i,])
+    }
+    for (i in 1:3){
+        put.var.ncdf(nc,vars[[i+7]],per$markov_err[1:ntot,i,])
     }
 
-#------------- persistence
-
-    var.def.ncdf(nc,"shock_s","NC_FLOAT", c("ID","year"))
-    att.put.ncdf(nc, "shock_s", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"shock_w","NC_FLOAT", c("ID","year"))
-    att.put.ncdf(nc, "shock_w", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"shock_y","NC_FLOAT", c("ID","year"))
-    att.put.ncdf(nc, "shock_y", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.put.nc(nc, "shock_y", per$shock[1:ntot,1,]) 
-    var.put.nc(nc, "shock_s", per$shock[1:ntot,2,])
-    var.put.nc(nc, "shock_w", per$shock[1:ntot,3,])
-
-    var.def.ncdf(nc,"shock_s_mk","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_s_mk", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"shock_w_mk","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_w_mk", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"shock_y_mk","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_y_mk", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.put.nc(nc, "shock_y_mk", per$shock_mk[1:ntot,1]) 
-    var.put.nc(nc, "shock_s_mk", per$shock_mk[1:ntot,2])
-    var.put.nc(nc, "shock_w_mk", per$shock_mk[1:ntot,3])
-
-    var.def.ncdf(nc,"shock_s_mk_sig","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_s_mk_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"shock_w_mk_sig","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_w_mk_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"shock_y_mk_sig","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_y_mk_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.put.nc(nc, "shock_y_mk_sig", per$shock_mk_sig[1:ntot,1]) 
-    var.put.nc(nc, "shock_s_mk_sig", per$shock_mk_sig[1:ntot,2])
-    var.put.nc(nc, "shock_w_mk_sig", per$shock_mk_sig[1:ntot,3])
-
-    var.def.ncdf(nc,"shock_s_lr","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_s_lr", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"shock_w_lr","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_w_lr", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"shock_y_lr","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_y_lr", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.put.nc(nc, "shock_y_lr", per$shock_lr[1:ntot,1]) 
-    var.put.nc(nc, "shock_s_lr", per$shock_lr[1:ntot,2])
-    var.put.nc(nc, "shock_w_lr", per$shock_lr[1:ntot,3])
-
-    var.def.ncdf(nc,"shock_s_lr_sig","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_s_lr_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"shock_w_lr_sig","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_w_lr_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"shock_y_lr_sig","NC_FLOAT", c("ID"))
-    att.put.ncdf(nc, "shock_y_lr_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.put.nc(nc, "shock_y_lr_sig", per$shock_lr_sig[1:ntot,1]) 
-    var.put.nc(nc, "shock_s_lr_sig", per$shock_lr_sig[1:ntot,2])
-    var.put.nc(nc, "shock_w_lr_sig", per$shock_lr_sig[1:ntot,3])
-
-#---------------- markov persistence
-
-    var.def.ncdf(nc,"year_warm","NC_FLOAT", c("ID","year"))
-    att.put.ncdf(nc, "year_warm", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"year_cold","NC_FLOAT", c("ID","year"))
-    att.put.ncdf(nc, "year_cold", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"sum_warm","NC_FLOAT", c("ID","year"))
-    att.put.ncdf(nc, "sum_warm", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"sum_cold","NC_FLOAT", c("ID","year"))
-    att.put.ncdf(nc, "sum_cold", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"win_warm","NC_FLOAT", c("ID","year"))
-    att.put.ncdf(nc, "win_warm", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc,"win_cold","NC_FLOAT", c("ID","year"))
-    att.put.ncdf(nc, "win_cold", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.put.nc(nc, "year_warm", per$markov[1:ntot,1,])
-    var.put.nc(nc, "year_cold", per$markov[1:ntot,2,])
-
-    var.put.nc(nc, "sum_warm", per$markov[1:ntot,3,])
-    var.put.nc(nc, "sum_cold", per$markov[1:ntot,4,])
-
-    var.put.nc(nc, "win_warm", per$markov[1:ntot,5,])
-    var.put.nc(nc, "win_cold", per$markov[1:ntot,6,])
-
-
-    var.def.ncdf(nc, "sum_warm_mk", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "sum_warm_mk", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "sum_cold_mk", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "sum_cold_mk", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "win_warm_mk", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "win_warm_mk", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "win_cold_mk", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "win_cold_mk", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "year_warm_mk", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "year_warm_mk", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "year_cold_mk", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "year_cold_mk", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.put.nc(nc, "year_warm_mk",  per$markov_mk[1:ntot,1])
-    var.put.nc(nc, "year_cold_mk",  per$markov_mk[1:ntot,2])
-
-    var.put.nc(nc, "sum_warm_mk",  per$markov_mk[1:ntot,3])
-    var.put.nc(nc, "sum_cold_mk",  per$markov_mk[1:ntot,4])
-
-    var.put.nc(nc, "win_warm_mk",  per$markov_mk[1:ntot,5])
-    var.put.nc(nc, "win_cold_mk",  per$markov_mk[1:ntot,6])
-
-
-    var.def.ncdf(nc, "sum_warm_mk_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "sum_warm_mk_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "sum_cold_mk_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "sum_cold_mk_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "win_warm_mk_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "win_warm_mk_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "win_cold_mk_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "win_cold_mk_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "year_warm_mk_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "year_warm_mk_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "year_cold_mk_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "year_cold_mk_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.put.nc(nc, "year_warm_mk_sig",  per$markov_mk_sig[1:ntot,1])
-    var.put.nc(nc, "year_cold_mk_sig",  per$markov_mk_sig[1:ntot,2])
-
-    var.put.nc(nc, "sum_warm_mk_sig",  per$markov_mk_sig[1:ntot,3])
-    var.put.nc(nc, "sum_cold_mk_sig",  per$markov_mk_sig[1:ntot,4])
-
-    var.put.nc(nc, "win_warm_mk_sig",  per$markov_mk_sig[1:ntot,5])
-    var.put.nc(nc, "win_cold_mk_sig",  per$markov_mk_sig[1:ntot,6])
-
-
-    var.def.ncdf(nc, "sum_warm_lr", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "sum_warm_lr", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "sum_cold_lr", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "sum_cold_lr", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "win_warm_lr", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "win_warm_lr", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "win_cold_lr", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "win_cold_lr", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "year_warm_lr", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "year_warm_lr", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "year_cold_lr", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "year_cold_lr", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.put.nc(nc, "year_warm_lr",  per$markov_lr[1:ntot,1])
-    var.put.nc(nc, "year_cold_lr",  per$markov_lr[1:ntot,2])
-
-    var.put.nc(nc, "sum_warm_lr",  per$markov_lr[1:ntot,3])
-    var.put.nc(nc, "sum_cold_lr",  per$markov_lr[1:ntot,4])
-
-    var.put.nc(nc, "win_warm_lr",  per$markov_lr[1:ntot,5])
-    var.put.nc(nc, "win_cold_lr",  per$markov_lr[1:ntot,6])
-
-
-    var.def.ncdf(nc, "sum_warm_lr_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "sum_warm_lr_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "sum_cold_lr_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "sum_cold_lr_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "win_warm_lr_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "win_warm_lr_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "win_cold_lr_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "win_cold_lr_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "year_warm_lr_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "year_warm_lr_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.def.ncdf(nc, "year_cold_lr_sig", "NC_FLOAT", "ID")
-    att.put.ncdf(nc, "year_cold_lr_sig", "missing_value", "NC_FLOAT", -9999.0)
-
-    var.put.nc(nc, "year_warm_lr_sig",  per$markov_lr_sig[1:ntot,1])
-    var.put.nc(nc, "year_cold_lr_sig",  per$markov_lr_sig[1:ntot,2])
-
-    var.put.nc(nc, "sum_warm_lr_sig",  per$markov_lr_sig[1:ntot,3])
-    var.put.nc(nc, "sum_cold_lr_sig",  per$markov_lr_sig[1:ntot,4])
-
-    var.put.nc(nc, "win_warm_lr_sig",  per$markov_lr_sig[1:ntot,5])
-    var.put.nc(nc, "win_cold_lr_sig",  per$markov_lr_sig[1:ntot,6])
-
-
-
-    close.nc(nc)
-
+    close.ncdf(nc) 
 }
+
+shock_write <- function(filename,data3D,per)
+{
+    ntot=length(data3D$ID)
+    day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
+    year <- dim.def.ncdf("year",units="year",vals=1:62, unlim=FALSE)
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+
+
+    shock_s <- var.def.ncdf(name="shock_s",units="bla",dim=list(ID,year), missval=-9999.0)
+    shock_w <- var.def.ncdf(name="shock_w",units="bla",dim=list(ID,year), missval=-9999.0)
+    shock_y <- var.def.ncdf(name="shock_y",units="bla",dim=list(ID,year), missval=-9999.0)
+
+    bic_s <- var.def.ncdf(name="bic_s",units="bla",dim=list(ID,year), missval=-9999.0)
+    bic_w <- var.def.ncdf(name="bic_w",units="bla",dim=list(ID,year), missval=-9999.0)
+    bic_y <- var.def.ncdf(name="bic_y",units="bla",dim=list(ID,year), missval=-9999.0)
+    vars=list(shock_s,shock_w,shock_y,bic_s,bic_w,bic_y)
+   
+    nc = create.ncdf(filename,vars)
+
+    for (i in 1:3){
+        put.var.ncdf(nc,vars[[i]],per$shock[1:ntot,i,])
+    }
+    for (i in 1:3){
+        put.var.ncdf(nc,vars[[i+3]],per$shock_bic[1:ntot,i,])
+    }
+    close.ncdf(nc) 
+}
+
+
+
 
 dat_write_part <-function(dat,qq,filename){
     size=length(qq)
