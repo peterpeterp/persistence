@@ -1,7 +1,7 @@
-
+#!/home/pepflei/R/bin/Rscript
 # Load useful functions 
 #library(myr)                # Only needed for plotting: myfigure function
-dyn.load("persistence_tools.so")
+#dyn.load("persistence_tools.so")
 source("functions_persistence.r")
 source("write_load.r")
 
@@ -155,16 +155,10 @@ global_trend <- function(filename_markov=99,filename_markov_neu=99,filename_shoc
     return(list(trend_markov=trend_markov,trend_shock=trend_shock))
 }
 
-ndays = c(121,91,61,45)
-nyrs = c(7,5,3,1)
-
-ndays = c(91)
-nyrs = c(5)
+ndays = c(91,121,61)
+nyrs = c(5,7,3)
 
 
-tmp=global_trend(filename_markov="../data/91_5_markov.nc",filename_markov_neu="../data/91_5_markov_trend.nc",
-    filename_shock="../data/91_5_shock_ma_3_.nc",filename_shock_neu="../data/91_5_shock_ma_3_trend.nc")
-asda
 dat=dat_load("../data/mid_lat.nc")
 
 
@@ -172,10 +166,13 @@ for (nday in ndays){
     for (nyr in nyrs){
         cat(sprintf("\n%s_%s   ",nday,nyr))
         cat("calculating trend \n")
-        trend=trend_load(sprintf("../data/%s_%s_trend.nc",nday,nyr))
+        trend=calc_trend(dat,sprintf("../data/%s_%s_trend.nc",nday,nyr),nday,nyr)
+        #trend=trend_load(sprintf("../data/%s_%s_trend.nc",nday,nyr))
         cat(sprintf("\n%s_%s    ",nday,nyr))
         cat("calculating persistence\n")      
         per=calc_per(dat,trend,sprintf("../data/%s_%s_markov.nc",nday,nyr),sprintf("../data/%s_%s_shock_ma_3_.nc",nday,nyr),nday,nyr,"both")
+        tmp=global_trend(filename_markov=sprintf("../data/%s_%s_markov.nc",nday,nyr),filename_markov_neu=sprintf("../data/%s_%s_markov_trend.nc",nday,nyr),
+                filename_shock=sprintf("../data/%s_%s_shock_ma_3_.nc",nday,nyr),filename_shock_neu=sprintf("../data/%s_%s_shock_ma_3_trend.nc",nday,nyr))
     }
 }
 

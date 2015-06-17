@@ -1,6 +1,30 @@
 library(stats)
 library(markovchain)
 
+c_calc_runmean_2D <- function(y2D,nday,nyr)
+{   # Input 2D array: y[day,year],
+    # Calculate the running mean given a window of nyrs and ndays 
+    # around each point in time
+    nbuff1 = (nday-1)/2 
+    nbuff2 = (nyr-1)/2 
+    buffer = c(nbuff1,nbuff2)
+
+    dims0 = dim(y2D)
+    dims  = dim(y2D)
+    dims[1] = dims[1]+2*nbuff1
+    dims[2] = dims[2]+2*nbuff2
+
+    # Fill in buffered array 
+    y2D_list = array(y2D,dim=(dims0[1]*dims0[2]))
+    y2D_list[is.na(y2D_list)]=0
+    y2Dex_list = array(-99,dim=(dims[1]*dims[2])) 
+    trend_list = array(1,dim=(dims0[1]*dims0[2]))       
+
+    tempi = .C("c_run_mean2d",daten=as.numeric(y2D_list),datenex=as.numeric(y2Dex_list),temp_trend=as.numeric(trend_list),size=as.integer(dims0),tag=as.integer(buffer))
+    trend = array(tempi$temp_trend,dim=c(dims0[1],dims0[2]))
+
+    return(trend)
+}
 
 bic_selective <- function(x,order){
     shock=array(NA,7)
