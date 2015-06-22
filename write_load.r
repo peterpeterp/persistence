@@ -12,6 +12,7 @@ dat_load <- function(filename){
 
     # Add additional time dimension (days are decimal points dt=1/365)
     dat$time = c(1:(length(dat$day)*length(dat$year)))/365 - 0.5*1/365 + min(dat$year)
+    dat$time_2D = array(dat$time,dim=c(365,62))
 
     return(dat)
 }
@@ -23,6 +24,25 @@ trend_load <- function(filename){
     return(trend)
 }
 
+markov_jjay_load <- function(filename){
+    nc=open.ncdf(filename)
+    ntot=819
+
+    markov_per = list(ind=array(NA,dim=c(ntot,365,62)),markov=array(NA,dim=c(ntot,8,62)),markov_err=array(NA,dim=c(ntot,4,62)))
+
+    str_markov=c("markov_jn_w","markov_jl_w","markov_ag_w","markov_yr_w","markov_jn_c","markov_jl_c","markov_ag_c","markov_yr_c")
+    for (i in 1:8){
+        markov_per$markov[1:ntot,i,]=get.var.ncdf(nc,str_markov[i])
+    }
+    str_markov_err=c("markov_jn_err","markov_jl_err","markov_ag_err","markov_yr_err")
+    for (i in 1:4){
+        markov_per$markov_err[1:ntot,i,]=get.var.ncdf(nc,str_markov_err[i])
+    }
+
+    markov_per$ind <- get.var.ncdf(nc,"ind")
+
+    return(markov_per)
+}
 
 markov_load <- function(filename){
     nc=open.ncdf(filename)
@@ -129,6 +149,45 @@ markov_write <- function(filename,data3D,per)
     }
     for (i in 1:3){
         put.var.ncdf(nc,vars[[i+7]],per$markov_err[1:ntot,i,])
+    }
+
+    close.ncdf(nc) 
+}
+
+markov_jjay_write <- function(filename,data3D,per)
+{
+    ntot=length(data3D$ID)
+    day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
+    year <- dim.def.ncdf("year",units="year",vals=1:62, unlim=FALSE)
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+
+
+    ind <- var.def.ncdf(name="ind",units="1 or -1",dim=list(ID,day,year), missval=-9999.0)
+    markov_jn_w <- var.def.ncdf(name="markov_jn_w",units="0-1",longname="june markov warm persistence",dim=list(ID,year), missval=-9999.0)
+    markov_jl_w <- var.def.ncdf(name="markov_jl_w",units="0-1",longname="july markov warm persistence",dim=list(ID,year), missval=-9999.0)
+    markov_ag_w <- var.def.ncdf(name="markov_ag_w",units="0-1",longname="august markov warm persistence",dim=list(ID,year), missval=-9999.0)
+    markov_yr_w <- var.def.ncdf(name="markov_yr_w",units="0-1",longname="year markov warm persistence",dim=list(ID,year), missval=-9999.0)
+ 
+    markov_jn_c <- var.def.ncdf(name="markov_jn_c",units="0-1",longname="june markov cold persistence",dim=list(ID,year), missval=-9999.0)
+    markov_jl_c <- var.def.ncdf(name="markov_jl_c",units="0-1",longname="july markov cold persistence",dim=list(ID,year), missval=-9999.0)
+    markov_ag_c <- var.def.ncdf(name="markov_ag_c",units="0-1",longname="august markov cold persistence",dim=list(ID,year), missval=-9999.0)
+    markov_yr_c <- var.def.ncdf(name="markov_yr_c",units="0-1",longname="year markov cold persistence",dim=list(ID,year), missval=-9999.0)
+
+    markov_jn_err <- var.def.ncdf(name="markov_jn_err",units="0-1",dim=list(ID,year), missval=-9999.0)
+    markov_jl_err <- var.def.ncdf(name="markov_jl_err",units="0-1",dim=list(ID,year), missval=-9999.0)
+    markov_ag_err <- var.def.ncdf(name="markov_ag_err",units="0-1",dim=list(ID,year), missval=-9999.0)
+    markov_yr_err <- var.def.ncdf(name="markov_yr_err",units="0-1",dim=list(ID,year), missval=-9999.0)
+
+    vars=list(ind,markov_jn_w,markov_jl_w,markov_ag_w,markov_yr_w,markov_jn_c,markov_jl_c,markov_ag_c,markov_yr_c,markov_jn_err,markov_jl_err,markov_ag_err,markov_yr_err)
+   
+    nc = create.ncdf(filename,vars)
+
+    put.var.ncdf(nc,vars[[1]],per$ind)
+    for (i in 1:8){
+        put.var.ncdf(nc,vars[[i+1]],per$markov[1:ntot,i,])
+    }
+    for (i in 1:4){
+        put.var.ncdf(nc,vars[[i+9]],per$markov_err[1:ntot,i,])
     }
 
     close.ncdf(nc) 

@@ -33,7 +33,7 @@ calc_per <- function(dat,trend,nday,nyr,what,filename_markov,filename_shock){
     #cat("Calculating persistence... ")
 
     if ((what=="markov") | (what=="both")){
-        markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,6,62)),markov_err=array(NA,dim=c(ntot,3,62)))
+        markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,8,62)),markov_err=array(NA,dim=c(ntot,4,62)))
 
         for (q in 1:ntot ) { 
             cat("-")
@@ -57,25 +57,24 @@ calc_per <- function(dat,trend,nday,nyr,what,filename_markov,filename_shock){
 
                 size=length(per_ind1D)
 
-                tmp=seasonal(per_ind1D,array(c(151,242,334,425),dim=c(2,2)),markov_chft)
-                markov_per$markov[q,1,]=tmp$summer_w
-                markov_per$markov[q,2,]=tmp$summer_c
-                markov_per$markov[q,3,]=tmp$winter_w
-                markov_per$markov[q,4,]=tmp$winter_c
-                markov_per$markov_err[q,1,]=tmp$error_s
-                markov_per$markov_err[q,2,]=tmp$error_w
+                tmp=seasonal(per_ind1D,array(c(151,180,181,211,212,242),dim=c(2,3)),markov_chft)
+                for (i in 1:3){
+                    markov_per$markov[q,i,]=tmp$out1[i,]
+                    markov_per$markov[q,(i+4),]=tmp$out2[i,]
+                    markov_per$markov_err[q,i,]=tmp$out_err[i,]
+                }
 
                 tmp=seasonal(per_ind1D,array(c(1,365),dim=c(2,1)),markov_chft)
-                markov_per$markov[q,5,]=tmp$summer_w
-                markov_per$markov[q,6,]=tmp$summer_c
-                markov_per$markov_err[q,3,]=tmp$error_s
+                markov_per$markov[q,4,]=tmp$out1[1,]
+                markov_per$markov[q,8,]=tmp$out2[1,]
+                markov_per$markov_err[q,4,]=tmp$out_err[1,]
             } 
             else {
                 cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[q],dat$lon[q],dat$lat[q]))
             }
      
         }
-        markov_write(filename_markov,dat,markov_per) 
+        markov_jjay_write(filename_markov,dat,markov_per) 
     }
 
     if ((what=="shock") | (what=="both")){
@@ -157,8 +156,8 @@ global_trend <- function(filename_markov=99,filename_markov_neu=99,filename_shoc
 
 ndays = c(91,121,61)
 nyrs = c(5,7,3)
-ndays = c(21,29)
-nyrs = c(1)
+ndays = c(91)
+nyrs = c(5)
 
 dat=dat_load("../data/mid_lat.nc")
 
@@ -167,11 +166,11 @@ for (nday in ndays){
     for (nyr in nyrs){
         cat(sprintf("\n%s_%s   ",nday,nyr))
         cat("calculating trend \n")
-        trend=calc_trend(dat,sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr),nday,nyr)
-        #trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
+        #trend=calc_trend(dat,sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr),nday,nyr)
+        trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
         cat(sprintf("\n%s_%s    ",nday,nyr))
         cat("calculating persistence\n") 
-        per=calc_per(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
+        per=calc_per(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov_jjay.nc",nday,nyr,nday,nyr))
         #per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
 
     }

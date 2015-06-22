@@ -52,49 +52,28 @@ seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=mark
     x=seq(1, size, 1)
     i=shift
     j=1
-    summer_w=array(NA,62)
-    summer_c=array(NA,62)
-    winter_w=array(NA,62)
-    winter_c=array(NA,62)
-    error_s=array(NA,62)
-    error_w=array(NA,62)
-    bic_s=array(NA,62)
-    bic_w=array(NA,62)
+    out1=array(NA,dim=c(dim(seasons)[2],62))
+    out2=array(NA,dim=c(dim(seasons)[2],62))
+    out_err=array(NA,dim=c(dim(seasons)[2],62))
+    out_add=array(NA,dim=c(dim(seasons)[2],62))
+
     while ((i+interval)<size){
         if ((is.na(dat[i+1])==FALSE) & (is.na(dat[i+interval])==FALSE)){
             for (sea in 1:length(seasons[1,])){
                 x=dat[(seasons[1,sea]+i):(seasons[2,sea]+i)]
                 tmp=model(x,order)
-                if (sea==1){
-                    summer_w[j]=tmp$P_w
-                    summer_c[j]=tmp$P_c
-                }
-                if (sea==2){
-                    winter_w[j+1]=tmp$P_w
-                    winter_c[j+1]=tmp$P_c
-                }
-                if (tmp$bic!=0){
-                    if (sea==1){
-                        bic_s[j]=tmp$bic
-                    }
-                    if (sea==2){
-                        bic_w[j+1]=tmp$bic
-                    }             
-                }
-                if (tmp$error!=0){
-                    if (sea==1){
-                        error_s[j]=tmp$error
-                    }
-                    if (sea==2){
-                        error_w[j+1]=tmp$error
-                    }             
-                }
+
+                out1[sea,j]=tmp$P_w
+                out2[sea,j]=tmp$P_c
+                out_err[sea,j]=tmp$error
+                out_add[sea,j]=tmp$bic
+
             }
         }
         j=j+1
         i=i+interval
     }
-    return(list(summer_w=summer_w,summer_c=summer_c,winter_w=winter_w,winter_c=winter_c,error_s=error_s,error_w=error_w,bic_s=bic_s,bic_w=bic_w))
+    return(list(out1=out1,out2=out2,out_err=out_err,out_add=out_add))
 }   
 
 
@@ -111,7 +90,21 @@ markov_calc <- function(x,order){
 
 markov_chft <- function(x,order){
     tmp=markovchainFit(data=x)
-    return(list(P_w=tmp$estimate[2][2],P_c=tmp$estimate[1][1],error=tmp$confidenceInterval$confidenceLevel,bic=0))
+    if (sum(x,na.rm=TRUE)==length(x) | sum(-x,na.rm=TRUE)==length(x)){
+        if (x[1]>0){
+            P_w=1
+            P_c=0
+        }
+        if (x[1]<0){
+            P_w=0
+            P_c=1
+        }        
+    }
+    else {
+        P_w=tmp$estimate[2][2]
+        P_c=tmp$estimate[1][1]
+    }
+    return(list(P_w=P_w,P_c=P_c,error=tmp$confidenceInterval$confidenceLevel,bic=0))
 }
 
 
@@ -231,8 +224,8 @@ calc_shock_per <- function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
     return(list(ind=per_ind,markov=markov,markov_err=markov_err,shock=shock,shock_bic=shock_bic))
 }
 
-per_duration <- function(ind,time,start,stop){
-    state=ind[start]
+per_duration <- function(ind,time){
+    state=ind[1]
     warm_period=ind*NA
     cold_period=ind*NA    
     warm_period_mid=ind*NA
@@ -240,7 +233,7 @@ per_duration <- function(ind,time,start,stop){
     period=1
     j_warm=1
     j_cold=1
-    for (i in (start+1):stop){
+    for (i in 2:length(ind)){
         #cat(i,state,ind[i],period,"\n")
         if (state==ind[i]){
             period=period+1
