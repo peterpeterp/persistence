@@ -231,25 +231,28 @@ calc_shock_per <- function(y,time,trend=NULL,nday=91,nyr=5,trash=(365*2+61))
     return(list(ind=per_ind,markov=markov,markov_err=markov_err,shock=shock,shock_bic=shock_bic))
 }
 
-per_duration <- function(ind){
-    state=ind[1]
-    print(ind)
+per_duration <- function(ind,time,start,stop){
+    state=ind[start]
     warm_period=ind*NA
-    cold_period=ind*NA
+    cold_period=ind*NA    
+    warm_period_mid=ind*NA
+    cold_period_mid=ind*NA
     period=1
     j_warm=1
     j_cold=1
-    for (i in 2:length(ind)){
+    for (i in (start+1):stop){
         #cat(i,state,ind[i],period,"\n")
         if (state==ind[i]){
             period=period+1
         } else{
             if (state==1){
                 warm_period[j_warm]=period
+                warm_period_mid[j_warm]=time[i]-0.5*period/365
                 j_warm=j_warm+1              
             }
             if (state==-1){
                 cold_period[j_cold]=period
+                cold_period_mid[j_warm]=time[i]-0.5*period/365
                 j_cold=j_cold+1
             }
             period=1
@@ -264,7 +267,7 @@ per_duration <- function(ind){
         cold_period[j_cold]=period
         j_cold=j_cold+1
     }
-    return(list(dur_warm=warm_period,dur_cold=cold_period))
+    return(list(dur_warm=warm_period[1:(j_warm-1)],dur_cold=cold_period[1:(j_cold-1)],dur_warm_mid=warm_period_mid[1:(j_warm-1)],dur_cold_mid=cold_period_mid[1:(j_cold-1)]))
 }
 
 

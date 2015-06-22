@@ -158,8 +158,8 @@ if (1==1){
 	ndays = c(121,91,61)
 	nyrs = c(7,5,3)
 
-	ndays = c(91)
-	nyrs = c(5)
+	ndays = c(15,7)
+	nyrs = c(1)
 
 	for (nday in ndays){
 	    for (nyr in nyrs){

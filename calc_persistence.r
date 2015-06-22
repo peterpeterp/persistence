@@ -157,7 +157,7 @@ global_trend <- function(filename_markov=99,filename_markov_neu=99,filename_shoc
 
 ndays = c(91,121,61)
 nyrs = c(5,7,3)
-ndays = c(45)
+ndays = c(21,29)
 nyrs = c(1)
 
 dat=dat_load("../data/mid_lat.nc")
@@ -167,36 +167,13 @@ for (nday in ndays){
     for (nyr in nyrs){
         cat(sprintf("\n%s_%s   ",nday,nyr))
         cat("calculating trend \n")
-        #trend=calc_trend(dat,sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr),nday,nyr)
-        trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
+        trend=calc_trend(dat,sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr),nday,nyr)
+        #trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
         cat(sprintf("\n%s_%s    ",nday,nyr))
         cat("calculating persistence\n") 
-        #per=calc_per(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
-        per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
-        station=774
-        year=8
-        pdf(file="../plots/test.pdf")
-        plot(dat$day,dat$tas[station,1:365,year])
-        lines(dat$day,trend[station,1:365,year],col="red")
-        points(dat$day,per$ind[station,1:365,year],col="blue")
-        
-        br<-seq(0,60,2)
-        tmp1=per_duration(as.vector(per$ind[station,151:242,4:31]))
-        wwt1 <- hist(tmp1$dur_warm,breaks=br, plot = FALSE)
-        print(wwt1)
+        per=calc_per(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
+        #per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
 
-        tmp2=per_duration(as.vector(per$ind[station,151:242,31:58]))
-        wwt2 <- hist(tmp2$dur_warm,breaks=br,plot = FALSE)
-        #print(wwt2)
-
-        plot(wwt1,col=rgb(0,0,1,1/4))
-        plot(wwt2,col=rgb(1,0,0,1/4),add=TRUE)
-
-
-        asdas
-        markov_write(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr),dat,per)
-        #tmp=global_trend(filename_markov=sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr),filename_markov_neu=sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))
-                #,filename_shock=sprintf("../data/%s_%s/%s_%s_shock_ma_3_.nc",nday,nyr,nday,nyr),filename_shock_neu=sprintf("../data/%s_%s/%s_%s_shock_ma_3_trend.nc",nday,nyr,nday,nyr))
     }
 }
 
