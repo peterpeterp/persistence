@@ -26,8 +26,7 @@ trend_load <- function(filename){
 
 markov_load <- function(filename){
     nc=open.ncdf(filename)
-    ind   = get.var.ncdf(nc,"ind")
-    ntot=dim(ind)[1]
+    ntot=819
 
     markov_per = list(ind=array(NA,dim=c(ntot,365,62)),markov=array(NA,dim=c(ntot,6,62)),markov_err=array(NA,dim=c(ntot,3,62)))
     str_markov=c("markov_s_w","markov_s_k","markov_w_w","markov_w_k","markov_y_w","markov_y_k")
@@ -60,6 +59,7 @@ shock_load <- function(filename){
 
     return(shock_per)
 }
+
 
 dat_write <- function(filename,data3D)
 {
@@ -107,17 +107,17 @@ markov_write <- function(filename,data3D,per)
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
 
-    ind <- var.def.ncdf(name="ind",units="bla",dim=list(ID,day,year), missval=-9999.0)
-    markov_s_w <- var.def.ncdf(name="markov_s_w",units="bla",dim=list(ID,year), missval=-9999.0)
-    markov_s_k <- var.def.ncdf(name="markov_s_k",units="bla",dim=list(ID,year), missval=-9999.0)
-    markov_w_w <- var.def.ncdf(name="markov_w_w",units="bla",dim=list(ID,year), missval=-9999.0)
-    markov_w_k <- var.def.ncdf(name="markov_w_k",units="bla",dim=list(ID,year), missval=-9999.0)
-    markov_y_w <- var.def.ncdf(name="markov_y_w",units="bla",dim=list(ID,year), missval=-9999.0)
-    markov_y_k <- var.def.ncdf(name="markov_y_k",units="bla",dim=list(ID,year), missval=-9999.0)
+    ind <- var.def.ncdf(name="ind",units="1 or -1",dim=list(ID,day,year), missval=-9999.0)
+    markov_s_w <- var.def.ncdf(name="markov_s_w",units="0-1",longname="summer markov warm persistence",dim=list(ID,year), missval=-9999.0)
+    markov_s_k <- var.def.ncdf(name="markov_s_k",units="0-1",longname="summer markov cold persistence",dim=list(ID,year), missval=-9999.0)
+    markov_w_w <- var.def.ncdf(name="markov_w_w",units="0-1",longname="winter markov warm persistence",dim=list(ID,year), missval=-9999.0)
+    markov_w_k <- var.def.ncdf(name="markov_w_k",units="0-1",longname="winter markov cold persistence",dim=list(ID,year), missval=-9999.0)
+    markov_y_w <- var.def.ncdf(name="markov_y_w",units="0-1",longname="year markov warm persistence",dim=list(ID,year), missval=-9999.0)
+    markov_y_k <- var.def.ncdf(name="markov_y_k",units="0-1",longname="year markov cold persistence",dim=list(ID,year), missval=-9999.0)
 
-    markov_s_err <- var.def.ncdf(name="markov_s_err",units="bla",dim=list(ID,year), missval=-9999.0)
-    markov_w_err <- var.def.ncdf(name="markov_w_err",units="bla",dim=list(ID,year), missval=-9999.0)
-    markov_y_err <- var.def.ncdf(name="markov_y_err",units="bla",dim=list(ID,year), missval=-9999.0)
+    markov_s_err <- var.def.ncdf(name="markov_s_err",units="0-1",dim=list(ID,year), missval=-9999.0)
+    markov_w_err <- var.def.ncdf(name="markov_w_err",units="0-1",dim=list(ID,year), missval=-9999.0)
+    markov_y_err <- var.def.ncdf(name="markov_y_err",units="0-1",dim=list(ID,year), missval=-9999.0)
 
     vars=list(ind,markov_s_w,markov_s_k,markov_w_w,markov_w_k,markov_y_w,markov_y_k,markov_s_err,markov_w_err,markov_y_err)
    
@@ -167,12 +167,12 @@ markov_trend_write <- function(filename,per)
     ntot=819
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
-    mar_s_w_lr <- var.def.ncdf(name="mar_s_w_lr",units="bla",dim=list(ID), missval=-9999.0)
-    mar_s_k_lr <- var.def.ncdf(name="mar_s_k_lr",units="bla",dim=list(ID), missval=-9999.0)
-    mar_w_w_lr <- var.def.ncdf(name="mar_w_w_lr",units="bla",dim=list(ID), missval=-9999.0)
-    mar_w_k_lr <- var.def.ncdf(name="mar_w_k_lr",units="bla",dim=list(ID), missval=-9999.0)
-    mar_y_w_lr <- var.def.ncdf(name="mar_y_w_lr",units="bla",dim=list(ID), missval=-9999.0)
-    mar_y_k_lr <- var.def.ncdf(name="mar_y_k_lr",units="bla",dim=list(ID), missval=-9999.0)
+    mar_s_w_lr <- var.def.ncdf(name="mar_s_w_lr",units="bla",longname="summer warm markov persistence linear regression",dim=list(ID), missval=-9999.0)
+    mar_s_k_lr <- var.def.ncdf(name="mar_s_k_lr",units="bla",longname="summer cold markov persistence linear regression",dim=list(ID), missval=-9999.0)
+    mar_w_w_lr <- var.def.ncdf(name="mar_w_w_lr",units="bla",longname="winter warm markov persistence linear regression",dim=list(ID), missval=-9999.0)
+    mar_w_k_lr <- var.def.ncdf(name="mar_w_k_lr",units="bla",longname="winter cold markov persistence linear regression",dim=list(ID), missval=-9999.0)
+    mar_y_w_lr <- var.def.ncdf(name="mar_y_w_lr",units="bla",longname="year warm markov persistence linear regression",dim=list(ID), missval=-9999.0)
+    mar_y_k_lr <- var.def.ncdf(name="mar_y_k_lr",units="bla",longname="year cold markov persistence linear regression",dim=list(ID), missval=-9999.0)
 
     mar_s_w_lr_sig <- var.def.ncdf(name="mar_s_w_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
     mar_s_k_lr_sig <- var.def.ncdf(name="mar_s_k_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
@@ -181,12 +181,12 @@ markov_trend_write <- function(filename,per)
     mar_y_w_lr_sig <- var.def.ncdf(name="mar_y_w_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
     mar_y_k_lr_sig <- var.def.ncdf(name="mar_y_k_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
 
-    mar_s_w_mk <- var.def.ncdf(name="mar_s_w_mk",units="bla",dim=list(ID), missval=-9999.0)
-    mar_s_k_mk <- var.def.ncdf(name="mar_s_k_mk",units="bla",dim=list(ID), missval=-9999.0)
-    mar_w_w_mk <- var.def.ncdf(name="mar_w_w_mk",units="bla",dim=list(ID), missval=-9999.0)
-    mar_w_k_mk <- var.def.ncdf(name="mar_w_k_mk",units="bla",dim=list(ID), missval=-9999.0)
-    mar_y_w_mk <- var.def.ncdf(name="mar_y_w_mk",units="bla",dim=list(ID), missval=-9999.0)
-    mar_y_k_mk <- var.def.ncdf(name="mar_y_k_mk",units="bla",dim=list(ID), missval=-9999.0)
+    mar_s_w_mk <- var.def.ncdf(name="mar_s_w_mk",units="bla",longname="summer warm markov persistence Mann Kendall test",dim=list(ID), missval=-9999.0)
+    mar_s_k_mk <- var.def.ncdf(name="mar_s_k_mk",units="bla",longname="summer cold markov persistence Mann Kendall test",dim=list(ID), missval=-9999.0)
+    mar_w_w_mk <- var.def.ncdf(name="mar_w_w_mk",units="bla",longname="winter warm markov persistence Mann Kendall test",dim=list(ID), missval=-9999.0)
+    mar_w_k_mk <- var.def.ncdf(name="mar_w_k_mk",units="bla",longname="winter cold markov persistence Mann Kendall test",dim=list(ID), missval=-9999.0)
+    mar_y_w_mk <- var.def.ncdf(name="mar_y_w_mk",units="bla",longname="year warm markov persistence Mann Kendall test",dim=list(ID), missval=-9999.0)
+    mar_y_k_mk <- var.def.ncdf(name="mar_y_k_mk",units="bla",longname="year cold markov persistence Mann Kendall test",dim=list(ID), missval=-9999.0)
 
     mar_s_w_mk_sig <- var.def.ncdf(name="mar_s_w_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
     mar_s_k_mk_sig <- var.def.ncdf(name="mar_s_k_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
@@ -216,17 +216,17 @@ shock_trend_write <- function(filename,per)
     ntot=819
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
-    sho_s_lr <- var.def.ncdf(name="sho_s_lr",units="bla",dim=list(ID), missval=-9999.0)
-    sho_w_lr <- var.def.ncdf(name="sho_w_lr",units="bla",dim=list(ID), missval=-9999.0)
-    sho_y_lr <- var.def.ncdf(name="sho_y_lr",units="bla",dim=list(ID), missval=-9999.0)
+    sho_s_lr <- var.def.ncdf(name="sho_s_lr",units="bla",longname="summer shock persistence linear regression",dim=list(ID), missval=-9999.0)
+    sho_w_lr <- var.def.ncdf(name="sho_w_lr",units="bla",longname="winter shock persistence linear regression",dim=list(ID), missval=-9999.0)
+    sho_y_lr <- var.def.ncdf(name="sho_y_lr",units="bla",longname="year shock persistence linear regression",dim=list(ID), missval=-9999.0)
 
     sho_s_lr_sig <- var.def.ncdf(name="sho_s_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
     sho_w_lr_sig <- var.def.ncdf(name="sho_w_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
     sho_y_lr_sig <- var.def.ncdf(name="sho_y_lr_sig",units="bla",dim=list(ID), missval=-9999.0)
 
-    sho_s_mk <- var.def.ncdf(name="sho_s_mk",units="bla",dim=list(ID), missval=-9999.0)
-    sho_w_mk <- var.def.ncdf(name="sho_w_mk",units="bla",dim=list(ID), missval=-9999.0)
-    sho_y_mk <- var.def.ncdf(name="sho_y_mk",units="bla",dim=list(ID), missval=-9999.0)
+    sho_s_mk <- var.def.ncdf(name="sho_s_mk",units="bla",longname="summer shock persistence Mann Kendall test",dim=list(ID), missval=-9999.0)
+    sho_w_mk <- var.def.ncdf(name="sho_w_mk",units="bla",longname="winter shock persistence Mann Kendall test",dim=list(ID), missval=-9999.0)
+    sho_y_mk <- var.def.ncdf(name="sho_y_mk",units="bla",longname="year shock persistence Mann Kendall test",dim=list(ID), missval=-9999.0)
 
     sho_s_mk_sig <- var.def.ncdf(name="sho_s_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
     sho_w_mk_sig <- var.def.ncdf(name="sho_w_mk_sig",units="bla",dim=list(ID), missval=-9999.0)
