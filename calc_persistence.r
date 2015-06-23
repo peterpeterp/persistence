@@ -128,8 +128,8 @@ for (nday in ndays){
         trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
         cat(sprintf("\n%s_%s    ",nday,nyr))
         cat("calculating persistence\n") 
-        per=calc_per(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
-        #per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
+        #per=calc_per(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
+        per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
         tmp=global_trend(filename_markov=sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr),filename_markov_neu=sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))
     }
 }

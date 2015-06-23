@@ -51,18 +51,34 @@ per_duration <- function(ind,time){
     }
 }
 
-duration_hist <- function(dat,per,station,beg1,beg2,end1,end2){
+duration_hist <- function(dat,per,station,season,beg1,beg2,end1,end2){
     br<-seq(0,100,10)
 
-    dur1=per_duration(ind=per$ind[station,151:243,3:31],time=dat$time_2D[151:243,beg1:end1])
-    dur2=per_duration(ind=per$ind[station,151:243,30:58],time=dat$time_2D[151:243,beg2:end2])
+    if (season[2]<season[1]){
+        dur1_halb1=per_duration(ind=per$ind[station,season[1]:365,beg1:end1],time=dat$time_2D[season[1]:365,beg1:end1])
+        dur1_halb2=per_duration(ind=per$ind[station,1:season[2],beg1:end1],time=dat$time_2D[1:season[2],beg1:end1])
+        dur1=list(dur_warm=c(dur1_halb1$dur_warm,dur1_halb2$dur_warm),
+            dur_cold=c(dur1_halb1$dur_cold,dur1_halb2$dur_cold),
+            dur_warm_mid=c(dur1_halb1$dur_warm_mid,dur1_halb2$dur_warm_mid),
+            dur_cold_mid=c(dur1_halb1$dur_cold_mid,dur1_halb2$dur_cold_mid))
+        dur1_halb1=per_duration(ind=per$ind[station,season[1]:365,beg2:end2],time=dat$time_2D[season[1]:365,beg2:end2])
+        dur1_halb2=per_duration(ind=per$ind[station,1:season[2],beg2:end2],time=dat$time_2D[1:season[2],beg2:end2])
+        dur2=list(dur_warm=c(dur1_halb1$dur_warm,dur1_halb2$dur_warm),
+            dur_cold=c(dur1_halb1$dur_cold,dur1_halb2$dur_cold),
+            dur_warm_mid=c(dur1_halb1$dur_warm_mid,dur1_halb2$dur_warm_mid),
+            dur_cold_mid=c(dur1_halb1$dur_cold_mid,dur1_halb2$dur_cold_mid))
+    }
+    else{
+        dur1=per_duration(ind=per$ind[station,season[1]:season[2],beg1:end1],time=dat$time_2D[season[1]:season[2],beg1:end1])
+        dur2=per_duration(ind=per$ind[station,season[1]:season[2],beg2:end2],time=dat$time_2D[season[1]:season[2],beg2:end2])
+    }
 
-    if (is.na(dur1)){
+    if (is.na(dur1) | length(dur1$dur_warm)==2){
         cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[station],dat$lon[station],dat$lat[station]))
         return(c(NA,NA,NA,NA,NA,NA))
     }
-    else{
 
+    else{
         dur12_warm=c(dur1$dur_warm,dur2$dur_warm)
         warm_mean=mean(dur12_warm)
 
@@ -89,20 +105,27 @@ duration_hist <- function(dat,per,station,beg1,beg2,end1,end2){
     }
 }
 
-calc_global_dur <- function(dat,per,filename){
+calc_global_dur <- function(dat,per,season,beg1,beg2,end1,end2,season_name,filename){
     ntot=length(dat$ID)
 
     dur=array(NA,dim=c(ntot,6))
     for (q in 1:ntot){
         cat("-")
-        dur[q,]=duration_hist(dat,per,q,3,31,30,58)
+        dur[q,]=duration_hist(dat,per,q,season,beg1,beg2,end1,end2)
     }
-    duration_write(filename,dur)
+    duration_write(filename,dur,season_name)
 }
 
-nday=91
-nyr=5
-dat=dat_load("../data/mid_lat.nc")
-per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
+if (1==1){
+    nday=91
+    nyr=5
+    dat=dat_load("../data/mid_lat.nc")
+    per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
 
-calc_global_dur(dat,per,sprintf("../data/%s_%s/%s_%s_duration.nc",nday,nyr,nday,nyr))
+    #calc_global_dur(dat=dat,per=per,season=c(151,243),beg1=3,beg2=31,end1=30,end2=58,
+    #    season_name="summer",filename=sprintf("../data/%s_%s/%s_%s_duration_",nday,nyr,nday,nyr))
+    #calc_global_dur(dat=dat,per=per,season=c(334,60),beg1=4,beg2=31,end1=30,end2=57,
+    #    season_name="winter",filename=sprintf("../data/%s_%s/%s_%s_duration_",nday,nyr,nday,nyr))
+    calc_global_dur(dat=dat,per=per,season=c(1,365),beg1=4,beg2=31,end1=30,end2=57,
+        season_name="year",filename=sprintf("../data/%s_%s/%s_%s_duration_",nday,nyr,nday,nyr))
+}

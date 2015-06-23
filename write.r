@@ -229,24 +229,23 @@ shock_trend_write <- function(filename,per)
     close.ncdf(nc) 
 }
 
-duration_write <- function(filename,dur)
+duration_write <- function(filename,dur,season)
 {
     ntot=819
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
-    dur_mean_w <- var.def.ncdf(name="dur_mean_w",units="days",longname="mean duration of warm periods",dim=list(ID), missval=-9999.0)
-    dur_mean_c <- var.def.ncdf(name="dur_mean_c",units="days",longname="mean duration of cold periods",dim=list(ID), missval=-9999.0)
+    dur_mean_w <- var.def.ncdf(name="dur_mean_w",units="days",longname=paste("mean duration of warm periods in",season),dim=list(ID), missval=-9999.0)
+    dur_mean_c <- var.def.ncdf(name="dur_mean_c",units="days",longname=paste("mean duration of cold periods in",season),dim=list(ID), missval=-9999.0)
     
-    dur_mean_d_w <- var.def.ncdf(name="dur_mean_d_w",units="days",longname="difference between mean difference of warm periods before and after 1980",dim=list(ID), missval=-9999.0)
-    dur_mean_d_c <- var.def.ncdf(name="dur_mean_d_c",units="days",longname="difference between mean difference of cold periods before and after 1980",dim=list(ID), missval=-9999.0)
+    dur_mean_d_w <- var.def.ncdf(name="dur_mean_d_w",units="days",longname=paste("difference between mean duration of warm periods in",season,"before and after 1980"),dim=list(ID), missval=-9999.0)
+    dur_mean_d_c <- var.def.ncdf(name="dur_mean_d_c",units="days",longname=paste("difference between mean duration of cold periods in",season,"before and after 1980"),dim=list(ID), missval=-9999.0)
 
-
-    dur_X_d_w <- var.def.ncdf(name="dur_X_d_w",units="#",longname="difference in the amount of extremely long warm periods before and after 1980",dim=list(ID), missval=-9999.0)
-    dur_X_d_c <- var.def.ncdf(name="dur_X_d_c",units="#",longname="difference in the amount of extremely long cold periods before and after 1980",dim=list(ID), missval=-9999.0)
+    dur_X_d_w <- var.def.ncdf(name="dur_X_d_w",units="#",longname=paste("difference in the amount of extremely long warm periods in",season,"before and after 1980"),dim=list(ID), missval=-9999.0)
+    dur_X_d_c <- var.def.ncdf(name="dur_X_d_c",units="#",longname=paste("difference in the amount of extremely long cold periods in",season,"before and after 1980"),dim=list(ID), missval=-9999.0)
 
     vars=list(dur_mean_w,dur_mean_c,dur_mean_d_w,dur_mean_d_c,dur_X_d_w,dur_X_d_c)
    
-    nc = create.ncdf(filename,vars)
+    nc = create.ncdf(paste(filename,season,".nc",sep=""),vars)
 
     for (i in 1:6){
         put.var.ncdf(nc,vars[[i]],dur[1:ntot,i])      

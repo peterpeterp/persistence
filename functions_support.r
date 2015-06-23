@@ -61,7 +61,7 @@ seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=mark
 
 trend_analysis <- function(x,y){
     library(Kendall)
-    if (length(which(is.na(y)))>30){
+    if (length(which(is.na(y)))>7){
         return(list(slope=NA,slope_sig=NA,MK=NA,MK_sig=NA))
     }
     lm.r=lm(y~x)
