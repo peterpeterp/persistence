@@ -48,17 +48,20 @@ markov_write <- function(filename,data3D,per)
 
     ind <- var.def.ncdf(name="ind",units="1 or -1",dim=list(ID,day,year), missval=-9999.0)
     markov_s_w <- var.def.ncdf(name="markov_s_w",units="0-1",longname="summer markov warm persistence",dim=list(ID,year), missval=-9999.0)
-    markov_s_k <- var.def.ncdf(name="markov_s_k",units="0-1",longname="summer markov cold persistence",dim=list(ID,year), missval=-9999.0)
     markov_w_w <- var.def.ncdf(name="markov_w_w",units="0-1",longname="winter markov warm persistence",dim=list(ID,year), missval=-9999.0)
-    markov_w_k <- var.def.ncdf(name="markov_w_k",units="0-1",longname="winter markov cold persistence",dim=list(ID,year), missval=-9999.0)
     markov_y_w <- var.def.ncdf(name="markov_y_w",units="0-1",longname="year markov warm persistence",dim=list(ID,year), missval=-9999.0)
+
+    markov_s_k <- var.def.ncdf(name="markov_s_k",units="0-1",longname="summer markov cold persistence",dim=list(ID,year), missval=-9999.0)
+    markov_w_k <- var.def.ncdf(name="markov_w_k",units="0-1",longname="winter markov cold persistence",dim=list(ID,year), missval=-9999.0)
     markov_y_k <- var.def.ncdf(name="markov_y_k",units="0-1",longname="year markov cold persistence",dim=list(ID,year), missval=-9999.0)
 
     markov_s_err <- var.def.ncdf(name="markov_s_err",units="0-1",dim=list(ID,year), missval=-9999.0)
     markov_w_err <- var.def.ncdf(name="markov_w_err",units="0-1",dim=list(ID,year), missval=-9999.0)
     markov_y_err <- var.def.ncdf(name="markov_y_err",units="0-1",dim=list(ID,year), missval=-9999.0)
 
-    vars=list(ind,markov_s_w,markov_s_k,markov_w_w,markov_w_k,markov_y_w,markov_y_k,markov_s_err,markov_w_err,markov_y_err)
+    vars=list(ind,markov_s_w,markov_w_w,markov_y_w,
+        markov_s_k,markov_w_k,markov_y_k,
+        markov_s_err,markov_w_err,markov_y_err)
    
     nc = create.ncdf(filename,vars)
 

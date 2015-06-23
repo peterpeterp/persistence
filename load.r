@@ -49,7 +49,8 @@ markov_load <- function(filename){
     ntot=819
 
     markov_per = list(ind=array(NA,dim=c(ntot,365,62)),markov=array(NA,dim=c(ntot,6,62)),markov_err=array(NA,dim=c(ntot,3,62)))
-    str_markov=c("markov_s_w","markov_s_k","markov_w_w","markov_w_k","markov_y_w","markov_y_k")
+    str_markov=c("markov_s_w","markov_w_w","markov_y_w",
+        "markov_s_k","markov_w_k","markov_y_k")
     for (i in 1:6){
         markov_per$markov[1:ntot,i,]=get.var.ncdf(nc,str_markov[i])
     }
