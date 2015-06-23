@@ -1,5 +1,6 @@
 # teste teste
-source("write_load.r")
+source("write.r")
+source("load.r")
 
 location_finder <- function(station=0,lon=0,lat=0){
 	dat=dat_load("../data/mid_lat.nc")
@@ -91,7 +92,7 @@ trend_plot <- function(dat,filename_plot,newmap,ausschnitt,filename_markov=99,fi
 
 }
 
-climatology_plot <- function(dat,filename_plot,newmap,ausschnitt,filename_markov=99,filename_shock=99){
+climatology_plot <- function(dat,str,filename,filename_plot,newmap,ausschnitt){
 	
 	jet.colors <- colorRampPalette( c( "violet","blue","green","yellow","red") )
 	nbcol <- 100
@@ -99,10 +100,9 @@ climatology_plot <- function(dat,filename_plot,newmap,ausschnitt,filename_markov
 
 	pdf(file = filename_plot,width=12,height=8)
 	par(mfrow=c(2,1))
-	if (filename_markov!=99 & filename_shock==99){
-		str=c("markov_s_w","markov_s_k","markov_w_w","markov_w_k","markov_y_w","markov_y_k")
-		nc=open.ncdf(filename_markov)
-	}
+		
+	#str=c("markov_s_w","markov_s_k","markov_w_w","markov_w_k","markov_y_w","markov_y_k")
+	nc=open.ncdf(filename)
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
 	for (i in 1:6){
@@ -111,8 +111,8 @@ climatology_plot <- function(dat,filename_plot,newmap,ausschnitt,filename_markov
 		size=length(mid_lat)
 		lon=array(NA,size)
 		lat=array(NA,size)
-		mean=array(NA,size)
-		st_d=array(NA,size)
+		y1=array(NA,size)
+		y2=array(NA,size)
 		m=0
 		for (k in 1:length(dat$ID)){
 			if (k %in% mid_lat){
@@ -120,34 +120,34 @@ climatology_plot <- function(dat,filename_plot,newmap,ausschnitt,filename_markov
 					m<-m+1
 					lon[m]=dat$lon[k]
 					lat[m]=dat$lat[k]
-					mean[m]=mean(tmp[k,],na.rm=TRUE)
-					st_d[m]=sd(tmp[k,],na.rm=TRUE)
+					y1[m]=mean(tmp[k,],na.rm=TRUE)
+					y2[m]=sd(tmp[k,],na.rm=TRUE)
 				}
 			}
 		}
 		y=array(NA,(m))
 		notna=which(is.na(mean)==FALSE)
 		for (i in notna){
-			y[i]=mean[i]
+			y[i]=y1[i]
 		}
+		print(y)
 		facetcol <- cut(y,nbcol)
-		plot(newmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5,main=paste(var1$longname,"mean"))
+		plot(newmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5,main=paste(var1$longname))
 		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=1.2)
 		image.plot(legend.only=T, zlim=range(y), col=color)
 
 		y=array(NA,(m))
-		notna=which(is.na(st_d)==FALSE)
+		notna=which(is.na(y2)==FALSE)
 		for (i in notna){
-			y[i]=st_d[i]
+			y[i]=y2[i]
 		}
-
+		print(y)
 		facetcol <- cut(y,nbcol)
-		plot(newmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5,main=paste(var1$longname,"standart deviation"))
+		plot(newmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5,main=paste(var1$longname))
 		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=1.2)
 		image.plot(legend.only=T, zlim=range(y), col=color)
 	}
     graphics.off()
-
 }
 
 if (1==1){
@@ -169,8 +169,11 @@ if (1==1){
 					filename_markov=sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))	        	
 	        }
 	        if (1==1){
-				climatology_plot(dat,sprintf("../plots/maps/%s_%s_markov_climatology.pdf",nday,nyr),worldmap,c(35,66),
-					filename_markov=sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))	        	
+	        	str=c("markov_s_w","markov_s_k","markov_w_w","markov_w_k","markov_y_w","markov_y_k")
+				climatology_plot(dat=dat,str=str,filename=sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr),
+					filename_plot=sprintf("../plots/maps/%s_%s_markov_climatology.pdf",nday,nyr),
+					worldmap,c(35,66))
+   	
 	        }
 		}
 	}

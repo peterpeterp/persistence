@@ -1,86 +1,5 @@
 library(ncdf)
 
-dat_load <- function(filename){
-    nc  = open.ncdf(filename)
-    dat = list()     
-    dat$day  = get.var.ncdf(nc,"day")
-    dat$year = get.var.ncdf(nc,"year")
-    dat$ID   = get.var.ncdf(nc,"ID")
-    dat$lon   = get.var.ncdf(nc,"lon")
-    dat$lat   = get.var.ncdf(nc,"lat")
-    dat$tas   = get.var.ncdf(nc,"tas")
-
-    # Add additional time dimension (days are decimal points dt=1/365)
-    dat$time = c(1:(length(dat$day)*length(dat$year)))/365 - 0.5*1/365 + min(dat$year)
-    dat$time_2D = array(dat$time,dim=c(365,62))
-
-    return(dat)
-}
-
-trend_load <- function(filename){
-    nc  = open.ncdf(filename)  
-    trend  = get.var.ncdf(nc,"trend")
-
-    return(trend)
-}
-
-markov_jjay_load <- function(filename){
-    nc=open.ncdf(filename)
-    ntot=819
-
-    markov_per = list(ind=array(NA,dim=c(ntot,365,62)),markov=array(NA,dim=c(ntot,8,62)),markov_err=array(NA,dim=c(ntot,4,62)))
-
-    str_markov=c("markov_jn_w","markov_jl_w","markov_ag_w","markov_yr_w","markov_jn_c","markov_jl_c","markov_ag_c","markov_yr_c")
-    for (i in 1:8){
-        markov_per$markov[1:ntot,i,]=get.var.ncdf(nc,str_markov[i])
-    }
-    str_markov_err=c("markov_jn_err","markov_jl_err","markov_ag_err","markov_yr_err")
-    for (i in 1:4){
-        markov_per$markov_err[1:ntot,i,]=get.var.ncdf(nc,str_markov_err[i])
-    }
-
-    markov_per$ind <- get.var.ncdf(nc,"ind")
-
-    return(markov_per)
-}
-
-markov_load <- function(filename){
-    nc=open.ncdf(filename)
-    ntot=819
-
-    markov_per = list(ind=array(NA,dim=c(ntot,365,62)),markov=array(NA,dim=c(ntot,6,62)),markov_err=array(NA,dim=c(ntot,3,62)))
-    str_markov=c("markov_s_w","markov_s_k","markov_w_w","markov_w_k","markov_y_w","markov_y_k")
-    for (i in 1:6){
-        markov_per$markov[1:ntot,i,]=get.var.ncdf(nc,str_markov[i])
-    }
-    str_markov_err=c("markov_s_err","markov_w_err","markov_y_err")
-    for (i in 1:3){
-        markov_per$markov_err[1:ntot,i,]=get.var.ncdf(nc,str_markov_err[i])
-    }
-
-    markov_per$ind <- get.var.ncdf(nc,"ind")
-
-    return(markov_per)
-}
-
-shock_load <- function(filename){
-    nc=open.ncdf(filename)
-    ntot=819
-
-    shock_per = list(shock=array(NA,dim=c(ntot,6,62)),shock_bic=array(NA,dim=c(ntot,3,62)))
-    str_shock=c("shock_s","shock_w","shock_y")
-    for (i in 1:3){
-        shock_per$shock[1:ntot,i,]=get.var.ncdf(nc,str_shock[i])
-    }
-    str_bic=c("bic_s","bic_w","bic_y")
-    for (i in 1:3){
-        shock_per$shock_bic[1:ntot,i,]=get.var.ncdf(nc,str_bic[i])
-    }
-
-    return(shock_per)
-}
-
-
 dat_write <- function(filename,data3D)
 {
     day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
@@ -302,6 +221,32 @@ shock_trend_write <- function(filename,per)
         for (i in 1:3){
             put.var.ncdf(nc,vars[[i+(j-1)*3]],per[1:ntot,i,j])
         }        
+    }
+
+    close.ncdf(nc) 
+}
+
+duration_write <- function(filename,dur)
+{
+    ntot=819
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+
+    dur_mean_w <- var.def.ncdf(name="dur_mean_w",units="days",longname="mean duration of warm periods",dim=list(ID), missval=-9999.0)
+    dur_mean_c <- var.def.ncdf(name="dur_mean_c",units="days",longname="mean duration of cold periods",dim=list(ID), missval=-9999.0)
+    
+    dur_mean_d_w <- var.def.ncdf(name="dur_mean_d_w",units="days",longname="difference between mean difference of warm periods before and after 1980",dim=list(ID), missval=-9999.0)
+    dur_mean_d_c <- var.def.ncdf(name="dur_mean_d_c",units="days",longname="difference between mean difference of cold periods before and after 1980",dim=list(ID), missval=-9999.0)
+
+
+    dur_X_d_w <- var.def.ncdf(name="dur_X_d_w",units="#",longname="difference in the amount of extremely long warm periods before and after 1980",dim=list(ID), missval=-9999.0)
+    dur_X_d_c <- var.def.ncdf(name="dur_X_d_c",units="#",longname="difference in the amount of extremely long cold periods before and after 1980",dim=list(ID), missval=-9999.0)
+
+    vars=list(dur_mean_w,dur_mean_c,dur_mean_d_w,dur_mean_d_c,dur_X_d_w,dur_X_d_c)
+   
+    nc = create.ncdf(filename,vars)
+
+    for (i in 1:6){
+        put.var.ncdf(nc,vars[[i]],dur[1:ntot,i])      
     }
 
     close.ncdf(nc) 

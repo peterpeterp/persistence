@@ -16,31 +16,7 @@ duration_plot <- function(dat,trend,ind,station,start,stop,filename){
     graphics.off()
 }
 
-duration_hist <- function(per,dat,station,beg1,beg2,end1,end2){
-    br<-seq(0,60,10)
 
-    dur1=per_duration(ind=per$ind[station,151:243,3:31],time=dat$time_2D[151:243,beg1:end1])
-    dur2=per_duration(ind=per$ind[station,151:243,30:58],time=dat$time_2D[151:243,beg2:end2])
-
-    hist1=hist(dur1$dur_warm,breaks=br,plot=FALSE)
-    hist2=hist(dur2$dur_warm,breaks=br,plot=FALSE)
-    warmX_diff=sum(hist2$density[3:6])-sum(hist1$density[3:6])
-
-    hist1=hist(dur1$dur_cold,breaks=br,plot=FALSE)
-    hist2=hist(dur2$dur_cold,breaks=br,plot=FALSE)   
-    coldX_diff=sum(hist2$density[3:6])-sum(hist1$density[3:6])
-
-    warm_mean_diff=mean(dur2$dur_warm)-mean(dur1$dur_warm)
-    cold_mean_diff=mean(dur2$dur_cold)-mean(dur1$dur_cold)
-
-    if (3==3){
-        pdf(file="../plots/histogramm.pdf")
-        plot(hist1,col=rgb(0,0,1,1/4))
-        plot(hist2,col=rgb(1,0,0,1/4),add=TRUE)
-    }
-
-    return(list(warm_mean_diff=warm_mean_diff,cold_mean_diff=cold_mean_diff,warmX_diff=warmX_diff,coldX_diff=coldX_diff))
-}
 
 
 

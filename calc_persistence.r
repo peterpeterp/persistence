@@ -1,9 +1,11 @@
 #!/home/pepflei/R/bin/Rscript
 # Load useful functions 
-#library(myr)                # Only needed for plotting: myfigure function
 dyn.load("persistence_tools.so")
-source("functions_persistence.r")
-source("write_load.r")
+source("functions_support.r")
+source("functions_markov.r")
+source("functions_shock.r")
+source("write.r")
+source("load.r")
 
 
 calc_trend <- function(dat,filename,nday,nyr){
@@ -33,7 +35,7 @@ calc_per <- function(dat,trend,nday,nyr,what,filename_markov,filename_shock){
     #cat("Calculating persistence... ")
 
     if ((what=="markov") | (what=="both")){
-        markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,8,62)),markov_err=array(NA,dim=c(ntot,4,62)))
+        markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,6,62)),markov_err=array(NA,dim=c(ntot,3,62)))
 
         for (q in 1:ntot ) { 
             cat("-")
@@ -57,25 +59,27 @@ calc_per <- function(dat,trend,nday,nyr,what,filename_markov,filename_shock){
 
                 size=length(per_ind1D)
 
-                tmp=seasonal(per_ind1D,array(c(151,180,181,211,212,242),dim=c(2,3)),markov_chft)
-                for (i in 1:3){
-                    markov_per$markov[q,i,]=tmp$out1[i,]
-                    markov_per$markov[q,(i+4),]=tmp$out2[i,]
-                    markov_per$markov_err[q,i,]=tmp$out_err[i,]
-                }
+                tmp=seasonal(per_ind1D,array(c(151,242,334,425),dim=c(2,2)),markov_chft)
+                markov_per$markov[q,1,]=tmp$summer_w
+                markov_per$markov[q,2,]=tmp$summer_c
+                markov_per$markov[q,3,]=tmp$winter_w
+                markov_per$markov[q,4,]=tmp$winter_c
+                markov_per$markov_err[q,1,]=tmp$error_s
+                markov_per$markov_err[q,2,]=tmp$error_w
 
                 tmp=seasonal(per_ind1D,array(c(1,365),dim=c(2,1)),markov_chft)
-                markov_per$markov[q,4,]=tmp$out1[1,]
-                markov_per$markov[q,8,]=tmp$out2[1,]
-                markov_per$markov_err[q,4,]=tmp$out_err[1,]
+                markov_per$markov[q,5,]=tmp$summer_w
+                markov_per$markov[q,6,]=tmp$summer_c
+                markov_per$markov_err[q,3,]=tmp$error_s
             } 
             else {
                 cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[q],dat$lon[q],dat$lat[q]))
             }
      
         }
-        markov_jjay_write(filename_markov,dat,markov_per) 
+        markov_write(filename_markov,dat,markov_per) 
     }
+
 
     if ((what=="shock") | (what=="both")){
         shock_per = list(shock=array(NA,dim=c(ntot,6,62)),shock_bic=array(NA,dim=c(ntot,3,62)))
@@ -106,53 +110,7 @@ calc_per <- function(dat,trend,nday,nyr,what,filename_markov,filename_shock){
     return(0)#list(markov_per=markov_per,shock_per=shock_per))
 }
 
-trend_analysis <- function(x,y){
-    library(Kendall)
-    if (length(which(is.na(y)))>30){
-        return(list(slope=NA,slope_sig=NA,MK=NA,MK_sig=NA))
-    }
-    lm.r=lm(y~x)
-    slope=summary(lm.r)$coefficients[2]
-    slope_sig=summary(lm.r)$coefficients[8]
-    out=MannKendall(y)
-    MK=out[1]$tau
-    MK_sig=out[2]$sl
-    return(list(slope=slope,slope_sig=slope_sig,MK=MK,MK_sig=MK_sig))
-}
 
-global_trend <- function(filename_markov=99,filename_markov_neu=99,filename_shock=99,filename_shock_neu=99){
-    t=seq(1,62,1)
-    ntot=819
-    trend_markov=array(NA,dim=c(ntot,6,4))
-    if (filename_markov!=99){   
-        per=markov_load(filename_markov)
-        for (i in 1:6){
-            for (q in 1:ntot){
-                tmp=trend_analysis(t,per$markov[q,i,])
-                trend_markov[q,i,1]=tmp$slope
-                trend_markov[q,i,2]=tmp$slope_sig
-                trend_markov[q,i,3]=tmp$MK
-                trend_markov[q,i,4]=tmp$MK_sig
-            }
-        }
-        markov_trend_write(filename_markov_neu,trend_markov)
-    }
-    trend_shock=array(NA,dim=c(ntot,3,4))
-    if (filename_shock!=99){      
-        per=shock_load(filename_shock)
-        for (i in 1:3){
-            for (q in 1:ntot){
-                tmp=trend_analysis(t,per$shock[q,i,])
-                trend_shock[q,i,1]=tmp$slope
-                trend_shock[q,i,2]=tmp$slope_sig
-                trend_shock[q,i,3]=tmp$MK
-                trend_shock[q,i,4]=tmp$MK_sig
-            }
-        }
-        shock_trend_write(filename_shock_neu,trend_shock)
-    }
-    return(list(trend_markov=trend_markov,trend_shock=trend_shock))
-}
 
 ndays = c(91,121,61)
 nyrs = c(5,7,3)
@@ -170,7 +128,7 @@ for (nday in ndays){
         trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
         cat(sprintf("\n%s_%s    ",nday,nyr))
         cat("calculating persistence\n") 
-        per=calc_per(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov_jjay.nc",nday,nyr,nday,nyr))
+        per=calc_per(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
         #per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
 
     }
