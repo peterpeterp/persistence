@@ -229,7 +229,76 @@ shock_trend_write <- function(filename,per)
     close.ncdf(nc) 
 }
 
-duration_write <- function(filename,dur,season)
+duration_write_season <- function(filename,dur)
+{
+    ntot=819
+    year <- dim.def.ncdf("year",units="year",vals=1:62, unlim=FALSE)
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+    periods <- dim.def.ncdf("periods",units="periods",vals=1:100, unlim=FALSE)
+
+    dur_spring_warm <- var.def.ncdf(name="dur_spring_warm",units="days",longname="duration of warm periods in spring",dim=list(ID,periods,year), missval=-9999.0)
+    dur_spring_cold <- var.def.ncdf(name="dur_spring_cold",units="days",longname="duration of cold periods in spring",dim=list(ID,periods,year), missval=-9999.0)
+    dur_spring_warm_mid <- var.def.ncdf(name="dur_spring_warm_mid",units="days",longname="midpoint of duration of warm periods in spring",dim=list(ID,periods,year), missval=-9999.0)
+    dur_spring_cold_mid <- var.def.ncdf(name="dur_spring_cold_mid",units="days",longname="midpoint of duration of cold periods in spring",dim=list(ID,periods,year), missval=-9999.0)
+
+    dur_summer_warm <- var.def.ncdf(name="dur_summer_warm",units="days",longname="duration of warm periods in summer",dim=list(ID,periods,year), missval=-9999.0)
+    dur_summer_cold <- var.def.ncdf(name="dur_summer_cold",units="days",longname="duration of cold periods in summer",dim=list(ID,periods,year), missval=-9999.0)
+    dur_summer_warm_mid <- var.def.ncdf(name="dur_summer_warm_mid",units="days",longname="midpoint of duration of warm periods in summer",dim=list(ID,periods,year), missval=-9999.0)
+    dur_summer_cold_mid <- var.def.ncdf(name="dur_summer_cold_mid",units="days",longname="midpoint of duration of cold periods in summer",dim=list(ID,periods,year), missval=-9999.0)
+
+    dur_autumn_warm <- var.def.ncdf(name="dur_autumn_warm",units="days",longname="duration of warm periods in autumn",dim=list(ID,periods,year), missval=-9999.0)
+    dur_autumn_cold <- var.def.ncdf(name="dur_autumn_cold",units="days",longname="duration of cold periods in autumn",dim=list(ID,periods,year), missval=-9999.0)
+    dur_autumn_warm_mid <- var.def.ncdf(name="dur_autumn_warm_mid",units="days",longname="midpoint of duration of warm periods in autumn",dim=list(ID,periods,year), missval=-9999.0)
+    dur_autumn_cold_mid <- var.def.ncdf(name="dur_autumn_cold_mid",units="days",longname="midpoint of duration of cold periods in autumn",dim=list(ID,periods,year), missval=-9999.0)
+
+    dur_winter_warm <- var.def.ncdf(name="dur_winter_warm",units="days",longname="duration of warm periods in winter",dim=list(ID,periods,year), missval=-9999.0)
+    dur_winter_cold <- var.def.ncdf(name="dur_winter_cold",units="days",longname="duration of cold periods in winter",dim=list(ID,periods,year), missval=-9999.0)
+    dur_winter_warm_mid <- var.def.ncdf(name="dur_winter_warm_mid",units="days",longname="midpoint of duration of warm periods in winter",dim=list(ID,periods,year), missval=-9999.0)
+    dur_winter_cold_mid <- var.def.ncdf(name="dur_winter_cold_mid",units="days",longname="midpoint of duration of cold periods in winter",dim=list(ID,periods,year), missval=-9999.0)
+
+
+    vars=list(dur_spring_warm,dur_spring_cold,dur_spring_warm_mid,dur_spring_cold_mid,
+        dur_summer_warm,dur_summer_cold,dur_summer_warm_mid,dur_summer_cold_mid,
+        dur_autumn_warm,dur_autumn_cold,dur_autumn_warm_mid,dur_autumn_cold_mid,
+        dur_winter_warm,dur_winter_cold,dur_winter_warm_mid,dur_winter_cold_mid)
+   
+    nc = create.ncdf(filename,vars)
+    print(dim(dur))
+    for (sea in 1:4){
+        for (j in 1:4){
+            print(dim(dur[1:ntot,sea,j,1:62,]))
+            put.var.ncdf(nc,vars[[(sea-1)*4+j]],dur[1:ntot,sea,j,1:62,])              
+        }
+    }
+
+    close.ncdf(nc) 
+}
+
+duration_write <- function(filename,dur,len)
+{
+    ntot=819
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+    periods <- dim.def.ncdf("periods",units="periods",vals=1:len, unlim=FALSE)
+
+    dur_warm <- var.def.ncdf(name="dur_warm",units="days",longname="duration of warm periods",dim=list(ID,periods), missval=-9999.0)
+    dur_cold <- var.def.ncdf(name="dur_cold",units="days",longname="duration of cold periods",dim=list(ID,periods), missval=-9999.0)
+    dur_warm_mid <- var.def.ncdf(name="dur_warm_mid",units="days",longname="midpoint of duration of warm periods",dim=list(ID,periods), missval=-9999.0)
+    dur_cold_mid <- var.def.ncdf(name="dur_cold_mid",units="days",longname="midpoint of duration of cold periods",dim=list(ID,periods), missval=-9999.0)
+
+
+    vars=list(dur_warm,dur_cold,dur_warm_mid,dur_cold_mid)
+   
+    nc = create.ncdf(filename,vars)
+    print(dim(dur))
+    for (i in 1:4){
+        put.var.ncdf(nc,vars[[i]],dur[1:ntot,i,])              
+    }
+
+    close.ncdf(nc) 
+}
+
+
+duration_write2 <- function(filename,dur,season)
 {
     ntot=819
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)

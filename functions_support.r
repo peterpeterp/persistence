@@ -59,6 +59,8 @@ seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=mark
     return(list(out1=out1,out2=out2,out_err=out_err,out_add=out_add))
 }   
 
+
+
 trend_analysis <- function(x,y){
     library(Kendall)
     if (length(which(is.na(y)))>7){
