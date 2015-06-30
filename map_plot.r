@@ -32,10 +32,12 @@ location_view <- function(station=0,lon=0,lat=0){
 
 regions_to_map <- function(filename="../data/SREX_regions_all.csv"){
 	srex <- read.csv(file=filename, header=TRUE, sep=",")
+	selection=c(1,2,3,4,5,6,11,12,13,14,18,19,20,22)
 	latpos=c(3,5,7,9,11,13)
 	lonpos=c(4,6,8,10,12,14)
+	rect=array(NA,dim=c(30,8))
 	for (i in 1:30){
-		if (srex[i,2]<27){
+		if (srex[i,2] %in% selection){
 			lat=c()
 			lon=c()
 			k=0
@@ -53,8 +55,39 @@ regions_to_map <- function(filename="../data/SREX_regions_all.csv"){
 				}
 			}
 			polygon(x=lon,y=lat,col=rgb(1,0,1,0.0),border="green")
+			
+
+			links=c(which(lon==sort(lon)[1]),which(lon==sort(lon)[2]))
+			if (length(links)==4){
+				links=links[1:2]
+			}
+			linksU=links[which(lat[links]==min(lat[links]))]
+			linksO=links[which(lat[links]==max(lat[links]))]
+
+
+			rechts=c(which(lon==sort(lon)[3]),which(lon==sort(lon)[4]))
+			if (length(rechts)==4){
+				rechts=rechts[1:2]
+			}
+			rechtsU=rechts[which(lat[rechts]==min(lat[rechts]))]
+			rechtsO=rechts[which(lat[rechts]==max(lat[rechts]))]
+
+			print(c(lon[linksU],lat[linksU],lon[linksO],lat[linksO],lon[rechtsU],lat[rechtsU],lon[rechtsO],lat[rechtsO]))
+			print(lon)
+			print(lat)
+
+
+			rect[i,]=c(lon[linksU],lat[linksU],lon[linksO],lat[linksO],lon[rechtsU],lat[rechtsU],lon[rechtsO],lat[rechtsO])
+
+
+
+			text(lon[linksU],lat[linksU],label="linksU")
+			text(lon[linksO],lat[linksO],label="linksO")
+			text(lon[rechtsU],lat[rechtsU],label="rechtsU")
+			text(lon[rechtsO],lat[rechtsO],label="rechtsO")
 		}
 	}
+	print(rect)
 }
 
 trend_plot <- function(dat,filename_plot,newmap,ausschnitt,filename_markov=99,filename_shock=99){
@@ -248,29 +281,29 @@ if (1==1){
 	for (nday in ndays){
 	    for (nyr in nyrs){
 	        dat=dat_load("../data/mid_lat.nc")
-	        if (1==1){
+	        if (1==2){
 				trend_plot(dat,sprintf("../plots/maps/%s_%s_markov_trend.pdf",nday,nyr),worldmap,c(35,66),
 					filename_markov=sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))	        	
 	        }
-	        if (1==1){
+	        if (1==2){
 				climatology_markov(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr),
 					filename_plot=sprintf("../plots/maps/%s_%s_markov_climatology.pdf",nday,nyr),
 					worldmap,c(35,66))
    	
 	        }
 	        if (1==1){
-				climatology_duration(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_duration_summer.nc",nday,nyr,nday,nyr),
-					filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_climatology.pdf",nday,nyr),
+				climatology_duration(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_duration_ana_summer.nc",nday,nyr,nday,nyr),
+					filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_ana.pdf",nday,nyr),
 					worldmap,c(35,66))
    	
 	        }
-	        if (1==1){
+	        if (1==2){
 				climatology_duration(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_duration_winter.nc",nday,nyr,nday,nyr),
 					filename_plot=sprintf("../plots/maps/%s_%s_duration_winter_climatology.pdf",nday,nyr),
 					worldmap,c(35,66))
    	
 	        }
-	        if (1==1){
+	        if (1==2){
 				climatology_duration(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_duration_year.nc",nday,nyr,nday,nyr),
 					filename_plot=sprintf("../plots/maps/%s_%s_duration_year_climatology.pdf",nday,nyr),
 					worldmap,c(35,66))

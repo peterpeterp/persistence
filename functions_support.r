@@ -1,4 +1,31 @@
 
+r_calc_runmean_2D <- function(y2D,nday,nyr){
+    nbuff1 = (nday-1)/2 
+    nbuff2 = (nyr-1)/2 
+    buffer = c(nbuff1,nbuff2)
+
+    dims0 = dim(y2D)
+    dims  = dim(y2D)
+    dims[1] = dims[1]+2*nbuff1
+    dims[2] = dims[2]+2*nbuff2
+
+    y2Dex = array(NA,dim=c(dims[1],dims[2]))
+    y2Dex[(nbuff1+1):(dims[1]-nbuff1),(nbuff2+1):(dims[2]-nbuff2)] = y2D[,]
+    y2Dex[1:nbuff1,(nbuff2+2):(dims[2]-nbuff2+1)] = y2D[(dims0[1]-nbuff1+1):dims0[1],]   
+    y2Dex[(dims[1]-nbuff1+1):dims[1],(nbuff2):(dims[2]-nbuff2-1)] = y2D[1:nbuff1,] 
+
+
+    trend=y2D*NA
+
+    for (i in 1:365){
+        for (j in 1:62){
+            trend[i,j]=mean(y2Dex[(i+nbuff1-nbuff1):(i+nbuff1+nbuff1),(j+nbuff2-nbuff2):(j+nbuff2+nbuff2)],na.rm=TRUE)
+        }
+    }
+    cat("-")
+    return(trend)
+}
+
 c_calc_runmean_2D <- function(y2D,nday,nyr)
 {   # Input 2D array: y[day,year],
     # Calculate the running mean given a window of nyrs and ndays 

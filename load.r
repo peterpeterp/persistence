@@ -80,3 +80,14 @@ shock_load <- function(filename){
 
     return(shock_per)
 }
+
+duration_load <- function(filename){
+    nc  = open.ncdf(filename)
+    dur = list() 
+
+    dur$dur_warm  = get.var.ncdf(nc,"dur_warm")
+    dur$dur_cold  = get.var.ncdf(nc,"dur_cold")
+    dur$dur_warm_mid  = get.var.ncdf(nc,"dur_warm_mid")
+    dur$dur_cold_mid  = get.var.ncdf(nc,"dur_cold_mid")
+    return(dur)
+}

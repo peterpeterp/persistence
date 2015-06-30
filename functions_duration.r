@@ -56,7 +56,7 @@ per_duration <- function(ind,time){
     }
 }
 
-seasonal_duration <- function(ind,time,seasons=array(c(151,242,334,425),dim=c(2,2)),interval=365){
+seasonal_duration <- function(ind,time,seasons=array(c(59,151,151,243,243,335,335,425),dim=c(2,4)),interval=365){
     size=length(ind)
     x=seq(1, size, 1)
     i=1
@@ -80,7 +80,6 @@ seasonal_duration <- function(ind,time,seasons=array(c(151,242,334,425),dim=c(2,
     return(out1)
 } 
 
-
 calc_global_dur <- function(dat,per,trash,filename){
     ntot=length(dat$ID)
     
@@ -100,99 +99,90 @@ calc_global_dur <- function(dat,per,trash,filename){
             len[i]=length(which(is.na(dur[q,i,])==FALSE))
         }
         maxis[q]=max(len,na.rm=TRUE)
-
-        #dur[q,1:4,1:4,1:62,1:100]=seasonal_duration(as.vector(per$ind[q,,]),dat$time,seasons=array(c(59,151,151,243,243,335,335,425),dim=c(2,4)))
-
     }
-    print(max(maxis,na.rm=TRUE))
     duration_write(filename,dur[1:ntot,1:4,1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
 }
 
-if (1==1){
-    nday=91
-    nyr=5
-    trash=((nyr-1)/2*365+(nday-1))
-    dat=dat_load("../data/mid_lat.nc")
-    per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
 
-    #calc_global_dur(dat=dat,per=per,season=c(151,243),beg1=3,beg2=31,end1=30,end2=58,
-    #    season_name="summer",filename=sprintf("../data/%s_%s/%s_%s_duration_",nday,nyr,nday,nyr))
-    #calc_global_dur(dat=dat,per=per,season=c(334,60),beg1=4,beg2=31,end1=30,end2=57,
-    #    season_name="winter",filename=sprintf("../data/%s_%s/%s_%s_duration_",nday,nyr,nday,nyr))
-    calc_global_dur(dat=dat,per=per,trash=trash,
-        filename=sprintf("../data/%s_%s/%s_%s_duration_sdfsdfsdf",nday,nyr,nday,nyr))
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-duration_hist <- function(dat,per,station,season,beg1,beg2,end1,end2){
+duration_seasons <- function(dur,season,filename){
     br<-seq(0,100,10)
+    ntot=819
+    start=season[1]/365
+    stop=season[2]/365
 
-    if (season[2]<season[1]){
-        dur1_halb1=per_duration(ind=per$ind[station,season[1]:365,beg1:end1],time=dat$time_2D[season[1]:365,beg1:end1])
-        dur1_halb2=per_duration(ind=per$ind[station,1:season[2],(beg1+1):(end1+1)],time=dat$time_2D[1:season[2],(beg1+1):(end1+1)])
-        dur1=list(dur_warm=c(dur1_halb1$dur_warm,dur1_halb2$dur_warm),
-            dur_cold=c(dur1_halb1$dur_cold,dur1_halb2$dur_cold),
-            dur_warm_mid=c(dur1_halb1$dur_warm_mid,dur1_halb2$dur_warm_mid),
-            dur_cold_mid=c(dur1_halb1$dur_cold_mid,dur1_halb2$dur_cold_mid))
-        dur1_halb1=per_duration(ind=per$ind[station,season[1]:365,beg2:end2],time=dat$time_2D[season[1]:365,beg2:end2])
-        dur1_halb2=per_duration(ind=per$ind[station,1:season[2],(beg2+1):(end2+1)],time=dat$time_2D[1:season[2],(beg2+1):(end2+1)])
-        dur2=list(dur_warm=c(dur1_halb1$dur_warm,dur1_halb2$dur_warm),
-            dur_cold=c(dur1_halb1$dur_cold,dur1_halb2$dur_cold),
-            dur_warm_mid=c(dur1_halb1$dur_warm_mid,dur1_halb2$dur_warm_mid),
-            dur_cold_mid=c(dur1_halb1$dur_cold_mid,dur1_halb2$dur_cold_mid))
+    dur_neu=array(NA,dim=c(ntot,4,60*90))
+    maxis=array(NA,ntot)
+    len=array(NA,4)
+    for (q in 1:ntot){
+        select_warm=c()
+        select_cold=c()
+        for (year in 1950:2011){
+            select_warm=c(select_warm,which(dur$dur_warm_mid[q,]>(start+year) & dur$dur_warm_mid[q,]<(stop+year)))
+            select_cold=c(select_cold,which(dur$dur_cold_mid[q,]>(start+year) & dur$dur_cold_mid[q,]<(stop+year)))
+        }
+
+        if (length(select_warm)>0){
+            dur_neu[q,1,1:length(select_warm)]=dur$dur_warm[q,select_warm]
+            dur_neu[q,3,1:length(select_warm)]=dur$dur_warm_mid[q,select_warm]
+        }
+        if (length(select_cold)>0){
+            dur_neu[q,2,1:length(select_cold)]=dur$dur_cold[q,select_cold]
+            dur_neu[q,4,1:length(select_cold)]=dur$dur_cold_mid[q,select_cold]
+        }
+        for (i in 1:2){
+            len[i]=length(which(is.na(dur_neu[q,i,])==FALSE))
+        }
+        maxis[q]=max(len,na.rm=TRUE)
     }
-    else{
-        dur1=per_duration(ind=per$ind[station,season[1]:season[2],beg1:end1],time=dat$time_2D[season[1]:season[2],beg1:end1])
-        dur2=per_duration(ind=per$ind[station,season[1]:season[2],beg2:end2],time=dat$time_2D[season[1]:season[2],beg2:end2])
-    }
+    duration_write(filename,dur_neu[1:ntot,1:4,1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
+}
+    
+duration_analysis <- function(dur,filename,season,trenn=1980,stations=seq(1,819,1),plot_hist=FALSE){
+    br=seq(0,100,2)
+    ntot=819
+    dur_ana=array(NA,dim=c(ntot,6))
 
-    if (is.na(dur1) | length(dur1$dur_warm)==2){
-        cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[station],dat$lon[station],dat$lat[station]))
-        return(c(NA,NA,NA,NA,NA,NA))
-    }
+    for (q in stations){
+        cat("-")
+        dur_ana[q,1]=mean(dur$dur_warm[q,],na.rm=TRUE)
+        dur_ana[q,2]=mean(dur$dur_cold[q,],na.rm=TRUE)
 
-    else{
-        dur_write
+        vor_warm=which(dur$dur_warm_mid[q,]<trenn)
+        vor_cold=which(dur$dur_cold_mid[q,]<trenn)
+        nach_warm=which(dur$dur_warm_mid[q,]>trenn)
+        nach_cold=which(dur$dur_cold_mid[q,]>trenn)
 
-        dur12_warm=c(dur1$dur_warm,dur2$dur_warm)
-        warm_mean=mean(dur12_warm)
+        dur_ana[q,3]=mean(dur$dur_warm[q,nach_warm])-mean(dur$dur_warm[q,vor_warm])
+        dur_ana[q,4]=mean(dur$dur_cold[q,nach_cold])-mean(dur$dur_cold[q,vor_cold])
 
-        dur12_cold=c(dur1$dur_cold,dur2$dur_cold)
-        cold_mean=mean(dur12_cold)
+        hist1=hist(dur$dur_warm[q,vor_warm],breaks=br,plot=FALSE)
+        hist2=hist(dur$dur_warm[q,nach_warm],breaks=br,plot=FALSE)
+        dur_ana[q,5]=sum(hist2$density[10:50])-sum(hist1$density[10:50])
 
-        hist1=hist(dur1$dur_warm,breaks=br,plot=FALSE)
-        hist2=hist(dur2$dur_warm,breaks=br,plot=FALSE)
-        warmX_diff=sum(hist2$density[3:8])-sum(hist1$density[3:8])
-
-        hist1=hist(dur1$dur_cold,breaks=br,plot=FALSE)
-        hist2=hist(dur2$dur_cold,breaks=br,plot=FALSE)   
-        coldX_diff=sum(hist2$density[3:8])-sum(hist1$density[3:8])
-
-        warm_mean_diff=mean(dur2$dur_warm)-mean(dur1$dur_warm)
-        cold_mean_diff=mean(dur2$dur_cold)-mean(dur1$dur_cold)
-
-        if (3==4){
-            pdf(file="../plots/histogramm.pdf")
-            plot(hist1,col=rgb(0,0,1,1/4))
+        if (plot_hist){
+            pdf(file=paste("../plots/dur/histo_warm_",q,"_",season,".pdf",sep=""))
+            plot(hist1,col=rgb(0,0,1,1/4),ylim=c(0,max(c(hist1$counts,hist2$counts))),main=paste("warm periods in",season),xlab="duration of period")
             plot(hist2,col=rgb(1,0,0,1/4),add=TRUE)
+            legend("topright", pch = c(15,15), col = c("blue", "red"), 
+                legend = c(paste("before",trenn),paste("after",trenn)))
         }  
-        return(c(warm_mean,cold_mean,warm_mean_diff,cold_mean_diff,warmX_diff,coldX_diff))
+
+        hist1=hist(dur$dur_cold[q,vor_cold],breaks=br,plot=FALSE)
+        hist2=hist(dur$dur_cold[q,nach_cold],breaks=br,plot=FALSE)
+        dur_ana[q,6]=sum(hist2$density[10:50])-sum(hist1$density[10:50])
+
+        if (plot_hist){
+            pdf(file=paste("../plots/dur/histo_cold_",q,"_",season,".pdf",sep=""))
+            plot(hist1,col=rgb(0,0,1,1/4),ylim=c(0,max(c(hist1$counts,hist2$counts))),main=paste("cold periods in",season),xlab="duration of period")
+            plot(hist2,col=rgb(1,0,0,1/4),add=TRUE)
+            legend("topright", pch = c(15,15), col = c("blue", "red"), 
+                legend = c(paste("before",trenn),paste("after",trenn)))
+        }  
+
+    }
+    if (filename!=FALSE){
+        duration_analysis_write(filename,dur_ana,season)
     }
 }
+
+
