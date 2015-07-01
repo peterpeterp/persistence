@@ -7,17 +7,18 @@ dat_write <- function(filename,data3D)
     ID <- dim.def.ncdf("ID",units="ID",vals=1:length(data3D$ID), unlim=FALSE)
 
     
-    reihen=list(data3D$lon,data3D$lat,data3D$tas)
-    names=c("lon","lat","tas")
+    reihen=list(data3D$lon,data3D$lat,data3D$region,data3D$tas)
+    names=c("lon","lat","region","tas")
 
     varlon <- var.def.ncdf(name=names[1],units="bla",dim=ID, missval=-9999.0)
     varlat <- var.def.ncdf(name=names[2],units="bla",dim=ID, missval=-9999.0)
-    vartas <- var.def.ncdf(name=names[3],units="bla",dim=list(ID,day,year), missval=-9999.0)
-    vars=list(varlon,varlat,vartas)
+    varregion <- var.def.ncdf(name=names[3],units="bla",longname="SREX-Region",dim=ID, missval=-9999.0)
+    vartas <- var.def.ncdf(name=names[4],units="bla",dim=list(ID,day,year), missval=-9999.0)
+    vars=list(varlon,varlat,varregion,vartas)
    
     nc = create.ncdf(filename,vars)
 
-    for (i in 1:3){
+    for (i in 1:4){
         put.var.ncdf(nc,vars[[i]],reihen[[i]])
     }
 
@@ -145,7 +146,7 @@ shock_write <- function(filename,data3D,per)
 
 markov_trend_write <- function(filename,per)
 {
-    ntot=819
+    ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
     mar_s_w_lr <- var.def.ncdf(name="mar_s_w_lr",units="bla",longname="summer warm markov persistence linear regression",dim=list(ID), missval=-9999.0)
@@ -194,7 +195,7 @@ markov_trend_write <- function(filename,per)
 
 shock_trend_write <- function(filename,per)
 {
-    ntot=819
+    ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
     sho_s_lr <- var.def.ncdf(name="sho_s_lr",units="bla",longname="summer shock persistence linear regression",dim=list(ID), missval=-9999.0)
@@ -233,7 +234,7 @@ shock_trend_write <- function(filename,per)
 
 duration_write <- function(filename,dur,len)
 {
-    ntot=819
+    ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
     periods <- dim.def.ncdf("periods",units="periods",vals=1:len, unlim=FALSE)
 
@@ -257,7 +258,7 @@ duration_write <- function(filename,dur,len)
 
 duration_analysis_write <- function(filename,dur,season)
 {
-    ntot=819
+    ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
     dur_mean_w <- var.def.ncdf(name="dur_mean_w",units="days",longname=paste("mean duration of warm periods in",season),dim=list(ID), missval=-9999.0)
@@ -271,7 +272,7 @@ duration_analysis_write <- function(filename,dur,season)
 
     vars=list(dur_mean_w,dur_mean_c,dur_mean_d_w,dur_mean_d_c,dur_X_d_w,dur_X_d_c)
    
-    nc = create.ncdf(paste(filename,season,".nc",sep=""),vars)
+    nc = create.ncdf(filename,vars)
 
     for (i in 1:6){
         put.var.ncdf(nc,vars[[i]],dur[1:ntot,i])      

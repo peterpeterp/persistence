@@ -1,6 +1,6 @@
 library(ncdf)
 
-dat_load <- function(filename){
+dat_load <- function(filename,reg=0){
     nc  = open.ncdf(filename)
     dat = list()     
     dat$day  = get.var.ncdf(nc,"day")
@@ -8,6 +8,9 @@ dat_load <- function(filename){
     dat$ID   = get.var.ncdf(nc,"ID")
     dat$lon   = get.var.ncdf(nc,"lon")
     dat$lat   = get.var.ncdf(nc,"lat")
+    if (reg==1){ 
+        dat$region   = get.var.ncdf(nc,"region")
+    }
     dat$tas   = get.var.ncdf(nc,"tas")
 
     # Add additional time dimension (days are decimal points dt=1/365)
@@ -26,7 +29,7 @@ trend_load <- function(filename){
 
 markov_jjay_load <- function(filename){
     nc=open.ncdf(filename)
-    ntot=819
+    ntot=1319
 
     markov_per = list(ind=array(NA,dim=c(ntot,365,62)),markov=array(NA,dim=c(ntot,8,62)),markov_err=array(NA,dim=c(ntot,4,62)))
 
@@ -46,7 +49,7 @@ markov_jjay_load <- function(filename){
 
 markov_load <- function(filename){
     nc=open.ncdf(filename)
-    ntot=819
+    ntot=1319
 
     markov_per = list(ind=array(NA,dim=c(ntot,365,62)),markov=array(NA,dim=c(ntot,6,62)),markov_err=array(NA,dim=c(ntot,3,62)))
     str_markov=c("markov_s_w","markov_w_w","markov_y_w",
@@ -66,7 +69,7 @@ markov_load <- function(filename){
 
 shock_load <- function(filename){
     nc=open.ncdf(filename)
-    ntot=819
+    ntot=1319
 
     shock_per = list(shock=array(NA,dim=c(ntot,6,62)),shock_bic=array(NA,dim=c(ntot,3,62)))
     str_shock=c("shock_s","shock_w","shock_y")

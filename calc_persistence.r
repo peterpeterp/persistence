@@ -1,6 +1,6 @@
 #!/home/pepflei/R/bin/Rscript
 # Load useful functions 
-dyn.load("persistence_tools.so")
+#dyn.load("persistence_tools.so")
 source("functions_support.r")
 source("functions_markov.r")
 source("functions_shock.r")
@@ -111,27 +111,22 @@ calc_per <- function(dat,trend,nday,nyr,what,filename_markov,filename_shock){
 }
 
 
-if (1==1){
-    ndays = c(91,121,61)
-    nyrs = c(5,7,3)
-    ndays = c(91,121,61)
-    nyrs = c(1)
+if (1==2){
     nday=c(91)
     nyrs=c(5)
 
-    dat=dat_load("../data/mid_lat.nc")
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc")
 
     for (nday in ndays){
         for (nyr in nyrs){
             cat(sprintf("\n%s_%s   ",nday,nyr))
             cat("calculating trend \n")
-            trend=calc_trend(dat,sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr),nday,nyr)
-            #trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
-            #cat(sprintf("\n%s_%s    ",nday,nyr))
-            #cat("calculating persistence\n") 
-            #per=calc_per(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
+            #trend=calc_trend(dat,sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr),nday,nyr)
+            trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
+            cat(sprintf("\n%s_%s    ",nday,nyr))
+            cat("calculating persistence\n") 
+            per=calc_per(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
             #per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
-            #tmp=global_trend(filename_markov=sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr),filename_markov_neu=sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))
         }
     }
 }
@@ -140,25 +135,31 @@ if (1==2){
     nday=91
     nyr=5
     trash=((nyr-1)/2*365+(nday-1))
-    dat=dat_load("../data/mid_lat.nc")
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc")
     per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
-    #calc_global_dur(dat=dat,per=per,trash=trash,filename=sprintf("../data/%s_%s/%s_%s_duration.nc",nday,nyr,nday,nyr))
+    calc_global_dur(dat=dat,per=per,trash=trash,filename=sprintf("../data/%s_%s/%s_%s_duration.nc",nday,nyr,nday,nyr))
     dur=duration_load(filename=sprintf("../data/%s_%s/%s_%s_duration.nc",nday,nyr,nday,nyr))
     
-    #duration_seasons(dur,season=c(59,151),filename=sprintf("../data/%s_%s/%s_%s_duration_spring.nc",nday,nyr,nday,nyr))
-    #duration_seasons(dur,season=c(151,243),filename=sprintf("../data/%s_%s/%s_%s_duration_summer.nc",nday,nyr,nday,nyr))
-    #duration_seasons(dur,season=c(243,335),filename=sprintf("../data/%s_%s/%s_%s_duration_autumn.nc",nday,nyr,nday,nyr))
-    #duration_seasons(dur,season=c(335,425),filename=sprintf("../data/%s_%s/%s_%s_duration_winter.nc",nday,nyr,nday,nyr))
+    duration_seasons(dur,season=c(59,151),filename=sprintf("../data/%s_%s/%s_%s_duration_spring.nc",nday,nyr,nday,nyr))
+    duration_seasons(dur,season=c(151,243),filename=sprintf("../data/%s_%s/%s_%s_duration_summer.nc",nday,nyr,nday,nyr))
+    duration_seasons(dur,season=c(243,335),filename=sprintf("../data/%s_%s/%s_%s_duration_autumn.nc",nday,nyr,nday,nyr))
+    duration_seasons(dur,season=c(335,425),filename=sprintf("../data/%s_%s/%s_%s_duration_winter.nc",nday,nyr,nday,nyr))
 }
 
 if (1==2){
     nday=91
     nyr=5
 
-    dur=duration_load(filename=sprintf("../data/%s_%s/%s_%s_duration_summer.nc",nday,nyr,nday,nyr))
-    #duration_analysis(dur,filename=sprintf("../data/%s_%s/%s_%s_duration_ana_",nday,nyr,nday,nyr),season="summer",trenn=1980)
-    duration_analysis(dur,filename=FALSE,season="summer",trenn=1980,stations=c(488,774,190),plot_hist=TRUE)
-
+    for (season in c("spring","summer","autumn","winter")){
+        dur=duration_load(filename=paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_",season,".nc",sep=""))
+        duration_analysis(dur,filename=paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_ana_",season,".nc",sep=""),season=season,trenn=1980)
+    }
 }
 
+if (1==1){
+    nday=91
+    nyr=5
+    tmp=global_trend(filename_markov=sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr),filename_markov_neu=sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))
+
+}
 

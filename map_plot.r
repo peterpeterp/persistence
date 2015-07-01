@@ -1,6 +1,7 @@
 # teste teste
 source("write.r")
 source("load.r")
+library(SDMTools)
 
 location_finder <- function(station=0,lon=0,lat=0){
 	dat=dat_load("../data/mid_lat.nc")
@@ -16,28 +17,28 @@ location_finder <- function(station=0,lon=0,lat=0){
 }
 
 location_view <- function(station=0,lon=0,lat=0){
-	dat=dat_load("../data/mid_lat.nc")
+	dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc")
 	library(rworldmap)
 	library(fields)
 	if (station!=0){
 		q=which(dat$ID==station)
 	}
 	worldmap = getMap(resolution = "low")
-	pdf(file="../plots/location.pdf")
-	plot(worldmap,xlim=c(-180,-5),ylim=c(35,60), asp = 3.5)
+	pdf(file="../plots/ID_region_map.pdf")
+	plot(worldmap)#,xlim=c(-180,-5),ylim=c(35,60), asp = 3.5)
+	regions_to_map()
 	for (i in 1:length(dat$ID)){
-		text(dat$lon[i],dat$lat[i],label=dat$ID[i],col="green",cex=0.25)
+		text(dat$lon[i],dat$lat[i],label=dat$ID[i],col="red",cex=0.125)
 	}
 }
 
 regions_to_map <- function(filename="../data/SREX_regions_all.csv"){
 	srex <- read.csv(file=filename, header=TRUE, sep=",")
-	selection=c(1,2,3,4,5,6,11,12,13,14,18,19,20,22)
 	latpos=c(3,5,7,9,11,13)
 	lonpos=c(4,6,8,10,12,14)
-	rect=array(NA,dim=c(30,8))
+	poli=array(NA,dim=c(30,12))
 	for (i in 1:30){
-		if (srex[i,2] %in% selection){
+		if (srex[i,2] < 27){
 			lat=c()
 			lon=c()
 			k=0
@@ -55,40 +56,15 @@ regions_to_map <- function(filename="../data/SREX_regions_all.csv"){
 				}
 			}
 			polygon(x=lon,y=lat,col=rgb(1,0,1,0.0),border="green")
-			
+			text(mean(lon),mean(lat),label=srex[i,2],cex=0.7,col="green")
 
-			links=c(which(lon==sort(lon)[1]),which(lon==sort(lon)[2]))
-			if (length(links)==4){
-				links=links[1:2]
-			}
-			linksU=links[which(lat[links]==min(lat[links]))]
-			linksO=links[which(lat[links]==max(lat[links]))]
-
-
-			rechts=c(which(lon==sort(lon)[3]),which(lon==sort(lon)[4]))
-			if (length(rechts)==4){
-				rechts=rechts[1:2]
-			}
-			rechtsU=rechts[which(lat[rechts]==min(lat[rechts]))]
-			rechtsO=rechts[which(lat[rechts]==max(lat[rechts]))]
-
-			print(c(lon[linksU],lat[linksU],lon[linksO],lat[linksO],lon[rechtsU],lat[rechtsU],lon[rechtsO],lat[rechtsO]))
-			print(lon)
-			print(lat)
-
-
-			rect[i,]=c(lon[linksU],lat[linksU],lon[linksO],lat[linksO],lon[rechtsU],lat[rechtsU],lon[rechtsO],lat[rechtsO])
-
-
-
-			text(lon[linksU],lat[linksU],label="linksU")
-			text(lon[linksO],lat[linksO],label="linksO")
-			text(lon[rechtsU],lat[rechtsU],label="rechtsU")
-			text(lon[rechtsO],lat[rechtsO],label="rechtsO")
+			poli[i,1:(length(lon))]=lon
+			poli[i,7:(6+length(lat))]=lat
 		}
 	}
-	print(rect)
+	return()
 }
+
 
 trend_plot <- function(dat,filename_plot,newmap,ausschnitt,filename_markov=99,filename_shock=99){
 	
@@ -215,8 +191,8 @@ climatology_markov <- function(dat,filename,filename_plot,newmap,ausschnitt){
     graphics.off()
 }
 
-climatology_duration <- function(dat,filename,filename_plot,newmap,ausschnitt){
-	
+climatology_duration <- function(dat,poli,filename,filename_plot,newmap,ausschnitt){
+
 	jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
 	nbcol <- 100
 	color <- jet.colors(nbcol)	
@@ -232,17 +208,20 @@ climatology_duration <- function(dat,filename,filename_plot,newmap,ausschnitt){
 		var1<-nc$var[[i]]
 		tmp=get.var.ncdf(nc,str[i])
 		size=length(mid_lat)
+		regio=array(NA,size)
 		lon=array(NA,size)
 		lat=array(NA,size)
 		y1=array(NA,size)
 		y2=array(NA,size)
 		m=0
+
 		for (k in 1:length(dat$ID)){
 			if (k %in% mid_lat){
 				if (is.na(tmp[k])==FALSE){
 					m<-m+1
 					lon[m]=dat$lon[k]
 					lat[m]=dat$lat[k]
+					regio[m]=dat$region[k]
 					y1[m]=tmp[k]
 				}
 			}
@@ -257,30 +236,33 @@ climatology_duration <- function(dat,filename,filename_plot,newmap,ausschnitt){
 		y[2]=aushol
 		facetcol <- cut(y,nbcol)
 		plot(newmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5,main=paste(var1$longname))
-		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=1.2)
+
+		points(lon,lat,pch=regio,col=color[facetcol[3:(size+2)]],cex=1.2)
 		image.plot(legend.only=T, zlim=range(y), col=color)
-		regions_to_map()
 
 	}
     graphics.off()
 }
 
-
-
+if (1==1){
+	location_view()
+}
+sdf
 if (1==1){
 	dyn.load("persistence_tools.so")
 	library(rworldmap)
 	library(fields)
 	worldmap = getMap(resolution = "low")
-	ndays = c(121,91,61)
-	nyrs = c(7,5,3)
+
 
 	ndays = c(91)
 	nyrs = c(5)
 
+	dat=dat_load("../data/mid_lat_reg.nc")
+	#points_to_regions(dat=dat)
 	for (nday in ndays){
 	    for (nyr in nyrs){
-	        dat=dat_load("../data/mid_lat.nc")
+	        
 	        if (1==2){
 				trend_plot(dat,sprintf("../plots/maps/%s_%s_markov_trend.pdf",nday,nyr),worldmap,c(35,66),
 					filename_markov=sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))	        	
@@ -292,7 +274,7 @@ if (1==1){
    	
 	        }
 	        if (1==1){
-				climatology_duration(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_duration_ana_summer.nc",nday,nyr,nday,nyr),
+				climatology_duration(dat=dat,poli=poli,filename=sprintf("../data/%s_%s/%s_%s_duration_ana_summer.nc",nday,nyr,nday,nyr),
 					filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_ana.pdf",nday,nyr),
 					worldmap,c(35,66))
    	

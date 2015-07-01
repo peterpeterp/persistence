@@ -106,7 +106,7 @@ calc_global_dur <- function(dat,per,trash,filename){
 
 duration_seasons <- function(dur,season,filename){
     br<-seq(0,100,10)
-    ntot=819
+    ntot=1319
     start=season[1]/365
     stop=season[2]/365
 
@@ -137,9 +137,9 @@ duration_seasons <- function(dur,season,filename){
     duration_write(filename,dur_neu[1:ntot,1:4,1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
 }
     
-duration_analysis <- function(dur,filename,season,trenn=1980,stations=seq(1,819,1),plot_hist=FALSE){
-    br=seq(0,100,2)
-    ntot=819
+duration_analysis <- function(dur,filename,season,trenn=1980,stations=seq(1,1319,1)){
+    br=seq(0,200,2)
+    ntot=1319
     dur_ana=array(NA,dim=c(ntot,6))
 
     for (q in stations){
@@ -157,27 +157,12 @@ duration_analysis <- function(dur,filename,season,trenn=1980,stations=seq(1,819,
 
         hist1=hist(dur$dur_warm[q,vor_warm],breaks=br,plot=FALSE)
         hist2=hist(dur$dur_warm[q,nach_warm],breaks=br,plot=FALSE)
-        dur_ana[q,5]=sum(hist2$density[10:50])-sum(hist1$density[10:50])
-
-        if (plot_hist){
-            pdf(file=paste("../plots/dur/histo_warm_",q,"_",season,".pdf",sep=""))
-            plot(hist1,col=rgb(0,0,1,1/4),ylim=c(0,max(c(hist1$counts,hist2$counts))),main=paste("warm periods in",season),xlab="duration of period")
-            plot(hist2,col=rgb(1,0,0,1/4),add=TRUE)
-            legend("topright", pch = c(15,15), col = c("blue", "red"), 
-                legend = c(paste("before",trenn),paste("after",trenn)))
-        }  
+        dur_ana[q,5]=sum(hist2$density[10:100])-sum(hist1$density[10:50]) 
 
         hist1=hist(dur$dur_cold[q,vor_cold],breaks=br,plot=FALSE)
         hist2=hist(dur$dur_cold[q,nach_cold],breaks=br,plot=FALSE)
-        dur_ana[q,6]=sum(hist2$density[10:50])-sum(hist1$density[10:50])
+        dur_ana[q,6]=sum(hist2$density[10:100])-sum(hist1$density[10:50])
 
-        if (plot_hist){
-            pdf(file=paste("../plots/dur/histo_cold_",q,"_",season,".pdf",sep=""))
-            plot(hist1,col=rgb(0,0,1,1/4),ylim=c(0,max(c(hist1$counts,hist2$counts))),main=paste("cold periods in",season),xlab="duration of period")
-            plot(hist2,col=rgb(1,0,0,1/4),add=TRUE)
-            legend("topright", pch = c(15,15), col = c("blue", "red"), 
-                legend = c(paste("before",trenn),paste("after",trenn)))
-        }  
 
     }
     if (filename!=FALSE){
