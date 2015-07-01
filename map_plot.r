@@ -191,7 +191,7 @@ climatology_markov <- function(dat,filename,filename_plot,newmap,ausschnitt){
     graphics.off()
 }
 
-climatology_duration <- function(dat,poli,filename,filename_plot,newmap,ausschnitt){
+climatology_duration <- function(dat,filename,filename_plot,newmap,ausschnitt){
 
 	jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
 	nbcol <- 100
@@ -221,7 +221,7 @@ climatology_duration <- function(dat,poli,filename,filename_plot,newmap,ausschni
 					m<-m+1
 					lon[m]=dat$lon[k]
 					lat[m]=dat$lat[k]
-					regio[m]=dat$region[k]
+					#regio[m]=dat$region[k]
 					y1[m]=tmp[k]
 				}
 			}
@@ -237,17 +237,17 @@ climatology_duration <- function(dat,poli,filename,filename_plot,newmap,ausschni
 		facetcol <- cut(y,nbcol)
 		plot(newmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5,main=paste(var1$longname))
 
-		points(lon,lat,pch=regio,col=color[facetcol[3:(size+2)]],cex=1.2)
+		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=1.2)
 		image.plot(legend.only=T, zlim=range(y), col=color)
 
 	}
     graphics.off()
 }
 
-if (1==1){
+if (1==2){
 	location_view()
 }
-sdf
+
 if (1==1){
 	dyn.load("persistence_tools.so")
 	library(rworldmap)
@@ -258,30 +258,30 @@ if (1==1){
 	ndays = c(91)
 	nyrs = c(5)
 
-	dat=dat_load("../data/mid_lat_reg.nc")
+	dat=dat_load("../data/dat_regional.nc")
 	#points_to_regions(dat=dat)
 	for (nday in ndays){
 	    for (nyr in nyrs){
 	        
-	        if (1==2){
+	        if (1==1){
 				trend_plot(dat,sprintf("../plots/maps/%s_%s_markov_trend.pdf",nday,nyr),worldmap,c(35,66),
 					filename_markov=sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))	        	
 	        }
-	        if (1==2){
+	        if (1==1){
 				climatology_markov(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr),
 					filename_plot=sprintf("../plots/maps/%s_%s_markov_climatology.pdf",nday,nyr),
 					worldmap,c(35,66))
    	
 	        }
 	        if (1==1){
-				climatology_duration(dat=dat,poli=poli,filename=sprintf("../data/%s_%s/%s_%s_duration_ana_summer.nc",nday,nyr,nday,nyr),
+				climatology_duration(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_duration_ana_summer.nc",nday,nyr,nday,nyr),
 					filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_ana.pdf",nday,nyr),
 					worldmap,c(35,66))
    	
 	        }
-	        if (1==2){
-				climatology_duration(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_duration_winter.nc",nday,nyr,nday,nyr),
-					filename_plot=sprintf("../plots/maps/%s_%s_duration_winter_climatology.pdf",nday,nyr),
+	        if (1==1){
+				climatology_duration(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_duration_ana_winter.nc",nday,nyr,nday,nyr),
+					filename_plot=sprintf("../plots/maps/%s_%s_duration_winter_ana.pdf",nday,nyr),
 					worldmap,c(35,66))
    	
 	        }

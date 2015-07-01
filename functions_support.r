@@ -141,7 +141,7 @@ points_to_regions <- function(dat,filename="../data/SREX_regions_all.csv"){
     srex <- read.csv(file=filename, header=TRUE, sep=",")
     latpos=c(3,5,7,9,11,13)
     lonpos=c(4,6,8,10,12,14)
-    poli=array(NA,dim=c(30,12))
+    poli=array(NA,dim=c(26,13))
     for (i in 1:30){
         if (srex[i,2] < 27){
             lat=c()
@@ -162,8 +162,10 @@ points_to_regions <- function(dat,filename="../data/SREX_regions_all.csv"){
             }
             poli[i,1:(length(lon))]=lon
             poli[i,7:(6+length(lat))]=lat
+            poli[i,13]=srex[i,2]
         }
     }
+    write.table(poli,"../data/srex_poligons.txt")
     dat$region = dat$ID*NA
     points=cbind(x=dat$lon,y=dat$lat)
     reg=1
@@ -185,4 +187,5 @@ points_to_regions <- function(dat,filename="../data/SREX_regions_all.csv"){
     dat_write(filename="../data/mid_lat.nc",dat)
     return(poli)
 }
+
 
