@@ -80,52 +80,51 @@ trend_control <- function(dat,per,seasonStart=c(59,151,243,335),seasonStop=c(150
     return(waTrend[1:ntot,1:4])
 }
 
-regions_color <- function(values,worldmap){
-    poli=read.table("../data/poligons.txt")
-    print(poli)
-
+regions_color <- function(values,worldmap,title){
+    poli=read.table("../data/srex_poligons.txt")
     jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
     nbcol <- 20
     color <- jet.colors(nbcol)
-    print(values)
-    values = values[!is.na(values)]
-     
-    size=length(values)       
-    y=array(NA,(size+2))
-    y[3:(size+2)]=values
 
-    y[1]=-2*sd(values)
-    y[2]=2*sd(values)
-    facetcol <- cut(y,nbcol)  
-
-    print(y)
-
-    plot(worldmap)
-
+    y=c()
+    index=c()
+    j=0
     for (i in 1:26){
         if (!is.na(values[i])){
-            lon=poli[i,1:6]
-            lat=poli[i,7:12]
-            lon=lon[!is.na(lon)]
-            lat=lat[!is.na(lat)]
-            polygon(x=lon,y=lat,col=color[facetcol[(2+i)]],border="green")
-            text(mean(lon),mean(lat),cex=0.7,col="black")
+            j=j+1
+            y[j]=values[i]
+            index[j]=i           
         }
     }
-    image.plot(legend.only=T, zlim=range(values), col=color)
-    write.table(poli,"poligons.txt")
+    aushol=max(c(abs(max(y)),abs(min(y))))
+    y[j+1]=-aushol
+    y[j+2]=aushol
+    facetcol <- cut(y,nbcol)  
+
+    plot(worldmap,main=title)
+
+    for (i in 1:j){
+        lon=poli[index[i],1:6]
+        lat=poli[index[i],7:12]
+        lon=lon[!is.na(lon)]
+        lat=lat[!is.na(lat)]
+        polygon(x=lon,y=lat,col=color[facetcol[i]],border="green")
+        text(mean(lon),mean(lat),label=poli[index[i],13],cex=0.7,col="black")
+    }
+    image.plot(legend.only=T, zlim=range(y), col=color)
     return()
 }
 
-map_regional <- function(dat,toPlot){
+map_regional <- function(dat,toPlot,titles){
     ntot=length(dat$ID)
     library(rworldmap)
     library(fields)
     worldmap = getMap(resolution = "low")
     pdf(file="../plots/regions/region_map.pdf")
+
     for (i in 1:dim(toPlot)[2]){
         out=average_regional(dat,toPlot[1:ntot,i])
-        regions_color(out,worldmap)
+        regions_color(out,worldmap,titles[i])
     }
 }
 
@@ -148,12 +147,9 @@ if (1==1){
     nday=91
     nyr=5
 
-
 	dat=dat_load("../data/dat_regional.nc",reg=1)
     per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
     #watrends=trend_control(dat,per)
     watrends=read.table("../data/warmeTage_trends_4seasons.txt")
-    map_regional(dat,watrends)
-    sdfs
-	print(average_regional(dat,dat$lon))
+    map_regional(dat,watrends[,1:4],c("spring warm day increase","summer warm day increase","autumn warm day increase","winter warm day increase"))
 }
