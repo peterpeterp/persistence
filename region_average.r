@@ -102,12 +102,15 @@ if (1==2){
 
 
 average_regional <- function(dat,value){
-	out=array(NA,26)
+	valIn=array(NA,26)
+    errIn=array(NA,26)
 	for (reg in 1:26){
 		inside=which(dat$reg==reg)
-		out[reg]=mean(value[inside],na.rm=TRUE)
+		valIn[reg]=mean(value[inside],na.rm=TRUE)
+        errIn=sum(value[inside],na.rm=TRUE)
+
 	}
-	return(out)
+	return(valIn)
 }
 
 if (1==1){

@@ -29,7 +29,7 @@ trend_control_warm_days <- function(dat,per,seasonStart=c(59,151,243,335),season
             if (length(which(is.na(warmeTage)))<30){ 
                 lm.r=lm(warmeTage~dat$year)
                 waTrend[q,sea]=summary(lm.r)$coefficients[2]
-                waTrend[q,(4+sea)]=summary(lm.r)$coefficients[8]
+                waTrend[q,(4+sea)]=summary(lm.r)$coefficients[4]
             }
         }
     }
@@ -114,8 +114,6 @@ trend_view_detail <-function(dat,trend,year,q){
 
     x=seq((year+1/365-0.5/365),(year+365/365-0.5/365),1/365)	
 	y=rowMeans(dat$tas[q,1:365,(year_index-1):(year_index+3)],dims=1)
-	print(paste(length(x),length(y)))
-	print(y)
     points(x,y,pch=15,col="violet",cex=0.3)
 
     points(d1_y,mean(y[(d1-45):(d1+45)]),col="blue")
@@ -125,7 +123,32 @@ trend_view_detail <-function(dat,trend,year,q){
     points(d1_y,trend[q,maxi,year_index],col="blue",pch=20,cex=0.3)
     points(d2_y,trend[q,maxi+1,year_index],col="green",pch=20,cex=0.3)
 
-    legend("bottomright",pch=c(20,20,15),col=c("black","red","violet",),legend=c("temp","trend","5 year mean"))
+    print(y)
+
+    YearMeanDiff=mean(dat$tas[q,(d2-45),(year_index-1):(year_index+3)])-mean(dat$tas[q,(d1-45),(year_index-1):(year_index+3)])+mean(dat$tas[q,(d2+45),(year_index-1):(year_index+3)])-mean(dat$tas[q,(d1+45),(year_index-1):(year_index+3)])
+    print(YearMeanDiff)
+    print(mean(dat$tas[q,(d2-45),(year_index-1):(year_index+3)]))
+    print(mean(dat$tas[q,(d1-45),(year_index-1):(year_index+3)]))
+    print(mean(dat$tas[q,(d2+45),(year_index-1):(year_index+3)]))
+    print(mean(dat$tas[q,(d1+45),(year_index-1):(year_index+3)]))
+
+    trenddiff=mean(y[(d2-45):(d2+45)])-mean(y[(d1-45):(d1+45)])
+    print(trenddiff)
+
+    print(paste((d1-45),(d1+45),(d2-45),(d2+45)))
+    print(paste(d1,d2))
+
+    su1=sum(y[(d1-45):(d1+45)])
+    su2=sum(y[(d2-45):(d2+45)])
+    print(su1)
+    print(su2)
+    print((su2-su1)/91)
+
+    legend("bottomright",pch=c(20,20,15,NA,NA),col=c("black","red","violet",NA,NA),
+        legend=c("temp","trend","5 year mean",
+            paste("sum 5 year mean blue",su1),
+            paste("sum 5 year mean green",su2),
+            paste("diff between trend points",trenddiff )))
 }
 
 
@@ -141,55 +164,12 @@ if (1==1){
     nday=91
     nyr=5
 
-    s=array(1:20,dim=c(4,5))
-    print(s)
-    print(colMeans(s, na.rm = FALSE, dims = 1))
-    print(rowMeans(s, na.rm = FALSE, dims = 1))
 
     trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr))
 	dat=dat_load("../data/dat_regional.nc",reg=1)
 
-	trend_view_detail(dat,trend,2003,488)
-	fsdf
-
-
-    z=dat$tas[488,,53]
-
-    mea_trend_diff=mean(abs(diff(y)))
-    print(mea_trend_diff)
-    print(mea_trend_diff*91*5/10)
-
-    maxi=which(diff(y)==max(diff(y)))
-    p=maxi+45
-    print(maxi)
-    print(p)
-    print(max(diff(y)))
-
-    window1=dat$tas[488,(p-45-1):(p+45-1),51:55]
-    window2=dat$tas[488,(p-45):(p+45),51:55]
-    window3=dat$tas[488,(p-45+1):(p+45+1),51:55]
-
-    window_beg=dat$tas[488,(p-45-1):(p-45+1),51:55]
-    window_end=dat$tas[488,(p+45-1):(p+45+1),51:55]
-
-    print(window_beg)
-    print(window_end)
-
-    diff1=sum(window_beg[2,]-window_beg[1,])+sum(window_end[2,]-window_end[1,])
-    diff2=sum(window_beg[3,]-window_beg[2,])+sum(window_end[3,]-window_end[2,])
-
-    print(paste(diff1,diff1/(91*5)))
-    print(paste(diff2,diff2/(91*5)))
-
-    print(paste(mean(window1),mean(window2),mean(window3)))
-    print(trend[488,(p-1):(p+1),53])
-
-    trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr))
-    y=trend[488,,]
-    print(max(abs(diff(y)),na.rm=TRUE))
-
-
-    fsdfsd
+	#trend_view_detail(dat,trend,2003,488)
+    #trend_control_warm_days(dat,per)
 
     per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
     #watrends=trend_control_warm_days(dat,per)
