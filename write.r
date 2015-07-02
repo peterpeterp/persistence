@@ -3,7 +3,7 @@ library(ncdf)
 dat_write <- function(filename,data3D)
 {
     day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
-    year <- dim.def.ncdf("year",units="year",vals=1:62, unlim=FALSE)
+    year <- dim.def.ncdf("year",units="year",vals=1950:2011, unlim=FALSE)
     ID <- dim.def.ncdf("ID",units="ID",vals=1:length(data3D$ID), unlim=FALSE)
 
     

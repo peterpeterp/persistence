@@ -45,40 +45,7 @@ points_to_regions <- function(dat,filename="../data/SREX_regions_all.csv"){
     return(poli)
 }
 
-trend_control <- function(dat,per,seasonStart=c(59,151,243,335),seasonStop=c(150,242,334,424)){
-    ntot=length(dat$ID)
-    waTrend=array(NA,dim=c(ntot,8))
-    for (q in 1:ntot){
-        for (sea in 1:4){
-            warmeTage=array(NA,62)
-            kalteTage=array(NA,62)
-            for (i in 1:61){
-                if (seasonStop[sea]>365){
-                    warmeTage[i]=length(which(per$ind[q,seasonStart[sea]:365,i]==1))
-                    kalteTage[i]=length(which(per$ind[q,seasonStart[sea]:365,i]==-1)) 
 
-                    warmeTage[i]=warmeTage[i]+length(which(per$ind[q,1:(seasonStop[sea]-365),(i+1)]==1))
-                    kalteTage[i]=kalteTage[i]+length(which(per$ind[q,1:(seasonStop[sea]-365),(i+1)]==-1)) 
-                }
-                else {
-                    warmeTage[i]=length(which(per$ind[q,seasonStart[sea]:seasonStop[sea],i]==1))
-                    kalteTage[i]=length(which(per$ind[q,seasonStart[sea]:seasonStop[sea],i]==-1))  
-                }   
-                if ((warmeTage[i]+kalteTage[i])<80){
-                    warmeTage[i]=NA
-                    kalteTage[i]=NA
-                }            
-            }
-            if (length(which(is.na(warmeTage)))<30){ 
-                lm.r=lm(warmeTage~dat$year)
-                waTrend[q,sea]=summary(lm.r)$coefficients[2]
-                waTrend[q,(4+sea)]=summary(lm.r)$coefficients[8]
-            }
-        }
-    }
-    write.table(waTrend,"../data/warmeTage_trends_4seasons.txt")
-    return(waTrend[1:ntot,1:4])
-}
 
 regions_color <- function(values,worldmap,title){
     poli=read.table("../data/srex_poligons.txt")
@@ -146,10 +113,7 @@ average_regional <- function(dat,value){
 if (1==1){
     nday=91
     nyr=5
-
 	dat=dat_load("../data/dat_regional.nc",reg=1)
+
     per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
-    #watrends=trend_control(dat,per)
-    watrends=read.table("../data/warmeTage_trends_4seasons.txt")
-    map_regional(dat,watrends[,1:4],c("spring warm day increase","summer warm day increase","autumn warm day increase","winter warm day increase"))
 }

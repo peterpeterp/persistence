@@ -81,47 +81,11 @@ station_plot <- function(dat,trend,per,dur1,dur2,dur3,dur4,q,start,stop,filename
     graphics.off()
 }
 
-trend_view_plot <- function(dat,q,start,stop,ndays,nyrs){
-    qq=which(dat$ID==q)
-    q=qq[1]
-    pdf(file=sprintf("../plots/station/trend_%s.pdf",dat$ID[q]))
-    for (k in 1:3){
-        plot(dat$time,dat$tas[q,,],pch=20,cex=0.2,xlim=c(start[k],stop[k]),ylab="temperature anomaly in deg C",xlab="",main="different trends")
-        linestyle=c()
-        color=c()
-        label=c("days years")
-        for (i in 1:length(ndays)){
-            for (j in 1:length(nyrs)){
-                trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",ndays[i],nyrs[j],ndays[i],nyrs[j]))
-                linestyle[(i-1)*length(nyrs)+j+1]=j
-                color[(i-1)*length(nyrs)+j+1]=rgb(i/3,0,0.5)
-                label[(i-1)*length(nyrs)+j+1]=paste(ndays[i],nyrs[j],sep="     ")
-                lines(dat$time,trend[q,,],col=rgb(i/3,0,0.5),lty=j)
-            }
-        }
-        rect(2003.5-30/365,-30,2003.5+30/365,30,col=rgb(1/3,0,0.5),density=0.0)
-        #text(2003.5+30/365,5,labels=61,col=rgb(1/3,0,0.5))
-        rect(2003.5-45/365,-30,2003.5+45/365,30,col=rgb(2/3,0,0.5),density=0.0)
-        #text(2003.5+45/365,13.5,labels=91,col=rgb(2/3,0,0.5))
-        rect(2003.5-60/365,-30,2003.5+60/365,30,col=rgb(3/3,0,0.5),density=0.0)
-        #text(2003.5+60/365,15,labels=121,col=rgb(3/3,0,0.5))
 
-        trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",91,5,91,5))
-        lines(dat$time,trend[qq[1],,],col=rgb(0,1,0),lty=2)
-        linestyle[(i-1)*length(nyrs)+j+2]=2
-        color[(i-1)*length(nyrs)+j+2]=rgb(0,1,0)
-        label[(i-1)*length(nyrs)+j+2]=paste("91 5 control")
-        
-        legend("bottomleft",lty=linestyle, col = color, legend=label)
-    }
-    graphics.off()
-
-}
 
 
 
 dat=dat_load("../data/mid_lat.nc")
-#trend_view_plot(dat,488,c(2000,2003,2003.3),c(2005,2004,2003.7),c(61,91,121),c(5,1,7))
 
 
 
