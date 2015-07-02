@@ -77,58 +77,55 @@ trend_view_diff_trends <- function(dat,q,start,stop,ndays,nyrs){
 #trend_view_diff_trends(dat,488,c(2000,2003,2003.3),c(2005,2004,2003.7),c(61,91,121),c(5,1,7))
 
 trend_view_detail <-function(dat,trend,year,q){
-	y=trend[488,,year]
+	year_index=year-1950
+	y=trend[488,,year_index]
     maxi=which(diff(y)==max(diff(y[45:320])))
-    print(diff(y))
-    p0=maxi
-    print(p0)
-    print(y[(maxi-2):(maxi+2)])
-    print(diff(y)[(maxi-2):(maxi+2)])
-    window1=dat$tas[488,(p0-45-1):(p0+45-1),(year-2):(year+2)]
-    window2=dat$tas[488,(p0-45):(p0+45),(year-2):(year+2)]
-    window3=dat$tas[488,(p0-45+1):(p0+45+1),(year-2):(year+2)]
 
-    window_beg=dat$tas[488,(p0-45):(p0-45+2),(year-3):(year+2)]
-    window_end=dat$tas[488,(p0+45):(p0+45+2),(year-3):(year+2)]
+    d1=maxi
+    d2=maxi+1
 
-    print(window_beg)
-    print(window_end)
-    print(dat$tas[488,(p0-47):(p0+47),year])
-
-    diff1=sum(window_beg[2,]-window_beg[1,])+sum(window_end[2,]-window_end[1,])
-    diff2=sum(window_beg[3,]-window_beg[2,])+sum(window_end[3,]-window_end[2,])
-
-    print(paste(diff1,diff1/(91*5)))
-    print(paste(diff2,diff2/(91*5)))
-
-    print(paste(mean(window1),mean(window2),mean(window3))) 
+    d1_y=year+d1/365 - 0.5/365
+    d2_y=year+d2/365 - 0.5/365
 
     pdf(file="../plots/station/trend_detail.pdf")
-    plot(dat$time,dat$tas[488,,],xlim=c((1950+year+0.15),(year+1950+0.5)),ylim=c(-7,10),pch=20,cex=0.4)
+    plot(dat$time,dat$tas[q,,],xlim=c((year+0.15),(year+0.5)),ylim=c(-7,10),pch=20,cex=0.4,ylab="temperature anomalie in deg C",main="trend ???")
 
-    p=1950+year+p0/365-0.5*1/365
-    for (i in 1:5){
-    	text((p-(44)/365),window_beg[1,i],label=i,col="blue",cex=0.6)
+    for (i in -2:2){
+    	text((d1_y-45/365),dat$tas[q,(d1-45),(year_index+(i+1))],label=i,col="blue",cex=0.4)
     }
-    for (i in 1:5){
-    	text((p-(44-1)/365),window_beg[2,i],label=i,col="green",cex=0.6)
+    for (i in -2:2){
+    	text((d2_y-45/365),dat$tas[q,(d2-45),(year_index+(i+1))],label=i,col="green",cex=0.4)
     }
 
-    for (i in 1:5){
-    	print(paste(i,window_end[1,i]))
-    	text((p+(44)/365),window_end[1,i],label=i,col="blue",cex=0.6)
+    for (i in -2:2){
+    	text((d1_y+45/365),dat$tas[q,(d1+45),(year_index+(i+1))],label=i,col="blue",cex=0.4)
     }
-    for (i in 1:5){
-    	text((p+(44+1)/365),window_end[2,i],label=i,col="green",cex=0.6)
+    for (i in -2:2){
+    	text((d2_y+45/365),dat$tas[q,(d2+45),(year_index+(i+1))],label=i,col="green",cex=0.4)
     }
-    points(dat$time+1,dat$tas[488,,],pch=20,cex=0.2,col="green")
-    points(dat$time+2,dat$tas[488,,],pch=20,cex=0.2,col="violet")
+
+
+
+    points((d1_y-45/365),mean(dat$tas[q,(d1-45),(year_index-1):(year_index+3)]),pch=15,col="blue",cex=0.6)
+    points((d2_y-45/365),mean(dat$tas[q,(d2-45),(year_index-1):(year_index+3)]),pch=15,col="green",cex=0.6)
+
+    points((d1_y+45/365),mean(dat$tas[q,(d1+45),(year_index-1):(year_index+3)]),pch=15,col="blue",cex=0.6)
+    points((d2_y+45/365),mean(dat$tas[q,(d2+45),(year_index-1):(year_index+3)]),pch=15,col="green",cex=0.6)
+
+    x=seq((year+1/365-0.5/365),(year+365/365-0.5/365),1/365)	
+	y=rowMeans(dat$tas[q,1:365,(year_index-1):(year_index+3)],dims=1)
+	print(paste(length(x),length(y)))
+	print(y)
+    points(x,y,pch=15,col="violet",cex=0.3)
+
+    points(d1_y,mean(y[(d1-45):(d1+45)]),col="blue")
+    points(d2_y,mean(y[(d2-45):(d2+45)]),col="green")
 
     points(dat$time,trend[q,,],pch=20,cex=0.2,col="red")	
-    points(p,trend[q,p0,year],col="blue",pch=20,cex=0.3)
-    points((p+1/365),trend[q,p0+1,year],col="green",pch=20,cex=0.3)
+    points(d1_y,trend[q,maxi,year_index],col="blue",pch=20,cex=0.3)
+    points(d2_y,trend[q,maxi+1,year_index],col="green",pch=20,cex=0.3)
 
-
+    legend("bottomright",pch=c(20,20,15),col=c("black","red","violet",),legend=c("temp","trend","5 year mean"))
 }
 
 
@@ -144,14 +141,15 @@ if (1==1){
     nday=91
     nyr=5
 
+    s=array(1:20,dim=c(4,5))
+    print(s)
+    print(colMeans(s, na.rm = FALSE, dims = 1))
+    print(rowMeans(s, na.rm = FALSE, dims = 1))
 
     trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr))
-    y=trend[488,45:320,53]
-
-
 	dat=dat_load("../data/dat_regional.nc",reg=1)
 
-	trend_view_detail(dat,trend,53,488)
+	trend_view_detail(dat,trend,2003,488)
 	fsdf
 
 
