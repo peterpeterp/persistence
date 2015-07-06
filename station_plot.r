@@ -68,16 +68,19 @@ station_plot <- function(dat,trend,per,dur1,dur2,dur3,dur4,q,start,stop,filename
         plot(hist1$mids,hist1$density,xlim=c(0,endx*2+2),col=rgb(0,1,0,1/2),pch=15,ylim=c(0,max(c(hist1$density,hist2$density))),main=paste("warm periods in",season),xlab="duration of period")
         points(hist2$mids,hist2$density,col=rgb(1,0,0,1/2),pch=15)
 
-        x=hist1$mids[1:endx]
-        xy=data.frame(y=hist1$density[1:endx],x=x)
+        x=hist1$mids
+        xy=data.frame(y=hist1$density,x=x)
         fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
         yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
         lines(x,yfit,col="green")
         x5=(log(0.05)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
         abline(v=x5,col="green")
 
-        x=hist2$mids[1:endx]
-        xy=data.frame(y=hist2$density[1:endx],x=x)
+        print(summary(fit))
+        print(summary(fit)$parameters)
+
+        x=hist2$mids
+        xy=data.frame(y=hist2$density,x=x)
         fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
         yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
         lines(x,yfit,col="red")

@@ -146,17 +146,19 @@ if (1==2){
     duration_seasons(dur,season=c(335,425),filename=sprintf("../data/%s_%s/%s_%s_duration_winter.nc",nday,nyr,nday,nyr))
 }
 
-if (1==2){
+if (1==1){
     nday=91
     nyr=5
 
     for (season in c("spring","summer","autumn","winter")){
+        print(season)
         dur=duration_load(filename=paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_",season,".nc",sep=""))
-        duration_analysis(dur,filename=paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_ana_",season,".nc",sep=""),season=season,trenn=1980)
+        duration_analysis(dur,filename=paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_analysis_",season,".nc",sep=""),
+            season=season,trenn=1980)#,stations=134:136)
     }
 }
 
-if (1==1){
+if (1==2){
     nday=91
     nyr=5
     tmp=global_trend(filename_markov=sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr),filename_markov_neu=sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))

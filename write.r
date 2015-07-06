@@ -256,7 +256,38 @@ duration_write <- function(filename,dur,len)
 }
 
 
-duration_analysis_write <- function(filename,dur,season)
+duration_analysis_write <- function(filename,dur,season,trenn)
+{
+    ntot=1319
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+    output <- dim.def.ncdf("out ID",units="out ID",vals=1:7,unlim=FALSE)
+
+    dur_ana_warm_full <- var.def.ncdf(name="dur_ana_warm_full",units="values",longname=paste("analysis of duration of warm periods in",season,"from 1950 to 2011"),dim=list(ID,output), missval=-9999.0)
+    dur_ana_cold_full <- var.def.ncdf(name="dur_ana_cold_full",units="values",longname=paste("analysis of duration of cold periods in",season,"from 1950 to 2011"),dim=list(ID,output), missval=-9999.0)
+    dur_ana_warm_before <- var.def.ncdf(name="dur_ana_warm_before",units="values",longname=paste("analysis of duration of warm periods in",season,"from 1950 to",trenn),dim=list(ID,output), missval=-9999.0)
+    dur_ana_cold_before <- var.def.ncdf(name="dur_ana_cold_before",units="values",longname=paste("analysis of duration of cold periods in",season,"from 1950 to",trenn),dim=list(ID,output), missval=-9999.0)
+    dur_ana_warm_after <- var.def.ncdf(name="dur_ana_warm_after",units="values",longname=paste("analysis of duration of warm periods in",season,"from",trenn,"to 2011"),dim=list(ID,output), missval=-9999.0)
+    dur_ana_cold_after <- var.def.ncdf(name="dur_ana_cold_after",units="values",longname=paste("analysis of duration of cold periods in",season,"from",trenn,"to 2011"),dim=list(ID,output), missval=-9999.0)
+    
+
+    vars=list(dur_ana_warm_full,dur_ana_cold_full,
+        dur_ana_warm_before,dur_ana_cold_before,
+        dur_ana_warm_after,dur_ana_cold_after)
+   
+    nc = create.ncdf(filename,vars)
+
+    put.var.ncdf(nc,vars[[1]],dur[1:ntot,1,1,])      
+    put.var.ncdf(nc,vars[[2]],dur[1:ntot,1,2,])      
+    put.var.ncdf(nc,vars[[3]],dur[1:ntot,2,1,])      
+    put.var.ncdf(nc,vars[[4]],dur[1:ntot,2,2,])      
+    put.var.ncdf(nc,vars[[5]],dur[1:ntot,3,1,])      
+    put.var.ncdf(nc,vars[[6]],dur[1:ntot,3,2,])      
+
+
+    close.ncdf(nc) 
+}
+
+duration_analysis_write2 <- function(filename,dur,season)
 {
     ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)

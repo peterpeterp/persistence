@@ -140,33 +140,50 @@ duration_seasons <- function(dur,season,filename){
 duration_analysis <- function(dur,filename,season,trenn=1980,stations=seq(1,1319,1)){
     br=seq(0,200,2)
     ntot=1319
-    dur_ana=array(NA,dim=c(ntot,6))
+    dur_ana=array(NA,dim=c(ntot,3,2,7))
+    start=c(1950,1950,1980)
+    stop=c(2011,1980,2011)
+
 
     for (q in stations){
         cat("-")
-        dur_ana[q,1]=mean(dur$dur_warm[q,],na.rm=TRUE)
-        dur_ana[q,2]=mean(dur$dur_cold[q,],na.rm=TRUE)
+        if (length(which(!is.na(dur$dur_warm[q,])))>50){
+            for (i in 1:3){
+                for (t in 1:2){
+                    if (t==1){
+                        mid=dur$dur_warm_mid[q,]
+                        duration=dur$dur_warm[q,]
+                    }
+                    if (t==2){
+                        mid=dur$dur_cold_mid[q,]
+                        duration=dur$dur_cold[q,]
+                    }
+                    select=which(mid>start[i] & mid<stop[i])
+                    histo=hist(duration[select],breaks=br,plot=FALSE)
 
-        vor_warm=which(dur$dur_warm_mid[q,]<trenn)
-        vor_cold=which(dur$dur_cold_mid[q,]<trenn)
-        nach_warm=which(dur$dur_warm_mid[q,]>trenn)
-        nach_cold=which(dur$dur_cold_mid[q,]>trenn)
+                    x=histo$mids
+                    xy=data.frame(y=histo$density,x=x)
+                    fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
+                    a=summary(fit)$parameters[1]
+                    a_err=summary(fit)$parameters[3]
+                    b=summary(fit)$parameters[2]
+                    b_err=summary(fit)$parameters[4]
 
-        dur_ana[q,3]=mean(dur$dur_warm[q,nach_warm])-mean(dur$dur_warm[q,vor_warm])
-        dur_ana[q,4]=mean(dur$dur_cold[q,nach_cold])-mean(dur$dur_cold[q,vor_cold])
+                    perc5=(log(0.05)-a)/b
+                    perc10=(log(0.10)-a)/b
 
-        hist1=hist(dur$dur_warm[q,vor_warm],breaks=br,plot=FALSE)
-        hist2=hist(dur$dur_warm[q,nach_warm],breaks=br,plot=FALSE)
-        dur_ana[q,5]=sum(hist2$density[10:100])-sum(hist1$density[10:50]) 
-
-        hist1=hist(dur$dur_cold[q,vor_cold],breaks=br,plot=FALSE)
-        hist2=hist(dur$dur_cold[q,nach_cold],breaks=br,plot=FALSE)
-        dur_ana[q,6]=sum(hist2$density[10:100])-sum(hist1$density[10:50])
+                    dur_ana[q,i,t,1:7]=c(mean(duration[select],na.rm=TRUE),a,a_err,b,b_err,perc5,perc10)
+                }
+            }
+        } 
+        else {
+            cat(q)
+        }
 
 
     }
     if (filename!=FALSE){
-        duration_analysis_write(filename,dur_ana,season)
+        duration_analysis_write(filename,dur_ana,season,trenn)
     }
 }
 
