@@ -244,6 +244,61 @@ climatology_duration <- function(dat,filename,filename_plot,newmap,ausschnitt){
     graphics.off()
 }
 
+map_allgemein <- function(dat,filename,filename_plot,newmap,ausschnitt,reihen,titel,farbe_mitte){
+
+	jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
+	nbcol <- 100
+	color <- jet.colors(nbcol)	
+
+	pdf(file = filename_plot,width=12,height=8)
+	par(mfrow=c(2,1))
+
+	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
+	for (i in 1:dim(reihen)[1]){
+		print(titel[i])
+		size=length(mid_lat)
+		regio=array(NA,size)
+		lon=array(NA,size)
+		lat=array(NA,size)
+		y1=array(NA,size)
+		m=0
+
+		for (k in 1:length(dat$ID)){
+			if (k %in% mid_lat){
+				if (is.na(reihen[i,k])==FALSE){
+					m<-m+1
+					lon[m]=dat$lon[k]
+					lat[m]=dat$lat[k]
+					#regio[m]=dat$region[k]
+					y1[m]=reihen[i,k]
+				}
+			}
+		}
+		y=array(NA,(m+2))
+		notna=which(is.na(y1)==FALSE)
+		for (n in notna){
+			y[n+2]=y1[n]
+		}
+		if (farbe_mitte=="0"){
+			aushol=max(c(abs(max(y,na.rm=TRUE)),abs(min(y,na.rm=TRUE))))
+			y[1]=-aushol
+			y[2]=aushol
+		}
+		if (farbe_mitte=="mean"){
+			mi=mean(y,na.rm=TRUE)
+			aushol=max(c(max(y,na.rm=TRUE)-mi,mi-min(y,na.rm=TRUE)))
+			y[1]=mi-aushol
+			y[2]=mi+aushol
+		}			
+		facetcol <- cut(y,nbcol)
+		plot(newmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])
+
+		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=1.2)
+		image.plot(legend.only=T, zlim=range(y), col=color)
+	}
+    graphics.off()
+}
+
 if (1==2){
 	location_view()
 }
@@ -263,33 +318,50 @@ if (1==1){
 	for (nday in ndays){
 	    for (nyr in nyrs){
 	        
-	        if (1==1){
+	        if (1==2){
 				trend_plot(dat,sprintf("../plots/maps/%s_%s_markov_trend.pdf",nday,nyr),worldmap,c(35,66),
 					filename_markov=sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))	        	
 	        }
-	        if (1==1){
+	        if (1==2){
 				climatology_markov(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr),
 					filename_plot=sprintf("../plots/maps/%s_%s_markov_climatology.pdf",nday,nyr),
 					worldmap,c(35,66))
    	
 	        }
-	        if (1==1){
+	        if (1==2){
 				climatology_duration(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_duration_ana_summer.nc",nday,nyr,nday,nyr),
 					filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_ana.pdf",nday,nyr),
 					worldmap,c(35,66))
    	
 	        }
-	        if (1==1){
+	        if (1==2){
 				climatology_duration(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_duration_ana_winter.nc",nday,nyr,nday,nyr),
 					filename_plot=sprintf("../plots/maps/%s_%s_duration_winter_ana.pdf",nday,nyr),
 					worldmap,c(35,66))
    	
 	        }
-	        if (1==2){
-				climatology_duration(dat=dat,filename=sprintf("../data/%s_%s/%s_%s_duration_year.nc",nday,nyr,nday,nyr),
-					filename_plot=sprintf("../plots/maps/%s_%s_duration_year_climatology.pdf",nday,nyr),
-					worldmap,c(35,66))
-   	
+	        if (1==1){
+	        	ntot=1319
+		
+	    		titel_zusatz=c("mean","a","a_err","b","b_err","0.05 percentile","0.10 percentile")
+
+	    		vars=c("dur_ana_warm_full","dur_ana_cold_full",
+			        "dur_ana_warm_before","dur_ana_cold_before",
+			        "dur_ana_warm_after","dur_ana_cold_after")
+
+	    		nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_duration_analysis_summer.nc",nday,nyr,nday,nyr))
+
+	    		reihen=array(NA,dim=c(14,ntot))
+	    		titel=c()
+	    		for (i in 1:7){
+	    			for (j in 1:2){
+	    				reihen[((i-1)*2+j),]=get.var.ncdf(nc,vars[j])[1:ntot,i]
+	    				titel[((i-1)*2+j)]=paste(nc$var[[j]]$longname,titel_zusatz[i])
+	    			}
+	    		}
+				map_allgemein(dat=dat,
+					filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_analysis.pdf",nday,nyr),
+					newmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="mean")
 	        }	        	        
 		}
 	}
