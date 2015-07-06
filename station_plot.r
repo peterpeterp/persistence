@@ -60,14 +60,35 @@ station_plot <- function(dat,trend,per,dur1,dur2,dur3,dur4,q,start,stop,filename
         hist1=hist(dur2$dur_warm[q,vor_warm],breaks=br,plot=FALSE)
         hist2=hist(dur2$dur_warm[q,nach_warm],breaks=br,plot=FALSE)
 
-        par(mfrow=c(1,2))
+        endx=max(which(hist1$counts!=0),which(hist2$counts!=0))+1
+        print(endx)
 
+        par(mfrow=c(1,2))
         par(plt=c(0.2,0.85,0.2,0.85))        
-        plot(hist1,xlim=c(0,max(which(hist1$counts!=0))*2+2),col=rgb(0,1,0,1/2),ylim=c(0,max(c(hist1$counts,hist2$counts))),main=paste("warm periods in",season),xlab="duration of period")
-        plot(hist2,col=rgb(1,0,0,1/2),add=TRUE)
+        plot(hist1$mids,hist1$density,xlim=c(0,endx*2+2),col=rgb(0,1,0,1/2),pch=15,ylim=c(0,max(c(hist1$density,hist2$density))),main=paste("warm periods in",season),xlab="duration of period")
+        points(hist2$mids,hist2$density,col=rgb(1,0,0,1/2),pch=15)
+
+        x=hist1$mids[1:endx]
+        xy=data.frame(y=hist1$density[1:endx],x=x)
+        fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
+        yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
+        lines(x,yfit,col="green")
+        x5=(log(0.05)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
+        abline(v=x5,col="green")
+
+        x=hist2$mids[1:endx]
+        xy=data.frame(y=hist2$density[1:endx],x=x)
+        fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
+        yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
+        lines(x,yfit,col="red")
+        x5=(log(0.05)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
+        abline(v=x5,col="red")
+
         legend("topright", pch = c(15,15), col = c("green", "red"), 
                 legend = c(paste("before",trenn),paste("after",trenn)))
-        
+        print(yfit)
+        print(x)
+        werwe      
         hist1=hist(dur2$dur_cold[q,vor_cold],breaks=br,plot=FALSE)
         hist2=hist(dur2$dur_cold[q,nach_cold],breaks=br,plot=FALSE)
 
@@ -85,7 +106,7 @@ station_plot <- function(dat,trend,per,dur1,dur2,dur3,dur4,q,start,stop,filename
 
 
 
-dat=dat_load("../data/mid_lat.nc")
+dat=dat_load("../data/dat_regional.nc")
 
 
 
@@ -97,7 +118,7 @@ stations=c(488,510,604,744,920,887,251,98,270,281,169,164,353,121,11,39)
 for (nday in ndays){
     for (nyr in nyrs){
         for (qq in stations){
-            trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
+            trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr))
             cat("loading persistence\n") 
             per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
             dur1=duration_load(sprintf("../data/%s_%s/%s_%s_duration_spring.nc",nday,nyr,nday,nyr))
