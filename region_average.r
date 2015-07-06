@@ -95,6 +95,10 @@ average_regional <- function(dat,value){
 }
 
 map_regional <- function(dat,toPlot,titles,filename_plot){
+    # dat from data_load, loaded with reg=1!
+    # toPlot array(... ,dim=c(number of maps, number of stations))
+    # titles titles of plots (list)
+
     ntot=length(dat$ID)
     library(rworldmap)
     library(fields)
@@ -103,7 +107,6 @@ map_regional <- function(dat,toPlot,titles,filename_plot){
 
     for (i in 1:dim(toPlot)[1]){
         out=average_regional(dat,toPlot[i,1:ntot])
-        print(out)
         regions_color(out$mean,worldmap,titles[i])
     }
 }
