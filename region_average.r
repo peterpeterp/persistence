@@ -82,41 +82,42 @@ regions_color <- function(values,worldmap,title){
     return()
 }
 
-map_regional <- function(dat,toPlot,titles){
-    ntot=length(dat$ID)
-    library(rworldmap)
-    library(fields)
-    worldmap = getMap(resolution = "low")
-    pdf(file="../plots/regions/region_map.pdf")
-
-    for (i in 1:dim(toPlot)[2]){
-        out=average_regional(dat,toPlot[1:ntot,i])
-        regions_color(out,worldmap,titles[i])
-    }
-}
-
-if (1==2){
-	dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc",reg=0)
-	points_to_regions(dat)
-}
-
-
 average_regional <- function(dat,value){
 	valIn=array(NA,26)
     errIn=array(NA,26)
 	for (reg in 1:26){
-		inside=which(dat$reg==reg)
+		inside=which(dat$region==reg)
 		valIn[reg]=mean(value[inside],na.rm=TRUE)
-        errIn=sum(value[inside],na.rm=TRUE)
+        errIn[reg]=sd(value[inside],na.rm=TRUE)
 
 	}
-	return(valIn)
+	return(list(mean=valIn,sd=errIn))
 }
 
-if (1==1){
+map_regional <- function(dat,toPlot,titles,filename_plot){
+    ntot=length(dat$ID)
+    library(rworldmap)
+    library(fields)
+    worldmap = getMap(resolution = "low")
+    pdf(file=filename_plot)
+
+    for (i in 1:dim(toPlot)[1]){
+        out=average_regional(dat,toPlot[i,1:ntot])
+        print(out)
+        regions_color(out$mean,worldmap,titles[i])
+    }
+}
+
+if (1==2){
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc",reg=0)
+    points_to_regions(dat)
+}
+
+if (1==2){
     nday=91
     nyr=5
 	dat=dat_load("../data/dat_regional.nc",reg=1)
 
     per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
+
 }

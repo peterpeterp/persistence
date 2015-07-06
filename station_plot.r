@@ -60,11 +60,12 @@ station_plot <- function(dat,trend,per,dur1,dur2,dur3,dur4,q,start,stop,filename
         hist1=hist(dur2$dur_warm[q,vor_warm],breaks=br,plot=FALSE)
         hist2=hist(dur2$dur_warm[q,nach_warm],breaks=br,plot=FALSE)
 
-        endx=max(which(hist1$counts!=0),which(hist2$counts!=0))+1
-        print(endx)
 
         par(mfrow=c(1,2))
-        par(plt=c(0.2,0.85,0.2,0.85))        
+        par(plt=c(0.2,0.85,0.2,0.85))  
+
+        endx=max(which(hist1$counts!=0),which(hist2$counts!=0))+1
+
         plot(hist1$mids,hist1$density,xlim=c(0,endx*2+2),col=rgb(0,1,0,1/2),pch=15,ylim=c(0,max(c(hist1$density,hist2$density))),main=paste("warm periods in",season),xlab="duration of period")
         points(hist2$mids,hist2$density,col=rgb(1,0,0,1/2),pch=15)
 
@@ -76,9 +77,6 @@ station_plot <- function(dat,trend,per,dur1,dur2,dur3,dur4,q,start,stop,filename
         x5=(log(0.05)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
         abline(v=x5,col="green")
 
-        print(summary(fit))
-        print(summary(fit)$parameters)
-
         x=hist2$mids
         xy=data.frame(y=hist2$density,x=x)
         fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
@@ -89,14 +87,31 @@ station_plot <- function(dat,trend,per,dur1,dur2,dur3,dur4,q,start,stop,filename
 
         legend("topright", pch = c(15,15), col = c("green", "red"), 
                 legend = c(paste("before",trenn),paste("after",trenn)))
-        print(yfit)
-        print(x)
-        werwe      
+    
         hist1=hist(dur2$dur_cold[q,vor_cold],breaks=br,plot=FALSE)
         hist2=hist(dur2$dur_cold[q,nach_cold],breaks=br,plot=FALSE)
 
-        plot(hist1,xlim=c(0,max(which(hist1$counts!=0))*2+2),col=rgb(0,1,0,1/2),ylim=c(0,max(c(hist1$counts,hist2$counts))),main=paste("cold periods in",season),xlab="duration of period")
-        plot(hist2,col=rgb(1,0,0,1/2),add=TRUE)
+        endx=max(which(hist1$counts!=0),which(hist2$counts!=0))+1
+      
+        plot(hist1$mids,hist1$density,xlim=c(0,endx*2+2),col=rgb(0,1,0,1/2),pch=15,ylim=c(0,max(c(hist1$density,hist2$density))),main=paste("cold periods in",season),xlab="duration of period")
+        points(hist2$mids,hist2$density,col=rgb(1,0,0,1/2),pch=15)
+
+        x=hist1$mids
+        xy=data.frame(y=hist1$density,x=x)
+        fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
+        yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
+        lines(x,yfit,col="green")
+        x5=(log(0.05)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
+        abline(v=x5,col="green")
+
+        x=hist2$mids
+        xy=data.frame(y=hist2$density,x=x)
+        fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
+        yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
+        lines(x,yfit,col="red")
+        x5=(log(0.05)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
+        abline(v=x5,col="red")
+
         legend("topright", pch = c(15,15), col = c("green", "red"), 
                 legend = c(paste("before",trenn),paste("after",trenn)))
                     

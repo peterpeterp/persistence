@@ -312,8 +312,8 @@ if (1==1){
 
 	ndays = c(91)
 	nyrs = c(5)
-
-	dat=dat_load("../data/dat_regional.nc")
+	ntot=1319
+	dat=dat_load("../data/dat_regional.nc",reg=1)
 	#points_to_regions(dat=dat)
 	for (nday in ndays){
 	    for (nyr in nyrs){
@@ -341,13 +341,34 @@ if (1==1){
    	
 	        }
 	        if (1==1){
-	        	ntot=1319
-		
+	        	# summer all
+	       		waka=c("warm","cold")
 	    		titel_zusatz=c("mean","a","a_err","b","b_err","0.05 percentile","0.10 percentile")
+	    		vars=c("dur_ana_warm_before","dur_ana_cold_before",
+	    			"dur_ana_warm_after","dur_ana_cold_after")
 
-	    		vars=c("dur_ana_warm_full","dur_ana_cold_full",
-			        "dur_ana_warm_before","dur_ana_cold_before",
-			        "dur_ana_warm_after","dur_ana_cold_after")
+	    		nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_duration_analysis_summer.nc",nday,nyr,nday,nyr))
+
+	    		reihen=array(NA,dim=c(4,ntot))
+	    		titel=c()
+	    		auswahl=c(1,6)
+	    		for (i in 1:length(auswahl)){
+	    			for (j in 1:2){
+	    				reihen[((i-1)*2+j),]=get.var.ncdf(nc,vars[j+2])[1:ntot,auswahl[i]]-get.var.ncdf(nc,vars[j])[1:ntot,auswahl[i]]
+	    				titel[((i-1)*2+j)]=paste("difference in",waka[j],"period duration",titel_zusatz[auswahl[i]],"before and after 1980")
+	    			}
+	    		}
+	    		source("region_average.r")
+	    		map_regional(dat=dat,toPlot=reihen,titles=titel,filename_plot=sprintf("../plots/regions/%s_%s_duration_summer.pdf",nday,nyr))
+				sadsad
+				map_allgemein(dat=dat,
+					filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_analysis.pdf",nday,nyr),
+					newmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="0")
+	        }	
+	        if (1==2){
+	        	# summer all
+	    		titel_zusatz=c("mean","a","a_err","b","b_err","0.05 percentile","0.10 percentile")
+	    		vars=c("dur_ana_warm_full","dur_ana_cold_full")
 
 	    		nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_duration_analysis_summer.nc",nday,nyr,nday,nyr))
 
@@ -360,9 +381,9 @@ if (1==1){
 	    			}
 	    		}
 				map_allgemein(dat=dat,
-					filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_analysis.pdf",nday,nyr),
+					filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_diff_1980.pdf",nday,nyr),
 					newmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="mean")
-	        }	        	        
+	        }        	        
 		}
 	}
 
