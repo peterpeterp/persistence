@@ -1,7 +1,3 @@
-# teste teste
-source("write.r")
-source("load.r")
-library(SDMTools)
 
 location_finder <- function(station=0,lon=0,lat=0){
 	dat=dat_load("../data/mid_lat.nc")
@@ -42,7 +38,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 	#farbe_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
 
 	jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
-	nbcol <- 100
+	nbcol <- 101
 	color <- jet.colors(nbcol)	
 
 	pdf(file = filename_plot,width=12,height=8)
@@ -66,7 +62,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 					lon[m]=dat$lon[k]
 					lat[m]=dat$lat[k]
 					y1[m]=reihen[i,k]
-					if (reihen_sig[i,k]<0.05){
+					if (reihen_sig[i,k]<0.05 & !is.na(reihen_sig[i,k])){
 						sig[m]=4
 					}					
 				}
@@ -99,84 +95,5 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
     graphics.off()
 }
 
-if (1==1){
-	source("region_average.r")
-	library(rworldmap)
-	library(fields)
-	worldmap = getMap(resolution = "low")
-	nday = 91
-	nyr = 5
-	ntot=1319
-	dat=dat_load("../data/dat_regional.nc",reg=1)
 
-	if (1==1){
-		# markov summer
-		vars=c("mar_s_w_lr","mar_s_k_lr","mar_s_w_mk","mar_s_k_mk")
-        vars_sig=c("mar_s_w_lr_sig","mar_s_k_lr_sig","mar_s_w_mk_sig","mar_s_k_mk_sig")
-		nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))
-		reihen=array(NA,dim=c(4,ntot))
-		reihen_sig=array(NA,dim=c(4,ntot))
-		titel=c()
-
-		for (i in 1:4){
-			reihen[i,]=get.var.ncdf(nc,vars[i])
-			reihen_sig[i,]=get.var.ncdf(nc,vars_sig[i])
-			for (k in 1:(length(nc$var))){
-				if (nc$var[[k]]$name==vars[i]){
-					titel[i]=nc$var[[k]]$longname
-				}
-			}	
-		}
-		map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte="0",
-			filename_plot=sprintf("../plots/maps/%s_%s_markov_trend_summer.pdf",nday,nyr),
-			worldmap=worldmap,ausschnitt=c(35,66))		
-		map_regional(dat=dat,toPlot=reihen,titles=titel,filename_plot=sprintf("../plots/regions/%s_%s_markov_summer.pdf",nday,nyr))
-	}
-
-	if (1==2){
-		# summer vergleich
-		waka=c("warm","cold")
-		titel_zusatz=c("mean","a","a_err","b","b_err","0.05 percentile","0.10 percentile")
-		vars=c("dur_ana_warm_before","dur_ana_cold_before",
-		    	"dur_ana_warm_after","dur_ana_cold_after")
-
-		nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_duration_analysis_summer.nc",nday,nyr,nday,nyr))
-
-		reihen=array(NA,dim=c(4,ntot))
-		titel=c()
-		auswahl=c(1,6)
-		for (i in 1:length(auswahl)){
-		    for (j in 1:2){
-		    	reihen[((i-1)*2+j),]=get.var.ncdf(nc,vars[j+2])[1:ntot,auswahl[i]]-get.var.ncdf(nc,vars[j])[1:ntot,auswahl[i]]
-		    	titel[((i-1)*2+j)]=paste("difference in",waka[j],"period duration",titel_zusatz[auswahl[i]],"before and after 1980")
-		    }
-		}
-		
-		map_regional(dat=dat,toPlot=reihen,titles=titel,filename_plot=sprintf("../plots/regions/%s_%s_duration_summer.pdf",nday,nyr))
-		map_allgemein(dat=dat,
-			filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_analysis.pdf",nday,nyr),
-			worldmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="0")
-	}	
-	if (1==2){
-	# summer all
-	    titel_zusatz=c("mean","a","a_err","b","b_err","0.05 percentile","0.10 percentile")
-	    vars=c("dur_ana_warm_full","dur_ana_cold_full")
-
-	    nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_duration_analysis_summer.nc",nday,nyr,nday,nyr))
-
-	    reihen=array(NA,dim=c(14,ntot))
-	    titel=c()
-	    for (i in 1:7){
-	    	for (j in 1:2){
-	    		reihen[((i-1)*2+j),]=get.var.ncdf(nc,vars[j])[1:ntot,i]
-	    		titel[((i-1)*2+j)]=paste(nc$var[[j]]$longname,titel_zusatz[i])
-	    	}
-	    }
-		map_allgemein(dat=dat,
-			filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_diff_1980.pdf",nday,nyr),
-			worldmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="mean")
-	}        	        
-
-	
-}
 

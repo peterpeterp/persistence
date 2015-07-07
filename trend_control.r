@@ -1,15 +1,12 @@
-source("region_average.r")
-source("write.r")
-source("load.r")
 
-trend_control_warm_days <- function(dat,per,seasonStart=c(59,151,243,335),seasonStop=c(150,242,334,424)){
+trend_control_warm_days <- function(dat,per,seasonStart=c(59,151,243,335),seasonStop=c(150,242,334,424),filename="../data/warmeTage_trends_4seasons.txt"){
     ntot=length(dat$ID)
     waTrend=array(NA,dim=c(ntot,8))
     for (q in 1:ntot){
-        for (sea in 1:4){
+        for (sea in 1:length(seasonStart)){
             warmeTage=array(NA,62)
             kalteTage=array(NA,62)
-            for (i in 1:61){
+            for (i in 1:62){
                 if (seasonStop[sea]>365){
                     warmeTage[i]=length(which(per$ind[q,seasonStart[sea]:365,i]==1))
                     kalteTage[i]=length(which(per$ind[q,seasonStart[sea]:365,i]==-1)) 
@@ -21,7 +18,7 @@ trend_control_warm_days <- function(dat,per,seasonStart=c(59,151,243,335),season
                     warmeTage[i]=length(which(per$ind[q,seasonStart[sea]:seasonStop[sea],i]==1))
                     kalteTage[i]=length(which(per$ind[q,seasonStart[sea]:seasonStop[sea],i]==-1))  
                 }   
-                if ((warmeTage[i]+kalteTage[i])<80){
+                if ((warmeTage[i]+kalteTage[i])<(seasonStop[sea]-seasonStart[sea]-10)){
                     warmeTage[i]=NA
                     kalteTage[i]=NA
                 }            
@@ -33,7 +30,7 @@ trend_control_warm_days <- function(dat,per,seasonStart=c(59,151,243,335),season
             }
         }
     }
-    write.table(waTrend,"../data/warmeTage_trends_4seasons.txt")
+    write.table(waTrend,filename)
     return(waTrend[1:ntot,1:4])
 }
 
@@ -151,28 +148,3 @@ trend_view_detail <-function(dat,trend,year,q){
             paste("diff between trend points",trenddiff )))
 }
 
-
-
-
-
-
-
-
-
-
-if (1==1){
-    nday=91
-    nyr=5
-
-
-    trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr))
-	dat=dat_load("../data/dat_regional.nc",reg=1)
-
-	#trend_view_detail(dat,trend,2003,488)
-    #trend_control_warm_days(dat,per)
-
-    per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
-    #watrends=trend_control_warm_days(dat,per)
-    watrends=read.table("../data/warmeTage_trends_4seasons.txt")
-    map_regional(dat,watrends[,1:4],c("spring warm day increase","summer warm day increase","autumn warm day increase","winter warm day increase"))
-}

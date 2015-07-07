@@ -1,7 +1,3 @@
-source("write.r")
-source("load.r")
-library(SDMTools)
-
 
 points_to_regions <- function(dat,filename="../data/SREX_regions_all.csv"){
     srex <- read.csv(file=filename, header=TRUE, sep=",")
@@ -50,7 +46,7 @@ points_to_regions <- function(dat,filename="../data/SREX_regions_all.csv"){
 regions_color <- function(values,worldmap,title){
     poli=read.table("../data/srex_poligons.txt")
     jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
-    nbcol <- 20
+    nbcol <- 101
     color <- jet.colors(nbcol)
 
     y=c()
@@ -94,15 +90,12 @@ average_regional <- function(dat,value){
 	return(list(mean=valIn,sd=errIn))
 }
 
-map_regional <- function(dat,toPlot,titles,filename_plot){
+map_regional <- function(dat,toPlot,titles,worldmap,filename_plot){
     # dat from data_load, loaded with reg=1!
     # toPlot array(... ,dim=c(number of maps, number of stations))
     # titles titles of plots (list)
 
     ntot=length(dat$ID)
-    library(rworldmap)
-    library(fields)
-    worldmap = getMap(resolution = "low")
     pdf(file=filename_plot)
 
     for (i in 1:dim(toPlot)[1]){
@@ -111,16 +104,3 @@ map_regional <- function(dat,toPlot,titles,filename_plot){
     }
 }
 
-if (1==2){
-    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc",reg=0)
-    points_to_regions(dat)
-}
-
-if (1==2){
-    nday=91
-    nyr=5
-	dat=dat_load("../data/dat_regional.nc",reg=1)
-
-    per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
-
-}

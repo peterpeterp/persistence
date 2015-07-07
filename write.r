@@ -260,7 +260,7 @@ duration_analysis_write <- function(filename,dur,season,trenn)
 {
     ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    output <- dim.def.ncdf("out ID",units="out ID",vals=1:7,unlim=FALSE)
+    output <- dim.def.ncdf("out ID",units="out ID",vals=1:8,unlim=FALSE)
 
     dur_ana_warm_full <- var.def.ncdf(name="dur_ana_warm_full",units="values",longname=paste("analysis of duration of warm periods in",season,"from 1950 to 2011"),dim=list(ID,output), missval=-9999.0)
     dur_ana_cold_full <- var.def.ncdf(name="dur_ana_cold_full",units="values",longname=paste("analysis of duration of cold periods in",season,"from 1950 to 2011"),dim=list(ID,output), missval=-9999.0)

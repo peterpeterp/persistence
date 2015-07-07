@@ -140,7 +140,7 @@ duration_seasons <- function(dur,season,filename){
 duration_analysis <- function(dur,filename,season,trenn=1980,stations=seq(1,1319,1)){
     br=seq(0,200,2)
     ntot=1319
-    dur_ana=array(NA,dim=c(ntot,3,2,7))
+    dur_ana=array(NA,dim=c(ntot,3,2,8))
     start=c(1950,1950,1980)
     stop=c(2011,1980,2011)
 
@@ -169,10 +169,11 @@ duration_analysis <- function(dur,filename,season,trenn=1980,stations=seq(1,1319
                     b=summary(fit)$parameters[2]
                     b_err=summary(fit)$parameters[4]
 
+                    perc2=(log(0.02)-a)/b
                     perc5=(log(0.05)-a)/b
                     perc10=(log(0.10)-a)/b
 
-                    dur_ana[q,i,t,1:7]=c(mean(duration[select],na.rm=TRUE),a,a_err,b,b_err,perc5,perc10)
+                    dur_ana[q,i,t,1:8]=c(mean(duration[select],na.rm=TRUE),a,a_err,b,b_err,perc2,perc5,perc10)
                 }
             }
         } 
