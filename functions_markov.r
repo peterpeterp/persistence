@@ -13,6 +13,7 @@ markov_calc <- function(x,order){
 
 markov_chft <- function(x,order){
     tmp=markovchainFit(data=x)
+    
     if (sum(x,na.rm=TRUE)==length(x) | sum(-x,na.rm=TRUE)==length(x)){
         if (x[1]>0){
             P_w=1
