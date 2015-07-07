@@ -51,9 +51,7 @@ c_calc_runmean_2D <- function(y2D,nday,nyr)
     return(trend)
 }
 
-
-
-seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=markov_calc,order=0,shift=0,interval=365){
+seasonal_1D_out <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=markov_calc,order=0,shift=0,interval=365){
     if (seasons[length(seasons)]>365){
         shift=seasons[length(seasons)]-365
         seasons[,]=seasons[,]-shift
@@ -84,6 +82,35 @@ seasonal <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=mark
         i=i+interval
     }
     return(list(out1=out1,out2=out2,out_err=out_err,out_add=out_add))
+}  
+
+seasonal_matrix_out <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),shift=0,interval=365){
+    if (seasons[length(seasons)]>365){
+        shift=seasons[length(seasons)]-365
+        seasons[,]=seasons[,]-shift
+    }
+    size=length(dat)
+    x=seq(1, size, 1)
+    i=shift
+    j=1
+    out=array(NA,dim=c(dim(seasons)[2],9,62))
+    out_conf=array(NA,dim=c(dim(seasons)[2],62))
+
+    while ((i+interval)<size){
+        if ((is.na(dat[i+1])==FALSE) & (is.na(dat[i+interval])==FALSE)){
+            for (sea in 1:length(seasons[1,])){
+                x=dat[(seasons[1,sea]+i):(seasons[2,sea]+i)]
+                tmp=markov_3states(x)
+
+                out[sea,1:9,j]=tmp$transMat
+                out_conf[sea,j]=tmp$confidence
+
+            }
+        }
+        j=j+1
+        i=i+interval
+    }
+    return(list(out=out,out_conf=out_conf))
 }   
 
 
