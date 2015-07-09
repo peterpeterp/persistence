@@ -14,8 +14,8 @@ if (1==2){
     trend=calc_trend(dat,sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr),nday,nyr)
 }
 
-if (1==2){
-    # calculate persistence
+if (1==1){
+    # calculate persistence 2 states
     nday=91
     nyr=5
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc")
@@ -25,13 +25,34 @@ if (1==2){
 }
 
 if (1==1){
-    # analyse persistence
+    # analyse persistence 2 states
     nc=open.ncdf("../data/91_5/91_5_markov2s.nc")
     dat=dat_load("../data/dat_regional.nc")
     seasons=c("spring","summer","autumn","winter","year")
     for (season in seasons){
         per=get.var.ncdf(nc,paste("markov_",season,sep=""))
-        tmp=global_analysis(per=per,filename_neu=paste("../data/91_5/91_5_mar2s_trend_",season,".nc",sep=""),season=season,transition_names="cc cn cw nc nn nw wc wn ww")
+        tmp=global_analysis(per=per,filename_neu=paste("../data/91_5/91_5_mar2s_trend_",season,".nc",sep=""),season=season,transition_names="cc cw wc ww")
+    }
+}
+
+if (1==2){
+    # calculate persistence 3 states
+    nday=91
+    nyr=5
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc")
+    trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr))
+    per=calc_per(dat,trend,nday,nyr,model=markov_3states,states=3,transition_names="cc cn cw nc nn nw wc wn ww",
+        filename=sprintf("../data/%s_%s/%s_%s_markov3s.nc",nday,nyr,nday,nyr))
+}
+
+if (1==2){
+    # analyse persistence 3 states
+    nc=open.ncdf("../data/91_5/91_5_markov3s.nc")
+    dat=dat_load("../data/dat_regional.nc")
+    seasons=c("spring","summer","autumn","winter","year")
+    for (season in seasons){
+        per=get.var.ncdf(nc,paste("markov_",season,sep=""))
+        tmp=global_analysis(per=per,filename_neu=paste("../data/91_5/91_5_mar3s_trend_",season,".nc",sep=""),season=season,transition_names="cc cn cw nc nn nw wc wn ww")
     }
 }
 

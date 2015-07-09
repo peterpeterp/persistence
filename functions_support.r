@@ -218,11 +218,12 @@ global_analysis <- function(per,filename_neu,season,transition_names){
             #cat(q,length(which(is.na(per[q,i,]))),"\n")
             tmp=trend_analysis(t,per[q,i,])
             per_analysis[q,i,1]=mean(per[q,i,],na.rm=TRUE)
-            per_analysis[q,i,2]=mean(per[q,i,],na.rm=TRUE)
-            per_analysis[q,i,3]=tmp$slope
-            per_analysis[q,i,4]=tmp$slope_sig
-            per_analysis[q,i,5]=tmp$MK
-            per_analysis[q,i,6]=tmp$MK_sig
+            per_analysis[q,i,2]=sd(per[q,i,],na.rm=TRUE)
+            per_analysis[q,i,3]=tmp$MK
+            per_analysis[q,i,4]=tmp$MK_sig
+            per_analysis[q,i,5]=tmp$slope
+            per_analysis[q,i,6]=tmp$slope_sig
+
         }
     }
     markov_analysis_write(filename_neu,per_analysis,season,transition_names)

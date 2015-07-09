@@ -38,40 +38,44 @@ if (1==1){
 	ntot=1319
 	dat=dat_load("../data/dat_regional.nc",reg=1)
 
-	if (1==2){
-		# markov 3states
+	if (1==1){
+		# markov xx states
+
+		state_names=c("cold","normal","warm")
+		states=length(state_names)
+
+
 		vars=c("MK","LR")
         vars_sig=c("MK_sig","LR_sig")
        	seasons=c("spring","summer","autumn","winter","year")
        	for (season in seasons){
-			nc=open.ncdf(paste("../data/91_5/91_5_mar3s_trend_",season,".nc",sep=""))
-			reihen=array(NA,dim=c(9,ntot))
-			reihen_sig=array(NA,dim=c(9,ntot))
+			nc=open.ncdf(paste("../data/91_5/91_5_mar",states,"s_trend_",season,".nc",sep=""))
+			reihen=array(NA,dim=c(states*states,ntot))
+			reihen_sig=array(NA,dim=c(states*states,ntot))
 			titel=c()
 
-			states=c("cold","normal","warm")
 
-			MK=array(get.var.ncdf(nc,vars[1]),dim=c(ntot,3,3))
-			MK_sig=array(get.var.ncdf(nc,vars_sig[1]),dim=c(ntot,3,3))
-			for (from in 1:3){
-				for (to in 1:3){
-					reihen[((from-1)*3+to),]=MK[1:ntot,from,to]
-					reihen_sig[((from-1)*3+to),]=MK_sig[1:ntot,from,to]
-					titel[((from-1)*3+to)]=paste("Mann-Kendall test for transition from",states[from],"to",states[to],"in",season)
+			MK=array(get.var.ncdf(nc,vars[1]),dim=c(ntot,states,states))
+			MK_sig=array(get.var.ncdf(nc,vars_sig[1]),dim=c(ntot,states,states))
+			for (from in 1:states){
+				for (to in 1:states){
+					reihen[((from-1)*states+to),]=MK[1:ntot,from,to]
+					reihen_sig[((from-1)*states+to),]=MK_sig[1:ntot,from,to]
+					titel[((from-1)*states+to)]=paste("Mann-Kendall test for transition from",state_names[from],"to",state_names[to],"in",season)
 				}
 			}
 
 			map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte="gemeinsam 0",
-				filename_plot=paste("../plots/maps/91_5_mar3s_trend_",season,".pdf",sep=""),
+				filename_plot=paste("../plots/maps/91_5_mar",states,"s_trend_",season,".pdf",sep=""),
 				worldmap=worldmap,ausschnitt=c(35,66))		
 			map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
-				filename_plot=paste("../plots/regions/91_5_mar3s_trend_",season,".pdf",sep=""))
+				filename_plot=paste("../plots/regions/91_5_mar",states,"s_trend_",season,".pdf",sep=""))
 		}
 	}
 
 
 
-	if (1==1){
+	if (1==2){
 		# summer duration vergleich
 		waka=c("warm","cold")
 		titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")
@@ -92,15 +96,15 @@ if (1==1){
 		}
 		
 		map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
-			filename_plot=sprintf("../plots/regions/%s_%s_duration_summer.pdf",nday,nyr))
+			filename_plot=sprintf("../plots/regions/%s_%s_duration_diff_1980.pdf",nday,nyr))
 		map_allgemein(dat=dat,
-			filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_analysis.pdf",nday,nyr),
+			filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_diff_1980.pdf",nday,nyr),
 			worldmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="0")
 	}
 
-	if (1==1){
+	if (1==2){
 	# summer duration all
-	    titel_zusatz=c("mean","a","a_err","b","b_err","0.05 percentile","0.10 percentile")
+	    titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")
 	    vars=c("dur_ana_warm_full","dur_ana_cold_full")
 
 	    nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_duration_analysis_summer.nc",nday,nyr,nday,nyr))
@@ -114,7 +118,7 @@ if (1==1){
 	    	}
 	    }
 		map_allgemein(dat=dat,
-			filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_diff_1980.pdf",nday,nyr),
+			filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_analysis.pdf",nday,nyr),
 			worldmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="mean")
 	}        	        
 
