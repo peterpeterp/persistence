@@ -26,7 +26,7 @@ station_plot <- function(dat,trend,per,dur,q,start,stop,filename){
 
         plot(NA,xlim=c(1950,2010),xaxp=c(1950,2010,12),ylim=c(0,50),xlab="",ylab="duration of persistence")#, main="summer warm persistence")
         points(dur$dur_warm_mid[station,],dur$dur_warm[station,],pch=4,col="red")
-        markov=per$markov[station,sea,4,]*30
+        markov=per$markov[station,2,4,]*30
         lines(dat$year+0.5,markov,col="green")
         #abline(lm(warmeTage~dat$year),col="yellow")
         for (i in seq(1950,2010,5)){
@@ -39,7 +39,7 @@ station_plot <- function(dat,trend,per,dur,q,start,stop,filename){
 
         plot(NA,xlim=c(1950,2011),xaxp=c(1950,2010,12),ylim=c(0,50),xlab="",ylab="duration of persistence")#, main="summer cold persistence")
         points(dur$dur_cold_mid[station,],dur$dur_cold[station,],pch=5,col="blue")
-        markov=per$markov[station,sea,1,]*30
+        markov=per$markov[station,4,4,]*30
         lines(dat$year,markov,col="green")
         markov=per$markov[station,sea,2,]*30
         lines(dat$year,markov,col="violet")
@@ -154,6 +154,7 @@ for (nday in ndays){
             per=markov_load(sprintf("../data/%s_%s/%s_%s_markov2s.nc",nday,nyr,nday,nyr),4)
             dur=duration_load(sprintf("../data/%s_%s/%s_%s_duration_summer.nc",nday,nyr,nday,nyr))
             #dur1=duration_load(sprintf("../data/%s_%s/%s_%s_duration_summer.nc",nday,nyr,nday,nyr))
+
 
             station_plot(dat=dat,trend=trend,per=per,dur=dur,
                 q=qq,start=365*(3)+1,stop=365*(58),

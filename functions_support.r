@@ -51,7 +51,7 @@ c_calc_runmean_2D <- function(y2D,nday,nyr)
     return(trend)
 }
 
-seasonal_1D_out <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=markov_calc,order=0,shift=0,interval=365){
+seasonal_1D_out <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=markov_chft,order=0,shift=0,interval=365){
     if (seasons[length(seasons)]>365){
         shift=seasons[length(seasons)]-365
         seasons[,]=seasons[,]-shift
@@ -160,8 +160,8 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
                 per_ind[detrended<threshold & detrended>(-threshold)] = 0 
             }
             if (states==2){
-                per_ind[y>trend[q,,]]=1
-                per_ind[y<trend[q,,]]=-1
+                per_ind[y >= trend[q,,]]=1
+                per_ind[y < trend[q,,]]=-1
             }
             markov_per$ind[q,,] = per_ind
             # Go through vector and calculate persistent events 
@@ -170,7 +170,15 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
             per_ind1D = as.vector(per_ind) 
 
                 
-            tmp=seasonal_matrix_out(per_ind1D,model,states,array(c(59,151,151,243,243,335,335,425),dim=c(2,4)))
+            tmp=seasonal_matrix_out(per_ind1D,model,states,array(c(59,151,151,242,242,334,334,425),dim=c(2,4)))
+            print(tmp)
+            tmp2=seasonal_1D_out(per_ind1D)
+            print(tmp2)
+            print(tmp$out[2,1,])
+            print(tmp$out[2,4,])
+            print(tmp$out[4,1,])
+            print(tmp$out[4,4,])
+            dsadsa
             for (i in 1:4){
                 markov_per$markov[q,i,,]=tmp$out[i,,]
                 markov_per$markov_conf[q,i,]=tmp$out_conf[i,]
