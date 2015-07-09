@@ -39,6 +39,35 @@ if (1==1){
 	dat=dat_load("../data/dat_regional.nc",reg=1)
 
 	if (1==1){
+		# markov summer 3states
+		vars=c("MK","LR")
+        vars_sig=c("MK_sig","LR_sig")
+		nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_mar3s_trend.nc",nday,nyr,nday,nyr))
+		reihen=array(NA,dim=c(9,ntot))
+		reihen_sig=array(NA,dim=c(9,ntot))
+		titel=c()
+
+		states=c("cold","normal","warm")
+
+		MK=array(get.var.ncdf(nc,vars[1]),dim=c(ntot,3,3))
+		MK_sig=array(get.var.ncdf(nc,vars_sig[1]),dim=c(ntot,3,3))
+		for (from in 1:3){
+			for (to in 1:3){
+				reihen[((from-1)*3+to),]=MK[1:ntot,from,to]
+				reihen_sig[((from-1)*3+to),]=MK_sig[1:ntot,from,to]
+				titel[((from-1)*3+to)]=paste("Mann-Kendall test for transition from",states[from],"to",states[to])
+			}
+		}
+
+		map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte="0",
+			filename_plot=sprintf("../plots/maps/%s_%s_mar3s_trend_summer.pdf",nday,nyr),
+			worldmap=worldmap,ausschnitt=c(35,66))		
+		map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
+			filename_plot=sprintf("../plots/regions/%s_%s_mark3s_summer.pdf",nday,nyr))
+	}
+
+
+	if (1==2){
 		# markov summer
 		vars=c("mar_s_w_lr","mar_s_k_lr","mar_s_w_mk","mar_s_k_mk")
         vars_sig=c("mar_s_w_lr_sig","mar_s_k_lr_sig","mar_s_w_mk_sig","mar_s_k_mk_sig")
@@ -63,7 +92,7 @@ if (1==1){
 			filename_plot=sprintf("../plots/regions/%s_%s_markov_summer.pdf",nday,nyr))
 	}
 
-	if (1==1){
+	if (1==2){
 		# summer vergleich
 		waka=c("warm","cold")
 		titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")

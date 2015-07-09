@@ -129,38 +129,22 @@ trend_analysis <- function(x,y){
     return(list(slope=slope,slope_sig=slope_sig,MK=MK,MK_sig=MK_sig))
 }
 
-global_trend <- function(filename_markov=99,filename_markov_neu=99,filename_shock=99,filename_shock_neu=99){
+global_trend <- function(per,filename_neu,season,transition_names){
     t=seq(1,62,1)
     ntot=1319
-    trend_markov=array(NA,dim=c(ntot,6,4))
-    if (filename_markov!=99){   
-        per=markov_load(filename_markov)
-        for (i in 1:6){
-            for (q in 1:ntot){
-                tmp=trend_analysis(t,per$markov[q,i,])
-                trend_markov[q,i,1]=tmp$slope
-                trend_markov[q,i,2]=tmp$slope_sig
-                trend_markov[q,i,3]=tmp$MK
-                trend_markov[q,i,4]=tmp$MK_sig
-            }
+    pers=dim(per)[2]
+    per_trend=array(NA,dim=c(ntot,pers,4))
+    for (i in 1:pers){
+        for (q in 1:ntot){
+            tmp=trend_analysis(t,per[q,i,])
+            per_trend[q,i,1]=tmp$slope
+            per_trend[q,i,2]=tmp$slope_sig
+            per_trend[q,i,3]=tmp$MK
+            per_trend[q,i,4]=tmp$MK_sig
         }
-        markov_trend_write(filename_markov_neu,trend_markov)
     }
-    trend_shock=array(NA,dim=c(ntot,3,4))
-    if (filename_shock!=99){      
-        per=shock_load(filename_shock)
-        for (i in 1:3){
-            for (q in 1:ntot){
-                tmp=trend_analysis(t,per$shock[q,i,])
-                trend_shock[q,i,1]=tmp$slope
-                trend_shock[q,i,2]=tmp$slope_sig
-                trend_shock[q,i,3]=tmp$MK
-                trend_shock[q,i,4]=tmp$MK_sig
-            }
-        }
-        shock_trend_write(filename_shock_neu,trend_shock)
-    }
-    return(list(trend_markov=trend_markov,trend_shock=trend_shock))
+    markov_trend_write(filename_neu,per_trend,season,transition_names)
+    return(per_trend)
 }
 
 
