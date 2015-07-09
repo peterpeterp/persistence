@@ -31,12 +31,31 @@ markov_chft <- function(x,order){
     return(list(P_w=P_w,P_c=P_c,error=tmp$confidenceInterval$confidenceLevel,bic=0))
 }
 
+markov_2states <- function(x){
+    tmp=markovchainFit(data=x)
+    transMat=array(NA,dim=c(2,2))
+    if (dim(tmp$estimate)==2){
+        for (from in 1:2){
+            for (to in 1:2){
+                transMat[from,to]=tmp$estimate[from][to]
+            }
+        }
+    }
+    if (dim(tmp$estimate)==1){
+        if (length(which(x==-1))==0){
+            transMat[2,2]=1
+        }
+        if (length(which(x==1))==0){
+            transMat[1,1]=1
+        }
+    }
+
+    return(list(transMat=transMat,confidence=tmp$confidenceInterval$confidenceLevel))
+}
+
 markov_3states <- function(x){
     tmp=markovchainFit(data=x)
     transMat=array(NA,dim=c(3,3))
-    print(x)
-    print(dim(tmp$estimate))
-    print(tmp$estimate)
     if (dim(tmp$estimate)==3){   
         for (from in 1:3){
             for (to in 1:3){

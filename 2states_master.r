@@ -4,6 +4,8 @@ source("functions_support.r")
 
 if (1==1){
 	nc=open.ncdf("../data/91_5/91_5_markov3s.nc")
+	print(nc)
+	dfsdf
 	dat=dat_load("../data/dat_regional.nc")
 	seasons=c("spring","summer","autumn","winter","year")
 	for (season in seasons){

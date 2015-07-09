@@ -148,7 +148,7 @@ markov_trend_write <- function(filename,per,season,transition_names)
 {
     ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    transitions <- dim.def.ncdf("transitions",units="transisitons",vals=1:length(transition_names),unlim=FALSE)
+    transitions <- dim.def.ncdf("transitions",units="transisitons",vals=1:dim(per)[2],unlim=FALSE)
 
     MK <- var.def.ncdf(name="MK",units="bla",longname=paste("MK",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
     MK_sig <- var.def.ncdf(name="MK_sig",units="bla",longname=paste("MK_sig",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
@@ -160,7 +160,7 @@ markov_trend_write <- function(filename,per,season,transition_names)
     nc = create.ncdf(filename,vars)
 
     for (i in 1:4){
-        put.var.ncdf(nc,vars[[i]],per[1:ntot,1:length(transition_names),i])  
+        put.var.ncdf(nc,vars[[i]],per[1:ntot,1:dim(per)[2],i])  
     }
 
     close.ncdf(nc) 

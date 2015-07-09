@@ -142,7 +142,7 @@ calc_per_3states <- function(dat,trend,nday,nyr,what,filename_markov){
 
 
 
-if (1==1){
+if (1==2){
     ndays=c(91)
     nyrs=c(5)  
 

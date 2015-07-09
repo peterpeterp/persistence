@@ -84,7 +84,7 @@ seasonal_1D_out <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),mod
     return(list(out1=out1,out2=out2,out_err=out_err,out_add=out_add))
 }  
 
-seasonal_matrix_out <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),shift=0,interval=365){
+seasonal_matrix_out <- function(dat,model=markov_2states,states=2,seasons=array(c(151,242,334,425),dim=c(2,2)),shift=0,interval=365){
     if (seasons[length(seasons)]>365){
         shift=seasons[length(seasons)]-365
         seasons[,]=seasons[,]-shift
@@ -93,16 +93,17 @@ seasonal_matrix_out <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2))
     x=seq(1, size, 1)
     i=shift
     j=1
-    out=array(NA,dim=c(dim(seasons)[2],9,62))
+    transitions=states*states
+    out=array(NA,dim=c(dim(seasons)[2],transitions,62))
     out_conf=array(NA,dim=c(dim(seasons)[2],62))
 
     while ((i+interval)<size){
         if ((is.na(dat[i+1])==FALSE) & (is.na(dat[i+interval])==FALSE)){
             for (sea in 1:length(seasons[1,])){
                 x=dat[(seasons[1,sea]+i):(seasons[2,sea]+i)]
-                tmp=markov_3states(x)
+                tmp=model(x)
 
-                out[sea,1:9,j]=tmp$transMat
+                out[sea,1:transitions,j]=tmp$transMat
                 out_conf[sea,j]=tmp$confidence
 
             }
@@ -136,6 +137,7 @@ global_trend <- function(per,filename_neu,season,transition_names){
     per_trend=array(NA,dim=c(ntot,pers,4))
     for (i in 1:pers){
         for (q in 1:ntot){
+            #cat(q,length(which(is.na(per[q,i,]))),"\n")
             tmp=trend_analysis(t,per[q,i,])
             per_trend[q,i,1]=tmp$slope
             per_trend[q,i,2]=tmp$slope_sig

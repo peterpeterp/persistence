@@ -44,7 +44,10 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 	pdf(file = filename_plot,width=12,height=8)
 	par(mfrow=c(2,1))
 
+
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
+	aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)),abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
+
 	for (i in 1:dim(reihen)[1]){
 		print(titel[i])
 		size=length(mid_lat)
@@ -72,6 +75,10 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 		notna=which(is.na(y1)==FALSE)
 		for (n in notna){
 			y[n+2]=y1[n]
+		}
+		if (farbe_mitte=="gemeinsam 0"){
+			y[1]=-aushol
+			y[2]=aushol			
 		}
 		if (farbe_mitte=="0"){
 			aushol=max(c(abs(max(y,na.rm=TRUE)),abs(min(y,na.rm=TRUE))))
