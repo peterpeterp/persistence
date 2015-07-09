@@ -139,10 +139,12 @@ global_trend <- function(per,filename_neu,season,transition_names){
         for (q in 1:ntot){
             #cat(q,length(which(is.na(per[q,i,]))),"\n")
             tmp=trend_analysis(t,per[q,i,])
-            per_trend[q,i,1]=tmp$slope
-            per_trend[q,i,2]=tmp$slope_sig
-            per_trend[q,i,3]=tmp$MK
-            per_trend[q,i,4]=tmp$MK_sig
+            per_trend[q,i,1]=mean(per[q,i,],na.rm=TRUE)
+            per_trend[q,i,2]=mean(per[q,i,],na.rm=TRUE)
+            per_trend[q,i,3]=tmp$slope
+            per_trend[q,i,4]=tmp$slope_sig
+            per_trend[q,i,5]=tmp$MK
+            per_trend[q,i,6]=tmp$MK_sig
         }
     }
     markov_trend_write(filename_neu,per_trend,season,transition_names)

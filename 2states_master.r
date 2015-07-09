@@ -1,6 +1,30 @@
+source("functions_support.r")
+source("functions_markov.r")
+source("functions_shock.r")
+source("functions_duration.r")
 source("write.r")
 source("load.r")
-source("functions_support.r")
+
+if (1==1){
+    ndays=c(91)
+    nyrs=c(5)  
+
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc")
+
+    for (nday in ndays){
+        for (nyr in nyrs){
+            cat(sprintf("\n%s_%s   ",nday,nyr))
+            cat("calculating trend \n")
+            #trend=calc_trend(dat,sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr),nday,nyr)
+            trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr))
+            cat(sprintf("\n%s_%s    ",nday,nyr))
+            cat("calculating persistence\n") 
+            per=calc_per_3states(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov3s.nc",nday,nyr,nday,nyr))
+            #per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
+        }
+    }
+}
+
 
 if (1==1){
 	nc=open.ncdf("../data/91_5/91_5_markov3s.nc")

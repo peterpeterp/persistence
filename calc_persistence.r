@@ -24,117 +24,67 @@ calc_trend <- function(dat,filename,nday,nyr){
     return(trend)
 }
 
-calc_per <- function(dat,trend,nday,nyr,what,filename_markov){
+calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
+    nc=open.ncdf(filename)
+    print(nc)
+    sdfsd
+
     ## User parameters 
     trash = ((nyr-1)/2*365+(nday-1))
     ntot = length(dat$ID)
     laenge_zeit = length(dat$time)
+    transitions=states*states
 
     # Calculate persistence information
     #cat("Calculating persistence... ")
 
-    if ((what=="markov")){
-        markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,6,62)),markov_err=array(NA,dim=c(ntot,3,62)))
+    markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,5,transitions,62)),markov_conf=array(NA,dim=c(ntot,5,62)))
 
-        for (q in 1:ntot ) { 
-            cat("-")
-            if (length(which(is.na(dat$tas[q,,])))<(2*trash+1000)){
+    for (q in 1:ntot) { 
+        cat("-")
+        if (length(which(is.na(dat$tas[q,,])))<(2*trash+730)){
 
-                # Calculate persistence vector
-                y = dat$tas[q,,]
-                per_ind = y*0 
+            # Calculate persistence vector
+            y = dat$tas[q,,]
+            per_ind = y*NA 
 
-
-                per_ind[y >= trend[q,,]]  =  1
-                per_ind[y <  trend[q,,]]  = -1 
-                per_ind[is.na(per_ind)] = 0  # To avoid NA values
-
-                markov_per$ind[q,,] = per_ind
-                # Go through vector and calculate persistent events 
-                # Perform this step on a 1D vector to avoid artificial cutoffs 
-                # at day 1 and day 365 of the year 
-                per_ind1D = as.vector(per_ind) 
-                per_ind1D[per_ind1D==0]=NA
-
-                size=length(per_ind1D)
-
-                tmp=seasonal_1D_out(per_ind1D,array(c(151,242,334,425),dim=c(2,2)),markov_chft)
-                for (i in 1:2){
-                    markov_per$markov[q,i,]=tmp$out1[i,]
-                    markov_per$markov[q,(i+3),]=tmp$out2[i,]
-                    markov_per$markov_err[q,i,]=tmp$out_err[i,]
-                }
-
-                tmp=seasonal(per_ind1D,array(c(1,365),dim=c(2,1)),markov_chft)
-                markov_per$markov[q,3,]=tmp$out1[1,]
-                markov_per$markov[q,6,]=tmp$out2[1,]
-                markov_per$markov_err[q,2,]=tmp$out_err[1,]
-
-            } 
-            else {
-                cat(dat$ID[q])
-            }
-     
-        }
-        markov_write(filename_markov,dat,markov_per) 
-    }
-
-    cat("done.\n")
-    return(0)#list(markov_per=markov_per,shock_per=shock_per))
-}
-
-calc_per_3states <- function(dat,trend,nday,nyr,what,filename_markov){
-    ## User parameters 
-    trash = ((nyr-1)/2*365+(nday-1))
-    ntot = length(dat$ID)
-    laenge_zeit = length(dat$time)
-
-    # Calculate persistence information
-    #cat("Calculating persistence... ")
-
-    if ((what=="markov")){
-        markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,5,9,62)),markov_conf=array(NA,dim=c(ntot,5,62)))
-
-        for (q in 1:ntot) { 
-            cat("-")
-            if (length(which(is.na(dat$tas[q,,])))<(2*trash+730)){
-
-                # Calculate persistence vector
-                y = dat$tas[q,,]
-                per_ind = y*NA 
-
+            if (states==3){
                 detrended = y-trend[q,,]
                 threshold = sd(detrended,na.rm=TRUE)*0.5
 
                 per_ind[detrended>threshold]  =  1
                 per_ind[detrended<(-threshold)]  = -1 
-                per_ind[detrended<threshold & detrended>(-threshold)] = 0  # To avoid NA values
-
-                markov_per$ind[q,,] = per_ind
-                # Go through vector and calculate persistent events 
-                # Perform this step on a 1D vector to avoid artificial cutoffs 
-                # at day 1 and day 365 of the year 
-                per_ind1D = as.vector(per_ind) 
+                per_ind[detrended<threshold & detrended>(-threshold)] = 0 
+            }
+            if (states==2){
+                per_ind[y>trend[q,,]]=1
+                per_ind[y<trend[q,,]]=-1
+            }
+            markov_per$ind[q,,] = per_ind
+            # Go through vector and calculate persistent events 
+            # Perform this step on a 1D vector to avoid artificial cutoffs 
+            # at day 1 and day 365 of the year 
+            per_ind1D = as.vector(per_ind) 
 
                 
-                tmp=seasonal_matrix_out(per_ind1D,array(c(59,151,151,243,243,335,335,425),dim=c(2,4)))
-                for (i in 1:4){
-                    markov_per$markov[q,i,,]=tmp$out[i,,]
-                    markov_per$markov_conf[q,i,]=tmp$out_conf[i,]
-                }
-
-                tmp=seasonal_matrix_out(per_ind1D,array(c(1,365),dim=c(2,1)))
-                markov_per$markov[q,5,,]=tmp$out[1,,]
-                markov_per$markov_conf[q,5,]=tmp$out_conf[1,]
-
-            } 
-            else {
-                cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[q],dat$lon[q],dat$lat[q]))
+            tmp=seasonal_matrix_out(per_ind1D,model,states,array(c(59,151,151,243,243,335,335,425),dim=c(2,4)))
+            for (i in 1:4){
+                markov_per$markov[q,i,,]=tmp$out[i,,]
+                markov_per$markov_conf[q,i,]=tmp$out_conf[i,]
             }
-     
+
+            tmp=seasonal_matrix_out(per_ind1D,model,states,array(c(1,365),dim=c(2,1)))
+            markov_per$markov[q,5,,]=tmp$out[1,,]
+            markov_per$markov_conf[q,5,]=tmp$out_conf[1,]
+            print(markov_per$markov[q,,,])
+
+        } 
+        else {
+            cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[q],dat$lon[q],dat$lat[q]))
         }
-        markov_3states_write(filename_markov,dat,markov_per) 
+     
     }
+    markov_write(filename,dat,markov_per,transitions,transition_names) 
 
     cat("done.\n")
     return(0)#list(markov_per=markov_per,shock_per=shock_per))
@@ -142,7 +92,7 @@ calc_per_3states <- function(dat,trend,nday,nyr,what,filename_markov){
 
 
 
-if (1==2){
+if (1==1){
     ndays=c(91)
     nyrs=c(5)  
 
@@ -156,9 +106,20 @@ if (1==2){
             trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr))
             cat(sprintf("\n%s_%s    ",nday,nyr))
             cat("calculating persistence\n") 
-            per=calc_per_3states(dat,trend,nday,nyr,"markov",sprintf("../data/%s_%s/%s_%s_markov3s.nc",nday,nyr,nday,nyr))
+            per=calc_per(dat,trend,nday,nyr,model=markov_2states,states=2,transition_names="cc cw wc ww",
+                filename=sprintf("../data/%s_%s/%s_%s_markov2s.nc",nday,nyr,nday,nyr))
             #per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
         }
+    }
+}
+
+if (1==1){
+    nc=open.ncdf("../data/91_5/91_5_markov2s.nc")
+    dat=dat_load("../data/dat_regional.nc")
+    seasons=c("spring","summer","autumn","winter","year")
+    for (season in seasons){
+        tmp=get.var.ncdf(nc,paste("markov_",season,sep=""))
+        tmp=global_trend(per=tmp,filename_neu=paste("../data/91_5/91_5_mar2s_trend_",season,".nc",sep=""),season=season,transition_names="cc cn cw nc nn nw wc wn ww")
     }
 }
 
@@ -189,10 +150,4 @@ if (1==2){
     }
 }
 
-if (1==2){
-    nday=91
-    nyr=5
-    tmp=global_trend(filename_markov=sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr),filename_markov_neu=sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))
-
-}
 

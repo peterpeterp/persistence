@@ -49,7 +49,6 @@ markov_2states <- function(x){
             transMat[1,1]=1
         }
     }
-
     return(list(transMat=transMat,confidence=tmp$confidenceInterval$confidenceLevel))
 }
 

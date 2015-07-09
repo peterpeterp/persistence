@@ -39,7 +39,7 @@ trend_write <- function(filename,data3D,trend)
     close.ncdf(nc)  
 }
 
-markov_write <- function(filename,data3D,per)
+markov_write_old <- function(filename,data3D,per)
 {
     ntot=length(data3D$ID)
     day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
@@ -150,6 +150,9 @@ markov_trend_write <- function(filename,per,season,transition_names)
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
     transitions <- dim.def.ncdf("transitions",units="transisitons",vals=1:dim(per)[2],unlim=FALSE)
 
+    mean <- var.def.ncdf(name="mean",units="bla",longname=paste("mean",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
+    std <- var.def.ncdf(name="std",units="bla",longname=paste("standard deviation",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
+
     MK <- var.def.ncdf(name="MK",units="bla",longname=paste("MK",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
     MK_sig <- var.def.ncdf(name="MK_sig",units="bla",longname=paste("MK_sig",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
     LR <- var.def.ncdf(name="LR",units="bla",longname=paste("LR",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
@@ -159,7 +162,7 @@ markov_trend_write <- function(filename,per,season,transition_names)
    
     nc = create.ncdf(filename,vars)
 
-    for (i in 1:4){
+    for (i in 1:6){
         put.var.ncdf(nc,vars[[i]],per[1:ntot,1:dim(per)[2],i])  
     }
 
@@ -222,21 +225,21 @@ duration_analysis_write <- function(filename,dur,season,trenn)
     close.ncdf(nc) 
 }
 
-markov_3states_write <- function(filename,data3D,per)
+markov_write <- function(filename,data3D,per,transitions,transition_names)
 {
     ntot=length(data3D$ID)
     day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
     year <- dim.def.ncdf("year",units="year",vals=1:62, unlim=FALSE)
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    transition <- dim.def.ncdf("transition",units="transition",vals=1:9, unlim=FALSE)
+    transition <- dim.def.ncdf("transition",units="transition",vals=1:transitions, unlim=FALSE)
 
 
     ind <- var.def.ncdf(name="ind",units="1 or -1",dim=list(ID,day,year), missval=-9999.0)
-    markov_spring <- var.def.ncdf(name="markov_spring",units="0-1",longname="spring markov transition matrix",dim=list(ID,transition,year), missval=-9999.0)
-    markov_summer <- var.def.ncdf(name="markov_summer",units="0-1",longname="summer markov transition matrix",dim=list(ID,transition,year), missval=-9999.0)
-    markov_autumn <- var.def.ncdf(name="markov_autumn",units="0-1",longname="autumn markov transition matrix",dim=list(ID,transition,year), missval=-9999.0)
-    markov_winter <- var.def.ncdf(name="markov_winter",units="0-1",longname="winter markov transition matrix",dim=list(ID,transition,year), missval=-9999.0)
-    markov_year <- var.def.ncdf(name="markov_year",units="0-1",longname="year markov transition matrix",dim=list(ID,transition,year), missval=-9999.0)
+    markov_spring <- var.def.ncdf(name="markov_spring",units="0-1",longname=paste("spring markov",transition_names),dim=list(ID,transition,year), missval=-9999.0)
+    markov_summer <- var.def.ncdf(name="markov_summer",units="0-1",longname=paste("summer markov",transition_names),dim=list(ID,transition,year), missval=-9999.0)
+    markov_autumn <- var.def.ncdf(name="markov_autumn",units="0-1",longname=paste("autumn markov",transition_names),dim=list(ID,transition,year), missval=-9999.0)
+    markov_winter <- var.def.ncdf(name="markov_winter",units="0-1",longname=paste("winter markov",transition_names),dim=list(ID,transition,year), missval=-9999.0)
+    markov_year <- var.def.ncdf(name="markov_year",units="0-1",longname=paste("year markov",transition_names),dim=list(ID,transition,year), missval=-9999.0)
 
     markov_spring_conf <- var.def.ncdf(name="markov_spring_conf",units="0-1",longname="spring markov confidenceLevel",dim=list(ID,year), missval=-9999.0)
     markov_summer_conf <- var.def.ncdf(name="markov_summer_conf",units="0-1",longname="summer markov confidenceLevel",dim=list(ID,year), missval=-9999.0)
