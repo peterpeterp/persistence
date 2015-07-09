@@ -114,6 +114,84 @@ seasonal_matrix_out <- function(dat,model=markov_2states,states=2,seasons=array(
     return(list(out=out,out_conf=out_conf))
 }   
 
+calc_trend <- function(dat,filename,nday,nyr){
+    trash = ((nyr-1)/2*365+(nday-1))
+    ntot = length(dat$ID)
+    trend=dat$tas*NA
+    for (q in 1:ntot) {
+        temp = r_calc_runmean_2D(dat$tas[q,,],nday=nday,nyr=nyr)
+        temp[1:trash]=NA
+        temp[(length(dat$time)-trash):length(dat$time)]=NA
+        trend[q,,]=temp
+    }
+
+    trend_write(filename,dat,trend)
+    return(trend)
+}
+
+calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
+    source("functions_markov.r")
+
+    ## User parameters 
+    trash = ((nyr-1)/2*365+(nday-1))
+    ntot = length(dat$ID)
+    laenge_zeit = length(dat$time)
+    transitions=states*states
+
+    # Calculate persistence information
+    #cat("Calculating persistence... ")
+
+    markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,5,transitions,62)),markov_conf=array(NA,dim=c(ntot,5,62)))
+
+    for (q in 1:ntot) { 
+        cat("-")
+        if (length(which(is.na(dat$tas[q,,])))<(2*trash+730)){
+
+            # Calculate persistence vector
+            y = dat$tas[q,,]
+            per_ind = y*NA 
+
+            if (states==3){
+                detrended = y-trend[q,,]
+                threshold = sd(detrended,na.rm=TRUE)*0.5
+
+                per_ind[detrended>threshold]  =  1
+                per_ind[detrended<(-threshold)]  = -1 
+                per_ind[detrended<threshold & detrended>(-threshold)] = 0 
+            }
+            if (states==2){
+                per_ind[y>trend[q,,]]=1
+                per_ind[y<trend[q,,]]=-1
+            }
+            markov_per$ind[q,,] = per_ind
+            # Go through vector and calculate persistent events 
+            # Perform this step on a 1D vector to avoid artificial cutoffs 
+            # at day 1 and day 365 of the year 
+            per_ind1D = as.vector(per_ind) 
+
+                
+            tmp=seasonal_matrix_out(per_ind1D,model,states,array(c(59,151,151,243,243,335,335,425),dim=c(2,4)))
+            for (i in 1:4){
+                markov_per$markov[q,i,,]=tmp$out[i,,]
+                markov_per$markov_conf[q,i,]=tmp$out_conf[i,]
+            }
+
+            tmp=seasonal_matrix_out(per_ind1D,model,states,array(c(1,365),dim=c(2,1)))
+            markov_per$markov[q,5,,]=tmp$out[1,,]
+            markov_per$markov_conf[q,5,]=tmp$out_conf[1,]
+            print(markov_per$markov[q,,,])
+
+        } 
+        else {
+            cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[q],dat$lon[q],dat$lat[q]))
+        }
+     
+    }
+    markov_write(filename,dat,markov_per,transitions,transition_names) 
+
+    cat("done.\n")
+    return(0)#list(markov_per=markov_per,shock_per=shock_per))
+}
 
 
 trend_analysis <- function(x,y){
@@ -130,25 +208,25 @@ trend_analysis <- function(x,y){
     return(list(slope=slope,slope_sig=slope_sig,MK=MK,MK_sig=MK_sig))
 }
 
-global_trend <- function(per,filename_neu,season,transition_names){
+global_analysis <- function(per,filename_neu,season,transition_names){
     t=seq(1,62,1)
     ntot=1319
     pers=dim(per)[2]
-    per_trend=array(NA,dim=c(ntot,pers,4))
+    per_analysis=array(NA,dim=c(ntot,pers,6))
     for (i in 1:pers){
         for (q in 1:ntot){
             #cat(q,length(which(is.na(per[q,i,]))),"\n")
             tmp=trend_analysis(t,per[q,i,])
-            per_trend[q,i,1]=mean(per[q,i,],na.rm=TRUE)
-            per_trend[q,i,2]=mean(per[q,i,],na.rm=TRUE)
-            per_trend[q,i,3]=tmp$slope
-            per_trend[q,i,4]=tmp$slope_sig
-            per_trend[q,i,5]=tmp$MK
-            per_trend[q,i,6]=tmp$MK_sig
+            per_analysis[q,i,1]=mean(per[q,i,],na.rm=TRUE)
+            per_analysis[q,i,2]=mean(per[q,i,],na.rm=TRUE)
+            per_analysis[q,i,3]=tmp$slope
+            per_analysis[q,i,4]=tmp$slope_sig
+            per_analysis[q,i,5]=tmp$MK
+            per_analysis[q,i,6]=tmp$MK_sig
         }
     }
-    markov_trend_write(filename_neu,per_trend,season,transition_names)
-    return(per_trend)
+    markov_analysis_write(filename_neu,per_analysis,season,transition_names)
+    return(per_analysis)
 }
 
 

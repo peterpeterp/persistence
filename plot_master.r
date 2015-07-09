@@ -38,8 +38,8 @@ if (1==1){
 	ntot=1319
 	dat=dat_load("../data/dat_regional.nc",reg=1)
 
-	if (1==1){
-		# markov summer 3states
+	if (1==2){
+		# markov 3states
 		vars=c("MK","LR")
         vars_sig=c("MK_sig","LR_sig")
        	seasons=c("spring","summer","autumn","winter","year")
@@ -70,33 +70,9 @@ if (1==1){
 	}
 
 
-	if (1==2){
-		# markov summer
-		vars=c("mar_s_w_lr","mar_s_k_lr","mar_s_w_mk","mar_s_k_mk")
-        vars_sig=c("mar_s_w_lr_sig","mar_s_k_lr_sig","mar_s_w_mk_sig","mar_s_k_mk_sig")
-		nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_markov_trend.nc",nday,nyr,nday,nyr))
-		reihen=array(NA,dim=c(4,ntot))
-		reihen_sig=array(NA,dim=c(4,ntot))
-		titel=c()
 
-		for (i in 1:4){
-			reihen[i,]=get.var.ncdf(nc,vars[i])
-			reihen_sig[i,]=get.var.ncdf(nc,vars_sig[i])
-			for (k in 1:(length(nc$var))){
-				if (nc$var[[k]]$name==vars[i]){
-					titel[i]=nc$var[[k]]$longname
-				}
-			}	
-		}
-		map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte="0",
-			filename_plot=sprintf("../plots/maps/%s_%s_markov_trend_summer.pdf",nday,nyr),
-			worldmap=worldmap,ausschnitt=c(35,66))		
-		map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
-			filename_plot=sprintf("../plots/regions/%s_%s_markov_summer.pdf",nday,nyr))
-	}
-
-	if (1==2){
-		# summer vergleich
+	if (1==1){
+		# summer duration vergleich
 		waka=c("warm","cold")
 		titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")
 		vars=c("dur_ana_warm_before","dur_ana_cold_before",
@@ -120,9 +96,10 @@ if (1==1){
 		map_allgemein(dat=dat,
 			filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_analysis.pdf",nday,nyr),
 			worldmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="0")
-	}	
-	if (1==2){
-	# summer all
+	}
+
+	if (1==1){
+	# summer duration all
 	    titel_zusatz=c("mean","a","a_err","b","b_err","0.05 percentile","0.10 percentile")
 	    vars=c("dur_ana_warm_full","dur_ana_cold_full")
 
