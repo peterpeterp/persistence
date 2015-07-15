@@ -47,7 +47,8 @@ c_calc_runmean_2D <- function(y2D,nday,nyr)
 
     tempi = .C("c_run_mean2d",daten=as.numeric(y2D_list),datenex=as.numeric(y2Dex_list),temp_trend=as.numeric(trend_list),size=as.integer(dims0),tag=as.integer(buffer))
     trend = array(tempi$temp_trend,dim=c(dims0[1],dims0[2]))
-
+    
+    cat("-")
     return(trend)
 }
 
@@ -119,7 +120,7 @@ calc_trend <- function(dat,filename,nday,nyr){
     ntot = length(dat$ID)
     trend=dat$tas*NA
     for (q in 1:ntot) {
-        temp = r_calc_runmean_2D(dat$tas[q,,],nday=nday,nyr=nyr)
+        temp = c_calc_runmean_2D(dat$tas[q,,],nday=nday,nyr=nyr)
         temp[1:trash]=NA
         temp[(length(dat$time)-trash):length(dat$time)]=NA
         trend[q,,]=temp
@@ -170,15 +171,7 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
             per_ind1D = as.vector(per_ind) 
 
                 
-            tmp=seasonal_matrix_out(per_ind1D,model,states,array(c(59,151,151,242,242,334,334,425),dim=c(2,4)))
-            print(tmp)
-            tmp2=seasonal_1D_out(per_ind1D)
-            print(tmp2)
-            print(tmp$out[2,1,])
-            print(tmp$out[2,4,])
-            print(tmp$out[4,1,])
-            print(tmp$out[4,4,])
-            dsadsa
+            tmp=seasonal_matrix_out(per_ind1D,model,states,array(c(60,150,151,241,242,333,334,424),dim=c(2,4)))
             for (i in 1:4){
                 markov_per$markov[q,i,,]=tmp$out[i,,]
                 markov_per$markov_conf[q,i,]=tmp$out_conf[i,]
@@ -204,7 +197,7 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
 
 trend_analysis <- function(x,y){
     library(Kendall)
-    if (length(which(is.na(y)))>7){
+    if (length(which(is.na(y)))>7 | length(which(y==0))>40){
         return(list(slope=NA,slope_sig=NA,MK=NA,MK_sig=NA))
     }
     lm.r=lm(y~x)

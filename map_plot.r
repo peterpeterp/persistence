@@ -46,7 +46,13 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
-	aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)),abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
+	if (farbe_mitte=="gemeinsam 0"){
+		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)),abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
+	}
+	if (farbe_mitte=="gemeinsam mean"){	
+		mi=mean(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)
+		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))-mi,mi-abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
+	}
 
 	for (i in 1:dim(reihen)[1]){
 		print(titel[i])
@@ -56,6 +62,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 		lat=array(NA,size)
 		y1=array(NA,size)
 		sig=array(NA,size)
+		nas=array(NA,size)
 		m=0
 
 		for (k in 1:length(dat$ID)){
@@ -71,6 +78,8 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 				}
 			}
 		}
+		nas[which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2] & is.na(reihen[i,]))]=13
+
 		y=array(NA,(m+2))
 		notna=which(is.na(y1)==FALSE)
 		for (n in notna){
@@ -79,6 +88,10 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 		if (farbe_mitte=="gemeinsam 0"){
 			y[1]=-aushol
 			y[2]=aushol			
+		}
+		if (farbe_mitte=="gemeinsam mean"){
+			y[1]=mi-aushol
+			y[2]=mi+aushol			
 		}
 		if (farbe_mitte=="0"){
 			aushol=max(c(abs(max(y,na.rm=TRUE)),abs(min(y,na.rm=TRUE))))
@@ -96,6 +109,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 
 		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=1.2)
 		points(lon,lat,pch=sig)
+		points(dat$lon,dat$lat,pch=nas)
 
 		image.plot(legend.only=T, zlim=range(y), col=color)
 	}

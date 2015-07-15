@@ -1,22 +1,22 @@
 
-trend_control_warm_days <- function(dat,per,seasonStart=c(59,151,243,335),seasonStop=c(150,242,334,424),filename="../data/warmeTage_trends_4seasons.txt"){
+trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,242,334,1),seasonStop=c(150,241,333,424,365),filename="../data/warmeTage_trends_5seasons.txt"){
     ntot=length(dat$ID)
-    waTrend=array(NA,dim=c(ntot,8))
+    waTrend=array(NA,dim=c(ntot,10))
     for (q in 1:ntot){
         for (sea in 1:length(seasonStart)){
             warmeTage=array(NA,62)
             kalteTage=array(NA,62)
-            for (i in 1:62){
+            for (i in 1:61){
                 if (seasonStop[sea]>365){
-                    warmeTage[i]=length(which(per$ind[q,seasonStart[sea]:365,i]==1))
-                    kalteTage[i]=length(which(per$ind[q,seasonStart[sea]:365,i]==-1)) 
+                    warmeTage[i]=length(which(ind[q,seasonStart[sea]:365,i]==1))
+                    kalteTage[i]=length(which(ind[q,seasonStart[sea]:365,i]==-1)) 
 
-                    warmeTage[i]=warmeTage[i]+length(which(per$ind[q,1:(seasonStop[sea]-365),(i+1)]==1))
-                    kalteTage[i]=kalteTage[i]+length(which(per$ind[q,1:(seasonStop[sea]-365),(i+1)]==-1)) 
+                    warmeTage[i]=warmeTage[i]+length(which(ind[q,1:(seasonStop[sea]-365),(i+1)]==1))
+                    kalteTage[i]=kalteTage[i]+length(which(ind[q,1:(seasonStop[sea]-365),(i+1)]==-1)) 
                 }
                 else {
-                    warmeTage[i]=length(which(per$ind[q,seasonStart[sea]:seasonStop[sea],i]==1))
-                    kalteTage[i]=length(which(per$ind[q,seasonStart[sea]:seasonStop[sea],i]==-1))  
+                    warmeTage[i]=length(which(ind[q,seasonStart[sea]:seasonStop[sea],i]==1))
+                    kalteTage[i]=length(which(ind[q,seasonStart[sea]:seasonStop[sea],i]==-1))  
                 }   
                 if ((warmeTage[i]+kalteTage[i])<(seasonStop[sea]-seasonStart[sea]-10)){
                     warmeTage[i]=NA
@@ -148,3 +148,24 @@ trend_view_detail <-function(dat,trend,year,q){
             paste("diff between trend points",trenddiff )))
 }
 
+trend_3states <- function(){
+    q=488
+    trend=trend_load("../data/91_5/91_5_trend_r.nc")
+
+    detrended=dat$tas[q,,]-trend[q,,]
+    threshold=sd(detrended,na.rm=TRUE)*0.5
+
+
+    pdf(file="../plots/3_state_description")
+    plot(dat$time,dat$tas[q,,],xlim=c(2002,2004),pch=20,cex=0.5,main="3 states",ylab="temperature anomaly in deg C",xlab="")
+    lines(dat$time,trend[q,,],col="green")
+    lines(dat$time,trend[q,,]+threshold,col="grey")
+    lines(dat$time,trend[q,,]-threshold,col="grey")
+    warm=dat$tas[q,,]
+    warm[warm<trend[q,,]+threshold]=NA
+    points(dat$time,warm,pch=20,cex=0.5,col="red")
+    cold=dat$tas[q,,]
+    cold[cold>trend[q,,]-threshold]=NA
+    points(dat$time,cold,pch=20,cex=0.5,col="blue")
+    legend("bottomright",pch=c(NA,20,20,20),col=c(NA,"red","black","blue"),legend=c("diff between grey lines = 1 sd","warm day","average day","cold day"))
+}

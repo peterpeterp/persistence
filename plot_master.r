@@ -40,14 +40,15 @@ if (1==1){
 
 	if (1==1){
 		# markov xx states
-
-		state_names=c("cold","normal","warm")
+		state_names=c("cold","warm")
+		#state_names=c("cold","normal","warm")
+       	seasons=c("spring","summer","autumn","winter","year")
+		vars="mean"
+        vars_sig=NA
+        farbe_mitte="mean"
+		
 		states=length(state_names)
 
-
-		vars=c("MK","LR")
-        vars_sig=c("MK_sig","LR_sig")
-       	seasons=c("spring","summer","autumn","winter","year")
        	for (season in seasons){
 			nc=open.ncdf(paste("../data/91_5/91_5_mar",states,"s_trend_",season,".nc",sep=""))
 			reihen=array(NA,dim=c(states*states,ntot))
@@ -55,21 +56,21 @@ if (1==1){
 			titel=c()
 
 
-			MK=array(get.var.ncdf(nc,vars[1]),dim=c(ntot,states,states))
-			MK_sig=array(get.var.ncdf(nc,vars_sig[1]),dim=c(ntot,states,states))
+			y=array(get.var.ncdf(nc,vars),dim=c(ntot,states,states))
+			if (!is.na(vars_sig)){y_sig=array(get.var.ncdf(nc,vars_sig),dim=c(ntot,states,states))}
 			for (from in 1:states){
 				for (to in 1:states){
-					reihen[((from-1)*states+to),]=MK[1:ntot,from,to]
-					reihen_sig[((from-1)*states+to),]=MK_sig[1:ntot,from,to]
-					titel[((from-1)*states+to)]=paste("Mann-Kendall test for transition from",state_names[from],"to",state_names[to],"in",season)
+					reihen[((from-1)*states+to),]=y[1:ntot,from,to]
+					if (!is.na(vars_sig)){reihen_sig[((from-1)*states+to),]=y_sig[1:ntot,from,to]}
+					titel[((from-1)*states+to)]=paste(vars,"for transition from",state_names[from],"to",state_names[to],"in",season)
 				}
 			}
 
-			map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte="gemeinsam 0",
-				filename_plot=paste("../plots/maps/91_5_mar",states,"s_trend_",season,".pdf",sep=""),
+			map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,
+				filename_plot=paste("../plots/maps/91_5_mar",states,"s_",vars,"_",season,"_detail.pdf",sep=""),
 				worldmap=worldmap,ausschnitt=c(35,66))		
 			map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
-				filename_plot=paste("../plots/regions/91_5_mar",states,"s_trend_",season,".pdf",sep=""))
+				filename_plot=paste("../plots/regions/91_5_mar",states,"s_",vars,"_",season,"_detail.pdf",sep=""))
 		}
 	}
 

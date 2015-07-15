@@ -2,7 +2,7 @@ source("write.r")
 source("load.r")
 source("functions_duration.r")
 
-station_plot <- function(dat,trend,per,dur,q,start,stop,filename){
+station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,start,stop,filename){
     pdf(file=filename)
 
     station=which(dat$ID==q)[1]
@@ -12,47 +12,32 @@ station_plot <- function(dat,trend,per,dur,q,start,stop,filename){
     season_stops=c(151,242,335,425,1)
     for (sea in 1:5){
         par(mfrow=c(2,1))
-        par(mar=c(2,2, 2, 0.5)) 
-        if (1==2){
-            warmeTage=array(NA,62)
-            kalteTage=array(NA,62)
-            for (i in 1:62){
-                if (length(!is.na(per$ind[station,season[1]:season[2],i]))>(season[2]-season[1]-10)){
-                    warmeTage[i]=length(which(per$ind[station,season[1]:season[2],i]==1))
-                    kalteTage[i]=length(which(per$ind[station,season[1]:season[2],i]==-1)) 
-                }
-            }
-        }
+        par(mar=c(2,2, 2, 0.5))
+        dur=duration_load(paste(dur_name,season_names[sea],".nc",sep="")) 
 
         plot(NA,xlim=c(1950,2010),xaxp=c(1950,2010,12),ylim=c(0,50),xlab="",ylab="duration of persistence")#, main="summer warm persistence")
         points(dur$dur_warm_mid[station,],dur$dur_warm[station,],pch=4,col="red")
-        markov=per$markov[station,2,4,]*30
+        markov=per$markov[station,sea,4,]*30
         lines(dat$year+0.5,markov,col="green")
-        #abline(lm(warmeTage~dat$year),col="yellow")
         for (i in seq(1950,2010,5)){
             abline(v=i,col="gray",lty="dotted")
         }
         lines(dat$time[start:stop],as.vector(trend[station,,])[start:stop],col="black")
-        #legend("topleft", pch = c(NA,4,NA,NA,NA),lty=c(NA,NA,1,1,1), col = c(NA,"red", "green","yellow","black"), 
-        #        legend = c(season_names[sea],"warm days in a row","markov cold persistence",
-        #            sprintf("warm day increase per year %.3f",summary(lm(warmeTage~dat$year))$coefficients[2]),"trend"))
+        legend("topleft", pch = c(NA,4,NA,NA,NA),lty=c(NA,NA,1,NA,1), col = c(NA,"red", "green",NA,"black"), 
+                legend = c(season_names[sea],"warm days in a row","markov cold persistence",
+                    sprintf("warm day increase per year %.3f",warmeTageIncr[q,sea]),"trend"))
 
         plot(NA,xlim=c(1950,2011),xaxp=c(1950,2010,12),ylim=c(0,50),xlab="",ylab="duration of persistence")#, main="summer cold persistence")
         points(dur$dur_cold_mid[station,],dur$dur_cold[station,],pch=5,col="blue")
-        markov=per$markov[station,4,4,]*30
+        markov=per$markov[station,sea,1,]*30
         lines(dat$year,markov,col="green")
-        markov=per$markov[station,sea,2,]*30
-        lines(dat$year,markov,col="violet")
-        markov=per$markov[station,sea,3,]*30
-        lines(dat$year,markov,col="red")
-        #abline(lm(kalteTage~dat$year),col="violet")
         lines(dat$time[start:stop],as.vector(trend[station,,])[start:stop],col="black")
         for (i in seq(1950,2010,5)){
             abline(v=i,col="gray",lty="dotted")
         }
-        #legend("topleft", pch = c(NA,5,NA,NA,NA),lty=c(NA,NA,1,1,1), col = c(NA,"blue", "green","violet","black"), 
-        #        legend = c(season_names[sea],"cold days in a row","markov cold persistence",
-        #            sprintf("warm day increase per year %.3f",summary(lm(kalteTage~dat$year))$coefficients[2]),"trend"))
+        legend("topleft", pch = c(NA,5,NA,NA,NA),lty=c(NA,NA,1,NA,1), col = c(NA,"blue", "green",NA,"black"), 
+                legend = c(season_names[sea],"cold days in a row","markov cold persistence",
+                    sprintf("warm day increase per year %.3f",-warmeTageIncr[q,sea]),"trend"))
 
         par(new=TRUE,plt=c(0.76,0.96,0.67,0.87))
         q=station
@@ -152,12 +137,12 @@ for (nday in ndays){
             trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr))
             cat("loading persistence\n") 
             per=markov_load(sprintf("../data/%s_%s/%s_%s_markov2s.nc",nday,nyr,nday,nyr),4)
-            dur=duration_load(sprintf("../data/%s_%s/%s_%s_duration_summer.nc",nday,nyr,nday,nyr))
-            #dur1=duration_load(sprintf("../data/%s_%s/%s_%s_duration_summer.nc",nday,nyr,nday,nyr))
+            #dur=duration_load(sprintf("../data/%s_%s/%s_%s_duration_",nday,nyr,nday,nyr))
+            warmeTageIncr=read.table("../data/warmeTage_trends_5seasons.txt")
 
 
-            station_plot(dat=dat,trend=trend,per=per,dur=dur,
-                q=qq,start=365*(3)+1,stop=365*(58),
+            station_plot(dat=dat,trend=trend,per=per,dur_name=sprintf("../data/%s_%s/%s_%s_duration_",nday,nyr,nday,nyr),
+                warmeTageIncr=warmeTageIncr,q=qq,start=365*(3)+1,stop=365*(58),
                 filename=sprintf("../plots/station/%s_%s_station_test_%s.pdf",nday,nyr,qq))
         }
     }

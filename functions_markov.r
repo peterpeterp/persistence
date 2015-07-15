@@ -44,11 +44,11 @@ markov_2states <- function(x){
     if (dim(tmp$estimate)==1){
         if (length(which(x==-1))==0){
             transMat[2,2]=1
-            transMat[1,1]=0
+            transMat[1,1]=NA
         }
         if (length(which(x==1))==0){
             transMat[1,1]=1
-            transMat[2,2]=0
+            transMat[2,2]=NA
         }
     }
     return(list(transMat=transMat,confidence=tmp$confidenceInterval$confidenceLevel))
