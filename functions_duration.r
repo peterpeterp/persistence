@@ -2,33 +2,37 @@
 source("write.r")
 source("load.r")
 
-per_duration <- function(ind,time){
-    state=ind[1]
-    warm_period=ind*NA
-    normal_period=ind*NA    
-    cold_period=ind*NA    
-    warm_period_mid=ind*NA
-    normal_period_mid=ind*NA
-    cold_period_mid=ind*NA
-    period=1
-    j_warm=1
-    j_cold=1
-    j_normal=1
+per_duration <- function(ind,time,state){
+    act_state=ind[1]
+    period=ind*NA
+    period_mid=ind*NA    
+    state_count=1
+    period_count=1
     nas=0
     for (i in 2:length(ind)){
-        #cat(i,state,ind[i],period,"\n")
-        if (is.na(ind[i]) | is.na(state)){
+        if (is.na(ind[i]) | is.na(act_state)){
             nas=nas+1
-            if (is.na(state)){
-                state=ind[i]
+            if (is.na(act_state)){
+                act_state=ind[i]
             }
         }
 
         else{
-            if (state==ind[i]){
-                period=period+1
-            } else{
-                if (state==1){
+            if (act_state==ind[i] & act_state==state){
+                state_count=state_count+1
+            } 
+            if (act_state!=ind[i] & act_state==state){
+                period[period_count]=state_count
+                period_mid[period_count]=time[i]-0.5*state_count/365
+                period_count=period_count+1
+                state_count=1
+            }
+
+
+
+
+
+
                     warm_period[j_warm]=period
                     warm_period_mid[j_warm]=time[i]-0.5*period/365
                     j_warm=j_warm+1              
@@ -54,39 +58,17 @@ per_duration <- function(ind,time){
     else{
         if (state==1){
             warm_period[j_warm]=period
-            j_warm=j_warm+1              
         }
         if (state==-1){
             cold_period[j_cold]=period
-            j_cold=j_cold+1
+        }
+        if (state==0){
+            normal_period[j_normal]=period
         }
         return(list(dur_warm=warm_period,dur_cold=cold_period,dur_normal=normal_period,dur_warm_mid=warm_period_mid,dur_cold_mid=cold_period_mid,dur_normal_mid=normal_period_mid))
     }
 }
 
-seasonal_duration <- function(ind,time,seasons=array(c(59,151,151,243,243,335,335,425),dim=c(2,4)),interval=365){
-    size=length(ind)
-    x=seq(1, size, 1)
-    i=1
-    j=1
-    out1=array(NA,dim=c(dim(seasons)[2],4,62,100))
-    while ((i+seasons[2,4])<size){
-        if ((is.na(ind[i+1])==FALSE) & (is.na(ind[i+interval])==FALSE)){
-            for (sea in 1:length(seasons[1,])){
-                ind_season=ind[(seasons[1,sea]+i+1):(seasons[2,sea]+i)]
-                time_season=time[(seasons[1,sea]+i+1):(seasons[2,sea]+i)]
-                tmp=per_duration(ind_season,time_season)
-                out1[sea,1,j,1:length(tmp$dur_warm)]=tmp$dur_warm
-                out1[sea,2,j,1:length(tmp$dur_cold)]=tmp$dur_cold
-                out1[sea,3,j,1:length(tmp$dur_warm)]=tmp$dur_warm_mid
-                out1[sea,3,j,1:length(tmp$dur_cold)]=tmp$dur_cold_mid
-            }
-        }
-        j=j+1
-        i=i+interval
-    }
-    return(out1)
-} 
 
 calc_global_dur <- function(dat,per,trash,filename){
     ntot=length(dat$ID)
