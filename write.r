@@ -105,11 +105,12 @@ markov_analysis_write <- function(filename,analysis,season,transition_names)
 }
 
 
-duration_write <- function(filename,dur,len)
+duration_write_old <- function(filename,dur,len)
 {
     ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
     periods <- dim.def.ncdf("periods",units="periods",vals=1:len, unlim=FALSE)
+
 
     dur_warm <- var.def.ncdf(name="dur_warm",units="days",longname="duration of warm periods",dim=list(ID,periods), missval=-9999.0)
     dur_cold <- var.def.ncdf(name="dur_cold",units="days",longname="duration of cold periods",dim=list(ID,periods), missval=-9999.0)
@@ -128,6 +129,29 @@ duration_write <- function(filename,dur,len)
     close.ncdf(nc) 
 }
 
+duration_write <- function(filename,dur,len,states)
+{
+    states=dim(dur)[2]/2
+    ntot=1319
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+    periods <- dim.def.ncdf("periods",units="periods",vals=1:len, unlim=FALSE)
+    spalten <- dim.def.ncdf("spalten",units="spalten",vals=1:(states*2),unlim=FALSE)
+
+
+    dur <- var.def.ncdf(name="dur",units="days",longname=paste("duration of periods of same state, states beeing:",states),dim=list(ID,spalten,periods), missval=-9999.0)
+    dur_mid <- var.def.ncdf(name="dur_mid",units="days",longname=paste("midpoints of periods of same state, states beeing:",states),dim=list(ID,spalten,periods), missval=-9999.0)
+
+
+    vars=list(dur,dur_mid)
+   
+    nc = create.ncdf(filename,vars)
+    print(dim(dur))
+    for (i in 1:2){
+        put.var.ncdf(nc,vars[[i]],dur[1:ntot,((i-1)*states+1):(i*states),])              
+    }
+
+    close.ncdf(nc) 
+}
 
 duration_analysis_write <- function(filename,dur,season,trenn)
 {

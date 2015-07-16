@@ -57,50 +57,48 @@ calc_global_dur <- function(dat,per,trash,filename,states=c(-1,1)){
         #per$ind[per$ind==0]=NA
         for (i in 1:length(states)){
             tmp=per_duration(as.vector(per$ind[q,,])[trash:(length(per$ind[q,,])-trash)],dat$time[trash:(length(per$ind[q,,])-trash)],states[i])
-            dur[q,((i-1)*2+1),1:length(tmp$period)]=tmp$period
-            dur[q,((i-1)*2+2),1:length(tmp$period)]=tmp$period_mid
+            dur[q,i,1:length(tmp$period)]=tmp$period
+            dur[q,(length(states)+i),1:length(tmp$period)]=tmp$period_mid
         }
 
         for (i in 1:length(states)){
-            len[i]=length(which(!is.na(dur[q,((i-1)*2+1),])))
+            len[i]=length(which(!is.na(dur[q,i,])))
         }
         maxis[q]=max(len,na.rm=TRUE)
     }
+
+
     duration_write(filename,dur[1:ntot,1:(length(states)*2),1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
 }
 
 
-duration_seasons <- function(dur,season,filename){
-    br<-seq(0,100,10)
+duration_seasons <- function(dur,season,states,filename){
     ntot=1319
+    dur_neu=array(NA,dim=c(ntot,length(states)*2,65*92))
+    maxis=array(NA,ntot)
+
     start=season[1]/365
     stop=season[2]/365
 
-    dur_neu=array(NA,dim=c(ntot,4,60*90))
-    maxis=array(NA,ntot)
     len=array(NA,4)
     for (q in 1:ntot){
-        select_warm=c()
-        select_cold=c()
-        for (year in 1950:2011){
-            select_warm=c(select_warm,which(dur$dur_warm_mid[q,]>(start+year) & dur$dur_warm_mid[q,]<(stop+year)))
-            select_cold=c(select_cold,which(dur$dur_cold_mid[q,]>(start+year) & dur$dur_cold_mid[q,]<(stop+year)))
+        for (i in 1:length(states)){
+            select=c()
+            for (year in 1950:2014){
+                select=c(select,which(dur[q,((i-1)*2+2),]>(start+year) & dur[q,((i-1)*2+2),]<(stop+year)))
+            }   
+            if (length(select)>0){
+                dur_neu[q,i,]=dur[q,i,select]
+                dur_neu[q,(length(states)+i),]=dur[q,(length(states)+i),select]
+            }        
         }
 
-        if (length(select_warm)>0){
-            dur_neu[q,1,1:length(select_warm)]=dur$dur_warm[q,select_warm]
-            dur_neu[q,3,1:length(select_warm)]=dur$dur_warm_mid[q,select_warm]
-        }
-        if (length(select_cold)>0){
-            dur_neu[q,2,1:length(select_cold)]=dur$dur_cold[q,select_cold]
-            dur_neu[q,4,1:length(select_cold)]=dur$dur_cold_mid[q,select_cold]
-        }
-        for (i in 1:2){
-            len[i]=length(which(is.na(dur_neu[q,i,])==FALSE))
+        for (i in 1:(length(states)+i)){
+            len[i]=length(which(!is.na(dur_neu[q,i,])))
         }
         maxis[q]=max(len,na.rm=TRUE)
     }
-    duration_write(filename,dur_neu[1:ntot,1:4,1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
+    duration_write(filename,dur_neu[1:ntot,1:(2*length(states)),1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
 }
     
 duration_analysis <- function(dur,filename,season,trenn=1980,stations=seq(1,1319,1)){
