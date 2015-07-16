@@ -26,71 +26,47 @@ per_duration <- function(ind,time,state){
                 period_mid[period_count]=time[i]-0.5*state_count/365
                 period_count=period_count+1
                 state_count=1
+                act_state=99
             }
-
-
-
-
-
-
-                    warm_period[j_warm]=period
-                    warm_period_mid[j_warm]=time[i]-0.5*period/365
-                    j_warm=j_warm+1              
-                }
-                if (state==-1){
-                    cold_period[j_cold]=period
-                    cold_period_mid[j_cold]=time[i]-0.5*period/365
-                    j_cold=j_cold+1
-                }
-                if (state==0){
-                    normal_period[j_normal]=period
-                    normal_period_mid[j_normal]=time[i]-0.5*period/365
-                    j_normal=j_normal+1
-                }
-                period=1
-                state=state-2*state
-            } 
+            if (act_state!=ind[i] & ind[i]==state){
+                act_state=ind[i]
+            }
         }
     }
     if (nas>length(ind)/2){
-        return(list(dur_warm=NA,dur_cold=NA,dur_normal=NA,dur_warm_mid=NA,dur_cold_mid=NA,dur_normal_mid=NA))
+        return(list(period=NA,period_mid=NA))
     }
     else{
-        if (state==1){
-            warm_period[j_warm]=period
+        if (act_state==state){
+            period[period_count]=state_count
         }
-        if (state==-1){
-            cold_period[j_cold]=period
-        }
-        if (state==0){
-            normal_period[j_normal]=period
-        }
-        return(list(dur_warm=warm_period,dur_cold=cold_period,dur_normal=normal_period,dur_warm_mid=warm_period_mid,dur_cold_mid=cold_period_mid,dur_normal_mid=normal_period_mid))
+        return(list(period=period,period_mid=period_mid))
     }
 }
 
 
-calc_global_dur <- function(dat,per,trash,filename){
+calc_global_dur <- function(dat,per,trash,filename,states=c(-1,1)){
     ntot=length(dat$ID)
     
-    dur=array(NA,dim=c(ntot,4,62*365))
+
+    dur=array(NA,dim=c(ntot,length(states)*2,62*365))
     maxis=array(NA,ntot)
-    len=array(NA,4)
+    len=array(NA,length(states)*2)
     for (q in 1:ntot){
         cat("-")
-        per$ind[per$ind==0]=NA
-        tmp=per_duration(as.vector(per$ind[q,,])[trash:(length(per$ind[q,,])-trash)],dat$time[trash:(length(per$ind[q,,])-trash)])
-        dur[q,1,1:length(tmp$dur_warm)]=tmp$dur_warm
-        dur[q,2,1:length(tmp$dur_cold)]=tmp$dur_cold
-        dur[q,3,1:length(tmp$dur_warm)]=tmp$dur_warm_mid
-        dur[q,4,1:length(tmp$dur_cold)]=tmp$dur_cold_mid
+        #per$ind[per$ind==0]=NA
+        for (i in 1:length(states)){
+            tmp=per_duration(as.vector(per$ind[q,,])[trash:(length(per$ind[q,,])-trash)],dat$time[trash:(length(per$ind[q,,])-trash)],states[i])
+            dur[q,((i-1)*2+1),1:length(tmp$period)]=tmp$period
+            dur[q,((i-1)*2+2),1:length(tmp$period)]=tmp$period_mid
+        }
 
-        for (i in 1:2){
-            len[i]=length(which(is.na(dur[q,i,])==FALSE))
+        for (i in 1:length(states)){
+            len[i]=length(which(!is.na(dur[q,((i-1)*2+1),])))
         }
         maxis[q]=max(len,na.rm=TRUE)
     }
-    duration_write(filename,dur[1:ntot,1:4,1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
+    duration_write(filename,dur[1:ntot,1:(length(states)*2),1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
 }
 
 
