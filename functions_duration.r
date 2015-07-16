@@ -5,12 +5,15 @@ source("load.r")
 per_duration <- function(ind,time){
     state=ind[1]
     warm_period=ind*NA
+    normal_period=ind*NA    
     cold_period=ind*NA    
     warm_period_mid=ind*NA
+    normal_period_mid=ind*NA
     cold_period_mid=ind*NA
     period=1
     j_warm=1
     j_cold=1
+    j_normal=1
     nas=0
     for (i in 2:length(ind)){
         #cat(i,state,ind[i],period,"\n")
@@ -32,8 +35,13 @@ per_duration <- function(ind,time){
                 }
                 if (state==-1){
                     cold_period[j_cold]=period
-                    cold_period_mid[j_warm]=time[i]-0.5*period/365
+                    cold_period_mid[j_cold]=time[i]-0.5*period/365
                     j_cold=j_cold+1
+                }
+                if (state==0){
+                    normal_period[j_normal]=period
+                    normal_period_mid[j_normal]=time[i]-0.5*period/365
+                    j_normal=j_normal+1
                 }
                 period=1
                 state=state-2*state
@@ -41,7 +49,7 @@ per_duration <- function(ind,time){
         }
     }
     if (nas>length(ind)/2){
-        return(list(dur_warm=NA,dur_cold=NA,dur_warm_mid=NA,dur_cold_mid=NA))
+        return(list(dur_warm=NA,dur_cold=NA,dur_normal=NA,dur_warm_mid=NA,dur_cold_mid=NA,dur_normal_mid=NA))
     }
     else{
         if (state==1){
@@ -52,7 +60,7 @@ per_duration <- function(ind,time){
             cold_period[j_cold]=period
             j_cold=j_cold+1
         }
-        return(list(dur_warm=warm_period,dur_cold=cold_period,dur_warm_mid=warm_period_mid,dur_cold_mid=cold_period_mid))
+        return(list(dur_warm=warm_period,dur_cold=cold_period,dur_normal=normal_period,dur_warm_mid=warm_period_mid,dur_cold_mid=cold_period_mid,dur_normal_mid=normal_period_mid))
     }
 }
 
