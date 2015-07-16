@@ -103,7 +103,15 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 			aushol=max(c(max(y,na.rm=TRUE)-mi,mi-min(y,na.rm=TRUE)))
 			y[1]=mi-aushol
 			y[2]=mi+aushol
-		}			
+		}	
+		if (length(farbe_mitte)==2){
+			y[1]=farbe_mitte[1]
+			y[2]=farbe_mitte[2]
+		}		
+		if (farbe_mitte=="nichts"){
+			y[1]=mean(y,na.rm=TRUE)
+			y[2]=mean(y,na.rm=TRUE)
+		}		
 		facetcol <- cut(y,nbcol)
 		plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])
 

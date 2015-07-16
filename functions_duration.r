@@ -53,7 +53,7 @@ calc_global_dur <- function(dat,ind,trash,filename,states=c(-1,1)){
 
     maxis=array(NA,ntot)
     len=array(NA,length(states)*2)
-    for (q in 488){
+    for (q in 1:ntot){
         cat("-")
         #per$ind[per$ind==0]=NA
         for (i in 1:length(states)){
@@ -84,7 +84,7 @@ duration_seasons <- function(dur,dur_mid,season,filename){
     stop=season[2]/365
 
     len=array(NA,4)
-    for (q in 488){
+    for (q in 1:ntot){
         for (i in 1:states){
             select=c()
             for (year in 1950:2014){
@@ -114,12 +114,11 @@ duration_analysis <- function(dur,dur_mid,filename,season,trenn=1980,stations=se
     stop=c(2014,1980,2014)
 
 
-    for (q in 1:ntot){
+    for (q in stations){
         cat("-")
-        if (length(which(!is.na(dur$dur_warm[q,])))>50){
-            for (i in 1:3){
-                for (t in 1:states){
-
+        for (i in 1:3){
+            for (t in 1:states){
+                if (length(which(!is.na(dur[q,t,])))>50){
                     duration=dur[q,t,]
                     mid=dur_mid[q,t,]
 
@@ -141,11 +140,12 @@ duration_analysis <- function(dur,dur_mid,filename,season,trenn=1980,stations=se
 
                     dur_ana[q,i,t,1:8]=c(mean(duration[select],na.rm=TRUE),a,a_err,b,b_err,perc2,perc5,perc10)
                 }
+                else {
+                    cat(q)
+                }
             }
         } 
-        else {
-            cat(q)
-        }
+
 
 
     }

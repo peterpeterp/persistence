@@ -38,14 +38,15 @@ if (1==1){
 	ntot=1319
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc",reg=1)
 
-	if (1==2){
+	if (1==1){
 		# markov xx states
 		state_names=c("cold","warm")
 		#state_names=c("cold","normal","warm")
        	seasons=c("spring","summer","autumn","winter","year")
-		vars="mean"
-        vars_sig=NA
-        farbe_mitte="mean"
+		vars="MK"
+        vars_sig="MK_sig"
+        farbe_mitte="gemeinsam 0"
+        name_zusatz="grob"
 		
 		states=length(state_names)
 
@@ -67,34 +68,31 @@ if (1==1){
 			}
 
 			map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,
-				filename_plot=paste("../plots/maps/91_5_mar",states,"s_",vars,"_",season,"_detail.pdf",sep=""),
+				filename_plot=paste("../plots/maps/91_5_mar",states,"s_",vars,"_",season,"_",name_zusatz,".pdf",sep=""),
 				worldmap=worldmap,ausschnitt=c(35,66))		
 			map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
-				filename_plot=paste("../plots/regions/91_5_mar",states,"s_",vars,"_",season,"_detail.pdf",sep=""))
+				filename_plot=paste("../plots/regions/91_5_mar",states,"s_",vars,"_",season,"_",name_zusatz,".pdf",sep=""))
 		}
 	}
 
 
 
-	if (1==1){
+	if (1==2){
 		# duration vergleich
-       	seasons=c("spring","summer","autumn","winter","year")
+       	seasons=c("spring","summer","autumn","winter")
+	    state_zusatz=c("cold","warm")
+		titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")
+		vars=c("dur_ana_before","dur_ana_after")
+		auswahl=c(1,6,7)
+
 		for (season in seasons){
-			waka=c("warm","cold")
-			titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")
-			vars=c("dur_ana_warm_before","dur_ana_cold_before",
-			    	"dur_ana_warm_after","dur_ana_cold_after")
-
-			nc=open.ncdf(paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_analysis_",season,".nc",sep=""))
-
+			nc=open.ncdf(paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_2s_analysis_",season,".nc",sep=""))
 			titel=c()
-			auswahl=c(1,6,7)
 			reihen=array(NA,dim=c(length(auswahl)*2,ntot))
-
 			for (i in 1:length(auswahl)){
-			    for (j in 1:2){
-			    	reihen[((i-1)*2+j),]=get.var.ncdf(nc,vars[j+2])[1:ntot,auswahl[i]]-get.var.ncdf(nc,vars[j])[1:ntot,auswahl[i]]
-			    	titel[((i-1)*2+j)]=paste("difference in",waka[j],"period duration",titel_zusatz[auswahl[i]],"before and after 1980 in",season)
+			    for (state in 1:2){
+			    	reihen[((i-1)*2+state),]=get.var.ncdf(nc,vars[1+1])[1:ntot,state,auswahl[i]]-get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i]]
+			    	titel[((i-1)*2+state)]=paste("difference in",state_zusatz[state],"period duration",titel_zusatz[auswahl[i]],"before and after 1980 in",season)
 			    }
 			}
 			
@@ -107,24 +105,29 @@ if (1==1){
 	}
 
 	if (1==2){
-	# summer duration all
-	    titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")
-	    vars=c("dur_ana_warm_full","dur_ana_cold_full")
+		# duration climatology
+       	seasons=c("spring","summer","autumn","winter")
+	    state_zusatz=c("cold","warm")
+		titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")
+		vars=c("dur_ana_full")
+		auswahl=c(1,6,7)
 
-	    nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_duration_analysis_summer.nc",nday,nyr,nday,nyr))
-
-	    reihen=array(NA,dim=c(14,ntot))
-	    titel=c()
-	    for (i in 1:7){
-	    	for (j in 1:2){
-	    		reihen[((i-1)*2+j),]=get.var.ncdf(nc,vars[j])[1:ntot,i]
-	    		titel[((i-1)*2+j)]=paste(nc$var[[j]]$longname,titel_zusatz[i])
-	    	}
-	    }
-		map_allgemein(dat=dat,
-			filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_analysis.pdf",nday,nyr),
-			worldmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="mean")
-	}        	        
-
-	
+		for (season in seasons){
+			nc=open.ncdf(paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_2s_analysis_",season,".nc",sep=""))
+			titel=c()
+			reihen=array(NA,dim=c(length(auswahl)*2,ntot))
+			for (i in 1:length(auswahl)){
+			    for (state in 1:2){
+			    	reihen[((i-1)*2+state),]=get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i]]
+			    	titel[((i-1)*2+state)]=paste(state_zusatz[state],"period duration",titel_zusatz[auswahl[i]],"from 1950-2014 in",season)
+			    }
+			}
+			
+			map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
+				filename_plot=paste("../plots/regions/",nday,"_",nyr,"_duration_",season,"_climatology.pdf",sep=""))
+			map_allgemein(dat=dat,
+				filename_plot=paste("../plots/maps/",nday,"_",nyr,"_duration_",season,"_climatology.pdf",sep=""),
+				worldmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="mean")
+		}
+	}
 }
