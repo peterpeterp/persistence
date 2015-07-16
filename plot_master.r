@@ -36,9 +36,9 @@ if (1==1){
 	nday = 91
 	nyr = 5
 	ntot=1319
-	dat=dat_load("../data/dat_regional.nc",reg=1)
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc",reg=1)
 
-	if (1==1){
+	if (1==2){
 		# markov xx states
 		state_names=c("cold","warm")
 		#state_names=c("cold","normal","warm")
@@ -76,31 +76,34 @@ if (1==1){
 
 
 
-	if (1==2){
-		# summer duration vergleich
-		waka=c("warm","cold")
-		titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")
-		vars=c("dur_ana_warm_before","dur_ana_cold_before",
-		    	"dur_ana_warm_after","dur_ana_cold_after")
+	if (1==1){
+		# duration vergleich
+       	seasons=c("spring","summer","autumn","winter","year")
+		for (season in seasons){
+			waka=c("warm","cold")
+			titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")
+			vars=c("dur_ana_warm_before","dur_ana_cold_before",
+			    	"dur_ana_warm_after","dur_ana_cold_after")
 
-		nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_duration_analysis_summer.nc",nday,nyr,nday,nyr))
+			nc=open.ncdf(paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_analysis_",season,".nc",sep=""))
 
-		titel=c()
-		auswahl=c(1,6,7)
-		reihen=array(NA,dim=c(length(auswahl)*2,ntot))
+			titel=c()
+			auswahl=c(1,6,7)
+			reihen=array(NA,dim=c(length(auswahl)*2,ntot))
 
-		for (i in 1:length(auswahl)){
-		    for (j in 1:2){
-		    	reihen[((i-1)*2+j),]=get.var.ncdf(nc,vars[j+2])[1:ntot,auswahl[i]]-get.var.ncdf(nc,vars[j])[1:ntot,auswahl[i]]
-		    	titel[((i-1)*2+j)]=paste("difference in",waka[j],"period duration",titel_zusatz[auswahl[i]],"before and after 1980")
-		    }
+			for (i in 1:length(auswahl)){
+			    for (j in 1:2){
+			    	reihen[((i-1)*2+j),]=get.var.ncdf(nc,vars[j+2])[1:ntot,auswahl[i]]-get.var.ncdf(nc,vars[j])[1:ntot,auswahl[i]]
+			    	titel[((i-1)*2+j)]=paste("difference in",waka[j],"period duration",titel_zusatz[auswahl[i]],"before and after 1980 in",season)
+			    }
+			}
+			
+			map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
+				filename_plot=paste("../plots/regions/",nday,"_",nyr,"_duration_",season,"_diff_1980.pdf",sep=""))
+			map_allgemein(dat=dat,
+				filename_plot=paste("../plots/maps/",nday,"_",nyr,"_duration_",season,"_diff_1980.pdf",sep=""),
+				worldmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="0")
 		}
-		
-		map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
-			filename_plot=sprintf("../plots/regions/%s_%s_duration_diff_1980.pdf",nday,nyr))
-		map_allgemein(dat=dat,
-			filename_plot=sprintf("../plots/maps/%s_%s_duration_summer_diff_1980.pdf",nday,nyr),
-			worldmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="0")
 	}
 
 	if (1==2){

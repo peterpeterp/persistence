@@ -29,7 +29,7 @@ dat_write <- function(filename,data3D)
 trend_write <- function(filename,data3D,trend)
 {
     day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
-    year <- dim.def.ncdf("year",units="year",vals=1:62, unlim=FALSE)
+    year <- dim.def.ncdf("year",units="year",vals=1:65, unlim=FALSE)
     ID <- dim.def.ncdf("ID",units="ID",vals=1:length(data3D$ID), unlim=FALSE)
 
     vartrend <- var.def.ncdf(name="trend",units="bla",dim=list(ID,day,year), missval=-9999.0)
@@ -43,7 +43,7 @@ markov_write <- function(filename,data3D,per,transitions,transition_names)
 {
     ntot=length(data3D$ID)
     day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
-    year <- dim.def.ncdf("year",units="year",vals=1:62, unlim=FALSE)
+    year <- dim.def.ncdf("year",units="year",vals=1:65, unlim=FALSE)
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
     transition <- dim.def.ncdf("transition",units="transition",vals=1:transitions, unlim=FALSE)
 

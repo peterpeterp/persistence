@@ -18,7 +18,7 @@ r_calc_runmean_2D <- function(y2D,nday,nyr){
     trend=y2D*NA
 
     for (i in 1:365){
-        for (j in 1:62){
+        for (j in 1:65){
             trend[i,j]=mean(y2Dex[(i+nbuff1-nbuff1):(i+nbuff1+nbuff1),(j+nbuff2-nbuff2):(j+nbuff2+nbuff2)],na.rm=TRUE)
         }
     }
@@ -61,10 +61,10 @@ seasonal_1D_out <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),mod
     x=seq(1, size, 1)
     i=shift
     j=1
-    out1=array(NA,dim=c(dim(seasons)[2],62))
-    out2=array(NA,dim=c(dim(seasons)[2],62))
-    out_err=array(NA,dim=c(dim(seasons)[2],62))
-    out_add=array(NA,dim=c(dim(seasons)[2],62))
+    out1=array(NA,dim=c(dim(seasons)[2],65))
+    out2=array(NA,dim=c(dim(seasons)[2],65))
+    out_err=array(NA,dim=c(dim(seasons)[2],65))
+    out_add=array(NA,dim=c(dim(seasons)[2],65))
 
     while ((i+interval)<size){
         if ((is.na(dat[i+1])==FALSE) & (is.na(dat[i+interval])==FALSE)){
@@ -95,8 +95,8 @@ seasonal_matrix_out <- function(dat,model=markov_2states,states=2,seasons=array(
     i=shift
     j=1
     transitions=states*states
-    out=array(NA,dim=c(dim(seasons)[2],transitions,62))
-    out_conf=array(NA,dim=c(dim(seasons)[2],62))
+    out=array(NA,dim=c(dim(seasons)[2],transitions,65))
+    out_conf=array(NA,dim=c(dim(seasons)[2],65))
 
     while ((i+interval)<size){
         if ((is.na(dat[i+1])==FALSE) & (is.na(dat[i+interval])==FALSE)){
@@ -142,7 +142,7 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
     # Calculate persistence information
     #cat("Calculating persistence... ")
 
-    markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,5,transitions,62)),markov_conf=array(NA,dim=c(ntot,5,62)))
+    markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,5,transitions,65)),markov_conf=array(NA,dim=c(ntot,5,65)))
 
     for (q in 1:ntot) { 
         cat("-")
@@ -180,7 +180,6 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
             tmp=seasonal_matrix_out(per_ind1D,model,states,array(c(1,365),dim=c(2,1)))
             markov_per$markov[q,5,,]=tmp$out[1,,]
             markov_per$markov_conf[q,5,]=tmp$out_conf[1,]
-            print(markov_per$markov[q,,,])
 
         } 
         else {
@@ -210,7 +209,7 @@ trend_analysis <- function(x,y){
 }
 
 global_analysis <- function(per,filename_neu,season,transition_names){
-    t=seq(1,62,1)
+    t=seq(1,65,1)
     ntot=1319
     pers=dim(per)[2]
     per_analysis=array(NA,dim=c(ntot,pers,6))

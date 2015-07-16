@@ -15,7 +15,7 @@ if (1==1){
     trend=calc_trend(dat,sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr),nday,nyr)
 }
 
-if (1==2){
+if (1==1){
     # trend control
     source("trend_control.r")
     nday=91
@@ -52,7 +52,7 @@ if (1==1){
     nday=91
     nyr=5
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-    trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr))
+    trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
     per=calc_per(dat,trend,nday,nyr,model=markov_3states,states=3,transition_names="cc cn cw nc nn nw wc wn ww",
         filename=sprintf("../data/%s_%s/%s_%s_markov3s.nc",nday,nyr,nday,nyr))
 }
@@ -74,7 +74,8 @@ if (1==1){
     nyr=5
     trash=((nyr-1)/2*365+(nday-1))
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-    per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
+    per=markov_load(sprintf("../data/%s_%s/%s_%s_markov2s.nc",nday,nyr,nday,nyr),4)
+
     calc_global_dur(dat=dat,per=per,trash=trash,filename=sprintf("../data/%s_%s/%s_%s_duration.nc",nday,nyr,nday,nyr))
     dur=duration_load(filename=sprintf("../data/%s_%s/%s_%s_duration.nc",nday,nyr,nday,nyr))
     

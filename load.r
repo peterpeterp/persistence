@@ -15,7 +15,7 @@ dat_load <- function(filename,reg=0){
 
     # Add additional time dimension (days are decimal points dt=1/365)
     dat$time = c(1:(length(dat$day)*length(dat$year)))/365 - 0.5*1/365 + min(dat$year)
-    dat$time_2D = array(dat$time,dim=c(365,62))
+    dat$time_2D = array(dat$time,dim=c(365,65))
 
     return(dat)
 }
@@ -42,7 +42,7 @@ markov_load <- function(filename,transitions){
     nc=open.ncdf(filename)
     ntot=1319
 
-    markov_per = list(ind=array(NA,dim=c(ntot,365,62)),markov=array(NA,dim=c(ntot,5,transitions,62)),markov_err=array(NA,dim=c(ntot,5,62)))
+    markov_per = list(ind=array(NA,dim=c(ntot,365,65)),markov=array(NA,dim=c(ntot,5,transitions,65)),markov_err=array(NA,dim=c(ntot,5,65)))
     str_markov=c("markov_spring","markov_summer","markov_autumn","markov_winter","markov_year")
         
     for (i in 1:5){

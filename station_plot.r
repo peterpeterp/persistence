@@ -119,10 +119,11 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,start,stop,filen
 }
 
 
+source("trend_control.r")
+trend_3states()
+asda
 
-
-
-dat=dat_load("../data/dat_regional.nc")
+dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
 
 
@@ -130,11 +131,11 @@ ndays = c(91)
 nyrs = c(5)
 
 stations=c(488,510,604,744,920,887,251,98,270,281,169,164,353,121,11,39)
-stations=c(510)
+stations=c(238)
 for (nday in ndays){
     for (nyr in nyrs){
         for (qq in stations){
-            trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend_r.nc",nday,nyr,nday,nyr))
+            trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
             cat("loading persistence\n") 
             per=markov_load(sprintf("../data/%s_%s/%s_%s_markov2s.nc",nday,nyr,nday,nyr),4)
             #dur=duration_load(sprintf("../data/%s_%s/%s_%s_duration_",nday,nyr,nday,nyr))
@@ -142,7 +143,7 @@ for (nday in ndays){
 
 
             station_plot(dat=dat,trend=trend,per=per,dur_name=sprintf("../data/%s_%s/%s_%s_duration_",nday,nyr,nday,nyr),
-                warmeTageIncr=warmeTageIncr,q=qq,start=365*(3)+1,stop=365*(58),
+                warmeTageIncr=warmeTageIncr,q=qq,start=365*(58),stop=365*(65),
                 filename=sprintf("../plots/station/%s_%s_station_test_%s.pdf",nday,nyr,qq))
         }
     }

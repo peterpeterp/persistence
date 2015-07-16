@@ -138,14 +138,14 @@ duration_seasons <- function(dur,season,filename){
 }
     
 duration_analysis <- function(dur,filename,season,trenn=1980,stations=seq(1,1319,1)){
-    br=seq(0,200,2)
+    br=seq(0,300,2)
     ntot=1319
     dur_ana=array(NA,dim=c(ntot,3,2,8))
     start=c(1950,1950,1980)
     stop=c(2011,1980,2011)
 
 
-    for (q in stations){
+    for (q in c(488,238)){
         cat("-")
         if (length(which(!is.na(dur$dur_warm[q,])))>50){
             for (i in 1:3){
@@ -159,6 +159,10 @@ duration_analysis <- function(dur,filename,season,trenn=1980,stations=seq(1,1319
                         duration=dur$dur_cold[q,]
                     }
                     select=which(mid>start[i] & mid<stop[i])
+                    print(duration[select])
+                    print(sum(duration[select]))
+                    print(q)
+
                     histo=hist(duration[select],breaks=br,plot=FALSE)
 
                     x=histo$mids

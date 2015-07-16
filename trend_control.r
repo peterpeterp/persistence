@@ -149,15 +149,16 @@ trend_view_detail <-function(dat,trend,year,q){
 }
 
 trend_3states <- function(){
-    q=488
-    trend=trend_load("../data/91_5/91_5_trend_r.nc")
+    q=238
+    trend=trend_load("../data/91_5/91_5_trend.nc")
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
     detrended=dat$tas[q,,]-trend[q,,]
     threshold=sd(detrended,na.rm=TRUE)*0.5
 
 
-    pdf(file="../plots/3_state_description")
-    plot(dat$time,dat$tas[q,,],xlim=c(2002,2004),pch=20,cex=0.5,main="3 states",ylab="temperature anomaly in deg C",xlab="")
+    pdf(file="../plots/488")
+    plot(dat$time,dat$tas[q,,],xlim=c(2000,2014),pch=20,cex=0.5,main="3 states",ylab="temperature anomaly in deg C",xlab="")
     lines(dat$time,trend[q,,],col="green")
     lines(dat$time,trend[q,,]+threshold,col="grey")
     lines(dat$time,trend[q,,]-threshold,col="grey")
