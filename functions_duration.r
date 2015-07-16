@@ -45,20 +45,21 @@ per_duration <- function(ind,time,state){
 }
 
 
-calc_global_dur <- function(dat,per,trash,filename,states=c(-1,1)){
+calc_global_dur <- function(dat,ind,trash,filename,states=c(-1,1)){
     ntot=length(dat$ID)
     
-    dur=array(NA,dim=c(ntot,length(states)*2,65*365))
+    dur=array(NA,dim=c(ntot,length(states),65*365))
+    dur_mid=array(NA,dim=c(ntot,length(states),65*365))
+
     maxis=array(NA,ntot)
     len=array(NA,length(states)*2)
     for (q in 488){
         cat("-")
         #per$ind[per$ind==0]=NA
         for (i in 1:length(states)){
-            tmp=per_duration(as.vector(per$ind[q,,])[trash:(length(per$ind[q,,])-trash)],dat$time[trash:(length(per$ind[q,,])-trash)],states[i])
-            print(tmp$period[1:100])
+            tmp=per_duration(as.vector(ind[q,,])[trash:(length(ind[q,,])-trash)],dat$time[trash:(length(ind[q,,])-trash)],states[i])
             dur[q,i,1:length(tmp$period)]=tmp$period
-            dur[q,(length(states)+i),1:length(tmp$period)]=tmp$period_mid
+            dur_mid[q,i,1:length(tmp$period)]=tmp$period_mid
         }
 
         for (i in 1:length(states)){
@@ -67,65 +68,62 @@ calc_global_dur <- function(dat,per,trash,filename,states=c(-1,1)){
         maxis[q]=max(len,na.rm=TRUE)
     }
 
-    print(dim(dur[1:ntot,1:(length(states)*2),1:max(maxis,na.rm=TRUE)]))
-    duration_write(filename,dur[1:ntot,1:(length(states)*2),1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE),states)
+    duration_write(filename,dur[1:ntot,1:length(states),1:max(maxis,na.rm=TRUE)],
+        dur_mid[1:ntot,1:length(states),1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
 }
 
 
-duration_seasons <- function(dur,season,states,filename){
+duration_seasons <- function(dur,dur_mid,season,filename){
+    states=dim(dur)[2]
     ntot=1319
-    dur_neu=array(NA,dim=c(ntot,length(states)*2,65*92))
+    dur_neu=array(NA,dim=c(ntot,states,65*92))
+    dur_mid_neu=array(NA,dim=c(ntot,states,65*92))
     maxis=array(NA,ntot)
 
     start=season[1]/365
     stop=season[2]/365
 
     len=array(NA,4)
-    for (q in 1:ntot){
-        for (i in 1:length(states)){
+    for (q in 488){
+        for (i in 1:states){
             select=c()
             for (year in 1950:2014){
-                select=c(select,which(dur[q,((i-1)*2+2),]>(start+year) & dur[q,((i-1)*2+2),]<(stop+year)))
+                select=c(select,which(dur_mid[q,i,]>(start+year) & dur_mid[q,i,]<(stop+year)))
             }   
             if (length(select)>0){
-                dur_neu[q,i,]=dur[q,i,select]
-                dur_neu[q,(length(states)+i),]=dur[q,(length(states)+i),select]
+                dur_neu[q,i,1:length(select)]=dur[q,i,select]
+                dur_mid_neu[q,i,1:length(select)]=dur_mid[q,i,select]
             }        
         }
 
-        for (i in 1:(length(states)+i)){
+        for (i in 1:states){
             len[i]=length(which(!is.na(dur_neu[q,i,])))
         }
         maxis[q]=max(len,na.rm=TRUE)
     }
-    duration_write(filename,dur_neu[1:ntot,1:(2*length(states)),1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
+    duration_write(filename,dur_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],
+        dur_mid_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
 }
     
-duration_analysis <- function(dur,filename,season,trenn=1980,stations=seq(1,1319,1)){
+duration_analysis <- function(dur,dur_mid,filename,season,trenn=1980,stations=seq(1,1319,1)){
     br=seq(0,300,2)
     ntot=1319
-    dur_ana=array(NA,dim=c(ntot,3,2,8))
+    states=dim(dur)[2]
+    dur_ana=array(NA,dim=c(ntot,3,states,8))
     start=c(1950,1950,1980)
-    stop=c(2011,1980,2011)
+    stop=c(2014,1980,2014)
 
 
-    for (q in c(488,238)){
+    for (q in 1:ntot){
         cat("-")
         if (length(which(!is.na(dur$dur_warm[q,])))>50){
             for (i in 1:3){
-                for (t in 1:2){
-                    if (t==1){
-                        mid=dur$dur_warm_mid[q,]
-                        duration=dur$dur_warm[q,]
-                    }
-                    if (t==2){
-                        mid=dur$dur_cold_mid[q,]
-                        duration=dur$dur_cold[q,]
-                    }
+                for (t in 1:states){
+
+                    duration=dur[q,t,]
+                    mid=dur_mid[q,t,]
+
                     select=which(mid>start[i] & mid<stop[i])
-                    print(duration[select])
-                    print(sum(duration[select]))
-                    print(q)
 
                     histo=hist(duration[select],breaks=br,plot=FALSE)
 

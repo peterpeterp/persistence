@@ -5,7 +5,6 @@ source("functions_support.r")
 source("functions_duration.r")
 source("write.r")
 source("load.r")
-dyn.load("persistence_tools.so")
 
 if (1==2){
     # calculate trend
@@ -74,39 +73,43 @@ if (1==1){
     nyr=5
     trash=((nyr-1)/2*365+(nday-1))
 
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
-    dur1=duration_load(filename=sprintf("../data/%s_%s/%s_%s_duration.nc",nday,nyr,nday,nyr))
-    print(dur1$dur_warm[488,])
-    nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_duration_test.nc",nday,nyr,nday,nyr))
+    #nc=open.ncdf("../data/91_5/91_5_markov3s.nc")        
+    #ind=get.var.ncdf(nc,"ind")
+
+    #calc_global_dur(dat=dat,ind=ind,trash=trash,filename=sprintf("../data/%s_%s/%s_%s_duration_3s.nc",nday,nyr,nday,nyr),states=c(-1,0,1))
+
+    nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_duration_3s.nc",nday,nyr,nday,nyr))
     dur=get.var.ncdf(nc,"dur")
     dur_mid=get.var.ncdf(nc,"dur_mid")
-    print(dur[488,2,])
-    print(dur1$dur_warm_mid[488,])
-    print(dur_mid[488,2,])
-    sdsd
 
+    print(dim(dur))
+    print(dur[488,1:3,1:10])
+    print(dur_mid[488,1:3,1:10])
 
-    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-    per=markov_load(sprintf("../data/%s_%s/%s_%s_markov2s.nc",nday,nyr,nday,nyr),4)
-
-    calc_global_dur(dat=dat,per=per,trash=trash,filename=sprintf("../data/%s_%s/%s_%s_duration_test.nc",nday,nyr,nday,nyr),states=c(-1,1))
-    sfsd
-    dur=duration_load(filename=sprintf("../data/%s_%s/%s_%s_duration.nc",nday,nyr,nday,nyr))
+    pdf(file="../plots/wowowowo.pdf")
+    q=488
+    plot(dat$time,dat$tas[q,,],xlim=c(1952,1953))
+    points(dur_mid[q,1,],dur[q,1,],col="blue",pch=4)
+    points(dur_mid[q,2,],dur[q,2,],col="green",pch=4)
+    points(dur_mid[q,3,],dur[q,3,],col="red",pch=4)
+    asdsa
     
-    duration_seasons(dur,season=c(59,151),filename=sprintf("../data/%s_%s/%s_%s_duration_spring.nc",nday,nyr,nday,nyr))
-    duration_seasons(dur,season=c(151,243),filename=sprintf("../data/%s_%s/%s_%s_duration_summer.nc",nday,nyr,nday,nyr))
-    duration_seasons(dur,season=c(243,335),filename=sprintf("../data/%s_%s/%s_%s_duration_autumn.nc",nday,nyr,nday,nyr))
-    duration_seasons(dur,season=c(335,425),filename=sprintf("../data/%s_%s/%s_%s_duration_winter.nc",nday,nyr,nday,nyr))
+    duration_seasons(dur,dur_mid,season=c(59,151),filename=sprintf("../data/%s_%s/%s_%s_duration_2s_spring.nc",nday,nyr,nday,nyr))
+    duration_seasons(dur,dur_mid,season=c(151,243),filename=sprintf("../data/%s_%s/%s_%s_duration_2s_summer.nc",nday,nyr,nday,nyr))
+    duration_seasons(dur,dur_mid,season=c(243,335),filename=sprintf("../data/%s_%s/%s_%s_duration_2s_autumn.nc",nday,nyr,nday,nyr))
+    duration_seasons(dur,dur_mid,season=c(335,425),filename=sprintf("../data/%s_%s/%s_%s_duration_2s_winter.nc",nday,nyr,nday,nyr))
 }
 
-if (1==1){
+if (1==2){
     # analyse duration periods
     nday=91
     nyr=5
     for (season in c("spring","summer","autumn","winter")){
         print(season)
-        dur=duration_load(filename=paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_",season,".nc",sep=""))
-        duration_analysis(dur,filename=paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_analysis_",season,".nc",sep=""),
+        nc=open.ncdf(paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_",season,".nc",sep=""))
+        duration_analysis(dur,dur_mid,filename=paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_analysis_",season,".nc",sep=""),
             season=season,trenn=1980)#,stations=134:136)
     }
 }

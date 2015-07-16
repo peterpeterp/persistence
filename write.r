@@ -129,28 +129,24 @@ duration_write_old <- function(filename,dur,len)
     close.ncdf(nc) 
 }
 
-duration_write <- function(filename,dur,len,states)
+duration_write <- function(filename,dur,dur_mid,len)
 {
-    states=dim(dur)[2]/2
+    states=dim(dur)[2]
     ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+    varstates <- dim.def.ncdf("states",units="states",vals=1:(states),unlim=FALSE)
     periods <- dim.def.ncdf("periods",units="periods",vals=1:len, unlim=FALSE)
-    spalten <- dim.def.ncdf("spalten",units="spalten",vals=1:(states),unlim=FALSE)
 
 
-    vardur <- var.def.ncdf(name="dur",units="days",longname=paste("duration of periods of same state, states beeing:",states),dim=list(ID,spalten,periods), missval=-9999.0)
-    vardur_mid <- var.def.ncdf(name="dur_mid",units="days",longname=paste("midpoints of periods of same state, states beeing:",states),dim=list(ID,spalten,periods), missval=-9999.0)
+    vardur <- var.def.ncdf(name="dur",units="days",longname=paste("duration of periods of same state, states beeing:",states),dim=list(ID,varstates,periods), missval=-9999.0)
+    vardur_mid <- var.def.ncdf(name="dur_mid",units="days",longname=paste("midpoints of periods of same state, states beeing:",states),dim=list(ID,varstates,periods), missval=-9999.0)
 
 
     vars=list(vardur,vardur_mid)
    
     nc = create.ncdf(filename,vars)
-    print(dim(dur))
-    for (i in 1:2){
-        print(dim(dur[1:ntot,((i-1)*states+1):(i*states),]))
-
-        put.var.ncdf(nc,vars[[i]],dur[1:ntot,((i-1)*states+1):(i*states),])              
-    }
+    put.var.ncdf(nc,vardur,dur[1:ntot,1:states,])              
+    put.var.ncdf(nc,vardur_mid,dur_mid[1:ntot,1:states,])              
 
     close.ncdf(nc) 
 }
