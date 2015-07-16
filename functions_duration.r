@@ -48,15 +48,15 @@ per_duration <- function(ind,time,state){
 calc_global_dur <- function(dat,per,trash,filename,states=c(-1,1)){
     ntot=length(dat$ID)
     
-
-    dur=array(NA,dim=c(ntot,length(states)*2,62*365))
+    dur=array(NA,dim=c(ntot,length(states)*2,65*365))
     maxis=array(NA,ntot)
     len=array(NA,length(states)*2)
-    for (q in 1:ntot){
+    for (q in 488){
         cat("-")
         #per$ind[per$ind==0]=NA
         for (i in 1:length(states)){
             tmp=per_duration(as.vector(per$ind[q,,])[trash:(length(per$ind[q,,])-trash)],dat$time[trash:(length(per$ind[q,,])-trash)],states[i])
+            print(tmp$period[1:100])
             dur[q,i,1:length(tmp$period)]=tmp$period
             dur[q,(length(states)+i),1:length(tmp$period)]=tmp$period_mid
         }
@@ -67,8 +67,8 @@ calc_global_dur <- function(dat,per,trash,filename,states=c(-1,1)){
         maxis[q]=max(len,na.rm=TRUE)
     }
 
-
-    duration_write(filename,dur[1:ntot,1:(length(states)*2),1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
+    print(dim(dur[1:ntot,1:(length(states)*2),1:max(maxis,na.rm=TRUE)]))
+    duration_write(filename,dur[1:ntot,1:(length(states)*2),1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE),states)
 }
 
 

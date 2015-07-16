@@ -73,6 +73,19 @@ if (1==1){
     nday=91
     nyr=5
     trash=((nyr-1)/2*365+(nday-1))
+
+
+    dur1=duration_load(filename=sprintf("../data/%s_%s/%s_%s_duration.nc",nday,nyr,nday,nyr))
+    print(dur1$dur_warm[488,])
+    nc=open.ncdf(sprintf("../data/%s_%s/%s_%s_duration_test.nc",nday,nyr,nday,nyr))
+    dur=get.var.ncdf(nc,"dur")
+    dur_mid=get.var.ncdf(nc,"dur_mid")
+    print(dur[488,2,])
+    print(dur1$dur_warm_mid[488,])
+    print(dur_mid[488,2,])
+    sdsd
+
+
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     per=markov_load(sprintf("../data/%s_%s/%s_%s_markov2s.nc",nday,nyr,nday,nyr),4)
 
