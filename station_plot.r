@@ -7,39 +7,49 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
 
     station=which(dat$ID==q)[1]
 
+    if (dim(per$markov)[3]==4){
+        state_names=c("cold","warm")
+        color=c("blue","red")
+    }
+
+    if (dim(per$markov)[3]==9){
+        state_names=c("cold","normal","warm")
+        color=c("blue","violet","red")
+    }
+
     season_names=c("spring","summer","autumn","winter")
     season_starts=c(59,151,242,335,1)
     season_stops=c(151,242,335,425,1)
     for (sea in 1:4){
-        par(mfrow=c(2,1))
+        par(mfrow=c(length(state_names),1))
         par(mar=c(2,2, 2, 0.5))
+
+
         nc=open.ncdf(paste(dur_name,season_names[sea],".nc",sep="")) 
         dur=get.var.ncdf(nc,"dur")
         dur_mid=get.var.ncdf(nc,"dur_mid")
+        print(dur[q,1,])
+        ads
 
-        plot(NA,xlim=c(1950,2014),xaxp=c(1950,2015,13),ylim=c(0,50),xlab="",ylab="duration of persistence")#, main="summer warm persistence")
-        points(dur_mid[station,2,],dur[station,2,],pch=4,col="red")
-        markov=per$markov[station,sea,4,]*30
-        lines(dat$year+0.5,markov,col="green")
-        for (i in seq(1950,2015,5)){
-            abline(v=i,col="gray",lty="dotted")
-        }
-        lines(dat$time,as.vector(trend[station,,]),col="black")
-        legend("topleft", pch = c(NA,4,NA,NA,NA),lty=c(NA,NA,1,NA,1), col = c(NA,"red", "green",NA,"black"), 
-                legend = c(season_names[sea],"warm days in a row","markov cold persistence",
-                    sprintf("warm day increase per year %.3f",warmeTageIncr[q,sea]),"trend"))
 
-        plot(NA,xlim=c(1950,2014),xaxp=c(1950,2015,13),ylim=c(0,50),xlab="",ylab="duration of persistence")#, main="summer cold persistence")
-        points(dur_mid[station,1,],dur[station,1,],pch=5,col="blue")
-        markov=per$markov[station,sea,1,]*30
-        lines(dat$year,markov,col="green")
-        lines(dat$time,as.vector(trend[station,,]),col="black")
-        for (i in seq(1950,2015,5)){
-            abline(v=i,col="gray",lty="dotted")
+        for (state in 1:length(state_names)){
+            plot(NA,xlim=c(1950,2014),xaxp=c(1950,2015,13),ylim=c(0,50),xlab="",ylab="duration of persistence")#, main="summer warm persistence")
+            points(dur_mid[station,state,],dur[station,state,],pch=4,col=color[state])
+
+            markov=per$markov[station,sea,(state*state),]*30
+            lines(dat$year+0.5,markov,col="green")
+
+            lines(dat$time,as.vector(trend[station,,]),col="black")
+
+            for (i in seq(1950,2015,5)){
+                abline(v=i,col="gray",lty="dotted")
+            }
+            legend("topleft", pch = c(NA,4,NA,NA,NA),lty=c(NA,NA,1,NA,1), col = c(NA,color[state], "green",NA,"black"), 
+                    legend = c(season_names[sea],paste(state_names[state],"days in a row"),paste("markov",state_names[state],"persistence"),
+                        paste("warm day increase per year",sprintf("%.3f",warmeTageIncr[q,sea])),"trend"))
+
         }
-        legend("topleft", pch = c(NA,5,NA,NA,NA),lty=c(NA,NA,1,NA,1), col = c(NA,"blue", "green",NA,"black"), 
-                legend = c(season_names[sea],"cold days in a row","markov cold persistence",
-                    sprintf("warm day increase per year %.3f",-warmeTageIncr[q,sea]),"trend"))
+
 
         par(new=TRUE,plt=c(0.76,0.96,0.67,0.87))
         q=station
@@ -51,69 +61,46 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
         if (1==1){
             trenn=1980
             br=seq(0,100,2)
-            ntot=819
-            vor_warm=which(dur_mid[q,2,]<trenn)
-            vor_cold=which(dur_mid[q,1,]<trenn)
-            nach_warm=which(dur_mid[q,2,]>trenn)
-            nach_cold=which(dur_mid[q,1,]>trenn)
+            
+            par(mfrow=c(1,length(state_names)))
+            par(plt=c(0.2,0.85,0.2,0.85)) 
 
-            hist1=hist(dur[q,2,vor_warm],breaks=br,plot=FALSE)
-            hist2=hist(dur[q,2,nach_warm],breaks=br,plot=FALSE)
+            for (state in 1:length(state_names)){
+
+                vor=which(dur_mid[q,state,]<trenn)
+                nach=which(dur_mid[q,state,]>trenn)
+
+                hist1=hist(dur[q,state,vor],breaks=br,plot=FALSE)
+                hist2=hist(dur[q,state,nach],breaks=br,plot=FALSE)
 
 
-            par(mfrow=c(1,2))
-            par(plt=c(0.2,0.85,0.2,0.85))  
+ 
 
-            endx=max(which(hist1$counts!=0),which(hist2$counts!=0))+1
+                endx=max(which(hist1$counts!=0),which(hist2$counts!=0))+1
 
-            plot(hist1$mids,hist1$density,xlim=c(0,endx*2+2),col=rgb(0,1,0,1/2),pch=15,ylim=c(0,max(c(hist1$density,hist2$density))),main=paste("warm periods in",season_names[sea]),xlab="duration of period")
-            points(hist2$mids,hist2$density,col=rgb(1,0,0,1/2),pch=15)
+                plot(hist1$mids,hist1$density,xlim=c(0,endx*2+2),col=rgb(0,1,0,1/2),pch=15,ylim=c(0,max(c(hist1$density,hist2$density))),main=paste(state_names[state],"periods in",season_names[sea]),xlab="duration of period")
+                points(hist2$mids,hist2$density,col=rgb(1,0,0,1/2),pch=15)
 
-            x=hist1$mids
-            xy=data.frame(y=hist1$density,x=x)
-            fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
-            yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
-            lines(x,yfit,col="green")
-            x2=(log(0.02)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
-            abline(v=x2,col="green")
+                x=hist1$mids
+                xy=data.frame(y=hist1$density,x=x)
+                fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
+                yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
+                lines(x,yfit,col="green")
+                x2=(log(0.02)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
+                abline(v=x2,col="green")
 
-            x=hist2$mids
-            xy=data.frame(y=hist2$density,x=x)
-            fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
-            yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
-            lines(x,yfit,col="red")
-            x2=(log(0.02)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
-            abline(v=x2,col="red")
+                x=hist2$mids
+                xy=data.frame(y=hist2$density,x=x)
+                fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
+                yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
+                lines(x,yfit,col="red")
+                x2=(log(0.02)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
+                abline(v=x2,col="red")
 
-            legend("topright", pch = c(15,15), col = c("green", "red"), 
-                    legend = c(paste("before",trenn),paste("after",trenn)))
-        
-            hist1=hist(dur[q,1,vor_cold],breaks=br,plot=FALSE)
-            hist2=hist(dur[q,1,nach_cold],breaks=br,plot=FALSE)
-
-            endx=max(which(hist1$counts!=0),which(hist2$counts!=0))+1
-          
-            plot(hist1$mids,hist1$density,xlim=c(0,endx*2+2),col=rgb(0,1,0,1/2),pch=15,ylim=c(0,max(c(hist1$density,hist2$density))),main=paste("cold periods in",season_names[sea]),xlab="duration of period")
-            points(hist2$mids,hist2$density,col=rgb(1,0,0,1/2),pch=15)
-
-            x=hist1$mids
-            xy=data.frame(y=hist1$density,x=x)
-            fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
-            yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
-            lines(x,yfit,col="green")
-            x5=(log(0.05)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
-            abline(v=x5,col="green")
-
-            x=hist2$mids
-            xy=data.frame(y=hist2$density,x=x)
-            fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
-            yfit=exp(summary(fit)$parameters[1])*exp(x*summary(fit)$parameters[2])
-            lines(x,yfit,col="red")
-            x5=(log(0.05)-summary(fit)$parameters[1])/summary(fit)$parameters[2]
-            abline(v=x5,col="red")
-
-            legend("topright", pch = c(15,15), col = c("green", "red"), 
-                    legend = c(paste("before",trenn),paste("after",trenn)))
+                legend("topright", pch = c(15,15), col = c("green", "red"), 
+                        legend = c(paste("before",trenn),paste("after",trenn)))
+            
+            }
                         
         }
     }
@@ -130,7 +117,7 @@ ndays = c(91)
 nyrs = c(5)
 
 stations=c(488,510,604,744,920,887,251,98,270,281,169,164,353,121,11,39)
-stations=c(744)
+stations=c(525)
 for (nday in ndays){
     for (nyr in nyrs){
         for (qq in stations){
@@ -143,7 +130,7 @@ for (nday in ndays){
 
             station_plot(dat=dat,trend=trend,per=per,dur_name=sprintf("../data/%s_%s/%s_%s_duration_2s_",nday,nyr,nday,nyr),
                 warmeTageIncr=warmeTageIncr,q=qq,
-                filename=sprintf("../plots/station/%s_%s_station_test_%s.pdf",nday,nyr,qq))
+                filename=sprintf("../plots/station/%s_%s_station_2s_%s.pdf",nday,nyr,qq))
         }
     }
 }

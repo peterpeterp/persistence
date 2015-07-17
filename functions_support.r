@@ -146,7 +146,7 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
 
     for (q in 1:ntot) { 
         cat("-")
-        if (length(which(is.na(dat$tas[q,,])))<(2*trash+730)){
+        if (length(which(is.na(dat$tas[q,,])))<(2*trash+365*20)){
 
             # Calculate persistence vector
             y = dat$tas[q,,]

@@ -25,7 +25,7 @@ if (1==2){
     trend_control_warm_days(dat,ind)   
 }
 
-if (1==2){
+if (1==1){
     # calculate persistence 2 states
     nday=91
     nyr=5
@@ -69,7 +69,7 @@ if (1==2){
     duration_seasons(dur,dur_mid,season=c(335,425),filename=sprintf("../data/%s_%s/%s_%s_duration_2s_winter.nc",nday,nyr,nday,nyr))
 }
 
-if (1==1){
+if (1==2){
     # analyse duration periods 2 states
     nday=91
     nyr=5
@@ -106,7 +106,7 @@ if (1==2){
     }
 }
 
-if (1==1){
+if (1==2){
     # calculate duration periods 3 states
     nday=91
     nyr=5
@@ -129,7 +129,7 @@ if (1==1){
     duration_seasons(dur,dur_mid,season=c(335,425),filename=sprintf("../data/%s_%s/%s_%s_duration_3s_winter.nc",nday,nyr,nday,nyr))
 }
 
-if (1==1){
+if (1==2){
     # analyse duration periods 3 states
     nday=91
     nyr=5
