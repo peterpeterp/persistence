@@ -38,7 +38,7 @@ if (1==1){
 	ntot=1319
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc",reg=1)
 
-	if (1==1){
+	if (1==2){
 		# markov xx states
 		state_names=c("cold","warm")
 		#state_names=c("cold","normal","warm")
@@ -77,30 +77,32 @@ if (1==1){
 
 
 
-	if (1==2){
+	if (1==1){
 		# duration vergleich
        	seasons=c("spring","summer","autumn","winter")
 	    state_zusatz=c("cold","warm")
-		titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")
-		vars=c("dur_ana_before","dur_ana_after")
-		auswahl=c(1,6,7)
+		titel_zusatz=c("0.25","0.5","0.75","0.9","0.95","0.98","0.99")
+		vars=c("dur_ana_full")
+		auswahl=c(2,3,4,5,6,7,8)
 
 		for (season in seasons){
 			nc=open.ncdf(paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_2s_analysis_",season,".nc",sep=""))
 			titel=c()
 			reihen=array(NA,dim=c(length(auswahl)*2,ntot))
+			reihen_sig=array(NA,dim=c(length(auswahl)*2,ntot))
 			for (i in 1:length(auswahl)){
 			    for (state in 1:2){
-			    	reihen[((i-1)*2+state),]=get.var.ncdf(nc,vars[1+1])[1:ntot,state,auswahl[i]]-get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i]]
-			    	titel[((i-1)*2+state)]=paste("difference in",state_zusatz[state],"period duration",titel_zusatz[auswahl[i]],"before and after 1980 in",season)
+			    	reihen[((i-1)*2+state),]=get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i],1]
+			    	reihen_sig[((i-1)*2+state),]=get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i],2]
+			    	titel[((i-1)*2+state)]=paste("trend for",titel_zusatz[i],"quantile of",state_zusatz[state],"period duration in",season)
 			    }
 			}
 			
 			map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
-				filename_plot=paste("../plots/regions/",nday,"_",nyr,"_duration_",season,"_diff_1980.pdf",sep=""))
+				filename_plot=paste("../plots/regions/",nday,"_",nyr,"_duration_",season,"_qua.pdf",sep=""))
 			map_allgemein(dat=dat,
-				filename_plot=paste("../plots/maps/",nday,"_",nyr,"_duration_",season,"_diff_1980.pdf",sep=""),
-				worldmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="0")
+				filename_plot=paste("../plots/maps/",nday,"_",nyr,"_duration_",season,"_qua.pdf",sep=""),
+				worldmap=worldmap,ausschnitt=c(0,80),reihen=reihen,titel=titel,farbe_mitte="0")
 		}
 	}
 

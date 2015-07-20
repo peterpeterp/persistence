@@ -106,49 +106,35 @@ duration_seasons <- function(dur,dur_mid,season,filename){
 }
     
 duration_analysis <- function(dur,dur_mid,filename,season,trenn=1980,stations=seq(1,1319,1)){
-    br=seq(0,300,2)
+    library(quantreg)
     ntot=1319
     states=dim(dur)[2]
-    dur_ana=array(NA,dim=c(ntot,3,states,8))
-    start=c(1950,1950,1980)
-    stop=c(2014,1980,2014)
-
+    dur_ana=array(NA,dim=c(ntot,states,8,5))
 
     for (q in stations){
         cat("-")
-        for (i in 1:3){
-            for (t in 1:states){
-                if (length(which(!is.na(dur[q,t,])))>50){
-                    duration=dur[q,t,]
-                    mid=dur_mid[q,t,]
+        for (t in 1:states){
+            if (length(which(!is.na(dur[q,t,])))>10){
+                duration=dur[q,t,]
+                mid=dur_mid[q,t,]
 
-                    select=which(mid>start[i] & mid<stop[i])
+                dur_ana[q,t,1,1]=mean(duration,na.rm=TRUE)
+                dur_ana[q,t,1,2]=sd(duration,na.rm=TRUE)
 
-                    histo=hist(duration[select],breaks=br,plot=FALSE)
-
-                    x=histo$mids
-                    xy=data.frame(y=histo$density,x=x)
-                    fit=nls(y~exp(a+b*x),data=xy,start=list(a=0,b=0))
-                    a=summary(fit)$parameters[1]
-                    a_err=summary(fit)$parameters[3]
-                    b=summary(fit)$parameters[2]
-                    b_err=summary(fit)$parameters[4]
-
-                    perc2=(log(0.02)-a)/b
-                    perc5=(log(0.05)-a)/b
-                    perc10=(log(0.10)-a)/b
-
-                    dur_ana[q,i,t,1:8]=c(mean(duration[select],na.rm=TRUE),a,a_err,b,b_err,perc2,perc5,perc10)
-                }
-                else {
-                    cat(q)
+                F=ecdf(duration)
+                taus=c(0.25,0.5,0.75,0.9,0.95,0.98,0.99)
+                for (i in 1:length(taus)){
+                    qu=summary(rq(duration~mid,taus[i]))$coefficients
+                    dur_ana[q,t,(1+i),1:4]=qu[c(2,8,1,7)]
+                    dur_ana[q,t,(1+i),5]=quantile(duration,probs=c(taus[i]))
                 }
             }
-        } 
+            else {
+                cat(q)
+            }
+        }
+    } 
 
-
-
-    }
     if (filename!=FALSE){
         duration_analysis_write(filename,dur_ana,season,trenn)
     }

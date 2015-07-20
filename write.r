@@ -105,29 +105,6 @@ markov_analysis_write <- function(filename,analysis,season,transition_names)
 }
 
 
-duration_write_old <- function(filename,dur,len)
-{
-    ntot=1319
-    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    periods <- dim.def.ncdf("periods",units="periods",vals=1:len, unlim=FALSE)
-
-
-    dur_warm <- var.def.ncdf(name="dur_warm",units="days",longname="duration of warm periods",dim=list(ID,periods), missval=-9999.0)
-    dur_cold <- var.def.ncdf(name="dur_cold",units="days",longname="duration of cold periods",dim=list(ID,periods), missval=-9999.0)
-    dur_warm_mid <- var.def.ncdf(name="dur_warm_mid",units="days",longname="midpoint of duration of warm periods",dim=list(ID,periods), missval=-9999.0)
-    dur_cold_mid <- var.def.ncdf(name="dur_cold_mid",units="days",longname="midpoint of duration of cold periods",dim=list(ID,periods), missval=-9999.0)
-
-
-    vars=list(dur_warm,dur_cold,dur_warm_mid,dur_cold_mid)
-   
-    nc = create.ncdf(filename,vars)
-    print(dim(dur))
-    for (i in 1:4){
-        put.var.ncdf(nc,vars[[i]],dur[1:ntot,i,])              
-    }
-
-    close.ncdf(nc) 
-}
 
 duration_write <- function(filename,dur,dur_mid,len)
 {
@@ -151,57 +128,22 @@ duration_write <- function(filename,dur,dur_mid,len)
     close.ncdf(nc) 
 }
 
-duration_analysis_write_old <- function(filename,dur,season,trenn)
-{
-    ntot=1319
-    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    output <- dim.def.ncdf("out ID",units="out ID",vals=1:8,unlim=FALSE)
-
-    dur_ana_warm_full <- var.def.ncdf(name="dur_ana_warm_full",units="values",longname=paste("analysis of duration of warm periods in",season,"from 1950 to 2011"),dim=list(ID,output), missval=-9999.0)
-    dur_ana_cold_full <- var.def.ncdf(name="dur_ana_cold_full",units="values",longname=paste("analysis of duration of cold periods in",season,"from 1950 to 2011"),dim=list(ID,output), missval=-9999.0)
-    dur_ana_warm_before <- var.def.ncdf(name="dur_ana_warm_before",units="values",longname=paste("analysis of duration of warm periods in",season,"from 1950 to",trenn),dim=list(ID,output), missval=-9999.0)
-    dur_ana_cold_before <- var.def.ncdf(name="dur_ana_cold_before",units="values",longname=paste("analysis of duration of cold periods in",season,"from 1950 to",trenn),dim=list(ID,output), missval=-9999.0)
-    dur_ana_warm_after <- var.def.ncdf(name="dur_ana_warm_after",units="values",longname=paste("analysis of duration of warm periods in",season,"from",trenn,"to 2011"),dim=list(ID,output), missval=-9999.0)
-    dur_ana_cold_after <- var.def.ncdf(name="dur_ana_cold_after",units="values",longname=paste("analysis of duration of cold periods in",season,"from",trenn,"to 2011"),dim=list(ID,output), missval=-9999.0)
-    
-
-    vars=list(dur_ana_warm_full,dur_ana_cold_full,
-        dur_ana_warm_before,dur_ana_cold_before,
-        dur_ana_warm_after,dur_ana_cold_after)
-   
-    nc = create.ncdf(filename,vars)
-
-    put.var.ncdf(nc,vars[[1]],dur[1:ntot,1,1,])      
-    put.var.ncdf(nc,vars[[2]],dur[1:ntot,1,2,])      
-    put.var.ncdf(nc,vars[[3]],dur[1:ntot,2,1,])      
-    put.var.ncdf(nc,vars[[4]],dur[1:ntot,2,2,])      
-    put.var.ncdf(nc,vars[[5]],dur[1:ntot,3,1,])      
-    put.var.ncdf(nc,vars[[6]],dur[1:ntot,3,2,])      
-
-
-    close.ncdf(nc) 
-}
-
 duration_analysis_write <- function(filename,dur,season,trenn)
 {
-    states=dim(dur)[3]
+    states=dim(dur)[2]
     ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    output <- dim.def.ncdf("out ID",units="out ID",vals=1:8,unlim=FALSE)
     varstates <- dim.def.ncdf("states",units="states",vals=1:(states),unlim=FALSE)
+    quantiles <- dim.def.ncdf("0.25 0.5 0.75 0.95 0.9 0.99",units="0-1",vals=1:8,unlim=FALSE)
+    outs <- dim.def.ncdf("slope slope_sig intercept intercept_sig quantile",units="0-1",vals=1:5,unlim=FALSE)
 
-    dur_ana_full <- var.def.ncdf(name="dur_ana_full",units="values",longname=paste("analysis of duration of periods in",season,"from 1950 to 2014"),dim=list(ID,varstates,output), missval=-9999.0)
-    dur_ana_before <- var.def.ncdf(name="dur_ana_before",units="values",longname=paste("analysis of duration of periods in",season,"from 1950 to",trenn),dim=list(ID,varstates,output), missval=-9999.0)
-    dur_ana_after <- var.def.ncdf(name="dur_ana_after",units="values",longname=paste("analysis of duration of periods in",season,"from",trenn,"to 2014"),dim=list(ID,varstates,output), missval=-9999.0)
+    dur_ana_full <- var.def.ncdf(name="dur_ana_full",units="values",longname=paste("analysis of duration of periods in",season,"from 1950 to 2014"),dim=list(ID,varstates,quantiles,outs), missval=-9999.0)
     
 
-    vars=list(dur_ana_full,dur_ana_before,dur_ana_after)
+    vars=list(dur_ana_full)
    
     nc = create.ncdf(filename,vars)
-
-    put.var.ncdf(nc,vars[[1]],dur[1:ntot,1,1:states,])      
-    put.var.ncdf(nc,vars[[2]],dur[1:ntot,2,1:states,])      
-    put.var.ncdf(nc,vars[[3]],dur[1:ntot,3,1:states,])      
+    put.var.ncdf(nc,vars[[1]],dur[1:ntot,1:states,1:8,1:4])      
 
 
     close.ncdf(nc) 
