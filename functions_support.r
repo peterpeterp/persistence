@@ -130,6 +130,17 @@ calc_trend <- function(dat,filename,nday,nyr){
     return(trend)
 }
 
+find_nas <- function(dat){
+    ntot=length(dat$ID)
+    nas=array(NA,dim=c(ntot,2))
+    for (q in 1:ntot){
+        cat("-")
+        nas[q,1]=dat$ID[q]
+        nas[q,2]=length(which(is.na(dat$tas[q,,])))
+    }
+    write.table(nas,"../data/number_of_NA_per_station_2011.txt")
+}
+
 calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
     source("functions_markov.r")
 

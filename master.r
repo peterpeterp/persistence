@@ -6,6 +6,14 @@ source("functions_duration.r")
 source("write.r")
 source("load.r")
 
+if (1==1){
+    # count nas
+    nday=91
+    nyr=5
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc")
+    find_nas(dat)    
+}
+
 if (1==2){
     # calculate trend
     nday=91
@@ -25,7 +33,7 @@ if (1==2){
     trend_control_warm_days(dat,ind)   
 }
 
-if (1==1){
+if (1==2){
     # calculate persistence 2 states
     nday=91
     nyr=5

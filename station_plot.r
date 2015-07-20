@@ -3,7 +3,7 @@ source("load.r")
 source("functions_duration.r")
 
 station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
-    pdf(file=filename)
+    pdf(file=filename,paper='a4')
 
     station=which(dat$ID==q)[1]
 
@@ -28,9 +28,6 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
         nc=open.ncdf(paste(dur_name,season_names[sea],".nc",sep="")) 
         dur=get.var.ncdf(nc,"dur")
         dur_mid=get.var.ncdf(nc,"dur_mid")
-        print(dur[q,1,])
-        ads
-
 
         for (state in 1:length(state_names)){
             plot(NA,xlim=c(1950,2014),xaxp=c(1950,2015,13),ylim=c(0,50),xlab="",ylab="duration of persistence")#, main="summer warm persistence")
@@ -40,6 +37,10 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
             lines(dat$year+0.5,markov,col="green")
 
             lines(dat$time,as.vector(trend[station,,]),col="black")
+
+            F=ecdf(dur[station,state,])
+            perc95=which(F(dur[station,state,])>0.95)
+            abline(lm(dur[station,state,perc95]~dur_mid[station,state,perc95]),col="red")
 
             for (i in seq(1950,2015,5)){
                 abline(v=i,col="gray",lty="dotted")
@@ -117,7 +118,7 @@ ndays = c(91)
 nyrs = c(5)
 
 stations=c(488,510,604,744,920,887,251,98,270,281,169,164,353,121,11,39)
-stations=c(525)
+stations=c(488)
 for (nday in ndays){
     for (nyr in nyrs){
         for (qq in stations){
@@ -130,7 +131,7 @@ for (nday in ndays){
 
             station_plot(dat=dat,trend=trend,per=per,dur_name=sprintf("../data/%s_%s/%s_%s_duration_2s_",nday,nyr,nday,nyr),
                 warmeTageIncr=warmeTageIncr,q=qq,
-                filename=sprintf("../plots/station/%s_%s_station_2s_%s.pdf",nday,nyr,qq))
+                filename=sprintf("../plots/station/%s_%s_a4_2s_%s.pdf",nday,nyr,qq))
         }
     }
 }
