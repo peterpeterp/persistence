@@ -126,7 +126,7 @@ duration_analysis <- function(dur,dur_mid,filename,season,trenn=1980,stations=se
                 for (i in 1:length(taus)){
                     qu=summary(rq(duration~mid,taus[i]))$coefficients
                     dur_ana[q,t,(1+i),1:4]=qu[c(2,8,1,7)]
-                    dur_ana[q,t,(1+i),5]=quantile(duration,probs=c(taus[i]))
+                    dur_ana[q,t,(1+i),5]=quantile(duration,probs=c(taus[i]),na.rm=TRUE)
                 }
             }
             else {

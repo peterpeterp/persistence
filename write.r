@@ -143,7 +143,7 @@ duration_analysis_write <- function(filename,dur,season,trenn)
     vars=list(dur_ana_full)
    
     nc = create.ncdf(filename,vars)
-    put.var.ncdf(nc,vars[[1]],dur[1:ntot,1:states,1:8,1:4])      
+    put.var.ncdf(nc,vars[[1]],dur[1:ntot,1:states,1:8,1:5])      
 
 
     close.ncdf(nc) 

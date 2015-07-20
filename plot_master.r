@@ -22,6 +22,26 @@ if (1==2){
 		filename_plot=sprintf("../plots/maps/%s_%s_warm_days.pdf",nday,nyr),worldmap=worldmap,ausschnitt=c(35,66))
 	map_regional(dat=dat,toPlot=reihen,titles=c("yearly increase in 'warm days' from 1950 to 2011"),worldmap=worldmap,
 		filename_plot=sprintf("../plots/regions/%s_%s_warm_days_regio.pdf",nday,nyr))
+}
+
+if (1==1){
+	library(SDMTools)
+	source("map_plot.r")
+	library(rworldmap)
+	library(fields)
+	worldmap = getMap(resolution = "low")
+	nday = 91
+	nyr = 5
+	ntot=1319
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc",reg=1)
+    missings=read.table("../data/number_of_NA_per_station.txt")
+    missings2=read.table("../data/number_of_NA_per_station_2011.txt")
+    print(missings2[1:ntot,1])
+	reihen=array(NA,dim=c(2,ntot))
+	reihen[1,]=missings[1:ntot,2]
+	reihen[2,]=missings2[1:ntot,2]
+	map_allgemein(dat=dat,reihen=reihen,titel=c("missing values to 2014","missing values to 2011"),farbe_mitte="mean",
+		filename_plot=sprintf("../plots/%s_%s_missings.pdf",nday,nyr),worldmap=worldmap,ausschnitt=c(-80,80))
 
 }
 
@@ -77,7 +97,7 @@ if (1==1){
 
 
 
-	if (1==1){
+	if (1==2){
 		# duration vergleich
        	seasons=c("spring","summer","autumn","winter")
 	    state_zusatz=c("cold","warm")
@@ -102,7 +122,7 @@ if (1==1){
 				filename_plot=paste("../plots/regions/",nday,"_",nyr,"_duration_",season,"_qua.pdf",sep=""))
 			map_allgemein(dat=dat,
 				filename_plot=paste("../plots/maps/",nday,"_",nyr,"_duration_",season,"_qua.pdf",sep=""),
-				worldmap=worldmap,ausschnitt=c(0,80),reihen=reihen,titel=titel,farbe_mitte="0")
+				worldmap=worldmap,ausschnitt=c(-80,80),reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte="0")
 		}
 	}
 
@@ -110,9 +130,9 @@ if (1==1){
 		# duration climatology
        	seasons=c("spring","summer","autumn","winter")
 	    state_zusatz=c("cold","warm")
-		titel_zusatz=c("mean","a","a_err","b","b_err","0.02 percentile","0.05 percentile","0.10 percentile")
+		titel_zusatz=c("0.25","0.5","0.75","0.9","0.95","0.98","0.99")
 		vars=c("dur_ana_full")
-		auswahl=c(1,6,7)
+		auswahl=c(2,3,4,5,6,7,8)
 
 		for (season in seasons){
 			nc=open.ncdf(paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_2s_analysis_",season,".nc",sep=""))
@@ -120,8 +140,8 @@ if (1==1){
 			reihen=array(NA,dim=c(length(auswahl)*2,ntot))
 			for (i in 1:length(auswahl)){
 			    for (state in 1:2){
-			    	reihen[((i-1)*2+state),]=get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i]]
-			    	titel[((i-1)*2+state)]=paste(state_zusatz[state],"period duration",titel_zusatz[auswahl[i]],"from 1950-2014 in",season)
+			    	reihen[((i-1)*2+state),]=get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i],5]
+			    	titel[((i-1)*2+state)]=paste(titel_zusatz[i],"quantile of",state_zusatz[state],"period duration in",season)
 			    }
 			}
 			
@@ -129,7 +149,7 @@ if (1==1){
 				filename_plot=paste("../plots/regions/",nday,"_",nyr,"_duration_",season,"_climatology.pdf",sep=""))
 			map_allgemein(dat=dat,
 				filename_plot=paste("../plots/maps/",nday,"_",nyr,"_duration_",season,"_climatology.pdf",sep=""),
-				worldmap=worldmap,ausschnitt=c(35,66),reihen=reihen,titel=titel,farbe_mitte="mean")
+				worldmap=worldmap,ausschnitt=c(-80,80),reihen=reihen,titel=titel,farbe_mitte="mean")
 		}
 	}
 }

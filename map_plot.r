@@ -37,12 +37,17 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 	#titel liste von strings, plot-titles
 	#farbe_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
 
-	jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
+	if (farbe_mitte=="gemeinsam 0" | farbe_mitte=="0"){
+		jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
+	}
+	if (farbe_mitte=="gemeinsam mean" | farbe_mitte=="mean"){
+		jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
+	}
 	nbcol <- 101
 	color <- jet.colors(nbcol)	
 
 	pdf(file = filename_plot,width=12,height=8)
-	par(mfrow=c(2,1))
+	par(mfrow=c(1,1))
 
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
@@ -100,9 +105,9 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 		}
 		if (farbe_mitte=="mean"){
 			mi=mean(y,na.rm=TRUE)
-			aushol=max(c(max(y,na.rm=TRUE)-mi,mi-min(y,na.rm=TRUE)))
-			y[1]=mi-aushol
-			y[2]=mi+aushol
+			#aushol=max(c(max(y,na.rm=TRUE)-mi,mi-min(y,na.rm=TRUE)))
+			y[1]=mi
+			y[2]=mi
 		}	
 		if (length(farbe_mitte)==2){
 			y[1]=farbe_mitte[1]
