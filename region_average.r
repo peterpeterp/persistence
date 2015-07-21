@@ -78,7 +78,7 @@ regions_color <- function(values,worldmap,title){
     return()
 }
 
-average_regional <- function(dat,value){
+average_regional_simple <- function(dat,value){
 	valIn=array(NA,26)
     errIn=array(NA,26)
 	for (reg in 1:26){
@@ -90,6 +90,38 @@ average_regional <- function(dat,value){
 	return(list(mean=valIn,sd=errIn))
 }
 
+average_regional_trend <- function(dat,value){
+    # value is an array of dim=c(1319,??)
+    library(Kendall)
+    size=dim(value)[2]
+    valOut=array(NA,dim=c(26,size))
+    for (reg in 1:26){
+        inside=which(dat$region==reg)
+        for (j in 1:size){
+            valOut[reg,j]=mean(value[inside,j],na.rm=TRUE)
+        }
+    }
+    slope=array(NA,26)
+    slope_sig=array(NA,26)
+    MK=array(NA,26)
+    MK_sig=array(NA,26)
+    x=seq(1,65,1)
+    for (reg in 1:26){
+        y=valOut[reg,]
+        if (length(which(is.nan(y)==1))<10){
+            print(y)
+            print(length(which(is.nan(y)==1)))
+            lm.r=lm(y~x)
+            slope[reg]=summary(lm.r)$coefficients[2]
+            slope_sig[reg]=summary(lm.r)$coefficients[8]
+            out=MannKendall(y)
+            MK[reg]=out[1]$tau
+            MK_sig[reg]=out[2]$sl
+        }
+    }
+    return(list(MK=MK,MK_sig=MK_sig,slope=slope,slope_sig=slope_sig))
+}
+
 map_regional <- function(dat,toPlot,titles,worldmap,filename_plot){
     # dat from data_load, loaded with reg=1!
     # toPlot array(... ,dim=c(number of maps, number of stations))
@@ -99,8 +131,13 @@ map_regional <- function(dat,toPlot,titles,worldmap,filename_plot){
     pdf(file=filename_plot)
 
     for (i in 1:dim(toPlot)[1]){
-        out=average_regional(dat,toPlot[i,1:ntot])
-        regions_color(out$mean,worldmap,titles[i])
+        out=average_regional_trend(dat,toPlot[i,1:ntot,])
+        print(out)
+        regions_color(out$MK,worldmap,paste("MK",titles[i]))
+        regions_color(out$MK_sig,worldmap,paste("MK_sig",titles[i]))
+        regions_color(out$slope,worldmap,paste("LR",titles[i]))
+        regions_color(out$slope_sig,worldmap,paste("LR_sig",titles[i]))
     }
+    graphics.off()
 }
 

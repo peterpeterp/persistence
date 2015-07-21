@@ -24,7 +24,7 @@ if (1==2){
 		filename_plot=sprintf("../plots/regions/%s_%s_warm_days_regio.pdf",nday,nyr))
 }
 
-if (1==1){
+if (1==3){
 	library(SDMTools)
 	source("map_plot.r")
 	library(rworldmap)
@@ -93,6 +93,34 @@ if (1==1){
 			map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
 				filename_plot=paste("../plots/regions/91_5_mar",states,"s_",vars,"_",season,"_",name_zusatz,".pdf",sep=""))
 		}
+	}
+
+	if (1==1){
+		# regional trend
+       	seasons=c("spring","summer","autumn","winter")
+	    state_names=c("cold","normal","warm")	
+	    states=length(state_names)
+
+       	for (season in seasons){
+			nc=open.ncdf(paste("../data/91_5/91_5_markov",states,"s.nc",sep=""))
+			reihen=array(NA,dim=c(states*states,ntot,65))
+			reihen_sig=array(NA,dim=c(states*states,ntot))
+			titel=c()
+
+
+			y=array(get.var.ncdf(nc,paste("markov_",season,sep="")),dim=c(ntot,states,states,65))
+			#if (!is.na(vars_sig)){y_sig=array(get.var.ncdf(nc,vars_sig),dim=c(ntot,states,states))}
+			for (from in 1:states){
+				for (to in 1:states){
+					reihen[((from-1)*states+to),,]=y[1:ntot,from,to,]
+					#if (!is.na(vars_sig)){reihen_sig[((from-1)*states+to),,]=y_sig[1:ntot,from,to,]}
+					titel[((from-1)*states+to)]=paste("for transition from",state_names[from],"to",state_names[to],"in",season)
+				}
+			}
+	
+			map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
+				filename_plot=paste("../plots/regions/91_5_mar",states,"s_trends_",season,"_.pdf",sep=""))
+		}	
 	}
 
 
