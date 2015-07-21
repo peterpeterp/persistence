@@ -3,22 +3,21 @@ library(ncdf)
 dat_write <- function(filename,data3D)
 {
     day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
-    year <- dim.def.ncdf("year",units="year",vals=1950:2011, unlim=FALSE)
+    year <- dim.def.ncdf("year",units="year",vals=1950:2014, unlim=FALSE)
     ID <- dim.def.ncdf("ID",units="ID",vals=1:length(data3D$ID), unlim=FALSE)
 
     
-    reihen=list(data3D$lon,data3D$lat,data3D$region,data3D$tas)
-    names=c("lon","lat","region","tas")
+    reihen=list(data3D$lon,data3D$lat,data3D$tas)
+    names=c("lon","lat","tas")
 
     varlon <- var.def.ncdf(name=names[1],units="bla",dim=ID, missval=-9999.0)
     varlat <- var.def.ncdf(name=names[2],units="bla",dim=ID, missval=-9999.0)
-    varregion <- var.def.ncdf(name=names[3],units="bla",longname="SREX-Region",dim=ID, missval=-9999.0)
-    vartas <- var.def.ncdf(name=names[4],units="bla",dim=list(ID,day,year), missval=-9999.0)
-    vars=list(varlon,varlat,varregion,vartas)
+    vartas <- var.def.ncdf(name=names[3],units="bla",dim=list(ID,day,year), missval=-9999.0)
+    vars=list(varlon,varlat,vartas)
    
     nc = create.ncdf(filename,vars)
 
-    for (i in 1:4){
+    for (i in 1:3){
         put.var.ncdf(nc,vars[[i]],reihen[[i]])
     }
 
@@ -145,6 +144,25 @@ duration_analysis_write <- function(filename,dur,season,trenn)
     nc = create.ncdf(filename,vars)
     put.var.ncdf(nc,vars[[1]],dur[1:ntot,1:states,1:8,1:5])      
 
+
+    close.ncdf(nc) 
+}
+
+regional_analysis_write <- function(filename,y,y_sig)
+{
+    region <- dim.def.ncdf("region",units="region",vals=1:33, unlim=FALSE)
+    season <- dim.def.ncdf("season",units="spring summer autumn winter",vals=1:4,unlim=FALSE)
+    varstates <- dim.def.ncdf("states",units="states",vals=1:2,unlim=FALSE)
+    outs <- dim.def.ncdf("analysis",units="slope MK 0.25 0.5 0.75 0.95 0.9 0.99",vals=1:8,unlim=FALSE)
+
+    values <- var.def.ncdf(name="values",units="values",longname=paste("analysis of: LR MK 0.25 0.5 0.75 0.95 0.9 0.99"),dim=list(season,varstates,outs,region), missval=-9999.0)
+    values_sig <- var.def.ncdf(name="values_sig",units="values_sig",longname=paste("significance of: LR MK 0.25 0.5 0.75 0.95 0.9 0.99"),dim=list(season,varstates,outs,region), missval=-9999.0)
+    
+    vars=list(values,values_sig)
+   
+    nc = create.ncdf(filename,vars)
+    put.var.ncdf(nc,vars[[1]],y[1:4,1:2,1:8,1:33])      
+    put.var.ncdf(nc,vars[[2]],y_sig[1:4,1:2,1:8,1:33])      
 
     close.ncdf(nc) 
 }

@@ -1,6 +1,6 @@
 library(ncdf)
 
-dat_load <- function(filename,reg=0){
+dat_load <- function(filename){
     nc  = open.ncdf(filename)
     dat = list()     
     dat$day  = get.var.ncdf(nc,"day")
@@ -8,9 +8,6 @@ dat_load <- function(filename,reg=0){
     dat$ID   = get.var.ncdf(nc,"ID")
     dat$lon   = get.var.ncdf(nc,"lon")
     dat$lat   = get.var.ncdf(nc,"lat")
-    if (reg==1){ 
-        dat$region   = get.var.ncdf(nc,"region")
-    }
     dat$tas   = get.var.ncdf(nc,"tas")
 
     # Add additional time dimension (days are decimal points dt=1/365)
