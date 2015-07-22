@@ -139,27 +139,31 @@ plot_duration_climatology <- function(states=2){
 }
 
 
-plot_regional_average <- function(states=2){
+plot_regional_average <- function(){
 	# regional trend
     seasons=c("spring","summer","autumn","winter")
-	if (states==2){
-		state_names=c("cold","warm")
-	}
-	if (states==3){
-		state_names=c("cold","normal","warm")
-	}	
-    for (season in seasons){
-		nc=open.ncdf(paste("../data/91_5/91_5_markov",states,"s.nc",sep=""))
-		reihen=array(NA,dim=c(states,ntot,65))
+    auswahl=c(3,4,5)
+    titel_zusatz=c("0.9","0.95","0.98")
+	state_names=c("cold","warm")
+	states=2
+
+    for (sea in 1:length(seasons)){
+		nc=open.ncdf("../data/regional_analysis.nc")
+		reihen=array(NA,dim=c(length(auswahl)*states,33))
+		reihen_sig=array(NA,dim=c(length(auswahl)*states,33))
 		titel=c()
 
-		y=array(get.var.ncdf(nc,paste("markov_",season,sep="")),dim=c(ntot,states,states,65))
-		for (from in 1:states){
-			reihen[from,,]=y[1:ntot,from,from,]
-			titel[from]=paste("for transition from",state_names[from],"to",state_names[from],"in",season)
+		val=get.var.ncdf(nc,"values")
+		val_sig=get.var.ncdf(nc,"values_sig")
+		for (k in 1:length(auswahl)){
+			for (state in 1:2){
+				reihen[((k-1)*2+state),]=val[sea,state,auswahl[k],]
+				reihen_sig[((k-1)*2+state),]=val_sig[sea,state,auswahl[k],]
+				titel[((k-1)*2+state)]=paste(state_names[state],"period duration",titel_zusatz[k],"quantile in",seasons[sea])
+			}
 		}
-		map_regional(dat=dat,toPlot=reihen,titles=titel,worldmap=worldmap,
-			filename_plot=paste("../plots/regions/91_5_mar",states,"s_trends_",season,sep=""))
+		regions_color(reihen=reihen,reihen_sig=reihen_sig,titles=titel,worldmap=worldmap,
+			filename_plot=paste("../plots/regions/91_5_",states,"s_quantiles_",seasons[sea],sep=""))
 	}	
 }
 
@@ -180,16 +184,17 @@ dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 #regional_analysis(dat)
 #plot_regional_average()
 
+
 nc=open.ncdf("../data/1_test.nc")
 val1 <- get.var.ncdf(nc,"values")
 val_sig1 <- get.var.ncdf(nc,"values_sig")
-nc=open.ncdf("../data/1_test.nc")
+nc=open.ncdf("../data/2_test.nc")
 val2 <- get.var.ncdf(nc,"values")
 val_sig2 <- get.var.ncdf(nc,"values_sig")
-nc=open.ncdf("../data/1_test.nc")
+nc=open.ncdf("../data/3_test.nc")
 val3 <- get.var.ncdf(nc,"values")
 val_sig3 <- get.var.ncdf(nc,"values_sig")
-nc=open.ncdf("../data/1_test.nc")
+nc=open.ncdf("../data/4_test.nc")
 val4 <- get.var.ncdf(nc,"values")
 val_sig4 <- get.var.ncdf(nc,"values_sig")
 
@@ -209,3 +214,4 @@ sig[3,,,]=val_sig3[3,,,]
 sig[4,,,]=val_sig4[4,,,]
 
 regional_analysis_write("../data/regional_analysis.nc",result,sig)
+

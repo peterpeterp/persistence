@@ -43,39 +43,53 @@ points_to_regions <- function(dat){
 
 
 
-regions_color <- function(values,sigs,worldmap,title,poli){
+regions_color <- function(reihen,reihen_sig,worldmap,titles,filename_plot){
     jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
     nbcol <- 101
     color <- jet.colors(nbcol)
 
-    y=c()
-    index=c()
-    signi=c()
-    j=0
-    for (i in 1:dim(poli)[1]){
-        if (!is.na(values[i])){
-            j=j+1
-            y[j]=values[i]
-            index[j]=i 
-            signi[j]=sprintf("%.02f",sigs[i])         
+    IDregions=read.table("../data/ID-regions.txt")
+    region_names=c("srex","7rect")
+    for (k in 1:2){
+        pdf(file = paste(filename_plot,"_",region_names[k],".pdf",sep=""),width=12,height=8)
+        poli=read.table(paste("../data/",region_names[k],".txt",sep=""))
+
+        for (rei in 1:dim(reihen)[1]){
+            print(reihen[rei,])
+            
+            y=c()
+            index=c()
+            signi=c()
+            j=0
+            for (i in poli[1:dim(poli)[1],13]){
+                if (!is.na(reihen[rei,i])){
+                    j=j+1
+                    y[j]=reihen[rei,i]
+                    index[j]=i 
+                    signi[j]=sprintf("%.02f",reihen_sig[rei,i])         
+                }
+            }
+            aushol=max(c(abs(max(y)),abs(min(y))))
+            y[j+1]=-aushol
+            y[j+2]=aushol
+            print(y)
+            print(rei)
+            facetcol <- cut(y,nbcol)  
+
+            plot(worldmap,main=titles[rei])
+
+            for (i in poli[1:dim(poli)[1],13]){
+                lon=poli[which(poli[1:dim(poli)[1],13]==i),1:6]
+                lat=poli[which(poli[1:dim(poli)[1],13]==i),7:12]
+                lon=lon[!is.na(lon)]
+                lat=lat[!is.na(lat)]
+                polygon(x=lon,y=lat,col=color[facetcol[which(poli[1:dim(poli)[1],13]==i)]],border="green")
+                text(mean(lon),mean(lat),label=signi[which(poli[1:dim(poli)[1],13]==i)],cex=0.7,col="black")
+            }
+            image.plot(legend.only=T, zlim=range(y), col=color)
         }
+    graphics.off()
     }
-    aushol=max(c(abs(max(y)),abs(min(y))))
-    y[j+1]=-aushol
-    y[j+2]=aushol
-    facetcol <- cut(y,nbcol)  
-
-    plot(worldmap,main=title)
-
-    for (i in 1:j){
-        lon=poli[index[i],1:6]
-        lat=poli[index[i],7:12]
-        lon=lon[!is.na(lon)]
-        lat=lat[!is.na(lat)]
-        polygon(x=lon,y=lat,col=color[facetcol[i]],border="green")
-        text(mean(lon),mean(lat),label=signi[i],cex=0.7,col="black")
-    }
-    image.plot(legend.only=T, zlim=range(y), col=color)
     return()
 }
 
