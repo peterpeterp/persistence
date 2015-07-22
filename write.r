@@ -133,7 +133,7 @@ duration_analysis_write <- function(filename,dur,season,trenn)
     ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
     varstates <- dim.def.ncdf("states",units="states",vals=1:(states),unlim=FALSE)
-    quantiles <- dim.def.ncdf("0.25 0.5 0.75 0.95 0.9 0.99",units="0-1",vals=1:8,unlim=FALSE)
+    quantiles <- dim.def.ncdf("0.25 0.5 0.75 0.9 0.95 0.98 0.99",units="0-1",vals=1:8,unlim=FALSE)
     outs <- dim.def.ncdf("slope slope_sig intercept intercept_sig quantile",units="0-1",vals=1:5,unlim=FALSE)
 
     dur_ana_full <- var.def.ncdf(name="dur_ana_full",units="values",longname=paste("analysis of duration of periods in",season,"from 1950 to 2014"),dim=list(ID,varstates,quantiles,outs), missval=-9999.0)
@@ -143,7 +143,6 @@ duration_analysis_write <- function(filename,dur,season,trenn)
    
     nc = create.ncdf(filename,vars)
     put.var.ncdf(nc,vars[[1]],dur[1:ntot,1:states,1:8,1:5])      
-
 
     close.ncdf(nc) 
 }
@@ -155,8 +154,8 @@ regional_analysis_write <- function(filename,y,y_sig)
     varstates <- dim.def.ncdf("states",units="states",vals=1:2,unlim=FALSE)
     outs <- dim.def.ncdf("analysis",units="slope MK 0.25 0.5 0.75 0.95 0.9 0.99",vals=1:8,unlim=FALSE)
 
-    values <- var.def.ncdf(name="values",units="values",longname=paste("analysis of: LR MK 0.25 0.5 0.75 0.95 0.9 0.99"),dim=list(season,varstates,outs,region), missval=-9999.0)
-    values_sig <- var.def.ncdf(name="values_sig",units="values_sig",longname=paste("significance of: LR MK 0.25 0.5 0.75 0.95 0.9 0.99"),dim=list(season,varstates,outs,region), missval=-9999.0)
+    values <- var.def.ncdf(name="values",units="values",longname=paste("analysis of: LR MK 0.9 0.95 0.98 0.99"),dim=list(season,varstates,outs,region), missval=-9999.0)
+    values_sig <- var.def.ncdf(name="values_sig",units="values_sig",longname=paste("significance of: LR MK 0.9 0.95 0.98 0.99"),dim=list(season,varstates,outs,region), missval=-9999.0)
     
     vars=list(values,values_sig)
    

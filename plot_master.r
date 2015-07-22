@@ -177,5 +177,35 @@ dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
 
 #commands
-regional_analysis(dat)
+#regional_analysis(dat)
 #plot_regional_average()
+
+nc=open.ncdf("../data/1_test.nc")
+val1 <- get.var.ncdf(nc,"values")
+val_sig1 <- get.var.ncdf(nc,"values_sig")
+nc=open.ncdf("../data/1_test.nc")
+val2 <- get.var.ncdf(nc,"values")
+val_sig2 <- get.var.ncdf(nc,"values_sig")
+nc=open.ncdf("../data/1_test.nc")
+val3 <- get.var.ncdf(nc,"values")
+val_sig3 <- get.var.ncdf(nc,"values_sig")
+nc=open.ncdf("../data/1_test.nc")
+val4 <- get.var.ncdf(nc,"values")
+val_sig4 <- get.var.ncdf(nc,"values_sig")
+
+result=array(NA,dim=c(4,2,8,(26+7)))
+sig=array(NA,dim=c(4,2,8,(26+7)))
+
+print(dim(result[1,,,]))
+print(dim(val1))
+result[1,,,]=val1[1,,,]
+result[2,,,]=val2[2,,,]
+result[3,,,]=val3[3,,,]
+result[4,,,]=val4[4,,,]
+
+sig[1,,,]=val_sig1[1,,,]
+sig[2,,,]=val_sig2[2,,,]
+sig[3,,,]=val_sig3[3,,,]
+sig[4,,,]=val_sig4[4,,,]
+
+regional_analysis_write("../data/regional_analysis.nc",result,sig)

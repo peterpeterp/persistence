@@ -128,9 +128,13 @@ combine_regional_quantile <- function(dat,dur,dur_mid,regions,regNumb){
         ord=order(duration_mid)
         if (length(duration)>1000){
             for (i in 1:length(taus)){
+                print(paste(reg,taus[i]))
                 y=as.vector(duration[ord])
                 x=as.vector(duration_mid[ord])
-                qu=summary(rq(y~x,taus[i]))$coefficients
+
+                qu=try(summary(rq(y~x,taus[i]))$coefficients)
+                if (class(qu)=="try-error"){qu=array(NA,8)}
+
                 out[i,reg]=qu[2]
                 out_sig[i,reg]=qu[8]
             }
@@ -176,8 +180,9 @@ regional_analysis <- function(dat){
             sig[season,state,3:6,27:33]=tmp$out_sig
             print(tmp)
         }
+        regional_analysis_write(paste("../data/",season,"_test.nc"),result,sig)
     }
-    regional_analysis_write("../data/test.nc",result,sig)
+
 
 }
 
