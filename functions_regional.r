@@ -41,8 +41,9 @@ points_to_regions <- function(dat){
     return(0)
 }
 
-average_regional_trend <- function(dat,value,regions,regNumb){
+markov_regional_trend <- function(dat,value,regions,yearPeriod,regNumb){
     # value is an array of dim=c(1319,??)
+    yearPeriod=yearPeriod-1949
     size=dim(value)[2]
     valOut=array(NA,dim=c(regNumb,size))
     for (reg in 1:regNumb){
@@ -54,9 +55,9 @@ average_regional_trend <- function(dat,value,regions,regNumb){
     out=array(NA,c(2,regNumb))
     out_sig=array(NA,c(2,regNumb))
 
-    x=seq(1,65,1)
+    x=seq(yearPeriod[1],yearPeriod[2],1)
     for (reg in 1:regNumb){
-        y=valOut[reg,]
+        y=valOut[reg,x]
         if (length(which(is.nan(y)==1))<10){
             tmp=MannKendall(y)
             out[1,reg]=tmp[1]$tau
@@ -69,7 +70,7 @@ average_regional_trend <- function(dat,value,regions,regNumb){
     return(list(out=out,out_sig=out_sig))
 }
 
-combine_regional_quantile <- function(dat,dur,dur_mid,regions,regNumb){
+duration_regional_quantile <- function(dat,dur,dur_mid,regions,yearPeriod,regNumb){
     # value is an array of dim=c(1319,??)
     taus=c(0.9,0.95,0.98,0.99)
     out=array(NA,c(length(taus),regNumb))
@@ -93,6 +94,9 @@ combine_regional_quantile <- function(dat,dur,dur_mid,regions,regNumb){
                 print(paste(reg,taus[i]))
                 y=as.vector(duration[ord])
                 x=as.vector(duration_mid[ord])
+                inYearPeriod=which(x>yearPeriod[1] & x<yearPeriod[2])
+                y=y[inYearPeriod]
+                x=x[inYearPeriod]
 
                 qu=try(summary(rq(y~x,taus[i]))$coefficients)
                 if (class(qu)=="try-error"){qu=array(NA,8)}
@@ -105,44 +109,46 @@ combine_regional_quantile <- function(dat,dur,dur_mid,regions,regNumb){
     return(list(out=out,out_sig=out_sig))
 }
 
-regional_analysis <- function(dat){
+regional_analysis <- function(dat,yearPeriod,filepath){
     nday=91
     nyr=5
     ntot=length(dat$ID)
     library(Kendall)
     library(quantreg)
 
-    nc_mar=open.ncdf("../data/91_5/91_5_markov2s.nc")
+    nc_mar=open.ncdf("../data/91_5/2_states/markov/91_5_markov2s.nc")
     IDregions=read.table("../data/ID-regions.txt")
     region_names=c("srex","7rect")
     regs=c(26,7)
 
-    result=array(NA,dim=c(4,2,10,(26+7)))
-    sig=array(NA,dim=c(4,2,10,(26+7)))
+
 
     season_names=c("spring","summer","autumn","winter")
-    for (season in 1:4){    
-        nc_dur=open.ncdf(paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_2s_",season_names[season],".nc",sep=""))
+    #season_names=c("year")
+    for (season in 1:length(season_names)){    
+        result=array(NA,dim=c(2,10,(26+7)))
+        sig=array(NA,dim=c(2,10,(26+7)))
+        nc_dur=open.ncdf(paste("../data/",nday,"_",nyr,"/2_states/duration/",nday,"_",nyr,"_duration_2s_",season_names[season],".nc",sep=""))
         dur=get.var.ncdf(nc_dur,"dur")
         dur_mid=get.var.ncdf(nc_dur,"dur_mid")
         per=get.var.ncdf(nc_mar,paste("markov_",season_names[season],sep=""))
         for (state in 1:2){
-            tmp=average_regional_trend(dat,per[1:ntot,(state*state),],IDregions[1:ntot,1],regNumb=regs[1])
-            result[season,state,1:2,1:26]=tmp$out
-            sig[season,state,1:2,1:26]=tmp$out_sig
-            tmp=average_regional_trend(dat,per[1:ntot,(state*state),],IDregions[1:ntot,2],regNumb=regs[2])
-            result[season,state,1:2,27:33]=tmp$out
-            sig[season,state,1:2,27:33]=tmp$out_sig
+            tmp=markov_regional_trend(dat,per[1:ntot,(state*state),],IDregions[1:ntot,1],yearPeriod=yearPeriod,regNumb=regs[1])
+            result[state,1:2,1:26]=tmp$out
+            sig[state,1:2,1:26]=tmp$out_sig
+            tmp=markov_regional_trend(dat,per[1:ntot,(state*state),],IDregions[1:ntot,2],yearPeriod=yearPeriod,regNumb=regs[2])
+            result[state,1:2,27:33]=tmp$out
+            sig[state,1:2,27:33]=tmp$out_sig
 
-            tmp=combine_regional_quantile(dat,dur[1:ntot,state,],dur_mid[1:ntot,state,],IDregions[1:ntot,1],regNumb=regs[1])
-            result[season,state,3:6,1:26]=tmp$out
-            sig[season,state,3:6,1:26]=tmp$out_sig
-            tmp=combine_regional_quantile(dat,dur[1:ntot,state,],dur_mid[1:ntot,state,],IDregions[1:ntot,2],regNumb=regs[2])
-            result[season,state,3:6,27:33]=tmp$out
-            sig[season,state,3:6,27:33]=tmp$out_sig
+            tmp=duration_regional_quantile(dat,dur[1:ntot,state,],dur_mid[1:ntot,state,],IDregions[1:ntot,1],yearPeriod=yearPeriod,regNumb=regs[1])
+            result[state,3:6,1:26]=tmp$out
+            sig[state,3:6,1:26]=tmp$out_sig
+            tmp=duration_regional_quantile(dat,dur[1:ntot,state,],dur_mid[1:ntot,state,],IDregions[1:ntot,2],yearPeriod=yearPeriod,regNumb=regs[2])
+            result[state,3:6,27:33]=tmp$out
+            sig[state,3:6,27:33]=tmp$out_sig
             print(tmp)
         }
-        regional_analysis_write(paste("../data/",season,"_test.nc"),result,sig)
+        regional_analysis_write(paste(filepath,season_names[season],"_regional.nc",sep=""),result,sig)
     }
 
 

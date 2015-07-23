@@ -118,18 +118,18 @@ plot_duration_climatology <- function(states=2){
 	if (states==3){
 		state_names=c("cold","normal","warm")
 	}	
-	titel_zusatz=c("0.25","0.5","0.75","0.9","0.95","0.98","0.99")
+	titel_zusatz=c("0.25","0.5","0.75","0.9","0.95","0.98")
 	vars=c("dur_ana_full")
-	auswahl=c(2,3,4,5,6,7,8)
+	auswahl=c(1,2,3,4,5,6)
 
 	for (season in seasons){
-		nc=open.ncdf(paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_2s_analysis_",season,".nc",sep=""))
+		nc=open.ncdf(paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_2s_analysis",season,".nc",sep=""))
 		titel=c()
 		reihen=array(NA,dim=c(length(auswahl)*2,ntot))
 		for (i in 1:length(auswahl)){
 			for (state in 1:2){
-			   	reihen[((i-1)*2+state),]=get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i],5]
-			    titel[((i-1)*2+state)]=paste(titel_zusatz[i],"quantile of",state_zusatz[state],"period duration in",season)
+			   	reihen[((i-1)*2+state),]=get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i],3]
+			    titel[((i-1)*2+state)]=paste(titel_zusatz[i],"quantile of",state_names[state],"period duration in",season)
 			}
 		}			
 		map_allgemein(dat=dat,
@@ -141,7 +141,7 @@ plot_duration_climatology <- function(states=2){
 
 plot_regional_average <- function(){
 	# regional trend
-    seasons=c("spring","summer","autumn","winter")
+    seasons=c("spring","summer","autumn","winter","year")
     auswahl=c(3,4,5)
     titel_zusatz=c("0.9","0.95","0.98")
 	state_names=c("cold","warm")
@@ -181,7 +181,6 @@ dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
 
 #commands
-#regional_analysis(dat)
-plot_regional_average()
-
+#plot_regional_average()
+plot_duration_climatology()
 

@@ -1,5 +1,8 @@
 
 r_calc_runmean_2D <- function(y2D,nday,nyr){
+    # Input 2D array: y[day,year],
+    # Calculate the running mean given a window of nyrs and ndays 
+    # around each point in time
     nbuff1 = (nday-1)/2 
     nbuff2 = (nyr-1)/2 
     buffer = c(nbuff1,nbuff2)
@@ -26,8 +29,8 @@ r_calc_runmean_2D <- function(y2D,nday,nyr){
     return(trend)
 }
 
-c_calc_runmean_2D <- function(y2D,nday,nyr)
-{   # Input 2D array: y[day,year],
+c_calc_runmean_2D <- function(y2D,nday,nyr){
+    # Input 2D array: y[day,year],
     # Calculate the running mean given a window of nyrs and ndays 
     # around each point in time
     nbuff1 = (nday-1)/2 
@@ -39,7 +42,7 @@ c_calc_runmean_2D <- function(y2D,nday,nyr)
     dims[1] = dims[1]+2*nbuff1
     dims[2] = dims[2]+2*nbuff2
 
-    # Fill in buffered array 
+    # create empty array
     y2D_list = array(y2D,dim=(dims0[1]*dims0[2]))
     y2D_list[is.na(y2D_list)]=0
     y2Dex_list = array(-99,dim=(dims[1]*dims[2])) 
@@ -52,45 +55,23 @@ c_calc_runmean_2D <- function(y2D,nday,nyr)
     return(trend)
 }
 
-seasonal_1D_out <- function(dat,seasons=array(c(151,242,334,425),dim=c(2,2)),model=markov_chft,order=0,shift=0,interval=365){
+seasonal_matrix_out <- function(input,model=markov_2states,states=2,seasons=array(c(151,242,334,425),dim=c(2,2))){
+    #input array is tas over whole time period
+    #this cals the function given in "model" and hands to the function an array containing the
+    #input of one season. the step is repeated until the end of the time-line
+    #output is stored in out where the first dimension is the season
+
+    #since for winter the end-day-index is lower than the begin-day-index (new year), all the 
+    #day-indeces are shifted until winter index ends with day-index=365
+    #therefore the starting point i is equal to the shift
+    #example: winter season start-day: 334 end-day:425
+    #shift=425-365=60  -> start-day:274 end-day=365
+    #whole time series ist shifted by 60 days
     if (seasons[length(seasons)]>365){
         shift=seasons[length(seasons)]-365
         seasons[,]=seasons[,]-shift
     }
-    size=length(dat)
-    x=seq(1, size, 1)
-    i=shift
-    j=1
-    out1=array(NA,dim=c(dim(seasons)[2],65))
-    out2=array(NA,dim=c(dim(seasons)[2],65))
-    out_err=array(NA,dim=c(dim(seasons)[2],65))
-    out_add=array(NA,dim=c(dim(seasons)[2],65))
-
-    while ((i+interval)<size){
-        if ((is.na(dat[i+1])==FALSE) & (is.na(dat[i+interval])==FALSE)){
-            for (sea in 1:length(seasons[1,])){
-                x=dat[(seasons[1,sea]+i):(seasons[2,sea]+i)]
-                tmp=model(x,order)
-
-                out1[sea,j]=tmp$P_w
-                out2[sea,j]=tmp$P_c
-                out_err[sea,j]=tmp$error
-                out_add[sea,j]=tmp$bic
-
-            }
-        }
-        j=j+1
-        i=i+interval
-    }
-    return(list(out1=out1,out2=out2,out_err=out_err,out_add=out_add))
-}  
-
-seasonal_matrix_out <- function(dat,model=markov_2states,states=2,seasons=array(c(151,242,334,425),dim=c(2,2)),shift=0,interval=365){
-    if (seasons[length(seasons)]>365){
-        shift=seasons[length(seasons)]-365
-        seasons[,]=seasons[,]-shift
-    }
-    size=length(dat)
+    size=length(input)
     x=seq(1, size, 1)
     i=shift
     j=1
@@ -99,9 +80,11 @@ seasonal_matrix_out <- function(dat,model=markov_2states,states=2,seasons=array(
     out_conf=array(NA,dim=c(dim(seasons)[2],65))
 
     while ((i+interval)<size){
-        if ((is.na(dat[i+1])==FALSE) & (is.na(dat[i+interval])==FALSE)){
+        #goes through the time series until the end is reached
+        if ((is.na(input[i+1])==FALSE) & (is.na(input[i+interval])==FALSE)){
             for (sea in 1:length(seasons[1,])){
-                x=dat[(seasons[1,sea]+i):(seasons[2,sea]+i)]
+                #goes through the seasons, selects parts of input and calculates something
+                x=input[(seasons[1,sea]+i):(seasons[2,sea]+i)]
                 tmp=model(x)
 
                 out[sea,1:transitions,j]=tmp$transMat
@@ -116,6 +99,8 @@ seasonal_matrix_out <- function(dat,model=markov_2states,states=2,seasons=array(
 }   
 
 calc_trend <- function(dat,filename,nday,nyr){
+    # calculates running mean for each grid point
+    # can choose between the c script and r function
     trash = ((nyr-1)/2*365+(nday-1))
     ntot = length(dat$ID)
     trend=dat$tas*NA
@@ -131,6 +116,7 @@ calc_trend <- function(dat,filename,nday,nyr){
 }
 
 find_nas <- function(dat){
+    # counts NAs at each grid-point
     ntot=length(dat$ID)
     nas=array(NA,dim=c(ntot,2))
     for (q in 1:ntot){
@@ -145,6 +131,7 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
     source("functions_markov.r")
 
     ## User parameters 
+    #trash is the number of data point which are wasted by detrending
     trash = ((nyr-1)/2*365+(nday-1))
     ntot = length(dat$ID)
     laenge_zeit = length(dat$time)
@@ -219,17 +206,18 @@ trend_analysis <- function(x,y){
     return(list(slope=slope,slope_sig=slope_sig,MK=MK,MK_sig=MK_sig))
 }
 
-global_analysis <- function(per,filename_neu,season,transition_names){
-    t=seq(1,65,1)
+global_analysis <- function(per,filename_neu,season,transition_names,yearPeriod){
+    yearPeriod=yearPeriod-1949
+    t=seq(yearPeriod[1],yearPeriod[2],1)
     ntot=1319
     pers=dim(per)[2]
     per_analysis=array(NA,dim=c(ntot,pers,6))
     for (i in 1:pers){
         for (q in 1:ntot){
             #cat(q,length(which(is.na(per[q,i,]))),"\n")
-            tmp=trend_analysis(t,per[q,i,])
-            per_analysis[q,i,1]=mean(per[q,i,],na.rm=TRUE)
-            per_analysis[q,i,2]=sd(per[q,i,],na.rm=TRUE)
+            tmp=trend_analysis(t,per[q,i,yearPeriod[1]:yearPeriod[2]])
+            per_analysis[q,i,1]=mean(per[q,i,yearPeriod[1]:yearPeriod[2]],na.rm=TRUE)
+            per_analysis[q,i,2]=sd(per[q,i,yearPeriod[1]:yearPeriod[2]],na.rm=TRUE)
             per_analysis[q,i,3]=tmp$MK
             per_analysis[q,i,4]=tmp$MK_sig
             per_analysis[q,i,5]=tmp$slope

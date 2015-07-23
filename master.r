@@ -33,7 +33,7 @@ master_trend_control <- function(){
     trend_control_warm_days(dat,ind)   
 }
 
-master_persistence_2states <- function(){
+master_markov_2states <- function(){
     # calculate persistence 2 states
     nday=91
     nyr=5
@@ -43,14 +43,16 @@ master_persistence_2states <- function(){
         filename=sprintf("../data/%s_%s/%s_%s_markov2s.nc",nday,nyr,nday,nyr))
 }
 
-master_analyse_persistence_2states <- function(){
+master_analyse_markov_2states <- function(){
     # analyse persistence 2 states
-    nc=open.ncdf("../data/91_5/91_5_markov2s.nc")
+    nc=open.ncdf("../data/91_5/2_states/markov/91_5_markov2s.nc")
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     seasons=c("spring","summer","autumn","winter","year")
     for (season in seasons){
+        print(season)
         per=get.var.ncdf(nc,paste("markov_",season,sep=""))
-        tmp=global_analysis(per=per,filename_neu=paste("../data/91_5/91_5_mar2s_trend_",season,".nc",sep=""),season=season,transition_names="cc cw wc ww")
+        tmp=global_analysis(per=per,filename_neu=paste("../data/91_5/2_states/markov/1980-2014/91_5_mar2s_trend_",season,".nc",sep=""),
+            season=season,transition_names="cc cw wc ww",yearPeriod=c(1980,2014))
     }
 }
 
@@ -81,18 +83,19 @@ master_analyse_duration_2states <- function(){
     # analyse duration periods 2 states
     nday=91
     nyr=5
-    for (season in c("spring","summer","autumn","winter")){
+    #for (season in c("spring","summer","autumn","winter","year")){
+    for (season in c("year")){
         print(season)
-        nc=open.ncdf(paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_2s_",season,".nc",sep=""))
+        nc=open.ncdf(paste("../data/",nday,"_",nyr,"/2_states/duration/",nday,"_",nyr,"_duration_2s_",season,".nc",sep=""))
         dur=get.var.ncdf(nc,"dur")
         dur_mid=get.var.ncdf(nc,"dur_mid")
-        duration_analysis(dur,dur_mid,filename=paste("../data/",nday,"_",nyr,"/",nday,"_",nyr,"_duration_2s_analysis_",season,".nc",sep=""),
-            season=season,trenn=1980)#,stations=seq(487,489,1))#,stations=134:136)
+        duration_analysis(dur,dur_mid,filename=paste("../data/91_5/2_states/duration/1980-2014/91_5_duration_2s_analysis_",season,".nc",sep=""),
+            season=season,yearPeriod=c(1980,2014))#,stations=seq(487,489,1))#,stations=134:136)
     }
 }
 
 
-master_persistence_3states <- function(){
+master_markov_3states <- function(){
     # calculate persistence 3 states
     nday=91
     nyr=5
@@ -102,7 +105,7 @@ master_persistence_3states <- function(){
         filename=sprintf("../data/%s_%s/%s_%s_markov3s.nc",nday,nyr,nday,nyr))
 }
 
-master_analyse_persistence_3states <- function(){
+master_analyse_markov_3states <- function(){
     # analyse persistence 3 states
     nc=open.ncdf("../data/91_5/91_5_markov3s.nc")
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
@@ -150,5 +153,13 @@ master_analyse_duration_3states <- function(){
     }
 }
 
+master_regional_average <- function(){
+    source("functions_regional.r")
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
+    regional_analysis(dat=dat,yearPeriod=c(1980,2014),filepath="../data/91_5/2_states/regional/1980-2014/91_5_")
 
-master_analyse_duration_2states()
+}
+
+#master_analyse_markov_2states()
+#master_analyse_duration_2states()
+master_regional_average()

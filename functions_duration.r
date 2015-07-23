@@ -105,28 +105,55 @@ duration_seasons <- function(dur,dur_mid,season,filename){
         dur_mid_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
 }
     
-duration_analysis <- function(dur,dur_mid,filename,season,trenn=1980,stations=seq(1,1319,1)){
+duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=seq(1,1319,1)){
     library(quantreg)
+    yearPeriod=yearPeriod
     ntot=1319
     states=dim(dur)[2]
-    dur_ana=array(NA,dim=c(ntot,states,8,5))
+    dur_ana=array(NA,dim=c(ntot,states,8,4))
+    taus=c(0.25,0.5,0.75,0.9,0.95,0.98)
 
-    for (q in stations){
-        cat("-")
+    for (q in 1:ntot){
+        cat("-",q)
         for (t in 1:states){
             if (length(which(!is.na(dur[q,t,])))>10){
-                duration=dur[q,t,]
-                mid=dur_mid[q,t,]
+                inYearPeriod=which(dur_mid[q,t,]>yearPeriod[1] & dur_mid[q,t,]<yearPeriod[2])
+                duration=dur[q,t,inYearPeriod]
+                mid=dur_mid[q,t,inYearPeriod]
+                mid=mid-(mid[1]+tail(mid,n=1))/2
 
-                dur_ana[q,t,1,1]=mean(duration,na.rm=TRUE)
-                dur_ana[q,t,1,2]=sd(duration,na.rm=TRUE)
+                lr=summary(lm(duration~mid))$coefficients
 
-                F=ecdf(duration)
-                taus=c(0.25,0.5,0.75,0.9,0.95,0.98,0.99)
-                for (i in 1:length(taus)){
-                    qu=summary(rq(duration~mid,taus[i]))$coefficients
-                    dur_ana[q,t,(1+i),1:4]=qu[c(2,8,1,7)]
-                    dur_ana[q,t,(1+i),5]=quantile(duration,probs=c(taus[i]),na.rm=TRUE)
+                dur_ana[q,t,8,1]=lr[2]
+                dur_ana[q,t,8,2]=lr[8]
+                dur_ana[q,t,8,3]=mean(duration,na.rm=TRUE)
+                dur_ana[q,t,8,4]=sd(duration,na.rm=TRUE)
+
+                sf=try(summary(rq(duration~mid,taus),se="nid"))
+                if (class(sf)=="try-error"){
+                    for (i in 1:length(taus)){
+                        sf=try(summary(rq(duration~mid,taus[i]),se="nid"))
+                        if (class(sf)=="try-error"){
+                            dur_ana[q,t,i,1:4]=array(NA,4)
+                        }
+                        else {
+                            dur_ana[q,t,i,1]=sf$coefficients[2,1]
+                            dur_ana[q,t,i,2]=sf$coefficients[2,4]
+                            dur_ana[q,t,i,3]=sf$coefficients[1,1]
+                            dur_ana[q,t,i,4]=sf$coefficients[1,2]
+                        }
+        
+                    }
+
+                }
+                else {
+                    slope=sapply(sf, function(x) c(tau=x$tau, x$coefficients[-1,]))
+                    mean=sapply(sf, function(x) c(tau=x$tau, x$coefficients[1,]))
+
+                    dur_ana[q,t,1:length(taus),1]=slope[2,1:length(taus)]
+                    dur_ana[q,t,1:length(taus),2]=slope[5,1:length(taus)]
+                    dur_ana[q,t,1:length(taus),3]=mean[2,1:length(taus)]
+                    dur_ana[q,t,1:length(taus),4]=mean[3,1:length(taus)]
                 }
             }
             else {
