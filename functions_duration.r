@@ -110,7 +110,7 @@ duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=se
     yearPeriod=yearPeriod
     ntot=1319
     states=dim(dur)[2]
-    dur_ana=array(NA,dim=c(ntot,states,8,4))
+    dur_ana=array(NA,dim=c(ntot,states,8,5))
     taus=c(0.25,0.5,0.75,0.9,0.95,0.98)
 
     for (q in 1:ntot){
@@ -120,7 +120,6 @@ duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=se
                 inYearPeriod=which(dur_mid[q,t,]>yearPeriod[1] & dur_mid[q,t,]<yearPeriod[2])
                 duration=dur[q,t,inYearPeriod]
                 mid=dur_mid[q,t,inYearPeriod]
-                mid=mid-(mid[1]+tail(mid,n=1))/2
 
                 lr=summary(lm(duration~mid))$coefficients
 
@@ -128,6 +127,7 @@ duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=se
                 dur_ana[q,t,8,2]=lr[8]
                 dur_ana[q,t,8,3]=mean(duration,na.rm=TRUE)
                 dur_ana[q,t,8,4]=sd(duration,na.rm=TRUE)
+                dur_ana[q,t,8,5]=lr[1]
 
                 sf=try(summary(rq(duration~mid,taus),se="nid"))
                 if (class(sf)=="try-error"){
@@ -139,8 +139,10 @@ duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=se
                         else {
                             dur_ana[q,t,i,1]=sf$coefficients[2,1]
                             dur_ana[q,t,i,2]=sf$coefficients[2,4]
-                            dur_ana[q,t,i,3]=sf$coefficients[1,1]
+                            dur_ana[q,t,i,3]=sf$coefficients[1,1]+(yearPeriod[1]+yearPeriod[2])/2*sf$coefficients[2,1]
                             dur_ana[q,t,i,4]=sf$coefficients[1,2]
+                            dur_ana[q,t,i,5]=sf$coefficients[1,1]
+
                         }
         
                     }
@@ -152,8 +154,9 @@ duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=se
 
                     dur_ana[q,t,1:length(taus),1]=slope[2,1:length(taus)]
                     dur_ana[q,t,1:length(taus),2]=slope[5,1:length(taus)]
-                    dur_ana[q,t,1:length(taus),3]=mean[2,1:length(taus)]
+                    dur_ana[q,t,1:length(taus),3]=mean[2,1:length(taus)]+(yearPeriod[1]+yearPeriod[2])/2*slope[2,1:length(taus)]
                     dur_ana[q,t,1:length(taus),4]=mean[3,1:length(taus)]
+                    dur_ana[q,t,1:length(taus),5]=mean[2,1:length(taus)]
                 }
             }
             else {
@@ -161,7 +164,6 @@ duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=se
             }
         }
     } 
-
     if (filename!=FALSE){
         duration_analysis_write(filename,dur_ana,season,trenn)
     }

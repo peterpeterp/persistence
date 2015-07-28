@@ -13,7 +13,7 @@ location_finder <- function(station=0,lon=0,lat=0){
 }
 
 location_view <- function(station=0,lon=0,lat=0){
-	dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc")
+	dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 	library(rworldmap)
 	library(fields)
 	if (station!=0){
@@ -22,13 +22,28 @@ location_view <- function(station=0,lon=0,lat=0){
 	worldmap = getMap(resolution = "low")
 	pdf(file="../plots/ID_region_map.pdf")
 	plot(worldmap)#,xlim=c(-180,-5),ylim=c(35,60), asp = 3.5)
-	regions_to_map()
 	for (i in 1:length(dat$ID)){
 		text(dat$lon[i],dat$lat[i],label=dat$ID[i],col="red",cex=0.125)
 	}
+	region_names=c("srex","7rect","6wave","7wave","8wave")
+	color=c("blue","green","red","orange","black")
+    for (k in 1:length(region_names)){
+    	add_region(region_names[k],color[k])
+    }
 }
 
-map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,farbe_mitte,reihen_sig=reihen*NA){
+add_region <- function(region_name,farbe){
+    poli=read.table(paste("../data/",region_name,".txt",sep=""))
+    for (i in 1:dim(poli)[1]){
+        lon=poli[i,1:6]
+        lat=poli[i,7:12]
+        lon=lon[!is.na(lon)]
+        lat=lat[!is.na(lat)]
+        polygon(x=lon,y=lat,border=farbe)
+    }
+}
+
+map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,farbe_mitte,reihen_sig=reihen*NA,region=NA,regionColor=NA){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
 	#worldmap background of lon lat plot
@@ -124,10 +139,15 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 		points(lon,lat,pch=sig)
 		points(dat$lon,dat$lat,pch=nas)
 
+		for (longi in seq(-180,180,30)){
+			abline(v=longi,col="grey")
+			text(longi,-80,label=longi)
+		}
+		if (!is.na(region)){
+			add_region(region,regionColor)
+		}
 		image.plot(legend.only=T, zlim=range(y), col=color)
 	}
     graphics.off()
 }
-
-
 

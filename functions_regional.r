@@ -1,42 +1,66 @@
 
+wave_region <- function(wavenumber,trough){
+    wellen=array(NA,dim=c(40,13))
+    brei=360/wavenumber/4
+    lon=trough
+    lon0=trough
+    i=1
+    wellen[,7:8]=35
+    wellen[,9:10]=60
+    while ((round(x=lon,digits=3)==round(x=lon0,digits=3) & i>1)==FALSE){
+        if (lon>(180-brei) & lon<(180+brei)){
+            wellen[i,1:4]=c(180,lon-brei,lon-brei,180)
+            wellen[i,13]=i  
+            i=i+1   
+            wellen[i,1:4]=c(lon+brei-360,-180,-180,lon+brei-360)
+            wellen[i,13]=i  
+            i=i+1   
+            lon=lon+2*brei
+        }
+        if (lon<=(180-brei)){
+            wellen[i,1:4]=c(lon+brei,lon-brei,lon-brei,lon+brei)
+            wellen[i,13]=i  
+            i=i+1   
+            lon=lon+2*brei
+        }
+        if (lon>=(180+brei)){
+            lon=lon-360
+            wellen[i,1:4]=c(lon+brei,lon-brei,lon-brei,lon+brei)
+            wellen[i,13]=i  
+            i=i+1   
+            lon=lon+2*brei
+        }
+        
+    }
+    write.table(wellen[1:length(which(!is.na(wellen[,13]))),],paste("../data/",wavenumber,"wave.txt",sep=""))
+}
+
 points_to_regions <- function(dat){
     ntot=length(dat$ID)
-    region = array(NA,dim=c(ntot,3))
     points=cbind(x=dat$lon,y=dat$lat)
 
-    poli=read.table("../data/srex.txt")
-    for (k in 1:dim(poli)[1]){
-        x=c()
-        y=c()
-        for (i in 1:6){
-            if (!is.na(poli[k,i])){
-                x[i]=poli[k,i]
-                y[i]=poli[k,(i+6)]
+    region_names=c("srex","7rect","6wave","7wave","8wave")
+    region = array(NA,dim=c(ntot,(length(region_names)+1)))
+
+    for (j in 1:length(region_names)){
+        poli=read.table(paste("../data/region_poligons/",region_names[j],".txt",sep=""))
+        for (k in 1:dim(poli)[1]){
+            x=c()
+            y=c()
+            for (i in 1:6){
+                if (!is.na(poli[k,i])){
+                    x[i]=poli[k,i]
+                    y[i]=poli[k,(i+6)]
+                }
             }
+            poligon=cbind(x=x,y=y)
+            print(poligon)
+            inside=pnt.in.poly(points,poligon)$pip
+            region[which(inside==1),(j+1)]=poli[k,13]
         }
-        poligon=cbind(x=x,y=y)
-        print(poligon)
-        inside=pnt.in.poly(points,poligon)$pip
-        region[which(inside==1),1]=poli[k,13]
     }
 
-    poli=read.table("../data/7rect.txt")
-    for (k in 1:dim(poli)[1]){
-        x=c()
-        y=c()
-        for (i in 1:6){
-            if (!is.na(poli[k,i])){
-                x[i]=poli[k,i]
-                y[i]=poli[k,(i+6)]
-            }
-        }
-        poligon=cbind(x=x,y=y)
-        print(poligon)
-        inside=pnt.in.poly(points,poligon)$pip
-        region[which(inside==1),2]=poli[k,13]
-    }
-
-    region[1:ntot,3]=dat$ID
+    region[1:ntot,1]=dat$ID
     write.table(region,"../data/ID-regions.txt")
     return(0)
 }
@@ -123,7 +147,7 @@ regional_analysis <- function(dat,yearPeriod,filepath){
 
 
 
-    season_names=c("spring","summer","autumn","winter")
+    season_names=c("spring","summer","autumn","winter","year")
     #season_names=c("year")
     for (season in 1:length(season_names)){    
         result=array(NA,dim=c(2,10,(26+7)))
@@ -172,7 +196,6 @@ regions_color <- function(reihen,reihen_sig,worldmap,titles,filename_plot){
             j=0
             for (i in 1:dim(poli)[1]){
                 poliLabel=poli[i,13]
-                print(poliLabel)
                 if (!is.na(reihen[rei,poliLabel])){
                     j=j+1
                     y[j]=reihen[rei,poliLabel]
@@ -187,9 +210,9 @@ regions_color <- function(reihen,reihen_sig,worldmap,titles,filename_plot){
             y[j+2]=aushol
             facetcol <- cut(y,nbcol)  
 
+            print(titles[rei])
             plot(worldmap,main=titles[rei])
 
-            cat("----------",j)
             for (i in 1:j){
                 lon=poli[index[i],1:6]
                 lat=poli[index[i],7:12]

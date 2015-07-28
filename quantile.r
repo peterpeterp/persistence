@@ -16,7 +16,7 @@ if (1==2){
 }
 
 if (1==1){
-	dd=read.table("../data/dur_488.txt")
+	dd=read.table("../data/sonstiges/dur_488.txt")
 	size=dim(dd)[1]
 	size=length(which(!is.na(dd[1:size,1])))
 
@@ -24,12 +24,16 @@ if (1==1){
     plot(dd[1:size,1],dd[1:size,2])
 
     for (perc in c(0.25,0.5,0.9,0.95,0.98,0.99)){
-		test=summary(rq(dd[1:1100,2]~dd[1:1100,1],0.95))$coefficients
+    	y=dd[1:1100,2]
+    	x=dd[1:1100,1]
+		test=summary(rq(y~x,0.95))$coefficients
 		print(test[c(1,7,2,8)])
-		print(test$coefficients[1])
-		print(test$coefficients[7])
-		print(test$coefficients[2])
-		print(test$coefficients[8])
+
+		y=c(y,array(24,10))
+		x=c(x,array(tail(x,n=1),10))
+
+		test=summary(rq(y~x,0.95))$coefficients
+		print(test[c(1,7,2,8)])
 		adsa
 		t=1:11
 		x=c()
