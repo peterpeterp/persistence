@@ -47,7 +47,9 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
                 qu95_slope=get.var.ncdf(nc,"dur_ana_full")[q,state,5,1]
                 qu95_intercept=get.var.ncdf(nc,"dur_ana_full")[q,state,5,5]
                 y=qu95_intercept+x*qu95_slope
-                lines(x,y,lty=period_lty[pe],col="blue")
+                if (length(!is.na(y))>3){
+                    lines(x,y,lty=period_lty[pe],col="blue")
+                }
             }
 
             par(new=TRUE)
@@ -61,10 +63,13 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
                 to=period_stop[pe]-1949
                 y=markov[from:to]
                 x=dat$year[from:to]+sea*0.25
-                lr=lm(y~x)
-                x=seq(period_start[pe],period_stop[pe],1)
-                y=lr$coefficients[1]+lr$coefficients[2]*x
-                lines(x,y, lty=period_lty[pe],col="red")
+                if (length(!is.na(y))>3){
+                    print(y)
+                    lr=lm(y~x)
+                    x=seq(period_start[pe],period_stop[pe],1)
+                    y=lr$coefficients[1]+lr$coefficients[2]*x
+                    lines(x,y, lty=period_lty[pe],col="red")
+                }
             }
 
             #lines(dat$time,as.vector(trend[station,,]),col="black")
@@ -148,7 +153,7 @@ ndays = c(91)
 nyrs = c(5)
 
 stations=c(488,510,604,744,920,887,251,98,270,281,169,164,353,121,11,39)
-stations=c(488)
+stations=c(532)
 for (nday in ndays){
     for (nyr in nyrs){
         for (qq in stations){
@@ -161,7 +166,7 @@ for (nday in ndays){
 
             station_plot(dat=dat,trend=trend,per=per,dur_name=sprintf("../data/%s_%s/2_states/duration/%s_%s_duration_2s_",nday,nyr,nday,nyr),
                 warmeTageIncr=warmeTageIncr,q=qq,
-                filename=sprintf("../plots/station/%s_%s_a4_2s_wowowowwo_%s.pdf",nday,nyr,qq))
+                filename=sprintf("../plots/2_states/station/%s_%s_2s_%s.pdf",nday,nyr,qq))
         }
     }
 }

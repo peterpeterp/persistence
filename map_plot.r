@@ -33,7 +33,7 @@ location_view <- function(station=0,lon=0,lat=0){
 }
 
 add_region <- function(region_name,farbe){
-    poli=read.table(paste("../data/",region_name,".txt",sep=""))
+    poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
     for (i in 1:dim(poli)[1]){
         lon=poli[i,1:6]
         lat=poli[i,7:12]

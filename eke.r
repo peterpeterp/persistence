@@ -77,3 +77,7 @@ plot(1979:2014,eke_detrend,lty=1,xlim=c(1980,2014))
 x=get.var.ncdf(nc,"year")+1949
 par(new=TRUE)
 plot(x,mar_detrend,col="green",lty=1,xlim=c(1980,2014))
+
+
+plot(eke_detrend,mar_detrend[(length(mar_detrend)-length(eke_detrend)+1):length(mar_detrend)])
+abline(lm(mar_detrend[(length(mar_detrend)-length(eke_detrend)+1):length(mar_detrend)]~eke_detrend))

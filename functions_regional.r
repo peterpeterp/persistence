@@ -1,12 +1,12 @@
 
-wave_region <- function(wavenumber,trough){
+wave_region <- function(wavenumber,trough,lats){
     wellen=array(NA,dim=c(40,13))
     brei=360/wavenumber/4
     lon=trough
     lon0=trough
     i=1
-    wellen[,7:8]=35
-    wellen[,9:10]=60
+    wellen[,7:8]=lats[1]
+    wellen[,9:10]=lats[2]
     while ((round(x=lon,digits=3)==round(x=lon0,digits=3) & i>1)==FALSE){
         if (lon>(180-brei) & lon<(180+brei)){
             wellen[i,1:4]=c(180,lon-brei,lon-brei,180)
@@ -32,7 +32,7 @@ wave_region <- function(wavenumber,trough){
         }
         
     }
-    write.table(wellen[1:length(which(!is.na(wellen[,13]))),],paste("../data/",wavenumber,"wave.txt",sep=""))
+    write.table(wellen[1:length(which(!is.na(wellen[,13]))),],paste("../data/region_poligons/",wavenumber,"wave.txt",sep=""))
 }
 
 points_to_regions <- function(dat,region_names=c("srex","7rect","6wave","7wave","8wave")){
@@ -176,53 +176,48 @@ regional_analysis <- function(dat,yearPeriod,filepath,region_name){
 
 }
 
-regions_color <- function(reihen,reihen_sig,worldmap,titles,filename_plot){
+regions_color <- function(reihen,reihen_sig,worldmap,titles,poli,filename_plot){
     jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
     nbcol <- 101
     color <- jet.colors(nbcol)
 
-    IDregions=read.table("../data/ID-regions.txt")
-    region_names=c("srex","7rect")
-    for (k in 1:2){
-        pdf(file = paste(filename_plot,"_",region_names[k],".pdf",sep=""),width=12,height=8)
-        poli=read.table(paste("../data/",region_names[k],".txt",sep=""))
+    pdf(file = filename_plot,width=12,height=8)
 
-        for (rei in 1:dim(reihen)[1]){            
-            y=c()
-            index=c()
-            signi=c()
-            j=0
-            for (i in 1:dim(poli)[1]){
-                poliLabel=poli[i,13]
-                if (!is.na(reihen[rei,poliLabel])){
-                    j=j+1
-                    y[j]=reihen[rei,poliLabel]
-                    index[j]=i 
-                    if (abs(reihen[rei,poliLabel])>0.0001){
-                        signi[j]=sprintf("%.04f",reihen_sig[rei,poliLabel])
-                    }         
-                }
+    for (rei in 1:dim(reihen)[1]){            
+        y=c()
+        index=c()
+        signi=c()
+        j=0
+        for (i in 1:dim(poli)[1]){
+            poliLabel=i
+            if (!is.na(reihen[rei,poliLabel])){
+                j=j+1
+                y[j]=reihen[rei,poliLabel]
+                index[j]=i 
+                if (abs(reihen[rei,poliLabel])>0.0001){
+                    signi[j]=sprintf("%.04f",reihen_sig[rei,poliLabel])
+                }         
             }
-            aushol=max(c(abs(max(y)),abs(min(y))))
-            y[j+1]=-aushol
-            y[j+2]=aushol
-            facetcol <- cut(y,nbcol)  
-
-            print(titles[rei])
-            plot(worldmap,main=titles[rei])
-
-            for (i in 1:j){
-                lon=poli[index[i],1:6]
-                lat=poli[index[i],7:12]
-                lon=lon[!is.na(lon)]
-                lat=lat[!is.na(lat)]
-                polygon(x=lon,y=lat,col=color[facetcol[i]],border="green")
-                text(mean(lon),mean(lat),label=signi[i],cex=0.7,col="black")
-            }
-            image.plot(legend.only=T, zlim=range(y), col=color)
         }
-    graphics.off()
+        aushol=max(c(abs(max(y)),abs(min(y))))
+        y[j+1]=-aushol
+        y[j+2]=aushol
+        facetcol <- cut(y,nbcol)  
+
+        print(titles[rei])
+        plot(worldmap,main=titles[rei])
+
+        for (i in 1:j){
+            lon=poli[index[i],1:6]
+            lat=poli[index[i],7:12]
+            lon=lon[!is.na(lon)]
+            lat=lat[!is.na(lat)]
+             polygon(x=lon,y=lat,col=color[facetcol[i]],border="green")
+            text(mean(lon),mean(lat),label=signi[i],cex=0.7,col="black")
+        }
+        image.plot(legend.only=T, zlim=range(y), col=color)
     }
+    graphics.off()
     return()
 }
 

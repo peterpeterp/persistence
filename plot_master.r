@@ -140,7 +140,7 @@ plot_duration_climatology <- function(states,period){
 }
 
 
-plot_regional_average <- function(auswahl,titel_zusatz,period,name_zusatz){
+plot_regional_average <- function(auswahl,titel_zusatz,period,name_zusatz,region_name){
 	# regional trend
     seasons=c("spring","summer","autumn","winter")
 
@@ -148,9 +148,10 @@ plot_regional_average <- function(auswahl,titel_zusatz,period,name_zusatz){
 	states=2
 
     for (sea in 1:length(seasons)){
-		nc=open.ncdf(paste("../data/91_5/2_states/regional/",period,"/91_5_",seasons[sea],"_regional.nc",sep=""))
-		reihen=array(NA,dim=c(length(auswahl)*states,33))
-		reihen_sig=array(NA,dim=c(length(auswahl)*states,33))
+		nc=open.ncdf(paste("../data/91_5/2_states/regional/",period,"/91_5_",seasons[sea],"_",region_name,".nc",sep=""))
+		poli=get.var.ncdf(nc,"region_coordinates")
+		reihen=array(NA,dim=c(length(auswahl)*states,dim(poli)[1]))
+		reihen_sig=array(NA,dim=c(length(auswahl)*states,dim(poli)[1]))
 		titel=c()
 
 		val=get.var.ncdf(nc,"values")
@@ -162,8 +163,8 @@ plot_regional_average <- function(auswahl,titel_zusatz,period,name_zusatz){
 				titel[((k-1)*2+state)]=paste(state_names[state],"period duration",titel_zusatz[k],"quantile in",seasons[sea])
 			}
 		}
-		regions_color(reihen=reihen,reihen_sig=reihen_sig,titles=titel,worldmap=worldmap,
-			filename_plot=paste("../plots/regions/",period,"/91_5_",states,"s_",seasons[sea],"_",name_zusatz,".nc",sep=""))
+		regions_color(reihen=reihen,reihen_sig=reihen_sig,titles=titel,worldmap=worldmap,poli=poli,
+			filename_plot=paste("../plots/2_states/regions/",period,"/91_5_",states,"s_",seasons[sea],"_",name_zusatz,"_",region_name,".pdf",sep=""))
 	}	
 }
 
@@ -209,8 +210,10 @@ nday = 91
 nyr = 5
 ntot=1319
 dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-points_to_regions(dat)
-adsas
+
+#wave_region(7,78,c(40,70))
+#location_view()
+
 
 
 
@@ -221,7 +224,7 @@ adsas
 #for (yearperiod in c("1950-1980","1950-2014","1980-2014")){
 #for (yearperiod in c("1950-2014","1980-2014")){
 for (yearperiod in c("1980-2014")){
-	#plot_regional_average(auswahl=c(1,2),titel_zusatz=c("MK","LR"),period=yearperiod,name_zusatz="markov")
+	#plot_regional_average(auswahl=c(1,2),titel_zusatz=c("MK","LR"),period=yearperiod,name_zusatz="markov",region_name="7wave")
 	#plot_regional_average(auswahl=c(6),titel_zusatz=c("95 quantile regression"),period=yearperiod,name_zusatz="95_quantReg")
 
 	#plot_duration_vergleich(period=yearperiod,auswahl=c(5),titel_zusatz=c("95 quantile"),name_zusatz=c("95_quantReg"))

@@ -167,7 +167,7 @@ master_regional_average <- function(yearPeriod,region_name){
 #master_analyse_duration_2states(yearPeriod=c(1950,2014))
 #master_regional_average(yearPeriod=c(1950,1980))
 #master_regional_average(yearPeriod=c(1950,2014))
-master_regional_average(yearPeriod=c(1980,2014),region_name="6wave")
+master_regional_average(yearPeriod=c(1980,2014),region_name="7wave")
 
 
 #master_analyse_duration_3states(yearPeriod=c(1950,2014))
