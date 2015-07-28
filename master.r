@@ -154,10 +154,10 @@ master_analyse_duration_3states <- function(yearPeriod){
     }
 }
 
-master_regional_average <- function(yearPeriod){
+master_regional_average <- function(yearPeriod,region_name){
     source("functions_regional.r")
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-    regional_analysis(dat=dat,yearPeriod,filepath=paste("../data/91_5/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/91_5_",sep=""))
+    regional_analysis(dat=dat,yearPeriod,filepath=paste("../data/91_5/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/91_5_",sep=""),region_name=region_name)
 
 }
 
@@ -167,11 +167,11 @@ master_regional_average <- function(yearPeriod){
 #master_analyse_duration_2states(yearPeriod=c(1950,2014))
 #master_regional_average(yearPeriod=c(1950,1980))
 #master_regional_average(yearPeriod=c(1950,2014))
-#master_regional_average(yearPeriod=c(1980,2014))
+master_regional_average(yearPeriod=c(1980,2014),region_name="6wave")
 
 
 #master_analyse_duration_3states(yearPeriod=c(1950,2014))
 #master_analyse_markov_3states(yearPeriod=c(1950,2014))
-master_analyse_markov_3states(yearPeriod=c(1980,2014))
-master_analyse_markov_3states(yearPeriod=c(1950,1980))
+#master_analyse_markov_3states(yearPeriod=c(1980,2014))
+#master_analyse_markov_3states(yearPeriod=c(1950,1980))
 

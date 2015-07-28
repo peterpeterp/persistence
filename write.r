@@ -147,20 +147,35 @@ duration_analysis_write <- function(filename,dur,season,trenn){
     close.ncdf(nc) 
 }
 
-regional_analysis_write <- function(filename,y,y_sig)
+regional_analysis_write <- function(filename,y,y_sig,poli)
 {
-    region <- dim.def.ncdf("region",units="region",vals=1:33, unlim=FALSE)
+    region <- dim.def.ncdf("region",units="region",vals=1:dim(poli)[1], unlim=FALSE)
     varstates <- dim.def.ncdf("states",units="states",vals=1:2,unlim=FALSE)
     outs <- dim.def.ncdf("analysis",units="slope MK 0.25 0.5 0.75 0.95 0.9 0.99",vals=1:8,unlim=FALSE)
+
+    poli_points <- dim.def.ncdf("poli_points",units="id",vals=1:12,unlim=FALSE)
+
+    region_coordinates <- var.def.ncdf(name="region_coordinates",units="deg",longname="1:6 lon - 7:12 lat",dim=list(region,poli_points),missval=-9999.0)
 
     values <- var.def.ncdf(name="values",units="values",longname=paste("analysis of: LR MK 0.9 0.95 0.98 0.99"),dim=list(varstates,outs,region), missval=-9999.0)
     values_sig <- var.def.ncdf(name="values_sig",units="values_sig",longname=paste("significance of: LR MK 0.9 0.95 0.98 0.99"),dim=list(varstates,outs,region), missval=-9999.0)
     
-    vars=list(values,values_sig)
+    vars=list(values,values_sig,region_coordinates)
    
     nc = create.ncdf(filename,vars)
-    put.var.ncdf(nc,vars[[1]],y[1:2,1:8,1:33])      
-    put.var.ncdf(nc,vars[[2]],y_sig[1:2,1:8,1:33])      
+    put.var.ncdf(nc,vars[[1]],y[1:2,1:8,1:dim(poli)[1]])      
+    put.var.ncdf(nc,vars[[2]],y_sig[1:2,1:8,1:dim(poli)[1]]) 
+
+    pol_poi=array(NA,c(dim(poli)[1],12))
+    for (i in 1:dim(poli)[1]){
+        for (j in 1:12){
+            
+            if (is.numeric(poli[i,j])){
+                pol_poi[i,j]=poli[i,j]
+            }
+        }
+    }
+    put.var.ncdf(nc,region_coordinates,pol_poi)      
 
     close.ncdf(nc) 
 }
