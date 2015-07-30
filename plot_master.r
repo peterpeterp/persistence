@@ -199,6 +199,34 @@ plot_meridonal_average <- function(states=2,vars1,vars2,farbe_mitte,period,name_
 	}
 }
 
+plot_correl <- function(states,vars,vars_sig,farbe_mitte,region=NA,seasons=c("spring","summer","autumn","winter")){
+	# markov xx states
+	if (states==2){
+		state_names=c("cold","warm")
+	}
+	level_names=c("500","850")
+	
+	for (level in 1:2){
+	    for (sea in 1:length(seasons)){
+			nc=open.ncdf(paste("../data/eke_markov_correl.nc",sep=""))
+			reihen=array(NA,dim=c(states*states,ntot))
+			reihen_sig=array(NA,dim=c(states*states,ntot))
+			titel=c()
+
+			y=get.var.ncdf(nc,vars)
+			if (!is.na(vars_sig)){y_sig=get.var.ncdf(nc,vars_sig)}
+			for (trans in 1:4){
+				reihen[trans,]=y[1:ntot,sea,trans,level]
+				if (!is.na(vars_sig)){reihen_sig[trans,]=y_sig[1:ntot,sea,trans,level]}
+				titel[trans]=paste("correlation between markov transition from to in",seasons[sea],"for",level_names[level])
+			}
+			map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,
+				filename_plot=paste("../plots/",states,"_states/maps/91_5_mar",states,"s_correl_",seasons[sea],"_",level,".pdf",sep=""),
+				worldmap=worldmap,ausschnitt=c(-80,80),region=region,regionColor="black")		
+		}
+	}
+}
+
 #init
 library(SDMTools)
 source("functions_regional.r")
@@ -214,9 +242,9 @@ dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 #wave_region(7,78,c(40,70))
 #location_view()
 
+plot_correl(states=2,vars="correl",vars_sig="correl_sig",farbe_mitte="0")
 
-
-
+asdas
 #commands
 #plot_markov(vars="mean",vars_sig=NA,farbe_mitte="mean",name_zusatz="climatology",period="1950-2014")
 #plot_duration_climatology(period="1950-2014")
@@ -236,4 +264,6 @@ for (yearperiod in c("1980-2014")){
 		region="7wave",seasons=c("summer"))
 
 	#plot_markov(states=3,vars="LR",vars_sig="LR_sig",farbe_mitte="0",name_zusatz="Linear regression",period=yearperiod)
+
+
 }
