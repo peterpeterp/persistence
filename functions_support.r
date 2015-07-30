@@ -89,9 +89,6 @@ seasonal_matrix_out <- function(input,model=markov_2states,states=2,seasons=arra
 
                 out[sea,1:transitions,j]=tmp$transMat
                 out_conf[sea,j]=tmp$confidence
-                print(tmp$transMat)
-                print(out[sea,1:transitions,j])
-                asdas
             }
         }
         j=j+1

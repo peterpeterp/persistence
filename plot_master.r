@@ -46,8 +46,9 @@ plot_nas <- function(){
 }
 
 
-plot_markov <- function(states,vars,vars_sig,farbe_mitte,name_zusatz,period,region=NA,seasons=c("spring","summer","autumn","winter","year")){
+plot_markov <- function(states,vars,vars_sig,farbe_mitte,name_zusatz,period,region=NA,auswahl_sea=c(1,2,3,4,5)){
 	# markov xx states
+	seasons=c("spring","summer","autumn","winter","year")
 	if (states==2){
 		state_names=c("cold","warm")
 	}
@@ -55,23 +56,23 @@ plot_markov <- function(states,vars,vars_sig,farbe_mitte,name_zusatz,period,regi
 		state_names=c("cold","normal","warm")
 	}		
 
-    for (season in seasons){
-		nc=open.ncdf(paste("../data/91_5/",states,"_states/markov/",period,"/91_5_mar",states,"s_trend_",season,".nc",sep=""))
+    for (sea in auswahl_sea){
+		nc=open.ncdf(paste("../data/91_5/",states,"_states/markov/",period,"/91_5_mar",states,"s_trend_",seasons[sea],".nc",sep=""))
 		reihen=array(NA,dim=c(states*states,ntot))
 		reihen_sig=array(NA,dim=c(states*states,ntot))
 		titel=c()
 
-		y=array(get.var.ncdf(nc,vars),dim=c(ntot,states,states))
-		if (!is.na(vars_sig)){y_sig=array(get.var.ncdf(nc,vars_sig),dim=c(ntot,states,states))}
+		y=array(get.var.ncdf(nc,vars),dim=c(ntot,5,states,states))
+		if (!is.na(vars_sig)){y_sig=array(get.var.ncdf(nc,vars_sig),dim=c(ntot,5,states,states))}
 		for (from in 1:states){
 			for (to in 1:states){
-				reihen[((from-1)*states+to),]=y[1:ntot,from,to]
+				reihen[((from-1)*states+to),]=y[1:ntot,sea,from,to]
 				if (!is.na(vars_sig)){reihen_sig[((from-1)*states+to),]=y_sig[1:ntot,from,to]}
-				titel[((from-1)*states+to)]=paste(name_zusatz,"for transition from",state_names[from],"to",state_names[to],"in",season,"in",period)
+				titel[((from-1)*states+to)]=paste(name_zusatz,"for transition from",state_names[from],"to",state_names[to],"in",seasons[sea],"in",period)
 			}
 		}
 		map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,
-			filename_plot=paste("../plots/",states,"_states/maps/markov/",period,"/91_5_mar",states,"s_",vars,"_",season,"_",period,".pdf",sep=""),
+			filename_plot=paste("../plots/",states,"_states/maps/markov/",period,"/91_5_mar",states,"s_",vars,"_",seasons[sea],"_",period,".pdf",sep=""),
 			worldmap=worldmap,ausschnitt=c(-80,80),region=region,regionColor="black")		
 	}
 }
@@ -242,9 +243,9 @@ dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 #wave_region(7,78,c(40,70))
 #location_view()
 
-plot_correl(states=2,vars="correl",vars_sig="correl_sig",farbe_mitte="0")
+#plot_correl(states=2,vars="correl",vars_sig="correl_sig",farbe_mitte="0")
 
-asdas
+#asdas
 #commands
 #plot_markov(vars="mean",vars_sig=NA,farbe_mitte="mean",name_zusatz="climatology",period="1950-2014")
 #plot_duration_climatology(period="1950-2014")
@@ -261,7 +262,7 @@ for (yearperiod in c("1980-2014")){
 	#plot_meridonal_average(vars="mean",vars2="LR",farbe_mitte="mean",name_zusatz="bansfsdfdas")
 
 	plot_markov(states=2,vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period=yearperiod,
-		region="7wave",seasons=c("summer"))
+		region="7wave",auswahl_sea=c(2))
 
 	#plot_markov(states=3,vars="LR",vars_sig="LR_sig",farbe_mitte="0",name_zusatz="Linear regression",period=yearperiod)
 
