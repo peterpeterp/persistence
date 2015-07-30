@@ -49,7 +49,7 @@ markov_write <- function(filename,data3D,per,transitions,transition_names)
 
 
     ind <- var.def.ncdf(name="ind",units="1 or -1",dim=list(ID,day,year), missval=-9999.0)
-    markov <- var.def.ncdf(name="markov",units="0-1",longname=paste("markov spri,sum,aut,win,yea",transition_names),dim=list(ID,seasons,transition,year), missval=-9999.0)
+    markov <- var.def.ncdf(name="markov",units="0-1",longname=paste("markov transition probability"),dim=list(ID,seasons,transition,year), missval=-9999.0)
 
     vars=list(ind,markov)
    

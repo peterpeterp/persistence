@@ -55,7 +55,7 @@ c_calc_runmean_2D <- function(y2D,nday,nyr){
     return(trend)
 }
 
-seasonal_matrix_out <- function(input,model=markov_2states,states=2,seasons=array(c(151,242,334,425),dim=c(2,2)),interval=365){
+seasonal_matrix_out <- function(input,model=markov_2states,states=2,seasons=array(c(151,242,334,425),dim=c(2,2)),interval=365,shift=0){
     #input array is tas over whole time period
     #this cals the function given in "model" and hands to the function an array containing the
     #input of one season. the step is repeated until the end of the time-line

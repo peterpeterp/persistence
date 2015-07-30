@@ -46,9 +46,8 @@ plot_nas <- function(){
 }
 
 
-plot_markov <- function(states,vars,vars_sig,farbe_mitte,name_zusatz,period,region=NA,auswahl_sea=c(1,2,3,4,5)){
+plot_markov <- function(trendID,states,vars,vars_sig,farbe_mitte,name_zusatz,period,region=NA,seasons=c("spring","summer","autumn","winter","year")){
 	# markov xx states
-	seasons=c("spring","summer","autumn","winter","year")
 	if (states==2){
 		state_names=c("cold","warm")
 	}
@@ -56,26 +55,27 @@ plot_markov <- function(states,vars,vars_sig,farbe_mitte,name_zusatz,period,regi
 		state_names=c("cold","normal","warm")
 	}		
 
-    for (sea in auswahl_sea){
-		nc=open.ncdf(paste("../data/91_5/",states,"_states/markov/",period,"/91_5_mar",states,"s_trend_",seasons[sea],".nc",sep=""))
+    for (season in seasons){
+		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/markov/",period,"/",trendID,"_mar",states,"s_trend_",season,".nc",sep=""))
 		reihen=array(NA,dim=c(states*states,ntot))
 		reihen_sig=array(NA,dim=c(states*states,ntot))
 		titel=c()
 
-		y=array(get.var.ncdf(nc,vars),dim=c(ntot,5,states,states))
-		if (!is.na(vars_sig)){y_sig=array(get.var.ncdf(nc,vars_sig),dim=c(ntot,5,states,states))}
+		y=array(get.var.ncdf(nc,vars),dim=c(ntot,states,states))
+		if (!is.na(vars_sig)){y_sig=array(get.var.ncdf(nc,vars_sig),dim=c(ntot,states,states))}
 		for (from in 1:states){
 			for (to in 1:states){
-				reihen[((from-1)*states+to),]=y[1:ntot,sea,from,to]
+				reihen[((from-1)*states+to),]=y[1:ntot,from,to]
 				if (!is.na(vars_sig)){reihen_sig[((from-1)*states+to),]=y_sig[1:ntot,from,to]}
-				titel[((from-1)*states+to)]=paste(name_zusatz,"for transition from",state_names[from],"to",state_names[to],"in",seasons[sea],"in",period)
+				titel[((from-1)*states+to)]=paste(name_zusatz,"for transition from",state_names[from],"to",state_names[to],"in",season,"in",period)
 			}
 		}
 		map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,
-			filename_plot=paste("../plots/",states,"_states/maps/markov/",period,"/91_5_mar",states,"s_",vars,"_",seasons[sea],"_",period,".pdf",sep=""),
+			filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/markov/",period,"/",trendID,"_mar",states,"s_",vars,"_",season,"_",period,".pdf",sep=""),
 			worldmap=worldmap,ausschnitt=c(-80,80),region=region,regionColor="black")		
 	}
 }
+
 
 plot_duration_vergleich <- function(states,period,auswahl=c(8,1,2,3,4,5,6),
 	titel_zusatz=c("mean","0.25 quantile","0.5 quantile","0.75 quantile","0.9 quantile","0.95 quantile","0.98 quantile"),
@@ -200,29 +200,31 @@ plot_meridonal_average <- function(states=2,vars1,vars2,farbe_mitte,period,name_
 	}
 }
 
-plot_correl <- function(states,vars,vars_sig,farbe_mitte,region=NA,seasons=c("spring","summer","autumn","winter")){
+plot_correl <- function(trendID,states,vars,vars_sig,farbe_mitte,region=NA,seasons=c("spring","summer","autumn","winter")){
 	# markov xx states
 	if (states==2){
 		state_names=c("cold","warm")
 	}
-	level_names=c("500","850")
+	nc=open.ncdf(paste("../data/",trendID,"/",trendID,"_eke_markov_correl.nc",sep=""))
+	pressure_level=get.var.ncdf(nc,"levelist")
 	
-	for (level in 1:2){
+	for (level in 1:length(pressure_level)){
 	    for (sea in 1:length(seasons)){
-			nc=open.ncdf(paste("../data/eke_markov_correl.nc",sep=""))
+			
 			reihen=array(NA,dim=c(states*states,ntot))
 			reihen_sig=array(NA,dim=c(states*states,ntot))
 			titel=c()
-
 			y=get.var.ncdf(nc,vars)
 			if (!is.na(vars_sig)){y_sig=get.var.ncdf(nc,vars_sig)}
-			for (trans in 1:4){
-				reihen[trans,]=y[1:ntot,sea,trans,level]
-				if (!is.na(vars_sig)){reihen_sig[trans,]=y_sig[1:ntot,sea,trans,level]}
-				titel[trans]=paste("correlation between markov transition from to in",seasons[sea],"for",level_names[level])
+			trans_auswahl=c(1,3,2,4)
+			trans_name=c("cold to cold","cold to warm","warm to cold","warm to warm")
+			for (trans in 1:length(trans_auswahl)){
+				reihen[trans,]=y[1:ntot,level,sea,trans_auswahl[trans]]
+				if (!is.na(vars_sig)){reihen_sig[trans,]=y_sig[1:ntot,level,sea,trans_auswahl[trans]]}
+				titel[trans]=paste("correlation between EKE and markov transition",trans_name[trans],"in",seasons[sea],"for",pressure_level[level],"mbar")
 			}
 			map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,
-				filename_plot=paste("../plots/",states,"_states/maps/91_5_mar",states,"s_correl_",seasons[sea],"_",level,".pdf",sep=""),
+				filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/eke_cor/91_5_mar",states,"s_correl_",seasons[sea],"_",pressure_level[level],"mbar.pdf",sep=""),
 				worldmap=worldmap,ausschnitt=c(-80,80),region=region,regionColor="black")		
 		}
 	}
@@ -235,17 +237,15 @@ source("map_plot.r")
 library(rworldmap)
 library(fields)
 worldmap = getMap(resolution = "low")
-nday = 91
-nyr = 5
+trendID="91_5"
 ntot=1319
 dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
 #wave_region(7,78,c(40,70))
 #location_view()
 
-#plot_correl(states=2,vars="correl",vars_sig="correl_sig",farbe_mitte="0")
+#plot_correl(trendID,states=2,vars="correl",vars_sig="correl_sig",farbe_mitte="0")
 
-#asdas
 #commands
 #plot_markov(vars="mean",vars_sig=NA,farbe_mitte="mean",name_zusatz="climatology",period="1950-2014")
 #plot_duration_climatology(period="1950-2014")
@@ -261,8 +261,7 @@ for (yearperiod in c("1980-2014")){
 
 	#plot_meridonal_average(vars="mean",vars2="LR",farbe_mitte="mean",name_zusatz="bansfsdfdas")
 
-	plot_markov(states=2,vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period=yearperiod,
-		region="7wave",auswahl_sea=c(2))
+	plot_markov(trendID,states=2,vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period=yearperiod)
 
 	#plot_markov(states=3,vars="LR",vars_sig="LR_sig",farbe_mitte="0",name_zusatz="Linear regression",period=yearperiod)
 
