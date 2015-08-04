@@ -136,113 +136,64 @@ eke_markov_correl <- function(trendID,states,transition_names){
 eke_duration_correl <- function(trendID,states,seasons=c("spring","summer","autumn","winter"),taus=c(0.25,0.5,0.75,0.9,0.95,0.98),skips=c(304,329,923,961)){
 	library(quantreg)
 	ntot=1319
-	monatStart=c(59,91,120,151,181,212,243,273,304,334,366,396,427)
-	monatStart=monatStart/365
 
+	correlation=array(NA,dim=c(ntot,6,4,states,length(taus)))
+	nc=open.ncdf("../data/eke_ID.nc")
+	eke=get.var.ncdf(nc,"eke_sea")
 	for (sea in 1:length(seasons)){
-		monatSelection=monatStart[((sea-1)*3):(sea*3+1)]
-
 		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s_",seasons[sea],".nc",sep=""))
 		duration=get.var.ncdf(nc,"dur")
 		duration_mid=get.var.ncdf(nc,"dur_mid")
 
 
 
-		nc=open.ncdf("../data/eke_ID.nc")
-		eke=get.var.ncdf(nc,"eke_year")
+		
 
-		cor=array(NA,dim=c(ntot,6,4,2,length(taus)))
-		cor_sig=array(NA,dim=c(ntot,6,4,2,length(taus)))
+		
 		x=seq(1,36,1)
 		for (q in 1:ntot){
 			if (length(which(skips==q))<2){
-				print(paste(sea,q))
+				cat(paste("--",q))
 				for (state in 1:2){
 					size=length(which(duration_mid[q,state,]>1979 & duration_mid[q,state,]<21014))
-					if (size>30){    #length(which(!is.na(eke[q,1:6,sea,])))>10
-						dur=array(NA,dim=c(size))
-						dur_mid=array(NA,dim=c(size))
-						eke_ext=array(NA,dim=c(6,size))
+					if (size>30 & length(which(!is.na(eke[q,1:6,sea,])))>10){
+						durQu=array(NA,dim=c(36,length(taus)))
 						count=0
-						for (year in 30:64){
-							year=year+1949
-							for (month in 1:3){
-								if (count!=size){
-									inside=which(duration_mid[q,state,]>(year+monatSelection[month]) & duration_mid[q,state,]<(year+monatSelection[(month+1)]))
-									if (length(inside)>0){
-										dur[(count+1):(count+length(inside))]=duration[q,state,inside]
-										dur_mid[(count+1):(count+length(inside))]=duration_mid[q,state,inside]
-										eke_ext[1:6,(count+1):(count+length(inside))]=eke[q,1:6,month,(year-1978)]
-										count=count+length(inside)
-									}
+						for (i in 1:35){
+							if (count!=size){
+								year=i+29+1949
+								inside=which(duration_mid[q,state,]>year & duration_mid[q,state,]<(year+1))
+								if (length(inside)>0){
+									durQu[i,]=quantile(duration[q,state,inside],taus)
 								}
 							}
 						}
-
 						for (lvl in 1:6){
-							#print("------------------------------")
-							#print(lvl)
-							#print(as.vector(eke_ext[lvl,]))
-							#print(as.vector(dur))
-							#pdf(file=paste("../plots/lvl",lvl,".pdf",sep=""))
-							#plot(as.vector(eke_ext[lvl,]),as.vector(dur))
-							#abline(rq(as.vector(dur)~as.vector(eke_ext[lvl,]),0.95),col="blue")
-							#abline(rq(as.vector(dur)~as.vector(eke_ext[lvl,]),0.98),col="red")
-							#abline(rq(as.vector(dur)~as.vector(eke_ext[lvl,]),0.5),col="green")
-							#graphics.off()
-							#print(ecdf(dur))
-							#print(rq(as.vector(dur)~as.vector(eke_ext[lvl,]),taus))
-							#print(dur)
-							#return(list(dur=dur,eke_ext=eke_ext,taus=taus,lvl=lvl))
-							#eke_ext[lvl,]=eke_ext[lvl,]#+seq(-0.0001,0.0001,length=3)
-							sf=try(summary(rq(as.vector(dur)~as.vector(eke_ext[lvl,]),taus),se="nid"))
-							#print(sf)
-				            if (class(sf)=="try-error"){
-				                #print(sf)
-				                for (i in 1:length(taus)){
-				                    sf=try(summary(rq(as.vector(dur)~as.vector(eke_ext[lvl,]),taus[i]),se="nid"))
-				                    if (class(sf)=="try-error"){
-				                        cor[q,lvl,sea,state,i]=NA
-				                        cor_sig[q,lvl,sea,state,i]=NA
-				                    }
-				                    else {
-				                        cor[q,lvl,sea,state,i]=sf$coefficients[2,1]
-				                        cor_sig[q,lvl,sea,state,i]=sf$coefficients[2,4]
-				                    }
-				                }
-				            }
-				            else {
-				                slope=sapply(sf, function(x) c(tau=x$tau, x$coefficients[-1,]))
-
-				                cor[q,lvl,sea,state,1:length(taus)]=slope[2,1:length(taus)]
-				                cor_sig[q,lvl,sea,state,1:length(taus)]=slope[5,1:length(taus)]
-
-				            }
-			            #print(cor[q,lvl,sea,state,1:length(taus)])
+							for (qu in 1:length(taus)){
+								if (sd(as.vector(eke[q,lvl,sea,]),na.rm=TRUE)!=0 & sd(as.vector(durQu[1:36,qu]),na.rm=TRUE)!=0){
+									correlation[q,lvl,sea,state,qu]=cor(x=as.vector(eke[q,lvl,sea,]),y=as.vector(durQu[1:36,qu]),use="complete")
+								}
+							}
 						}
-
 					}
 				}
 			}
 		}
-
 	}
-
 	ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
 	season <- dim.def.ncdf("season",units="uu",vals=1:4,unlim=FALSE)
-	states <- dim.def.ncdf("states",units="uu",vals=1:2,unlim=FALSE)
+	varstates <- dim.def.ncdf("states",units="uu",vals=1:2,unlim=FALSE)
 	levelist <- dim.def.ncdf("levelist",units="mbar",vals=c(850,700,500,400,300,250),unlim=FALSE)
 	quantiles <- dim.def.ncdf("quantiles",units="0-1",vals=taus,unlim=FALSE)
 
-	correl <- var.def.ncdf(name="quantile regression like correlation",units="bla",dim=list(ID,levelist,season,states,quantiles), missval=-9999.0)
-	correl_sig <- var.def.ncdf(name="quantile regression like correlation_sig",units="bla",dim=list(ID,levelist,season,states,quantiles), missval=-9999.0)
-	vars=list(correl,correl_sig)
-	   
-	nc = create.ncdf(paste("../data/",trendID,"/",states,"_states/",trendID,"_eke_duration_cor_",states,"states_",paste(seasons,sep="-"),".nc",sep=""),vars)
+	varCorrelation <- var.def.ncdf(name="correlation",longname="correaltion between quantile values and eke values in season",units="bla",dim=list(ID,levelist,season,varstates,quantiles), missval=-9999.0)
+	vars=list(varCorrelation)
+		 
+	nc = create.ncdf(paste("../data/",trendID,"/",states,"_states/",trendID,"_eke_duration_cor_",states,"states.nc",sep=""),vars)
 
 
-	put.var.ncdf(nc,correl,cor)
-	put.var.ncdf(nc,correl_sig,cor_sig)
+	put.var.ncdf(nc,varCorrelation,correlation)
+
 }
 
 #create_eke()
@@ -250,9 +201,6 @@ eke_duration_correl <- function(trendID,states,seasons=c("spring","summer","autu
 #eke_markov_correl("91_5",states=3,transition_names="cc nc wc cn nn wn cw nw ww")
 #eke_markov_correl("91_5",states=2,transition_names="cc wc cw ww")
 #eke_markov_correl("91_3")
-out=eke_duration_correl("91_5",states=2)
-#lvl=out$lvl
-#dur=out$dur
-#taus=out$taus
-##eke_ext=out$eke_ext
-#eke_ext[lvl,]=eke_ext[lvl,]+seq(-0.00001,0.00001,length=2)
+eke_duration_correl("91_5",states=2)
+eke_duration_correl("91_3",states=2)
+

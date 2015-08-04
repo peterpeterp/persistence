@@ -246,7 +246,7 @@ plot_correl_duration <- function(trendID,states,vars,vars_sig,farbe_mitte,region
 	
 	for (level in 1:6){
 	    for (sea in 1:length(seasons)){
-	    	nc=open.ncdf(paste("../data/",trendID,"/",trendID,"_eke_duration_correl_",seasons[sea],".nc",sep=""))
+	    	nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/",trendID,"_eke_duration_cor_",states,"states_",seasons[sea],".nc",sep=""))
 			pressure_level=get.var.ncdf(nc,"levelist")
 			quantiles=get.var.ncdf(nc,"quantiles")
 			
@@ -254,6 +254,9 @@ plot_correl_duration <- function(trendID,states,vars,vars_sig,farbe_mitte,region
 			reihen_sig=array(NA,dim=c(states*length(quantiles),ntot))
 			titel=c()
 			y=get.var.ncdf(nc,vars)
+			print(y[488,,sea,,])
+			print(dim(y))
+			#print(which(!is.na(y)))
 			if (!is.na(vars_sig)){y_sig=get.var.ncdf(nc,vars_sig)}
 			trans_auswahl=c(1,2)
 
@@ -314,5 +317,5 @@ full_plot <- function(trendID,states){
 
 	#plot_markov(states=3,vars="LR",vars_sig="LR_sig",farbe_mitte="0",name_zusatz="Linear regression",period=yearperiod)
 
-
-full_plot("91_5",3)
+plot_correl_duration("91_5",states=2,vars="correaltion",vars_sig=NA,farbe_mitte="0")
+#full_plot("91_5",3)
