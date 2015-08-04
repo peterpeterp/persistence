@@ -122,16 +122,18 @@ plot_duration_climatology <- function(trendID,states,period){
 	}	
 	titel_zusatz=c("0.25","0.5","0.75","0.9","0.95","0.98")
 	vars=c("dur_ana_full")
-	auswahl=c(1,2,3,4,5,6)
+	auswahl=c(8,1,2,3,4,5,6)
 
 	for (season in seasons){
 		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",period,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""))
 		titel=c()
-		reihen=array(NA,dim=c(length(auswahl)*2,ntot))
+		print(nc)
+		reihen=array(NA,dim=c(length(auswahl)*states,ntot))
 		for (i in 1:length(auswahl)){
 			for (state in 1:states){
-			   	reihen[((i-1)*2+state),]=get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i],3]
-			    titel[((i-1)*2+state)]=paste("mean value of",titel_zusatz[i],"quantile of",state_names[state],"period duration in",season)
+				print(dim(get.var.ncdf(nc,vars[1])))
+			   	reihen[((i-1)*states+state),]=get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i],3]
+			    titel[((i-1)*states+state)]=paste("mean value of",titel_zusatz[i],"quantile of",state_names[state],"period duration in",season)
 			}
 		}			
 		map_allgemein(dat=dat,
@@ -313,4 +315,4 @@ full_plot <- function(trendID,states){
 	#plot_markov(states=3,vars="LR",vars_sig="LR_sig",farbe_mitte="0",name_zusatz="Linear regression",period=yearperiod)
 
 
-full_plot("91_5",2)
+full_plot("91_5",3)

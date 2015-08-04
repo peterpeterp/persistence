@@ -1,37 +1,7 @@
+#!/home/pepflei/R/bin/Rscript
+
 source("write.r")
 source("load.r")
-
-
-plot_eke_mar <- function(){
-	pdf(file="../plots/sonstiges/eke")
-	x=(1979:2014)
-	plot(1979:2014,eke_850_season[1,18,1,],lty=1,xlim=c(1980,2014))
-	abline(lm(eke_850_season[1,18,1,]~x),col="red")
-
-	nc=open.ncdf("../data/91_5/2_states/markov/91_5_markov2s.nc")
-	markov_summer=get.var.ncdf(nc,"markov_summer")[488,4,]
-	x=get.var.ncdf(nc,"year")+1949
-	par(new=TRUE)
-	plot(x,markov_summer,col="green",lty=1,xlim=c(1980,2014))
-	abline(lm(markov_summer~x),col="violet")
-
-	eke_detrend=detrended(eke_850_season[1,18,1,],(1979:2014))$detrended
-	x=get.var.ncdf(nc,"year")+1949
-	mar_detrend=detrended(markov_summer,x)$detrended
-
-	print(eke_detrend)
-	print(mar_detrend	)
-	x=(1979:2014)
-	plot(1979:2014,eke_detrend,lty=1,xlim=c(1980,2014))
-
-	x=get.var.ncdf(nc,"year")+1949
-	par(new=TRUE)
-	plot(x,mar_detrend,col="green",lty=1,xlim=c(1980,2014))
-
-
-	plot(eke_detrend,mar_detrend[(length(mar_detrend)-length(eke_detrend)+1):length(mar_detrend)])
-	abline(lm(mar_detrend[(length(mar_detrend)-length(eke_detrend)+1):length(mar_detrend)]~eke_detrend))
-}
 
 
 detrend <- function(y,x){
@@ -63,6 +33,8 @@ create_eke <- function(){
 		eke_ID[q,,]=eke_grided[(dat$lon[q]/3.75+1),((dat$lat[q]+90)/2.5+1),,]	
 	}
 
+	eke_ID_year=array(eke_ID,dim=c(ntot,lvls,12,36))
+
 	eke_ID_sea=array(NA,dim=c(ntot,lvls,4,36))
 
 	index=3
@@ -87,18 +59,21 @@ create_eke <- function(){
     year <- dim.def.ncdf("year",units="year",vals=1979:2014, unlim=FALSE)
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
     season <- dim.def.ncdf("season",units="uu",vals=1:4,unlim=FALSE)
+    monate <- dim.def.ncdf("monate",units="uu",vals=1:12,unlim=FALSE)
     levelist <- dim.def.ncdf("levelist",units="mbar",vals=c(850,700,500,400,300,250),unlim=FALSE)
 
     varlon <- var.def.ncdf(name="lon",units="bla",dim=ID, missval=-9999.0)
     varlat <- var.def.ncdf(name="lat",units="bla",dim=ID, missval=-9999.0)
-    vareke <- var.def.ncdf(name="eke",units="(m/s)2",dim=list(ID,levelist,season,year), missval=-9999.0)
-    vars=list(varlon,varlat,vareke)
+    vareke_sea <- var.def.ncdf(name="eke_sea",units="(m/s)2",dim=list(ID,levelist,season,year), missval=-9999.0)
+    vareke_year <- var.def.ncdf(name="eke_year",units="(m/s)2",dim=list(ID,levelist,monate,year), missval=-9999.0)
+    vars=list(varlon,varlat,vareke_sea,vareke_year)
    
     nc = create.ncdf("../data/eke_ID.nc",vars)
 
 	put.var.ncdf(nc,varlon,dat$lon)
 	put.var.ncdf(nc,varlat,dat$lat)
-	put.var.ncdf(nc,vareke,eke_ID_sea)
+	put.var.ncdf(nc,vareke_sea,eke_ID_sea)
+	put.var.ncdf(nc,vareke_year,eke_ID_year)
 
     close.ncdf(nc) 
 }   
@@ -257,7 +232,8 @@ eke_duration_correl <- function(trendID,seasons=c("spring","summer","autumn","wi
 	put.var.ncdf(nc,correl_sig,cor_sig)
 }
 
-#create_eke()
+create_eke()
+asda
 #eke_markov_correl("91_5",states=3,transition_names="cc nc wc cn nn wn cw nw ww")
 #eke_markov_correl("91_5",states=2,transition_names="cc wc cw ww")
 #eke_markov_correl("91_3")
