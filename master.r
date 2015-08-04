@@ -8,16 +8,12 @@ source("load.r")
 
 master_nas <- function(){
     # count nas
-    nday=91
-    nyr=5
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2011.nc")
     find_nas(dat)    
 }
 
 master_trend <- function(nday,nyr,trendID){
     # calculate trend
-    nday=91
-    nyr=5
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     trend=calc_trend(dat,paste("../data/",trendID,"/",trendID,"_trend.nc",sep=""),nday,nyr)
 }
@@ -68,9 +64,9 @@ master_duration <- function(nday,nyr,trendID,states){
     nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/markov/",trendID,"_markov_",states,"states.nc",sep=""))        
     ind=get.var.ncdf(nc,"ind")
 
-    calc_global_dur(dat=dat,ind=ind,trash=trash,filename=paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s.nc",sep=""),states=c(-1,1))
+    calc_global_dur(dat=dat,ind=ind,trash=trash,filename=paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s_year.nc",sep=""),states=c(-1,1))
 
-    nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s.nc",sep=""))
+    nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s_year.nc",sep=""))
     dur=get.var.ncdf(nc,"dur")
     dur_mid=get.var.ncdf(nc,"dur_mid")
     
@@ -80,9 +76,9 @@ master_duration <- function(nday,nyr,trendID,states){
     duration_seasons(dur,dur_mid,season=c(335,425),filename=paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s_winter.nc",sep=""))
 }
 
-master_analyse_duration <- function(yearPeriod,trendID,states){
+master_analyse_duration <- function(yearPeriod,trendID,states,seasons=c("spring","summer","autumn","winter","year")){
     # analyse duration periods 2 states
-    for (season in c("spring","summer","autumn","winter","year")){
+    for (season in seasons){
         print(season)
         nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s_",season,".nc",sep=""))
         dur=get.var.ncdf(nc,"dur")
@@ -99,22 +95,71 @@ master_regional_average <- function(yearPeriod,region_name,trendID){
 
 }
 
-nday=91
-nyr=3
-trendID="91_5"
+if (1==2){
+    #complete 2 states analysis 
+    nday=91
+    nyr=5
+    trendID=paste(nday,"_",nyr,sep="")
 
-#master_trend(nday,nyr,trendID)
+    #master_trend(nday,nyr,trendID)
 
-master_markov(nday,nyr,trendID,states=2,transition_names=c("cc wc cw ww"))
+    master_markov(nday,nyr,trendID,states=2,transition_names=c("cc wc cw ww"))
 
-points=c(1950,2014,1950,1980,1980,2014)
-for (i in 1:3){
-    period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
-    master_analyse_markov(yearPeriod=period,trendID,states=2,transition_names=c("cc wc cw ww"))
+    points=c(1950,2014,1950,1980,1980,2014)
+    for (i in 1:3){
+        period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
+        master_analyse_markov(yearPeriod=period,trendID,states=2,transition_names=c("cc wc cw ww"))
+    }
+
+    master_duration(nday,nyr,trendID,2)
+    for (i in 1:3){
+        period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
+        master_analyse_duration(yearPeriod=period,trendID,states=2)
+    }
 }
 
-master_duration(nday,nyr,trendID,2)
-for (i in 1:3){
-    period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
-    master_analyse_duration(yearPeriod=period,trendID,states=2)
+if (1==1){
+    #complete 3 states analysis 
+    nday=91
+    nyr=5
+    trendID=paste(nday,"_",nyr,sep="")
+
+    #master_trend(nday,nyr,trendID)
+
+    master_markov(nday,nyr,trendID,states=3,transition_names=c("cc nc wc cn nn nw cw nw ww"))
+
+    points=c(1950,2014,1950,1980,1980,2014)
+    for (i in 1:3){
+        period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
+        master_analyse_markov(yearPeriod=period,trendID,states=3,transition_names=c("cc nc wc cn nn nw cw nw ww"))
+    }
+
+    master_duration(nday,nyr,trendID,2)
+    for (i in 1:3){
+        period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
+        master_analyse_duration(yearPeriod=period,trendID,states=3)
+    }
+}
+
+if (1==1){
+    #complete 3 states analysis 
+    nday=91
+    nyr=3
+    trendID=paste(nday,"_",nyr,sep="")
+
+    #master_trend(nday,nyr,trendID)
+
+    master_markov(nday,nyr,trendID,states=3,transition_names=c("cc nc wc cn nn nw cw nw ww"))
+
+    points=c(1950,2014,1950,1980,1980,2014)
+    for (i in 1:3){
+        period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
+        master_analyse_markov(yearPeriod=period,trendID,states=3,transition_names=c("cc nc wc cn nn nw cw nw ww"))
+    }
+
+    master_duration(nday,nyr,trendID,2)
+    for (i in 1:3){
+        period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
+        master_analyse_duration(yearPeriod=period,trendID,states=3)
+    }
 }

@@ -52,7 +52,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 	#titel liste von strings, plot-titles
 	#farbe_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
 
-	if (farbe_mitte=="gemeinsam 0" | farbe_mitte=="0"){
+	if (farbe_mitte=="gemeinsam 0" | farbe_mitte=="0" | farbe_mitte=="cut"){
 		jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
 	}
 	if (farbe_mitte=="gemeinsam mean" | farbe_mitte=="mean"){
@@ -100,11 +100,26 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 		}
 		nas[which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2] & is.na(reihen[i,]))]=13
 
+
+
+
 		y=array(NA,(m+2))
 		notna=which(is.na(y1)==FALSE)
 		for (n in notna){
 			y[n+2]=y1[n]
 		}
+
+		if (farbe_mitte=="cut"){
+			mi=mean(y,na.rm=TRUE)
+			sd=sd(y,na.rm=TRUE)
+			high=mi+1*sd
+			low=mi-1*sd
+			y[y>high]=high
+			y[y<low]=low
+			y[1]=low
+			y[2]=high
+		}
+
 		if (farbe_mitte=="gemeinsam 0"){
 			y[1]=-aushol
 			y[2]=aushol			

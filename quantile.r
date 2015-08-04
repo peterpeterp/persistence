@@ -15,7 +15,58 @@ if (1==2){
 	write.table(data,"../data/dur_488.txt")
 }
 
-if (1==1){
+
+if (1==2){
+	dur=read.table("../data/sonstiges/dur_488.txt")
+	size=dim(dur)[1]
+	size=length(which(!is.na(dur[1:size,1])))
+
+    pdf(file="../plots/quantile.pdf")
+    plot(dur[1:size,1],dur[1:size,2])
+    perc=c(0.5,0.75,0.95,0.98)
+    #perc=c(0.5,0.95)
+    qu=array(NA,dim=c(64,length(perc)))
+
+    for (year in 1950:2013){
+    	inside=which(dur[1:size,1]>year & dur[1:size,1]<(year+1))
+    	x=dur[inside,1]
+    	y=dur[inside,2]
+    	qu[(year-1949),]=quantile(y,probs=perc,na.rm=TRUE)
+
+    	print(sum(y))
+    	print(summary(quantile(y,probs=perc,na.rm=TRUE)))
+    	print((quantile(y,probs=perc,na.rm=TRUE)))
+
+    	print(quantile(y,probs=0.5))
+    	print(y)
+    	print(length(which(y>quantile(y,probs=0.5))))
+    	print(length(which(y>quantile(y,probs=0.75))))
+
+
+    	
+    }
+    #fhf
+    tYear=seq(1950.5,2013.5,1)
+
+    for (p in 1:length(perc)){
+	    requ=rq(dur[1:size,2]~dur[1:size,1],perc[p])
+		quReg=summary(requ)$coefficients
+		print("--------------RQ---------------")
+
+		print(summary.rq(requ))
+		print("--------------LR---------------")
+		color=rgb(perc[p], ((length(perc)-p)/length(perc)), (1-perc[p]))
+		lines(tYear,qu[,p],col=color)
+		abline(requ,col=color)
+		print(qu[,p])
+		abline(lm(qu[,p]~tYear),col=color,lty=2)
+		print(summary(lm(qu[,p]~tYear)))
+	}
+
+
+}
+
+if (1==2){
 	dd=read.table("../data/sonstiges/dur_488.txt")
 	size=dim(dd)[1]
 	size=length(which(!is.na(dd[1:size,1])))
@@ -65,4 +116,32 @@ if (1==2){
 	print(dur[487,2,,])
 	print(dur[488,2,,])
 	print(dur[489,2,,])
+}
+
+if (1==1){
+	perc=c(0.25,0.5,0.75,0.9)
+	x=seq(0,10000,1)
+	y=x*NA
+	xplot=x*NA
+	samp=seq(-10,+10,length=1000)
+	qu=array(NA,dim=c(10,length(perc)))
+	xqu=array(NA,dim=c(10))
+	for (t in 1:10){
+		x[((t-1)*1000+1):(t*1000)]=array((t*1000),1000)
+		zwi=dnorm(samp,mean=0,sd=(4+t))+0.001*t
+
+		y[((t-1)*1000+1):(t*1000)]=zwi
+		qu[t,]=quantile(zwi,perc)
+		xqu[t]=t*1000
+	}
+	pdf(file="../plots/artificial_quantile.pdf")
+
+	plot(x,y)
+
+	for (p in 1:length(perc)){
+		color=rgb(perc[p], ((length(perc)-p)/length(perc)), (1-perc[p]))
+		lines(xqu,as.vector(qu[,p]),col=color,lty=3)
+		abline(rq(y~x,perc[p]),col=color)
+		abline(lm(as.vector(qu[,p])~xqu),col=color,lty=2)
+	}
 }

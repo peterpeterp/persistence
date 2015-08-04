@@ -67,7 +67,7 @@ markov_analysis_write <- function(filename,analysis,season,transition_names)
 {
     ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    transitions <- dim.def.ncdf("transitions",units="transisitons",vals=1:dim(analysis)[2],unlim=FALSE)
+    transitions <- dim.def.ncdf("transitions",units=transition_names,vals=1:dim(analysis)[2],unlim=FALSE)
 
     mean <- var.def.ncdf(name="mean",units="bla",longname=paste("mean",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
     std <- var.def.ncdf(name="std",units="bla",longname=paste("standard deviation",season,transition_names),dim=list(ID,transitions), missval=-9999.0)

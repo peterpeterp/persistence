@@ -104,7 +104,7 @@ calc_trend <- function(dat,filename,nday,nyr){
     ntot = length(dat$ID)
     trend=dat$tas*NA
     for (q in 1:ntot) {
-        temp = c_calc_runmean_2D(dat$tas[q,,],nday=nday,nyr=nyr)
+        temp = r_calc_runmean_2D(dat$tas[q,,],nday=nday,nyr=nyr)
         temp[1:trash]=NA
         temp[(length(dat$time)-trash):length(dat$time)]=NA
         trend[q,,]=temp
