@@ -108,7 +108,6 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 		for (n in notna){
 			y[n+2]=y1[n]
 		}
-		print(y)
 
 		if (farbe_mitte=="cut"){
 			mi=mean(y,na.rm=TRUE)

@@ -214,7 +214,7 @@ plot_correl_markov <- function(trendID,states,vars,vars_sig,farbe_mitte,region=N
 		trans_auswahl=c(1,4,7,2,5,8,3,6,9)
 		trans_name=c("cold to cold","cold to normal","cold to warm","normal to cold","normal to normal","normal to warm","warm to cold","warm to normal","warm to warm")
 	}
-	nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/",trendID,"_eke_markov_",states,"states_correl.nc",sep=""))
+	nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/",trendID,"_eke_markov_cor_",states,"states.nc",sep=""))
 	pressure_level=get.var.ncdf(nc,"levelist")
 	
 	for (level in 1:length(pressure_level)){
@@ -231,44 +231,47 @@ plot_correl_markov <- function(trendID,states,vars,vars_sig,farbe_mitte,region=N
 				titel[trans]=paste("correlation between EKE and markov transition",trans_name[trans],"in",seasons[sea],"for",pressure_level[level],"mbar")
 			}
 			map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,
-				filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/eke_cor/91_5_mar",states,"s_correl_",seasons[sea],"_",pressure_level[level],"mbar.pdf",sep=""),
+				filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/eke_mar_cor/91_5_mar",states,"s_correl_",seasons[sea],"_",pressure_level[level],"mbar.pdf",sep=""),
 				worldmap=worldmap,ausschnitt=c(-80,80),region=region,regionColor="black")		
 		}
 	}
 }
 
-plot_correl_duration <- function(trendID,states,vars,vars_sig,farbe_mitte,region=NA,seasons=c("summer")){
+plot_correl_duration <- function(trendID,states,vars,vars_sig,farbe_mitte,region=NA,seasons=c("spring","summer","autumn","winter")){
 	# markov xx states
 	if (states==2){
 		state_names=c("cold","warm")
+		trans_auswahl=c(1,2)
 	}
-
+	if (states==3){
+		state_names=c("cold","normal","warm")
+		trans_auswahl=c(1,2,3)
+	}
+	nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/",trendID,"_eke_duration_cor_",states,"states.nc",sep=""))
+	pressure_level=get.var.ncdf(nc,"levelist")
+	quantiles=get.var.ncdf(nc,"quantiles")
 	
 	for (level in 1:6){
 	    for (sea in 1:length(seasons)){
-	    	nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/",trendID,"_eke_duration_cor_",states,"states_",seasons[sea],".nc",sep=""))
-			pressure_level=get.var.ncdf(nc,"levelist")
-			quantiles=get.var.ncdf(nc,"quantiles")
+
 			
 			reihen=array(NA,dim=c(states*length(quantiles),ntot))
 			reihen_sig=array(NA,dim=c(states*length(quantiles),ntot))
 			titel=c()
 			y=get.var.ncdf(nc,vars)
-			print(y[488,,sea,,])
-			print(dim(y))
-			#print(which(!is.na(y)))
+
 			if (!is.na(vars_sig)){y_sig=get.var.ncdf(nc,vars_sig)}
-			trans_auswahl=c(1,2)
+
 
 			for (trans in 1:length(trans_auswahl)){
 				for (qua in 1:length(quantiles)){
-					reihen[((qua-1)*2+trans),]=y[1:ntot,level,sea,trans_auswahl[trans],qua]
-					if (!is.na(vars_sig)){reihen_sig[((qua-1)*2+trans),]=y_sig[1:ntot,level,sea,trans_auswahl[trans],qua]}
-					titel[((qua-1)*2+trans)]=paste("correlation between EKE and",quantiles[qua],"quantile of ",state_names[trans],"in",seasons[sea],"for",pressure_level[level],"mbar")
+					reihen[((qua-1)*states+trans),]=y[1:ntot,level,sea,trans_auswahl[trans],qua]
+					if (!is.na(vars_sig)){reihen_sig[((qua-1)*states+trans),]=y_sig[1:ntot,level,sea,trans_auswahl[trans],qua]}
+					titel[((qua-1)*states+trans)]=paste("correlation between EKE and",quantiles[qua],"quantile of ",state_names[trans],"in",seasons[sea],"for",pressure_level[level],"mbar")
 				}
 			}
 			map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,
-				filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/eke_cor/91_5_dur",states,"s_correl_",seasons[sea],"_",pressure_level[level],"mbar.pdf",sep=""),
+				filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/eke_dur_cor/91_5_dur",states,"s_correl_",seasons[sea],"_",pressure_level[level],"mbar.pdf",sep=""),
 				worldmap=worldmap,ausschnitt=c(-80,80),region=region,regionColor="black")		
 		}
 	}
@@ -291,31 +294,18 @@ dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
 full_plot <- function(trendID,states){
 	#plot_correl_markov(trendID,states=states,vars="correlation",vars_sig=NA,farbe_mitte="0")
+	plot_correl_duration("91_5",states=states,vars="correlation",vars_sig=NA,farbe_mitte="0")
 	#plot_markov(trendID,states=states,vars="mean",vars_sig=NA,farbe_mitte="mean",name_zusatz="climatology",period="1950-2014")
-	plot_duration_climatology(trendID,states=states,period="1950-2014")
+	#plot_duration_climatology(trendID,states=states,period="1950-2014")
 	for (yearperiod in c("1950-1980","1950-2014","1980-2014")){
-		plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period=yearperiod)
-		plot_duration_vergleich(trendID,states=states,period=yearperiod)
+		pritn(yearperiod)
+		#plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period=yearperiod)
+		#plot_duration_vergleich(trendID,states=states,period=yearperiod)
 	}
 }
 
-#
-#
+#plot_correl_markov("91_5",states=2,vars="correlation",vars_sig=NA,farbe_mitte="0")
+#plot_correl_markov("91_3",states=2,vars="correlation",vars_sig=NA,farbe_mitte="0")
 
-#
-#for (yearperiod in c("1950-2014","1980-2014")){
-#for (yearperiod in c("1980-2014")){
-	#plot_regional_average(auswahl=c(1,2),titel_zusatz=c("MK","LR"),period=yearperiod,name_zusatz="markov",region_name="7wave")
-	#plot_regional_average(auswahl=c(6),titel_zusatz=c("95 quantile regression"),period=yearperiod,name_zusatz="95_quantReg")
-
-	#plot_duration_vergleich(period=yearperiod,auswahl=c(5),titel_zusatz=c("95 quantile"),name_zusatz=c("95_quantReg"))
-	#plot_duration_vergleich(states=3,period=yearperiod)
-
-	#plot_meridonal_average(vars="mean",vars2="LR",farbe_mitte="mean",name_zusatz="bansfsdfdas")
-
-	#plot_markov(trendID,states=2,vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period=yearperiod)
-
-	#plot_markov(states=3,vars="LR",vars_sig="LR_sig",farbe_mitte="0",name_zusatz="Linear regression",period=yearperiod)
-
-plot_correl_duration("91_5",states=2,vars="correaltion",vars_sig=NA,farbe_mitte="0")
-#full_plot("91_5",3)
+#plot_correl_duration("91_5",states=2,vars="correlation",vars_sig=NA,farbe_mitte="0")
+full_plot("91_5",3)

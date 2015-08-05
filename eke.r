@@ -78,7 +78,7 @@ create_eke <- function(){
     close.ncdf(nc) 
 }   
 
-eke_markov_correl <- function(trendID,states,transition_names){
+eke_markov_correl <- function(trendID,states,transition_names,stations=seq(1,1319,1),plot=FALSE){
 	ntot=1319
 	transNumb=states*states
 
@@ -86,121 +86,199 @@ eke_markov_correl <- function(trendID,states,transition_names){
 	markov=get.var.ncdf(nc,"markov")
 
 	nc=open.ncdf("../data/eke_ID.nc")
-	eke=get.var.ncdf(nc,"eke")
+	eke=get.var.ncdf(nc,"eke_sea")
+
+	# needed for the plots
+	if (plot==TRUE){
+		pdf(file=paste("../plots/",trendID,"/",states,"_states/station/mar_eke_",stations,".pdf",sep=""))
+		pressure_level=get.var.ncdf(nc,"levelist")
+		seasons=c("spring","summer","autumn","winter")
+		if (states==2){
+			transLongName=c("cold to cold","warm to cold","cold to warm","warm to warm")
+			color=c("blue","violet","green","red")
+		}
+		if (states==3){
+			transLongName=c("cold to cold","normal to cold","warm to cold","cold to normal","normal to normal","warm to normal","cold to warm","normal to warm","warm to warm")
+		}
+	}	
 
 	correlation=array(NA,dim=c(ntot,6,4,transNumb))
 	corSlope=array(NA,dim=c(ntot,6,4,transNumb))
 	corSlope_sig=array(NA,dim=c(ntot,6,4,transNumb))
 	x=seq(1,36,1)
-	for (q in 488){
+	for (q in stations){
 		print(q)
 		for (lvl in 1:6){
 			for (sea in 1:4){
+				if (plot==TRUE){
+					plot(NA,ylim=c(0,1.1),xlim=c(min(eke[q,lvl,sea,],na.rm=TRUE),max(eke[q,lvl,sea,],na.rm=TRUE)),
+						,xlab="eddy kinetic energy",ylab="transition probability",
+						main=paste(seasons[sea],"- pressure:",pressure_level[lvl],"mbar"))
+					title=c()
+					order=order(eke[q,lvl,sea,1:33])
+					year=1979:2014
+					year=year[order]
+				}
 				for (trans in 1:transNumb){
 					if (length(which(!is.na(markov[q,sea,trans,30:65])))>10 & length(which(!is.na(eke[q,lvl,sea,])))>10){
 
-						#y=detrend(eke_500[q,sea,],x)$detrended
-						#z=detrend(markov[q,sea,trans,],x)$detrended
 						if (sd(as.vector(eke[q,lvl,sea,]),na.rm=TRUE)!=0 & sd(as.vector(markov[q,sea,trans,30:65]),na.rm=TRUE)!=0){
 							correlation[q,lvl,sea,trans]=cor(x=as.vector(eke[q,lvl,sea,]),y=as.vector(markov[q,sea,trans,30:65]),use="complete")
 						}
 						lr=summary(lm(eke[q,lvl,sea,]~markov[q,sea,trans,30:65]))
 						corSlope[q,lvl,sea,trans]=lr$coefficients[2,1]
 						corSlope_sig[q,lvl,sea,trans]=lr$coefficients[2,4]
+
+						if (plot==TRUE){
+							lines(eke[q,lvl,sea,order],markov[q,sea,trans,(order+29)],col=color[trans])
+							abline(lm(markov[q,sea,trans,30:65]~eke[q,lvl,sea,]),col=color[trans],lty=2)
+							title[trans]=paste(transLongName[trans],"transition - EKE correlation =",correlation[q,lvl,sea,trans])
+						}
 					}
+				}
+				if (plot==TRUE){
+					for (y in 1:36){
+						abline(v=as.vector(eke[q,lvl,sea,order])[y],col="grey",lty=2)
+						text(as.vector(eke[q,lvl,sea,order])[y],(0.5+0.05*(-1)^y),label=year[y],srt=90,cex=0.5)
+					}
+					legend("topright",legend=title,lty=array(1,transNumb),col=color)
+
 				}
 			}
 		}
 	}
 
-    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    season <- dim.def.ncdf("season",units="uu",vals=1:4,unlim=FALSE)
-    transition <- dim.def.ncdf("transition",units=transition_names,vals=1:transNumb,unlim=FALSE)
-    levelist <- dim.def.ncdf("levelist",units="mbar",vals=c(850,700,500,400,300,250),unlim=FALSE)
+	if (plot!=TRUE){
+	    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+	    season <- dim.def.ncdf("season",units="uu",vals=1:4,unlim=FALSE)
+	    transition <- dim.def.ncdf("transition",units=transition_names,vals=1:transNumb,unlim=FALSE)
+	    levelist <- dim.def.ncdf("levelist",units="mbar",vals=c(850,700,500,400,300,250),unlim=FALSE)
 
+	    varCorrelation <- var.def.ncdf(name="correlation",units="bla",dim=list(ID,levelist,season,transition), missval=-9999.0)
+	    varCorSlope <- var.def.ncdf(name="corSlope",longname="linear regression like correlation",units="bla",dim=list(ID,levelist,season,transition), missval=-9999.0)
+	    varCorSlope_sig <- var.def.ncdf(name="corSlope_sig",longname="linear regression like correlation_sig",units="bla",dim=list(ID,levelist,season,transition), missval=-9999.0)
+	    
+	    vars=list(varCorrelation,varCorSlope,varCorSlope_sig)  
+	    nc = create.ncdf(paste("../data/",trendID,"/",states,"_states/",trendID,"_eke_markov_cor_",states,"states.nc",sep=""),vars)
 
-    varCorrelation <- var.def.ncdf(name="correlation",units="bla",dim=list(ID,levelist,season,transition), missval=-9999.0)
-    varCorSlope <- var.def.ncdf(name="corSlope",longname="linear regression like correlation",units="bla",dim=list(ID,levelist,season,transition), missval=-9999.0)
-    varCorSlope_sig <- var.def.ncdf(name="corSlope_sig",longname="linear regression like correlation_sig",units="bla",dim=list(ID,levelist,season,transition), missval=-9999.0)
-    vars=list(varCorrelation,varCorSlope,varCorSlope_sig)
-   
-    nc = create.ncdf(paste("../data/",trendID,"/",states,"_states/",trendID,"_eke_markov_",states,"states_correl.nc",sep=""),vars)
+		put.var.ncdf(nc,varCorrelation,correlation)
+		put.var.ncdf(nc,varCorSlope,corSlope)
+		put.var.ncdf(nc,varCorSlope_sig,corSlope_sig)
 
-	put.var.ncdf(nc,varCorrelation,correlation)
-	put.var.ncdf(nc,varCorSlope,corSlope)
-	put.var.ncdf(nc,varCorSlope_sig,corSlope_sig)
-
-	close.ncdf(nc)
+		close.ncdf(nc)
+	}
 }
 
-eke_duration_correl <- function(trendID,states,seasons=c("spring","summer","autumn","winter"),taus=c(0.25,0.5,0.75,0.9,0.95,0.98),skips=c(304,329,923,961)){
+eke_duration_correl <- function(trendID,states,seasons=c("spring","summer","autumn","winter"),taus=c(0.25,0.5,0.75,0.9,0.95,0.98),stations=seq(1,1319,1),plot=FALSE){
 	library(quantreg)
 	ntot=1319
-
 	correlation=array(NA,dim=c(ntot,6,4,states,length(taus)))
 	nc=open.ncdf("../data/eke_ID.nc")
 	eke=get.var.ncdf(nc,"eke_sea")
+
+	# needed for the plots
+	if (plot==TRUE){
+		pdf(file=paste("../plots/",trendID,"/",states,"_states/stations/dur_eke_",stations,".pdf",sep=""))
+		pressure_level=get.var.ncdf(nc,"levelist")
+		color=c("lightblue","blue","green","yellow","red","violet")
+		if (states==2){
+			state_names=c("cold","warm")
+		}
+		if (states==3){
+			state_names=c("cold","normal","warm")
+		}
+	}
+
 	for (sea in 1:length(seasons)){
 		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s_",seasons[sea],".nc",sep=""))
 		duration=get.var.ncdf(nc,"dur")
 		duration_mid=get.var.ncdf(nc,"dur_mid")
+		print(nc)
 
-
-
-		
-
-		
 		x=seq(1,36,1)
-		for (q in 1:ntot){
-			if (length(which(skips==q))<2){
-				cat(paste("--",q))
-				for (state in 1:2){
-					size=length(which(duration_mid[q,state,]>1979 & duration_mid[q,state,]<21014))
-					if (size>30 & length(which(!is.na(eke[q,1:6,sea,])))>10){
-						durQu=array(NA,dim=c(36,length(taus)))
-						count=0
-						for (i in 1:35){
-							if (count!=size){
-								year=i+29+1949
-								inside=which(duration_mid[q,state,]>year & duration_mid[q,state,]<(year+1))
-								if (length(inside)>0){
-									durQu[i,]=quantile(duration[q,state,inside],taus)
-								}
-							}
-						}
-						for (lvl in 1:6){
-							for (qu in 1:length(taus)){
-								if (sd(as.vector(eke[q,lvl,sea,]),na.rm=TRUE)!=0 & sd(as.vector(durQu[1:36,qu]),na.rm=TRUE)!=0){
-									correlation[q,lvl,sea,state,qu]=cor(x=as.vector(eke[q,lvl,sea,]),y=as.vector(durQu[1:36,qu]),use="complete")
-								}
+		for (q in stations){
+			cat(paste("--",q))
+			for (state in 1:states){
+				size=length(which(duration_mid[q,state,]>1979 & duration_mid[q,state,]<2014))
+				if (size>30 & length(which(!is.na(eke[q,1:6,sea,])))>10){
+					durQu=array(NA,dim=c(36,length(taus)))
+					eke_ext=array(NA,dim=c(6,size))
+					dur_ext=array(NA,size)
+					count=0
+					for (i in 1:35){
+						if (count!=size){
+							year=i+29+1949
+							# find durations in the selected year (and season)
+							# determine quantile "postions" durQu
+							inside=which(duration_mid[q,state,]>year & duration_mid[q,state,]<(year+1))
+							if (length(inside)>0){
+								durQu[i,]=quantile(duration[q,state,inside],taus,na.rm=TRUE)
+								# this is just needed for plots
+								eke_ext[1:6,(count+1):(count+length(inside))]=eke[q,1:6,sea,(year-1978)]
+								dur_ext[(count+1):(count+length(inside))]=duration[q,state,inside]
+								count=count+length(inside)
 							}
 						}
 					}
+					# calculate correlation between quantile "positions and eke"
+					for (lvl in 1:6){
+						for (qu in 1:length(taus)){
+							if (sd(as.vector(eke[q,lvl,sea,]),na.rm=TRUE)!=0 & sd(as.vector(durQu[1:36,qu]),na.rm=TRUE)!=0){
+								correlation[q,lvl,sea,state,qu]=cor(x=as.vector(eke[q,lvl,sea,]),y=as.vector(durQu[1:36,qu]),use="complete")
+							}
+						}
+					}
+					# make little explanatory plot ---------------------------------
+					if (plot==TRUE){
+						for (lvl in 1:6){
+							order=order(eke[q,lvl,sea,1:33])
+							year=1979:2014
+							year=year[order]
+							title=c()
+							plot(as.vector(eke_ext[lvl,]),dur_ext,xlab="eddy kinetic energy",ylab="duration length",ylim=c(-2,max(dur_ext,na.rm=TRUE)),
+								main=paste(seasons[sea],"- pressure:",pressure_level[lvl],"mbar -",state_names[state],"durations"))
+							for (y in 1:36){
+								abline(v=as.vector(eke[q,lvl,sea,order])[y],col="grey",lty=2)
+								text(as.vector(eke[q,lvl,sea,order])[y],(-1.5+0.7*(-1)^y),label=year[y],srt=90,cex=0.5)
+							}
+							for (qu in 1:length(taus)){
+								title[qu]=paste(taus[qu],"quantile cor =",correlation[q,lvl,sea,state,qu])
+								lines(as.vector(eke[q,lvl,sea,order]),as.vector(durQu[order,qu]),col=color[qu],
+									main=paste(seasons[sea],"- pressure:",pressure_level[lvl],"mbar -",state_names[state],"duration",taus[qu],"quantile"))
+							}
+							legend("topright",col=color,lty=array(1,length(taus)),legend=title)
+						}
+					}
+					# ------------------------------------------------------------
 				}
 			}
 		}
 	}
-	ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-	season <- dim.def.ncdf("season",units="uu",vals=1:4,unlim=FALSE)
-	varstates <- dim.def.ncdf("states",units="uu",vals=1:2,unlim=FALSE)
-	levelist <- dim.def.ncdf("levelist",units="mbar",vals=c(850,700,500,400,300,250),unlim=FALSE)
-	quantiles <- dim.def.ncdf("quantiles",units="0-1",vals=taus,unlim=FALSE)
+	if (plot!=TRUE){
+		ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+		season <- dim.def.ncdf("season",units="uu",vals=1:4,unlim=FALSE)
+		varstates <- dim.def.ncdf("states",units="uu",vals=1:states,unlim=FALSE)
+		levelist <- dim.def.ncdf("levelist",units="mbar",vals=c(850,700,500,400,300,250),unlim=FALSE)
+		quantiles <- dim.def.ncdf("quantiles",units="0-1",vals=taus,unlim=FALSE)
 
-	varCorrelation <- var.def.ncdf(name="correlation",longname="correaltion between quantile values and eke values in season",units="bla",dim=list(ID,levelist,season,varstates,quantiles), missval=-9999.0)
-	vars=list(varCorrelation)
-		 
-	nc = create.ncdf(paste("../data/",trendID,"/",states,"_states/",trendID,"_eke_duration_cor_",states,"states.nc",sep=""),vars)
+		varCorrelation <- var.def.ncdf(name="correlation",longname="correaltion between quantile values and eke values in season",units="bla",dim=list(ID,levelist,season,varstates,quantiles), missval=-9999.0)
+		vars=list(varCorrelation)
+			 
+		nc = create.ncdf(paste("../data/",trendID,"/",states,"_states/",trendID,"_eke_duration_cor_",states,"states.nc",sep=""),vars)
 
-
-	put.var.ncdf(nc,varCorrelation,correlation)
+		put.var.ncdf(nc,varCorrelation,correlation)
+	}
+	graphics.off()
 
 }
 
 #create_eke()
 
 #eke_markov_correl("91_5",states=3,transition_names="cc nc wc cn nn wn cw nw ww")
-#eke_markov_correl("91_5",states=2,transition_names="cc wc cw ww")
-#eke_markov_correl("91_3")
-eke_duration_correl("91_5",states=2)
-eke_duration_correl("91_3",states=2)
+#eke_markov_correl("91_5",states=2,transition_names="cc wc cw ww",stations=163,plot=TRUE)
 
+
+#eke_duration_correl("91_5",states=3,stations=488,plot=TRUE)
+#eke_duration_correl("91_3",states=2)
+
+eke_duration_correl("91_3",states=3)

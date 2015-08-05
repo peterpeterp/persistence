@@ -61,10 +61,17 @@ master_duration <- function(nday,nyr,trendID,states){
 
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
+    if (states==2){
+        stateIndeces=c(-1,1)
+    }
+    if (states==3){
+        stateIndeces=c(-1,0,1)
+    }
+
     nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/markov/",trendID,"_markov_",states,"states.nc",sep=""))        
     ind=get.var.ncdf(nc,"ind")
 
-    calc_global_dur(dat=dat,ind=ind,trash=trash,filename=paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s_year.nc",sep=""),states=c(-1,1))
+    calc_global_dur(dat=dat,ind=ind,trash=trash,filename=paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s_year.nc",sep=""),states=stateIndeces)
 
     nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s_year.nc",sep=""))
     dur=get.var.ncdf(nc,"dur")
@@ -122,12 +129,12 @@ full_3states <- function(nday,nyr){
 
     #master_trend(nday,nyr,trendID)
 
-    master_markov(nday,nyr,trendID,states=3,transition_names=c("cc nc wc cn nn nw cw nw ww"))
+    #master_markov(nday,nyr,trendID,states=3,transition_names=c("cc nc wc cn nn nw cw nw ww"))
 
     points=c(1950,2014,1950,1980,1980,2014)
     for (i in 1:3){
         period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
-        master_analyse_markov(yearPeriod=period,trendID,states=3,transition_names=c("cc nc wc cn nn nw cw nw ww"))
+        #master_analyse_markov(yearPeriod=period,trendID,states=3,transition_names=c("cc nc wc cn nn nw cw nw ww"))
     }
 
     master_duration(nday,nyr,trendID,states=3)
@@ -137,5 +144,5 @@ full_3states <- function(nday,nyr){
     }
 }
 
-full_3states(91,5)
+#full_3states(91,5)
 full_3states(91,3)
