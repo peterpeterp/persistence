@@ -50,8 +50,9 @@ master_analyse_markov <- function(yearPeriod,trendID,states,transition_names){
     for (sea in 1:length(seasons)){
         print(seasons[sea])
         per=get.var.ncdf(nc,"markov")[1:length(dat$ID),sea,,]
-        tmp=global_analysis(per=per,filename_neu=paste("../data/",trendID,"/",states,"_states/markov/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_mar",states,"s_trend_",seasons[sea],".nc",sep=""),
-            season=seasons[sea],transition_names=transition_names,yearPeriod)
+        tmp=global_analysis(toAna=per,yearPeriod=yearPeriod)
+        markov_analysis_write(filename_neu=paste("../data/",trendID,"/",states,"_states/markov/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_mar",states,"s_trend_",seasons[sea],".nc",sep=""),
+            analysis=tmp,season=season,transition_names=transition_names)
     }
 }
 
@@ -95,11 +96,22 @@ master_analyse_duration <- function(yearPeriod,trendID,states,seasons=c("spring"
     }
 }
 
+master_duration_distribution <- function(yearPeriod,trendID,states,seasons=c("spring","summer","autumn","winter","year")){
+    # analyse duration periods 2 states
+    for (season in seasons){
+        print(season)
+        nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s_",season,".nc",sep=""))
+        dur=get.var.ncdf(nc,"dur")
+        dur_mid=get.var.ncdf(nc,"dur_mid")
+        duration_distribution(dur,dur_mid,filename=paste("../data/",trendID,"/",states,"_states/duration/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_duration_",states,"s_distribution_",season,".nc",sep=""),
+            season=season,yearPeriod)#,stations=seq(487,489,1))#,stations=134:136)
+    }
+}
+
 master_regional_average <- function(yearPeriod,region_name,trendID){
     source("functions_regional.r")
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     regional_analysis(dat=dat,yearPeriod,filepath=paste("../data/",trendID,"/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",sep=""),region_name=region_name)
-
 }
 
 full_2states <- function(nday,nyr){
@@ -108,18 +120,19 @@ full_2states <- function(nday,nyr){
 
     #master_trend(nday,nyr,trendID)
 
-    master_markov(nday,nyr,trendID,states=2,transition_names=c("cc wc cw ww"))
+    #master_markov(nday,nyr,trendID,states=2,transition_names=c("cc wc cw ww"))
 
     points=c(1950,2014,1950,1980,1980,2014)
     for (i in 1:3){
         period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
-        master_analyse_markov(yearPeriod=period,trendID,states=2,transition_names=c("cc wc cw ww"))
+        #master_analyse_markov(yearPeriod=period,trendID,states=2,transition_names=c("cc wc cw ww"))
     }
 
-    master_duration(nday,nyr,trendID,2)
+    #master_duration(nday,nyr,trendID,2)
     for (i in 1:3){
         period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
-        master_analyse_duration(yearPeriod=period,trendID,states=2)
+        #master_analyse_duration(yearPeriod=period,trendID,states=2)
+        master_duration_distribution(yearPeriod=period,trendID,states=2)
     }
 }
 
@@ -145,4 +158,5 @@ full_3states <- function(nday,nyr){
 }
 
 #full_3states(91,5)
-full_3states(91,3)
+#full_3states(91,3)
+full_2states(91,5)

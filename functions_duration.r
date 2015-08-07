@@ -169,4 +169,38 @@ duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=se
     }
 }
 
+duration_distribution <- function(dur,dur_mid,filename,season,yearPeriod,stations=seq(1,1319,1)){
+    ntot=1319
+    states=dim(dur)[2]
+    out=array(NA,dim=c(ntot,states,5))
+    br=seq(0,500,1)
+    for (state in 1:states){
+        for (q in 1:ntot){
+            cat(paste("-",q))
+            if (length(which(!is.na(dur[q,state,])))>30){
+                inside=which(dur_mid[q,state,]>yearPeriod[1] & dur_mid[q,state,]<yearPeriod[2])
+                histo=hist(dur[q,state,inside],breaks=br,plot=FALSE)
+                xy=data.frame(y=histo$density,x=histo$mids)
+                fit=nls(y~(exp(a+b*x)),data=xy,start=list(a=0,b=0)) 
+                A=summary(fit)$parameters[1]
+                b=-summary(fit)$parameters[2]
+                t=1/b
+                yfit=A*exp(-histo$mids*b)
+                chi2=chisq.test(histo$density,yfit)$p.value
+                out[q,state,1:4]=c(A,b,t,chi2)
+            }
+        }
+    }
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+    varstates <- dim.def.ncdf("states",units="states",vals=1:(states),unlim=FALSE)
+    outs <- dim.def.ncdf("outs",units="0-1",vals=1:5,unlim=FALSE)
 
+    distr_ana <- var.def.ncdf(name="distr_ana",units="values",longname=paste("analysis of duration of distribution in",season,"histo fit Ae-bx A, b, t, chi2, NA"),dim=list(ID,varstates,outs), missval=-9999.0)
+
+    nc=create.ncdf(filename,distr_ana)
+
+    put.var.ncdf(nc,"distr_ana",out[1:ntot,1:states,1:5])  
+
+    close.ncdf(nc)    
+
+}

@@ -53,7 +53,8 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 	#farbe_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
 
 	if (farbe_mitte=="gemeinsam 0" | farbe_mitte=="0" | farbe_mitte=="cut"){
-		jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
+		jet.colors <- colorRampPalette( c(rgb(0.5,1,0.5), rgb(0.2,0.6,0.4),rgb(0.9,0.9,1),rgb(0.6,0.2,0.4) ,rgb(1,0.5,0.5)))
+		#jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
 	}
 	if (farbe_mitte=="gemeinsam mean" | farbe_mitte=="mean"){
 		jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )

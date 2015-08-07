@@ -1,3 +1,5 @@
+#!/home/pepflei/R/bin/Rscript
+
 # teste teste
 source("write.r")
 source("load.r")
@@ -142,6 +144,35 @@ plot_duration_climatology <- function(trendID,states,period){
 	}
 }
 
+plot_duration_distribution <- function(trendID,states,period){
+	# duration climatology
+    seasons=c("spring","summer","autumn","winter","year")
+	if (states==2){
+		state_names=c("cold","warm")
+	}
+	if (states==3){
+		state_names=c("cold","normal","warm")
+	}	
+	titel_zusatz=c("lifetime 1/b","chi squared of exp fit")
+	vars=c("distr_ana")
+	auswahl=c(3,4)
+
+	for (season in seasons){
+		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",period,"/",trendID,"_duration_",states,"s_distribution_",season,".nc",sep=""))
+		titel=c()
+		reihen=array(NA,dim=c(length(auswahl)*states,ntot))
+		for (i in 1:length(auswahl)){
+			for (state in 1:states){
+				print(dim(get.var.ncdf(nc,vars[1])))
+			   	reihen[((i-1)*states+state),]=get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i]]
+			    titel[((i-1)*states+state)]=paste(titel_zusatz[i],"of",state_names[state],"period duration in",season)
+			}
+		}			
+		map_allgemein(dat=dat,
+			filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/duration/",period,"/",trendID,"_duration_",season,"_distr.pdf",sep=""),
+		worldmap=worldmap,ausschnitt=c(-80,80),reihen=reihen,titel=titel,farbe_mitte="mean")
+	}
+}
 
 plot_regional_average <- function(auswahl,titel_zusatz,period,name_zusatz,region_name){
 	# regional trend
@@ -277,6 +308,29 @@ plot_correl_duration <- function(trendID,states,vars,vars_sig,farbe_mitte,region
 	}
 }
 
+plot_eke <- function(vars,vars_sig,farbe_mitte,name_zusatz,period,region=NA,seasons=c("spring","summer","autumn","winter","year")){
+	# eke analysis
+
+    for (season in seasons){
+		nc=open.ncdf(paste("../data/eke/eke_analysis_",season,".nc",sep=""))
+		pressure=get.var.ncdf(nc,"levelist")
+		reihen=array(NA,dim=c(6,ntot))
+		reihen_sig=array(NA,dim=c(6,ntot))
+		titel=c()
+
+		y=get.var.ncdf(nc,vars)
+		if (!is.na(vars_sig)){y_sig=get.var.ncdf(nc,vars_sig)}
+		for (lvl in 1:6){
+			reihen[lvl,]=y[1:ntot,lvl]
+			if (!is.na(vars_sig)){reihen_sig[lvl,]=y_sig[1:ntot,lvl]}
+			titel[lvl]=paste("Eddy kinetic Energy",name_zusatz,"in",season,"in",period,"at",pressure[lvl],"mbar")
+		}
+		map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,
+			filename_plot=paste("../plots/eke/eke_",vars,"_",season,"_",period,".pdf",sep=""),
+			worldmap=worldmap,ausschnitt=c(-80,80),region=region,regionColor="black")		
+	}
+}
+
 #init
 library(SDMTools)
 source("functions_regional.r")
@@ -293,14 +347,14 @@ dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 #location_view()
 
 full_plot <- function(trendID,states){
-	#plot_correl_markov(trendID,states=states,vars="correlation",vars_sig=NA,farbe_mitte="0")
-	plot_correl_duration("91_5",states=states,vars="correlation",vars_sig=NA,farbe_mitte="0")
-	#plot_markov(trendID,states=states,vars="mean",vars_sig=NA,farbe_mitte="mean",name_zusatz="climatology",period="1950-2014")
-	#plot_duration_climatology(trendID,states=states,period="1950-2014")
+	plot_correl_markov(trendID,states=states,vars="correlation",vars_sig=NA,farbe_mitte="0")
+	plot_correl_duration(trendID,states=states,vars="correlation",vars_sig=NA,farbe_mitte="0")
+	plot_markov(trendID,states=states,vars="mean",vars_sig=NA,farbe_mitte="mean",name_zusatz="climatology",period="1950-2014")
+	plot_duration_climatology(trendID,states=states,period="1950-2014")
 	for (yearperiod in c("1950-1980","1950-2014","1980-2014")){
 		pritn(yearperiod)
-		#plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period=yearperiod)
-		#plot_duration_vergleich(trendID,states=states,period=yearperiod)
+		plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period=yearperiod)
+		plot_duration_vergleich(trendID,states=states,period=yearperiod)
 	}
 }
 
@@ -308,4 +362,14 @@ full_plot <- function(trendID,states){
 #plot_correl_markov("91_3",states=2,vars="correlation",vars_sig=NA,farbe_mitte="0")
 
 #plot_correl_duration("91_5",states=2,vars="correlation",vars_sig=NA,farbe_mitte="0")
-full_plot("91_5",3)
+#plot_eke(vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period="1979-2014")
+#plot_eke(vars="mean",vars_sig=NA,farbe_mitte="mean",name_zusatz="climatology",period="1979-2014")
+
+plot_duration_distribution("91_5",2,"1950-2014")
+
+#full_plot("91_3",2)
+#full_plot("91_3",3)
+#full_plot("91_5",2)
+#full_plot("91_5",3)
+
+

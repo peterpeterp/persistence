@@ -139,9 +139,11 @@ if (1==1){
 	plot(x,y)
 
 	for (p in 1:length(perc)){
-		color=rgb(perc[p], ((length(perc)-p)/length(perc)), (1-perc[p]))
+		#color=rgb(perc[p], ((length(perc)-p)/length(perc)), (1-perc[p]))
+		color=rgb(0.8,0.8,1)
 		lines(xqu,as.vector(qu[,p]),col=color,lty=3)
 		abline(rq(y~x,perc[p]),col=color)
 		abline(lm(as.vector(qu[,p])~xqu),col=color,lty=2)
 	}
+	graphics.off()
 }

@@ -121,7 +121,7 @@ duration_analysis_write <- function(filename,dur,season,trenn){
     quantiles <- dim.def.ncdf("0.25 0.5 0.75 0.9 0.95 0.98 NA lr",units="0-1",vals=1:8,unlim=FALSE)
     outs <- dim.def.ncdf("quantile_slope quantile_slope_sig quantile_mean quantile_mean_sd quantile_intercept",units="0-1",vals=1:5,unlim=FALSE)
 
-    dur_ana_full <- var.def.ncdf(name="dur_ana_full",units="values",longname=paste("analysis of duration of periods in",season,"from 1950 to 2014"),dim=list(ID,varstates,quantiles,outs), missval=-9999.0)
+    dur_ana_full <- var.def.ncdf(name="dur_ana_full",units="values",longname=paste("analysis of duration of periods in",season),dim=list(ID,varstates,quantiles,outs), missval=-9999.0)
     
 
     vars=list(dur_ana_full)

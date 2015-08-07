@@ -205,27 +205,25 @@ trend_analysis <- function(x,y){
     return(list(slope=slope,slope_sig=slope_sig,MK=MK,MK_sig=MK_sig))
 }
 
-global_analysis <- function(per,filename_neu,season,transition_names,yearPeriod){
-    yearPeriod=yearPeriod-1949
+global_analysis <- function(toAna,yearPeriod,yearshift=1949){
+    #toANA of dim(ntot, something, year)
+    yearPeriod=yearPeriod-yearshift
     t=seq(yearPeriod[1],yearPeriod[2],1)
     ntot=1319
-    pers=dim(per)[2]
-    per_analysis=array(NA,dim=c(ntot,pers,6))
-    for (i in 1:pers){
+    series=dim(toAna)[2]
+    analysis=array(NA,dim=c(ntot,series,6))
+    for (i in 1:series){
         for (q in 1:ntot){
-            #cat(q,length(which(is.na(per[q,i,]))),"\n")
-            tmp=trend_analysis(t,per[q,i,yearPeriod[1]:yearPeriod[2]])
-            per_analysis[q,i,1]=mean(per[q,i,yearPeriod[1]:yearPeriod[2]],na.rm=TRUE)
-            per_analysis[q,i,2]=sd(per[q,i,yearPeriod[1]:yearPeriod[2]],na.rm=TRUE)
-            per_analysis[q,i,3]=tmp$MK
-            per_analysis[q,i,4]=tmp$MK_sig
-            per_analysis[q,i,5]=tmp$slope
-            per_analysis[q,i,6]=tmp$slope_sig
-
+            tmp=trend_analysis(t,toAna[q,i,yearPeriod[1]:yearPeriod[2]])
+            analysis[q,i,1]=mean(toAna[q,i,yearPeriod[1]:yearPeriod[2]],na.rm=TRUE)
+            analysis[q,i,2]=sd(toAna[q,i,yearPeriod[1]:yearPeriod[2]],na.rm=TRUE)
+            analysis[q,i,3]=tmp$MK
+            analysis[q,i,4]=tmp$MK_sig
+            analysis[q,i,5]=tmp$slope
+            analysis[q,i,6]=tmp$slope_sig
         }
     }
-    markov_analysis_write(filename_neu,per_analysis,season,transition_names)
-    return(per_analysis)
+    return(analysis)
 }
 
 

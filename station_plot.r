@@ -12,12 +12,12 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
     station=which(dat$ID==q)[1]
     q=station
     
-    if (dim(per$markov)[3]==4){
+    if (dim(per)[3]==4){
         state_names=c("cold","warm")
         color=c("blue","red")
     }
 
-    if (dim(per$markov)[3]==9){
+    if (dim(per)[3]==9){
         state_names=c("cold","normal","warm")
         color=c("blue","violet","red")
     }
@@ -56,7 +56,7 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
             plot(NA,xlim=c(1950,2014),ylim=c(0.5,1),ylab="",xlab="", axes = FALSE, bty = "n")
             mtext("transition probability",side=4,col="orange",line=4) 
             axis(4, col="orange",col.axis="orange",las=1)
-            markov=per$markov[station,sea,(state*state),]
+            markov=per[station,sea,(state*state),]
             lines(dat$year+sea*0.25,markov,col="orange")
             for (pe in 1:3){
                 from=period_start[pe]-1949+3
@@ -64,7 +64,6 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
                 y=markov[from:to]
                 x=dat$year[from:to]+sea*0.25
                 if (length(!is.na(y))>3){
-                    print(y)
                     lr=lm(y~x)
                     x=seq(period_start[pe],period_stop[pe],1)
                     y=lr$coefficients[1]+lr$coefficients[2]*x
@@ -92,6 +91,7 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
             plot(worldmap,xlim=c(dat$lon[q]-10,dat$lon[q]+10),ylim=c(dat$lat[q]-10,dat$lat[q]+10))
             points(dat$lon[q],dat$lat[q],pch=15,col="red")
         }
+
 
 
         if (1==2){
@@ -153,20 +153,21 @@ ndays = c(91)
 nyrs = c(5)
 
 stations=c(488,510,604,744,920,887,251,98,270,281,169,164,353,121,11,39)
-stations=c(532)
+stations=c(488)
 for (nday in ndays){
     for (nyr in nyrs){
         for (qq in stations){
             trend=trend_load(sprintf("../data/%s_%s/%s_%s_trend.nc",nday,nyr,nday,nyr))
             cat("loading persistence\n") 
-            per=markov_load(sprintf("../data/%s_%s/2_states/markov/%s_%s_markov2s.nc",nday,nyr,nday,nyr),4)
+            nc_mar=open.ncdf(sprintf("../data/%s_%s/2_states/markov/%s_%s_markov_2states.nc",nday,nyr,nday,nyr))
+            per=get.var.ncdf(nc_mar,"markov")
             #dur=duration_load(sprintf("../data/%s_%s/%s_%s_duration_",nday,nyr,nday,nyr))
             warmeTageIncr=read.table("../data/sonstiges/warmeTage_trends_5seasons.txt")
 
 
             station_plot(dat=dat,trend=trend,per=per,dur_name=sprintf("../data/%s_%s/2_states/duration/%s_%s_duration_2s_",nday,nyr,nday,nyr),
                 warmeTageIncr=warmeTageIncr,q=qq,
-                filename=sprintf("../plots/2_states/station/%s_%s_2s_%s.pdf",nday,nyr,qq))
+                filename=sprintf("../plots/%s_%s/2_states/stations/%s_%s_2s_%s.pdf",nday,nyr,nday,nyr,qq))
         }
     }
 }
