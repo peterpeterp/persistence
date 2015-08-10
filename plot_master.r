@@ -124,16 +124,14 @@ plot_duration_climatology <- function(trendID,states,period){
 	}	
 	titel_zusatz=c("0.25","0.5","0.75","0.9","0.95","0.98")
 	vars=c("dur_ana_full")
-	auswahl=c(8,1,2,3,4,5,6)
+	auswahl=c(1,2,3,4,5,6)
 
 	for (season in seasons){
 		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",period,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""))
 		titel=c()
-		print(nc)
 		reihen=array(NA,dim=c(length(auswahl)*states,ntot))
 		for (i in 1:length(auswahl)){
 			for (state in 1:states){
-				print(dim(get.var.ncdf(nc,vars[1])))
 			   	reihen[((i-1)*states+state),]=get.var.ncdf(nc,vars[1])[1:ntot,state,auswahl[i],3]
 			    titel[((i-1)*states+state)]=paste("mean value of",titel_zusatz[i],"quantile of",state_names[state],"period duration in",season)
 			}
@@ -200,37 +198,6 @@ plot_regional_average <- function(auswahl,titel_zusatz,period,name_zusatz,region
 		regions_color(reihen=reihen,reihen_sig=reihen_sig,titles=titel,worldmap=worldmap,poli=poli,
 			filename_plot=paste("../plots/2_states/regions/",period,"/91_5_",states,"s_",seasons[sea],"_",name_zusatz,"_",region_name,".pdf",sep=""))
 	}	
-}
-
-plot_meridonal_average <- function(states=2,vars1,vars2,farbe_mitte,period,name_zusatz){
-	# markov xx states
-	source("meridional_average.r")
-	if (states==2){
-		state_names=c("cold","warm")
-	}
-	if (states==3){
-		state_names=c("cold","normal","warm")
-	}
-    seasons=c("spring","summer","autumn","winter","year")		
-
-    for (season in seasons){
-		nc=open.ncdf(paste("../data/91_5/2_states/markov/1980-2014/91_5_mar",states,"s_trend_",season,".nc",sep=""))
-		climatology=array(NA,dim=c(states*states,ntot))
-		change=array(NA,dim=c(states*states,ntot))
-		titel=c()
-
-		y1=array(get.var.ncdf(nc,vars1),dim=c(ntot,states,states))
-		y2=array(get.var.ncdf(nc,vars2),dim=c(ntot,states,states))
-		for (from in 1:states){
-			for (to in 1:states){
-				climatology[((from-1)*states+to),]=y1[1:ntot,from,to]
-				change[((from-1)*states+to),]=y2[1:ntot,from,to]
-				titel[((from-1)*states+to)]=paste(vars1,"for transition from",state_names[from],"to",state_names[to],"in",season)
-			}
-		}
-		meridional_average(dat=dat,climatology=climatology,change=change,titel=titel,filename_plot=paste("../plots/2_states/regional/2_states/regional/",period,"/91_5_mar",states,"s_",vars1,"_",season,"_",name_zusatz,".pdf",sep=""))
-		
-	}
 }
 
 plot_correl_markov <- function(trendID,states,vars,vars_sig,farbe_mitte,region=NA,seasons=c("spring","summer","autumn","winter")){
@@ -347,14 +314,14 @@ dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 #location_view()
 
 full_plot <- function(trendID,states){
-	plot_correl_markov(trendID,states=states,vars="correlation",vars_sig=NA,farbe_mitte="0")
-	plot_correl_duration(trendID,states=states,vars="correlation",vars_sig=NA,farbe_mitte="0")
-	plot_markov(trendID,states=states,vars="mean",vars_sig=NA,farbe_mitte="mean",name_zusatz="climatology",period="1950-2014")
+	#plot_correl_markov(trendID,states=states,vars="correlation",vars_sig=NA,farbe_mitte="0")
+	#plot_correl_duration(trendID,states=states,vars="correlation",vars_sig=NA,farbe_mitte="0")
+	#plot_markov(trendID,states=states,vars="mean",vars_sig=NA,farbe_mitte="mean",name_zusatz="climatology",period="1950-2014")
 	plot_duration_climatology(trendID,states=states,period="1950-2014")
 	for (yearperiod in c("1950-1980","1950-2014","1980-2014")){
-		pritn(yearperiod)
-		plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period=yearperiod)
-		plot_duration_vergleich(trendID,states=states,period=yearperiod)
+		print(yearperiod)
+		#plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period=yearperiod)
+		#plot_duration_vergleich(trendID,states=states,period=yearperiod)
 	}
 }
 
@@ -365,11 +332,11 @@ full_plot <- function(trendID,states){
 #plot_eke(vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period="1979-2014")
 #plot_eke(vars="mean",vars_sig=NA,farbe_mitte="mean",name_zusatz="climatology",period="1979-2014")
 
-plot_duration_distribution("91_5",2,"1950-2014")
+#plot_duration_distribution("91_5",2,"1950-2014")
 
-#full_plot("91_3",2)
-#full_plot("91_3",3)
-#full_plot("91_5",2)
-#full_plot("91_5",3)
+full_plot("91_3",2)
+full_plot("91_3",3)
+full_plot("91_5",2)
+full_plot("91_5",3)
 
 
