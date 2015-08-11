@@ -43,7 +43,7 @@ add_region <- function(region_name,farbe){
     }
 }
 
-map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,farbe_mitte,reihen_sig=reihen*NA,region=NA,regionColor=NA){
+map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,farbe_mitte,reihen_sig=reihen*NA,region=NA,regionColor=NA,grid=FALSE){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
 	#worldmap background of lon lat plot
@@ -64,6 +64,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 
 	pdf(file = filename_plot,width=12,height=8)
 	par(mfrow=c(1,1))
+    par(mar=c(1,1,2,4))
 
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
@@ -155,9 +156,15 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 		points(lon,lat,pch=sig)
 		points(dat$lon,dat$lat,pch=nas)
 
-		for (longi in seq(-180,180,30)){
-			abline(v=longi,col="grey")
-			text(longi,-80,label=longi)
+		if (grid==TRUE){
+			for (longi in seq(-180,180,30)){
+				abline(v=longi,col="grey")
+				text(longi,-80,label=longi)
+			}
+			for (lati in seq(-60,60,10)){
+				abline(h=lati,col="grey")
+				text(-190,lati,label=lati)
+			}
 		}
 		if (!is.na(region)){
 			add_region(region,regionColor)

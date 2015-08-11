@@ -2,8 +2,9 @@ source("write.r")
 source("load.r")
 source("functions_duration.r")
 
-station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
-    pdf(file=filename,paper='a4')
+station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename,todo,name="full",seasons=1:5,states=1:2){
+    pdf(file=paste(filename,name,".pdf",sep=""),width=8,height=7)
+    par(mar=c(4.2,4,1,1))
 
     library(rworldmap)
     worldmap = getMap(resolution = "low")
@@ -14,7 +15,7 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
     
     if (dim(per)[3]==4){
         state_names=c("cold","warm")
-        color=c("blue","red")
+        colors=c(rgb(0.5,0.5,1),"blue",rgb(1,0.5,0.5),"red")
     }
 
     if (dim(per)[3]==9){
@@ -39,7 +40,7 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
             par(mar=c(5, 4, 4, 6) + 0.1)
 
             plot(NA,xlim=c(1950,2014),xaxp=c(1950,2015,13),ylim=c(0,50),xlab="",ylab="duration of persistence", main=paste(season_names[sea],state_names[state]))
-            points(dur_mid[station,state,],dur[station,state,],pch=4,col="lightblue")
+            points(dur_mid[station,state,],dur[station,state,],pch=4,col=colors[1])
 
             for (pe in 1:3){
                 x=seq(period_start[pe],period_stop[pe],1)
@@ -48,16 +49,16 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
                 qu95_intercept=get.var.ncdf(nc,"dur_ana_full")[q,state,5,5]
                 y=qu95_intercept+x*qu95_slope
                 if (length(!is.na(y))>3){
-                    lines(x,y,lty=period_lty[pe],col="blue")
+                    lines(x,y,lty=period_lty[pe],col=colors[2])
                 }
             }
 
             par(new=TRUE)
             plot(NA,xlim=c(1950,2014),ylim=c(0.5,1),ylab="",xlab="", axes = FALSE, bty = "n")
-            mtext("transition probability",side=4,col="orange",line=4) 
-            axis(4, col="orange",col.axis="orange",las=1)
+            mtext("transition probability",side=4,col=colors[3],line=4) 
+            axis(4, col=colors[3],col.axis=colors[3],las=1)
             markov=per[station,sea,(state*state),]
-            lines(dat$year+sea*0.25,markov,col="orange")
+            lines(dat$year+sea*0.25,markov,col=colors[3])
             for (pe in 1:3){
                 from=period_start[pe]-1949+3
                 to=period_stop[pe]-1949
@@ -67,7 +68,7 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
                     lr=lm(y~x)
                     x=seq(period_start[pe],period_stop[pe],1)
                     y=lr$coefficients[1]+lr$coefficients[2]*x
-                    lines(x,y, lty=period_lty[pe],col="red")
+                    lines(x,y, lty=period_lty[pe],col=colors[4])
                 }
             }
 
@@ -81,7 +82,7 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename){
             for (i in seq(1950,2015,5)){
                 abline(v=i,col="gray",lty="dotted")
             }
-            legend("topleft", pch = c(4,NA,NA,NA),lty=c(NA,2,1,2), col = c("lightblue","blue","orange","red"), 
+            legend("topleft", pch = c(4,NA,NA,NA),lty=c(NA,2,1,2), col = colors, 
                     legend = c(paste(state_names[state],"period duration"),"95 quantile",
                         paste(state_names[state],"to",state_names[state],"transition probability"),"linear regression"))
 
@@ -167,7 +168,8 @@ for (nday in ndays){
 
             station_plot(dat=dat,trend=trend,per=per,dur_name=sprintf("../data/%s_%s/2_states/duration/%s_%s_duration_2s_",nday,nyr,nday,nyr),
                 warmeTageIncr=warmeTageIncr,q=qq,
-                filename=sprintf("../plots/%s_%s/2_states/stations/%s_%s_2s_%s.pdf",nday,nyr,nday,nyr,qq))
+                filename=sprintf("../plots/%s_%s/2_states/stations/%s_%s_2s_%s_",nday,nyr,nday,nyr,qq),
+                todo=c(1,1,1,1),name="bla")
         }
     }
 }
