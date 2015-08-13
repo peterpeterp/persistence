@@ -9,7 +9,7 @@ meridional_average <- function(x,y,color,lineStyle,abschnitt){
 	}
 
 	noNas=which(!is.na(yAv))
-	x[x<0]=x[x<0]+360
+	#x[x<0]=x[x<0]+360
 	lines(x[noNas],yAv[noNas],col=color,lty=lineStyle)
 	#points(x,yAv,col=color,pch=1,cex=0.5)
 }
@@ -37,13 +37,16 @@ plot_meridonal_average <- function(trendID,states,period,abschnitt){
 	}
 
 	par(mar=c(5, 4, 4, 6) + 0.1)
-	x=c(seq(0,180,3.75),seq(-180,-3.75,3.75))
+	#x=c(seq(0,180,3.75),seq(-180,-3.75,3.75))
+	x=c(seq(-180,-3.75,3.75),seq(0,180,3.75))
+	xlim=c(-180,180)
+	season_auswahl=2
 
 	for (state in state_auswahl){
-		plot(NA,xlim=c(0,360),ylim=c(min(mar[,,state],na.rm=TRUE),max(mar[,,state],na.rm=TRUE)),
+		plot(NA,xlim=xlim,ylim=c(min(mar[,,state],na.rm=TRUE),max(mar[,,state],na.rm=TRUE)),
 			xlab="longitude",ylab="transition probability",
 			main=paste("meridional average between ",abschnitt[1],"N and ",abschnitt[2],"N \n for markov transition ",transition_names[state],sep=""))
-		for (sea in 1:length(seasons)){
+		for (sea in season_auswahl){
 			meridional_average(x,mar[sea,,state],colors[sea],1,abschnitt)
 		}
 		legend("bottomleft",lty=array(1,length(seasons)),col=colors,legend=seasons)
@@ -57,10 +60,10 @@ plot_meridonal_average <- function(trendID,states,period,abschnitt){
 
 
 	for (state in state_auswahl){
-		plot(NA,xlim=c(0,360),ylim=c(min(mar[,,state],na.rm=TRUE),max(mar[,,state],na.rm=TRUE)),
+		plot(NA,xlim=xlim,ylim=c(min(mar[,,state],na.rm=TRUE),max(mar[,,state],na.rm=TRUE)),
 			xlab="longitude",ylab="Mann Kendall Trend Test",
 			main=paste("meridional average between ",abschnitt[1],"N and ",abschnitt[2],"N \n for markov transition ",transition_names[state],sep=""))
-		for (sea in 1:length(seasons)){
+		for (sea in season_auswahl){
 			meridional_average(x,mar[sea,,state],colors[sea],1,abschnitt)
 		}
 		legend("bottomleft",lty=array(1,length(seasons)),col=colors,legend=seasons)
@@ -74,10 +77,10 @@ plot_meridonal_average <- function(trendID,states,period,abschnitt){
 
 
 	for (state in 1:states){
-		plot(NA,xlim=c(0,360),ylim=c(min(dur[,,state,5,1],na.rm=TRUE),max(dur[,,state,5,1],na.rm=TRUE)),
+		plot(NA,xlim=xlim,ylim=c(min(dur[,,state,5,1],na.rm=TRUE),max(dur[,,state,5,1],na.rm=TRUE)),
 			xlab="longitude",ylab="95 quantile slope",
 			main=paste("meridional average between ",abschnitt[1],"N and ",abschnitt[2],"N \n for 95 quantile regression ",state_names[state],sep=""))
-		for (sea in 1:length(seasons)){
+		for (sea in season_auswahl){
 			meridional_average(x,dur[sea,,state,5,1],colors[sea],1,abschnitt)
 		}
 		legend("bottomleft",lty=array(1,length(seasons)),col=colors,legend=seasons)
@@ -87,3 +90,6 @@ plot_meridonal_average <- function(trendID,states,period,abschnitt){
 source("load.r")
 dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 plot_meridonal_average("91_5",2,"1950-2014",c(60,70))
+plot_meridonal_average("91_5",2,"1950-2014",c(50,70))
+plot_meridonal_average("91_5",2,"1950-2014",c(30,80))
+

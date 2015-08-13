@@ -51,8 +51,8 @@ master_analyse_markov <- function(yearPeriod,trendID,states,transition_names){
         print(seasons[sea])
         per=get.var.ncdf(nc,"markov")[1:length(dat$ID),sea,,]
         tmp=global_analysis(toAna=per,yearPeriod=yearPeriod)
-        markov_analysis_write(filename_neu=paste("../data/",trendID,"/",states,"_states/markov/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_mar",states,"s_trend_",seasons[sea],".nc",sep=""),
-            analysis=tmp,season=season,transition_names=transition_names)
+        markov_analysis_write(filename=paste("../data/",trendID,"/",states,"_states/markov/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_mar",states,"s_trend_",seasons[sea],".nc",sep=""),
+            analysis=tmp,season=seasons[sea],transition_names=transition_names)
     }
 }
 
@@ -125,14 +125,14 @@ full_2states <- function(nday,nyr){
     points=c(1950,2014,1950,1980,1980,2014)
     for (i in 1:3){
         period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
-        #master_analyse_markov(yearPeriod=period,trendID,states=2,transition_names=c("cc wc cw ww"))
+        master_analyse_markov(yearPeriod=period,trendID,states=2,transition_names=c("cc wc cw ww"))
     }
 
     #master_duration(nday,nyr,trendID,2)
     for (i in 1:3){
         period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
         #master_analyse_duration(yearPeriod=period,trendID,states=2)
-        master_duration_distribution(yearPeriod=period,trendID,states=2)
+        #master_duration_distribution(yearPeriod=period,trendID,states=2)
     }
 }
 

@@ -127,12 +127,12 @@ eke_markov_correl <- function(trendID,states,transition_names,stations=seq(1,131
 	nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/markov/",trendID,"_markov_",states,"states.nc",sep=""))
 	markov=get.var.ncdf(nc,"markov")
 
-	nc=open.ncdf("../data/eke_ID.nc")
+	nc=open.ncdf("../data/eke/eke_ID.nc")
 	eke=get.var.ncdf(nc,"eke_sea")
 
 	# needed for the plots
 	if (plot==TRUE){
-		pdf(file=paste("../plots/",trendID,"/",states,"_states/station/mar_eke_",stations,".pdf",sep=""))
+		pdf(file=paste("../plots/",trendID,"/",states,"_states/stations/mar_eke_",stations,".pdf",sep=""))
 		pressure_level=get.var.ncdf(nc,"levelist")
 		seasons=c("spring","summer","autumn","winter")
 		if (states==2){
@@ -315,10 +315,10 @@ eke_duration_correl <- function(trendID,states,seasons=c("spring","summer","autu
 }
 
 #create_eke()
-analyse_eke()
+#analyse_eke()
 
 #eke_markov_correl("91_5",states=3,transition_names="cc nc wc cn nn wn cw nw ww")
-#eke_markov_correl("91_5",states=2,transition_names="cc wc cw ww",stations=163,plot=TRUE)
+eke_markov_correl("91_5",states=2,transition_names="cc wc cw ww",stations=488,plot=TRUE)
 
 
 #eke_duration_correl("91_5",states=3,stations=488,plot=TRUE)

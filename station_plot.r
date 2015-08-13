@@ -28,7 +28,7 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename,todo,na
     period_stop=c(1980,2014,2014)
     period_names=c("1950-1980","1980-2014","1950-2014")
     period_lty=c(2,1,3)
-    for (sea in 1:5){
+    for (sea in seasons){
         par(mfrow=c(1,1))
 
 
@@ -36,41 +36,47 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename,todo,na
         dur=get.var.ncdf(nc,"dur")
         dur_mid=get.var.ncdf(nc,"dur_mid")
 
-        for (state in 1:length(state_names)){
+        for (state in states){
             par(mar=c(5, 4, 4, 6) + 0.1)
 
-            plot(NA,xlim=c(1950,2014),xaxp=c(1950,2015,13),ylim=c(0,50),xlab="",ylab="duration of persistence", main=paste(season_names[sea],state_names[state]))
-            points(dur_mid[station,state,],dur[station,state,],pch=4,col=colors[1])
-
-            for (pe in 1:3){
-                x=seq(period_start[pe],period_stop[pe],1)
-                nc=open.ncdf(paste("../data/91_5/2_states/duration/",period_names[pe],"/91_5_duration_2s_analysis_",season_names[sea],".nc",sep=""))
-                qu95_slope=get.var.ncdf(nc,"dur_ana_full")[q,state,5,1]
-                qu95_intercept=get.var.ncdf(nc,"dur_ana_full")[q,state,5,5]
-                y=qu95_intercept+x*qu95_slope
-                if (length(!is.na(y))>3){
-                    lines(x,y,lty=period_lty[pe],col=colors[2])
+            if (todo[1]==1){
+                plot(NA,xlim=c(1950,2014),xaxp=c(1950,2015,13),ylim=c(0.5,1),xlab="",ylab="transistion probability", main=paste(season_names[sea]))
+                markov=per[station,sea,(state*state),]
+                lines(dat$year+sea*0.25,markov,col=colors[3])
+                for (pe in 1:3){
+                    from=period_start[pe]-1949+3
+                    to=period_stop[pe]-1949
+                    y=markov[from:to]
+                    x=dat$year[from:to]+sea*0.25
+                    if (length(!is.na(y))>3){
+                        lr=lm(y~x)
+                        x=seq(period_start[pe],period_stop[pe],1)
+                        y=lr$coefficients[1]+lr$coefficients[2]*x
+                        lines(x,y, lty=period_lty[pe],col=colors[4])
+                    }
                 }
             }
+            
+            if (todo[2]==1){
+                par(new=TRUE)
+                plot(NA,xlim=c(1950,2014),ylim=c(0,50),ylab="",xlab="", axes = FALSE, bty = "n")
+                mtext("length of persistent period",side=4,col=colors[1],line=4) 
+                axis(4, col=colors[1],col.axis=colors[1],las=1)
+                points(dur_mid[station,state,],dur[station,state,],pch=4,col=colors[1])
 
-            par(new=TRUE)
-            plot(NA,xlim=c(1950,2014),ylim=c(0.5,1),ylab="",xlab="", axes = FALSE, bty = "n")
-            mtext("transition probability",side=4,col=colors[3],line=4) 
-            axis(4, col=colors[3],col.axis=colors[3],las=1)
-            markov=per[station,sea,(state*state),]
-            lines(dat$year+sea*0.25,markov,col=colors[3])
-            for (pe in 1:3){
-                from=period_start[pe]-1949+3
-                to=period_stop[pe]-1949
-                y=markov[from:to]
-                x=dat$year[from:to]+sea*0.25
-                if (length(!is.na(y))>3){
-                    lr=lm(y~x)
+                for (pe in 1:3){
                     x=seq(period_start[pe],period_stop[pe],1)
-                    y=lr$coefficients[1]+lr$coefficients[2]*x
-                    lines(x,y, lty=period_lty[pe],col=colors[4])
+                    nc=open.ncdf(paste("../data/91_5/2_states/duration/",period_names[pe],"/91_5_duration_2s_analysis_",season_names[sea],".nc",sep=""))
+                    qu95_slope=get.var.ncdf(nc,"dur_ana_full")[q,state,5,1]
+                    qu95_intercept=get.var.ncdf(nc,"dur_ana_full")[q,state,5,5]
+                    y=qu95_intercept+x*qu95_slope
+                    if (length(!is.na(y))>3){
+                        lines(x,y,lty=period_lty[pe],col=colors[2])
+                    }
                 }
             }
+
+
 
             #lines(dat$time,as.vector(trend[station,,]),col="black")
 
@@ -82,9 +88,15 @@ station_plot <- function(dat,trend,per,dur_name,warmeTageIncr,q,filename,todo,na
             for (i in seq(1950,2015,5)){
                 abline(v=i,col="gray",lty="dotted")
             }
-            legend("topleft", pch = c(4,NA,NA,NA),lty=c(NA,2,1,2), col = colors, 
+            if (todo[2]==1){
+                legend("topleft", pch = c(4,NA,NA,NA),lty=c(NA,2,1,2), col = colors, 
                     legend = c(paste(state_names[state],"period duration"),"95 quantile",
-                        paste(state_names[state],"to",state_names[state],"transition probability"),"linear regression"))
+                        paste(state_names[state],"to",state_names[state],"transition probability"),"linear regression")) 
+            }
+            if (todo[2]!=1){
+                legend("topleft", pch = c(NA,NA),lty=c(1,2), col = colors[3:4], 
+                    legend = c(paste(state_names[state],"to",state_names[state],"transition probability"),"linear regression")) 
+            }
 
 
 
@@ -169,7 +181,7 @@ for (nday in ndays){
             station_plot(dat=dat,trend=trend,per=per,dur_name=sprintf("../data/%s_%s/2_states/duration/%s_%s_duration_2s_",nday,nyr,nday,nyr),
                 warmeTageIncr=warmeTageIncr,q=qq,
                 filename=sprintf("../plots/%s_%s/2_states/stations/%s_%s_2s_%s_",nday,nyr,nday,nyr,qq),
-                todo=c(1,1,1,1),name="bla")
+                todo=c(1,2),name="mar",seasons=2,states=2)
         }
     }
 }

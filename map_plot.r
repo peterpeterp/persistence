@@ -43,7 +43,7 @@ add_region <- function(region_name,farbe){
     }
 }
 
-map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,farbe_mitte,reihen_sig=reihen*NA,region=NA,regionColor=NA,grid=FALSE){
+map_allgemein <- function(dat,filename_plot,worldmap,reihen,titel,farbe_mitte,reihen_sig=reihen*NA,region=NA,regionColor=NA,grid=FALSE,ausschnitt=c(-80,80)){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
 	#worldmap background of lon lat plot
@@ -52,11 +52,11 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 	#titel liste von strings, plot-titles
 	#farbe_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
 
-	if (farbe_mitte=="gemeinsam 0" | farbe_mitte=="0" | farbe_mitte=="cut"){
-		jet.colors <- colorRampPalette( c(rgb(0.5,1,0.5), rgb(0.2,0.6,0.4),rgb(0.9,0.9,1),rgb(0.6,0.2,0.4) ,rgb(1,0.5,0.5)))
+	if (farbe_mitte=="gemeinsam 0" | farbe_mitte=="0" | length(farbe_mitte)==1){
+		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.4),rgb(0.5,1,0.5), rgb(0.98,0.98,0.98) ,rgb(1,0.5,0.5),rgb(0.6,0.2,0.6)))
 		#jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
 	}
-	if (farbe_mitte=="gemeinsam mean" | farbe_mitte=="mean"){
+	if (farbe_mitte=="gemeinsam mean" | farbe_mitte=="mean" | length(farbe_mitte)==2){
 		jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
 	}
 	nbcol <- 101
@@ -144,7 +144,15 @@ map_allgemein <- function(dat,filename_plot,worldmap,ausschnitt,reihen,titel,far
 		if (length(farbe_mitte)==2){
 			y[1]=farbe_mitte[1]
 			y[2]=farbe_mitte[2]
-		}		
+			y[y>farbe_mitte[2]]=farbe_mitte[2]
+			y[y<farbe_mitte[1]]=farbe_mitte[1]
+		}	
+		if (length(farbe_mitte)==1 & farbe_mitte!="0"){
+			y[1]=farbe_mitte[1]
+			y[2]=farbe_mitte[1]
+			y[y>farbe_mitte[1]]=farbe_mitte[1]
+			y[y<(-farbe_mitte[1])]=(-farbe_mitte[1])
+		}	
 		if (farbe_mitte=="nichts"){
 			y[1]=mean(y,na.rm=TRUE)
 			y[2]=mean(y,na.rm=TRUE)
