@@ -40,7 +40,7 @@ plot_meridonal_average <- function(trendID,states,period,abschnitt){
 	#x=c(seq(0,180,3.75),seq(-180,-3.75,3.75))
 	x=c(seq(-180,-3.75,3.75),seq(0,180,3.75))
 	xlim=c(-180,180)
-	season_auswahl=2
+	season_auswahl=c(1,2,3,4)
 
 	for (state in state_auswahl){
 		plot(NA,xlim=xlim,ylim=c(min(mar[,,state],na.rm=TRUE),max(mar[,,state],na.rm=TRUE)),

@@ -43,35 +43,39 @@ add_region <- function(region_name,farbe){
     }
 }
 
-map_allgemein <- function(dat,filename_plot,worldmap,reihen,titel,farbe_mitte,reihen_sig=reihen*NA,region=NA,regionColor=NA,grid=FALSE,ausschnitt=c(-80,80)){
+map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA,titel,
+	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor=NA,grid=FALSE,ausschnitt=c(-80,80)){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
 	#worldmap background of lon lat plot
 	#ausschnitt c(lat_min,lat_max)
 	#reihen array(... dim=c(anzahl der plots, anzahl der stationen))
 	#titel liste von strings, plot-titles
-	#farbe_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
+	#farb_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
 
-	if (farbe_mitte=="gemeinsam 0" | farbe_mitte=="0" | length(farbe_mitte)==1){
-		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.4),rgb(0.5,1,0.5), rgb(0.98,0.98,0.98) ,rgb(1,0.5,0.5),rgb(0.6,0.2,0.6)))
-		#jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
+	if (farb_palette=="gold-blau"){
+		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.6),rgb(0.5,1,1), rgb(0.98,0.98,0.98) ,rgb(1,1,0),rgb(0.6,0.6,0)))
 	}
-	if (farbe_mitte=="gemeinsam mean" | farbe_mitte=="mean" | length(farbe_mitte)==2){
+	if (farb_palette=="lila-gruen"){
+		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.2),rgb(0.5,1,0.5), rgb(0.98,0.98,0.98) ,rgb(1,0.5,1),rgb(0.6,0.2,0.6)))
+	}
+	if (farb_palette=="regenbogen"){
 		jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
 	}
+
 	nbcol <- 101
 	color <- jet.colors(nbcol)	
 
 	pdf(file = filename_plot,width=12,height=8)
-	par(mfrow=c(1,1))
     par(mar=c(1,1,2,4))
+	par(mfrow=c(1,1))
 
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
-	if (farbe_mitte=="gemeinsam 0"){
+	if (farb_mitte=="gemeinsam 0"){
 		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)),abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
 	}
-	if (farbe_mitte=="gemeinsam mean"){	
+	if (farb_mitte=="gemeinsam mean"){	
 		mi=mean(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)
 		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))-mi,mi-abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
 	}
@@ -103,15 +107,14 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,titel,farbe_mitte,re
 		nas[which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2] & is.na(reihen[i,]))]=13
 
 
-
-
 		y=array(NA,(m+2))
 		notna=which(is.na(y1)==FALSE)
 		for (n in notna){
 			y[n+2]=y1[n]
 		}
 
-		if (farbe_mitte=="cut"){
+		# depending on color-cheme --------------------------------
+		if (farb_mitte=="cut"){
 			mi=mean(y,na.rm=TRUE)
 			sd=sd(y,na.rm=TRUE)
 			high=mi+1*sd
@@ -122,41 +125,42 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,titel,farbe_mitte,re
 			y[2]=high
 		}
 
-		if (farbe_mitte=="gemeinsam 0"){
+		if (farb_mitte=="gemeinsam 0"){
 			y[1]=-aushol
 			y[2]=aushol			
 		}
-		if (farbe_mitte=="gemeinsam mean"){
+		if (farb_mitte=="gemeinsam mean"){
 			y[1]=mi-aushol
 			y[2]=mi+aushol			
 		}
-		if (farbe_mitte=="0"){
+		if (farb_mitte=="0"){
 			aushol=max(c(abs(max(y,na.rm=TRUE)),abs(min(y,na.rm=TRUE))))
 			y[1]=-aushol
 			y[2]=aushol
 		}
-		if (farbe_mitte=="mean"){
+		if (farb_mitte=="mean"){
 			mi=mean(y,na.rm=TRUE)
-			#aushol=max(c(max(y,na.rm=TRUE)-mi,mi-min(y,na.rm=TRUE)))
 			y[1]=mi
 			y[2]=mi
 		}	
-		if (length(farbe_mitte)==2){
-			y[1]=farbe_mitte[1]
-			y[2]=farbe_mitte[2]
-			y[y>farbe_mitte[2]]=farbe_mitte[2]
-			y[y<farbe_mitte[1]]=farbe_mitte[1]
+		if ((length(farb_mitte)==2 & farb_mitte[1]!=farb_mitte[2])){
+			y[1]=farb_mitte[1]
+			y[2]=farb_mitte[2]
+			y[y>farb_mitte[2]]=farb_mitte[2]
+			y[y<farb_mitte[1]]=farb_mitte[1]
 		}	
-		if (length(farbe_mitte)==1 & farbe_mitte!="0"){
-			y[1]=farbe_mitte[1]
-			y[2]=farbe_mitte[1]
-			y[y>farbe_mitte[1]]=farbe_mitte[1]
-			y[y<(-farbe_mitte[1])]=(-farbe_mitte[1])
+		if ((length(farb_mitte)==2 & farb_mitte[1]==farb_mitte[2])){
+			y[1]=farb_mitte[1]
+			y[2]=farb_mitte[1]
+			y[y>farb_mitte[1]]=farb_mitte[1]
+			y[y<(-farb_mitte[1])]=(-farb_mitte[1])
 		}	
-		if (farbe_mitte=="nichts"){
+		if (farb_mitte=="nichts"){
 			y[1]=mean(y,na.rm=TRUE)
 			y[2]=mean(y,na.rm=TRUE)
 		}		
+		# -----------------------------------------------------------------
+
 		facetcol <- cut(y,nbcol)
 		plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])
 
