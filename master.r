@@ -117,7 +117,7 @@ master_regional_trend <- function(yearPeriod,region_name,trendID){
 master_regional_climatology <- function(yearPeriod,region_name,trendID){
     source("functions_regional.r")
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-    regional_climatology(trendID=trendID,dat=dat,yearPeriod=yearPeriod,region_name=region_name)
+    #regional_climatology(trendID=trendID,dat=dat,yearPeriod=yearPeriod,region_name=region_name)
     plot_regional_distributions(trendID,dat,yearPeriod,region_name)
 }
 
@@ -172,5 +172,5 @@ full_3states <- function(nday,nyr){
 #full_2states(91,5)
 
 master_regional_climatology(yearPeriod=c(1950,2014),region_name="7rect",trendID="91_5")
-master_regional_climatology(yearPeriod=c(1950,1980),region_name="7rect",trendID="91_5")
-master_regional_climatology(yearPeriod=c(1980,2014),region_name="7rect",trendID="91_5")
+#master_regional_climatology(yearPeriod=c(1950,1980),region_name="7rect",trendID="91_5")
+#master_regional_climatology(yearPeriod=c(1980,2014),region_name="7rect",trendID="91_5")

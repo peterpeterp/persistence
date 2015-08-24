@@ -249,6 +249,7 @@ duration_regional_distribution <- function(dur,dur_mid,regions,yearPeriod,regNum
     # dur and dur_mid is an array of dim=c(1319,# of periods)
     breaks=seq(0,maxDur,1)
     density=array(NA,dim=c(regNumb,maxDur))
+    quantiles=array(NA,dim=c(regNumb,10))
     for (reg in 1:regNumb){
         tmp=duration_region(regions,reg,dur,dur_mid)
         duration=tmp$duration
@@ -262,9 +263,12 @@ duration_regional_distribution <- function(dur,dur_mid,regions,yearPeriod,regNum
             x=x[inYearPeriod]
             histo=hist(duration,breaks,plot=FALSE)
             density[reg,]=histo$density
+            quantiles[reg,1:6]=quantile(duration,probs=c(0.05,0.25,0.5,0.75,0.95,1))
+            quantiles[reg,10]=mean(duration,na.rm=TRUE)
+            quantiles[reg,9]=sd(duration,na.rm=TRUE)
         }
     }
-    return(list(density=density))
+    return(list(density=density,quantiles=quantiles))
 }
 
 regional_climatology <- function(trendID,dat,yearPeriod,region_name){
@@ -289,6 +293,7 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name){
     season_names=c("spring","summer","autumn","winter","year")
 
     distributions=array(NA,dim=c(length(season_names),2,regNumb,maxDur))
+    quantiles=array(NA,dim=c(length(season_names),2,regNumb,10))
 
     for (season in 1:length(season_names)){   
         print(season_names[season]) 
@@ -299,6 +304,7 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name){
         for (state in 1:2){
             tmp=duration_regional_distribution(dur[1:ntot,state,],dur_mid[1:ntot,state,],IDregions,yearPeriod=yearPeriod,regNumb=regNumb,maxDur=maxDur)
             distributions[season,state,,]=tmp$density
+            quantiles[season,state,,]=tmp$quantiles
         }
     }
 
@@ -308,17 +314,20 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name){
 
     mids=seq(0,(maxDur-1),1)+0.5
     ncMids <- dim.def.ncdf("mids",units="days",vals=mids,unlim=FALSE)
+    ncOther <- dim.def.ncdf("other",units="0.05,0.25,0.5,0.75,0.95,1,NA,NA,SD,Mean",vals=1:10,unlim=FALSE)
     
     poli_points <- dim.def.ncdf("poli_points",units="id",vals=1:12,unlim=FALSE)
 
     region_coordinates <- var.def.ncdf(name="region_coordinates",units="deg",longname="1:6 lon - 7:12 lat",dim=list(ncRegion,poli_points),missval=-9999.0)
 
-    ncDistributions <- var.def.ncdf(name="distributions",units="density 0-1",longname="histogramm density of durations recorded in region",dim=list(ncSeason,ncStates,ncRegion,ncMids), missval=-9999.0)
+    ncDensity <- var.def.ncdf(name="density",units="density 0-1",longname="histogramm density of durations recorded in region",dim=list(ncSeason,ncStates,ncRegion,ncMids), missval=-9999.0)
+    ncQuantile <- var.def.ncdf(name="quantile",units="density 0-1",longname="0.05,0.25,0.5,0.75,0.95,1,NA,NA,SD,Mean",dim=list(ncSeason,ncStates,ncRegion,ncOther), missval=-9999.0)
     
-    vars=list(ncDistributions,region_coordinates)
+    vars=list(ncDensity,ncQuantile,region_coordinates)
    
     nc = create.ncdf(paste("../data/",trendID,"/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_distributions.nc",sep=""),vars)
-    put.var.ncdf(nc,ncDistributions,distributions)      
+    put.var.ncdf(nc,ncDensity,distributions)      
+    put.var.ncdf(nc,ncQuantile,quantiles)      
 
     pol_poi=array(NA,c(dim(poli)[1],12))
     for (i in 1:dim(poli)[1]){
@@ -341,10 +350,11 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name){
 plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
 
     nc=open.ncdf(paste("../data/",trendID,"/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_distributions.nc",sep=""))
-    distributions=get.var.ncdf(nc,"distributions")
+    distributions=get.var.ncdf(nc,"density")
     regions=get.var.ncdf(nc,"region")
     mids=get.var.ncdf(nc,"mids")
 
+    color=c(rgb(1,0,0,0.6),rgb(0,0,1,0.4))
 
 
 
@@ -358,24 +368,31 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
     logDistr[logDistr=="-Inf"]=NA
 
     for (reg in regions){
-        for (state in 1:length(state_names)){
-            for (sea in 1:length(season_names)){
-                #plot(NA,xlim=c(0,50),ylim=c(0,0.3),ylab="",xlab="")
-                for (br in 1:100){
-                    y=distributions[sea,state,reg,br]
-
-                    #polygon(x=c(br+0.5,br-0.5,br-0.5,br+0.5),y=c(-50,-50,y,y),col="blue",border="blue")
-
-                }
-                par(mar=c(4,2,1,1))
-                plot(distributions[sea,state,reg,], type='h',lwd=1.5, lend=5, xlim=c(0,50),ylim=c(0,0.3),ylab="",xlab="",frame.plot=FALSE,main=paste(season_names[sea],state_names[state],reg))
-                par(new=TRUE,plt=c(0.57,0.82,0.44,0.95))
-                plot(distributions[sea,state,reg,],log="y", type='h', xlim=c(0,60),ylab="",xlab="",frame.plot=FALSE,col="red",axes=FALSE)
-                #mtext("Cell Density",side=4,col="red",line=4) 
-                axis(1, col="red",col.axis="red",las=1)
-                axis(2, col="red",col.axis="red")
-
+        for (sea in 1:length(season_names)){
+            par(mar=c(4,2,1,1))
+            plot(NA,xlim=c(0,40),ylim=c(0,0.3),ylab="",xlab="",,main=paste(season_names[sea],reg),frame.plot=FALSE)
+            for (br in 1:100){
+                y=distributions[sea,1,reg,br]
+                polygon(x=c(br+0.5,br-0.5,br-0.5,br+0.5),y=c(0,0,y,y),border=color[1],col=color[1])
             }
+            par(new=TRUE)
+            for (br in 1:100){
+                y=distributions[sea,2,reg,br]
+                polygon(x=c(br+0.5,br-0.5,br-0.5,br+0.5),y=c(0,0,y,y),border=color[2],col=color[2])
+            }                
+
+            par(new=TRUE,plt=c(0.57,0.82,0.77,0.93))
+            plot(distributions[sea,1,reg,],log="y", type='h', xlim=c(0,60),ylab="",xlab="",frame.plot=FALSE,col="red",axes=FALSE)
+
+
+            #mtext("Cell Density",side=4,col="red",line=4) 
+            #axis(1, col="red",col.axis="red",las=1,cex.axis=0.7,cex.lab=0.7)
+            axis(2, col="red",col.axis="red",cex.axis=0.7,cex.lab=0.7)
+            par(new=TRUE,plt=c(0.57,0.82,0.59,0.74))
+            plot(distributions[sea,2,reg,],log="y", type='h', xlim=c(0,60),ylab="",xlab="",frame.plot=FALSE,col="blue",axes=FALSE)
+            axis(1, col="black",col.axis="black",las=1,cex.axis=0.7,cex.lab=0.7)
+            axis(2, col="blue",col.axis="blue",cex.axis=0.7,cex.lab=0.7)
+    
         }
     }
     graphics.off()
