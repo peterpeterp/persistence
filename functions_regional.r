@@ -353,6 +353,7 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
     distributions=get.var.ncdf(nc,"density")
     regions=get.var.ncdf(nc,"region")
     mids=get.var.ncdf(nc,"mids")
+    quantiles=get.var.ncdf(nc,"quantile")
 
     color=c(rgb(1,0,0,0.6),rgb(0,0,1,0.4))
 
@@ -381,17 +382,24 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
                 polygon(x=c(br+0.5,br-0.5,br-0.5,br+0.5),y=c(0,0,y,y),border=color[2],col=color[2])
             }                
 
-            par(new=TRUE,plt=c(0.57,0.82,0.77,0.93))
-            plot(distributions[sea,1,reg,],log="y", type='h', xlim=c(0,60),ylab="",xlab="",frame.plot=FALSE,col="red",axes=FALSE)
+            par(new=TRUE,plt=c(0.57,0.82,0.57,0.93))
+            plot(NA, xlim=c(0,100),ylim=c(0,30),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 
+            for (state in 1:2){
+                quAn=quantiles[sea,state,reg,]
+                mitte=20+(state-1)*40
+                links=mitte-15
+                rechts=mitte+15
+                polygon(x=c(rechts,links,links,rechts),y=c(quAn[2],quAn[2],quAn[4],quAn[4]),col=color[state])
+                lines(c(mitte,mitte),c(quAn[1],quAn[5]))
+                lines(c(links,rechts),c(quAn[1],quAn[1]))
+                lines(c(links,rechts),c(quAn[5],quAn[5]))
+                points(mitte,quAn[3])
+                points(mitte,quAn[10],pch=4)
+            }
 
-            #mtext("Cell Density",side=4,col="red",line=4) 
-            #axis(1, col="red",col.axis="red",las=1,cex.axis=0.7,cex.lab=0.7)
-            axis(2, col="red",col.axis="red",cex.axis=0.7,cex.lab=0.7)
-            par(new=TRUE,plt=c(0.57,0.82,0.59,0.74))
-            plot(distributions[sea,2,reg,],log="y", type='h', xlim=c(0,60),ylab="",xlab="",frame.plot=FALSE,col="blue",axes=FALSE)
-            axis(1, col="black",col.axis="black",las=1,cex.axis=0.7,cex.lab=0.7)
-            axis(2, col="blue",col.axis="blue",cex.axis=0.7,cex.lab=0.7)
+            axis(2, col="black",col.axis="black",cex.axis=0.7,cex.lab=0.7)
+
     
         }
     }
