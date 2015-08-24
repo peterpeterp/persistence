@@ -147,3 +147,123 @@ if (1==1){
 	}
 	graphics.off()
 }
+
+# ---------------------- rq() function ------------------------------------------------------
+function (formula, tau = 0.5, data, subset, weights, na.action, 
+    method = "br", model = TRUE, contrasts = NULL, ...) 
+{                                                                                                                                                                                   
+    call <- match.call()                                                                                                                                                            
+    mf <- match.call(expand.dots = FALSE)                                                                                                                                           
+    m <- match(c("formula", "data", "subset", "weights", "na.action"),                                                                                                              
+        names(mf), 0)                                                                                                                                                               
+    mf <- mf[c(1, m)]                                                                                                                                                               
+    mf$drop.unused.levels <- TRUE                                                                                                                                                   
+    mf[[1]] <- as.name("model.frame")                                                                                                                                               
+    mf <- eval.parent(mf)                                                                                                                                                           
+    if (method == "model.frame")                                                                                                                                                    
+        return(mf)                                                                                                                                                                  
+    mt <- attr(mf, "terms")                                                                                                                                                         
+    weights <- as.vector(model.weights(mf))                                                                                                                                         
+    Y <- model.response(mf)                                                                                                                                                         
+    X <- model.matrix(mt, mf, contrasts)                                                                                                                                            
+    eps <- .Machine$double.eps^(2/3)                                                                                                                                                
+    Rho <- function(u, tau) u * (tau - (u < 0))                                                                                                                                     
+    if (length(tau) > 1) {                                                                                                                                                          
+        if (any(tau < 0) || any(tau > 1))                                                                                                                                           
+            stop("invalid tau:  taus should be >= 0 and <= 1")                                                                                                                      
+        if (any(tau == 0))                                                                                                                                                          
+            tau[tau == 0] <- eps
+        if (any(tau == 1)) 
+            tau[tau == 1] <- 1 - eps
+        coef <- matrix(0, ncol(X), length(tau))
+        rho <- rep(0, length(tau))
+        fitted <- resid <- matrix(0, nrow(X), length(tau))
+        for (i in 1:length(tau)) {
+            z <- {
+                if (length(weights)) 
+                  rq.wfit(X, Y, tau = tau[i], weights, method, 
+                    ...)
+                else rq.fit(X, Y, tau = tau[i], method, ...)
+            }
+            coef[, i] <- z$coefficients
+            resid[, i] <- z$residuals
+            rho[i] <- sum(Rho(z$residuals, tau[i]))
+            fitted[, i] <- Y - z$residuals
+        }
+        taulabs <- paste("tau=", format(round(tau, 3)))
+        dimnames(coef) <- list(dimnames(X)[[2]], taulabs)
+        dimnames(resid) <- list(dimnames(X)[[1]], taulabs)
+        fit <- z
+        fit$coefficients <- coef
+        fit$residuals <- resid
+        fit$fitted.values <- fitted
+        if (method == "lasso") 
+            class(fit) <- c("lassorqs", "rqs")
+        else if (method == "scad") 
+            class(fit) <- c("scadrqs", "rqs")
+        else class(fit) <- "rqs"
+    }
+    else {
+        process <- (tau < 0 || tau > 1)
+        if (tau == 0) 
+            tau <- eps
+        if (tau == 1) 
+            tau <- 1 - eps
+        fit <- {
+            if (length(weights)) 
+                rq.wfit(X, Y, tau = tau, weights, method, ...)
+            else rq.fit(X, Y, tau = tau, method, ...)
+        }
+        if (process) 
+            rho <- list(x = fit$sol[1, ], y = fit$sol[3, ])
+        else {
+            dimnames(fit$residuals) <- list(dimnames(X)[[1]], 
+                NULL)
+            rho <- sum(Rho(fit$residuals, tau))
+        }
+        if (method == "lasso") 
+            class(fit) <- c("lassorq", "rq")
+        else if (method == "scad") 
+            class(fit) <- c("scadrq", "rq")
+        else class(fit) <- ifelse(process, "rq.process", "rq")
+    }
+    fit$na.action <- attr(mf, "na.action")
+    fit$formula <- formula
+    fit$terms <- mt
+    fit$xlevels <- .getXlevels(mt, mf)
+    fit$call <- call
+    fit$tau <- tau
+    fit$weights <- weights
+    fit$residuals <- drop(fit$residuals)
+    fit$rho <- rho
+    fit$method <- method
+    fit$fitted.values <- drop(fit$fitted.values)
+    attr(fit, "na.message") <- attr(m, "na.message")
+    if (model) 
+        fit$model <- mf
+    fit
+}
+
+# ------------------------------ rq.fit() ------------------------------------
+Error in as.matrix(x) : 
+  Fehler bei der Auswertung des Argumentes 'x' bei der Methodenauswahl
+für Funktion 'as.matrix': Fehler: Argument "x" fehlt (ohne Standardwert)
+> rq.fit
+function (x, y, tau = 0.5, method = "br", ...) 
+{
+    fit <- switch(method, fn = rq.fit.fnb(x, y, tau = tau, ...), 
+        fnb = rq.fit.fnb(x, y, tau = tau, ...), fnc = rq.fit.fnc(x, 
+            y, tau = tau, ...), pfn = rq.fit.pfn(x, y, tau = tau, 
+            ...), br = rq.fit.br(x, y, tau = tau, ...), lasso = rq.fit.lasso(x, 
+            y, tau = tau, ...),   = rq.fit.scad(x, y, tau = tau, 
+            ...), {
+            what <- paste("rq.fit.", method, sep = "")
+            if (exists(what, mode = "function")) (get(what, mode = "function"))(x, 
+                y, ...) else stop(paste("unimplemented method:", 
+                method))
+        })
+    fit$fitted.values <- y - fit$residuals
+    fit$contrasts <- attr(x, "contrasts")
+    fit
+}
+

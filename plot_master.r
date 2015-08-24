@@ -20,7 +20,7 @@ plot_numbWarm <- function(grid=FALSE){
 
 	numbWarm=trend_control_warm_days(dat,per,c(1),c(365),filename=sprintf("../data/warmTage_tremds_year.nc"))
 	reihen=array(numbWarm,dim=c(1,ntot))
-	map_allgemein(dat=dat,reihen=reihen,titel=c("yearly increase in 'warm days' from 1950 to 2011"),farbe_mitte="0",
+	map_allgemein(dat=dat,reihen=reihen,titel=c("yearly increase in 'warm days' from 1950 to 2011"),farb_mitte="0",
 		filename_plot=sprintf("../plots/maps/%s_%s_warm_days.pdf",nday,nyr),worldmap=worldmap,ausschnitt=c(35,66))
 	map_regional(dat=dat,toPlot=reihen,titles=c("yearly increase in 'warm days' from 1950 to 2011"),worldmap=worldmap,
 		filename_plot=sprintf("../plots/regions/%s_%s_warm_days_regio.pdf",nday,nyr),grid=grid)
@@ -42,13 +42,13 @@ plot_nas <- function(grid=FALSE){
 	reihen=array(NA,dim=c(2,ntot))
 	reihen[1,]=missings[1:ntot,2]
 	reihen[2,]=missings2[1:ntot,2]
-	map_allgemein(dat=dat,reihen=reihen,titel=c("missing values to 2014","missing values to 2011"),farbe_mitte="mean",
+	map_allgemein(dat=dat,reihen=reihen,titel=c("missing values to 2014","missing values to 2011"),farb_mitte="mean",
 		filename_plot=sprintf("../plots/%s_%s_missings.pdf",nday,nyr),worldmap=worldmap,ausschnitt=c(-80,80),grid=grid)
 
 }
 
 
-plot_markov <- function(trendID,states,vars,vars_sig,farbe_mitte,name_zusatz=vars,titel_zusatz,period,ausschnitt=c(-80,80),region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE){
+plot_markov <- function(trendID,states,vars,vars_sig,farb_mitte,farb_palette="lila-gruen",name_zusatz=vars,titel_zusatz,period,ausschnitt=c(-80,80),region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE){
 	# markov xx states
 	if (states==2){
 		state_names=c("cold","warm")
@@ -72,7 +72,7 @@ plot_markov <- function(trendID,states,vars,vars_sig,farbe_mitte,name_zusatz=var
 				titel[((from-1)*states+to)]=paste(titel_zusatz,"for transition from",state_names[from],"to",state_names[to],"in",season,"in",period)
 			}
 		}
-		map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,
+		map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,
 			filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/markov/",period,"/",trendID,"_mar",states,"s_",name_zusatz,"_",season,"_",period,".pdf",sep=""),
 			worldmap=worldmap,ausschnitt=ausschnitt,region=region,regionColor="black",grid=grid)		
 	}
@@ -81,11 +81,8 @@ plot_markov <- function(trendID,states,vars,vars_sig,farbe_mitte,name_zusatz=var
 
 plot_duration_vergleich <- function(trendID,states,period,ausschnitt=c(-80,80),auswahl=c(8,1,2,3,4,5,6),
 	titel_zusatz=c("mean","0.25 quantile","0.5 quantile","0.75 quantile","0.9 quantile","0.95 quantile","0.98 quantile"),
-	name_zusatz="quaReg",seasons=c("spring","summer","autumn","winter","year"),farbe_mitte="0",grid=FALSE){
+	name_zusatz="quaReg",seasons=c("spring","summer","autumn","winter","year"),farb_mitte="0",,farb_palette="lila-gruen",grid=FALSE){
 
-
-	# duration vergleich
-    
 	if (states==2){
 		state_names=c("cold","warm")
 	}
@@ -109,11 +106,11 @@ plot_duration_vergleich <- function(trendID,states,period,ausschnitt=c(-80,80),a
 		}
 		map_allgemein(dat=dat,
 			filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/duration/",period,"/",trendID,"_duration_",season,"_",name_zusatz,"_",period,".pdf",sep=""),
-			worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,grid=grid,ausschnitt=ausschnitt)
+			worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt)
 	}
 }
 
-plot_duration_climatology <- function(trendID,states,period,ausschnitt=c(-80,80),seasons=c("spring","summer","autumn","winter","year"),farbe_mitte="mean",grid=FALSE){
+plot_duration_climatology <- function(trendID,states,period,ausschnitt=c(-80,80),seasons=c("spring","summer","autumn","winter","year"),farb_mitte="mean",farb_palette="regenbogen",grid=FALSE){
 	# duration climatology
     
 	if (states==2){
@@ -139,7 +136,7 @@ plot_duration_climatology <- function(trendID,states,period,ausschnitt=c(-80,80)
 		}			
 		map_allgemein(dat=dat,
 			filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/duration/",period,"/",trendID,"_duration_",season,"_climatology.pdf",sep=""),
-		worldmap=worldmap,ausschnitt=ausschnitt,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,grid=grid)
+		worldmap=worldmap,ausschnitt=ausschnitt,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,grid=grid)
 	}
 }
 
@@ -169,7 +166,7 @@ plot_duration_distribution <- function(trendID,states,period,ausschnitt=c(-80,80
 		}			
 		map_allgemein(dat=dat,
 			filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/duration/",period,"/",trendID,"_duration_",season,"_distr.pdf",sep=""),
-		worldmap=worldmap,ausschnitt,reihen=reihen,titel=titel,farbe_mitte="mean",grid=grid)
+		worldmap=worldmap,ausschnitt,reihen=reihen,titel=titel,farb_mitte="mean",farb_palette="regenbogen",grid=grid)
 	}
 }
 
@@ -201,7 +198,7 @@ plot_regional_average <- function(auswahl,titel_zusatz,period,name_zusatz,region
 	}	
 }
 
-plot_eke <- function(vars,vars_sig,farbe_mitte,name_zusatz,period,ausschnitt=c(-80,80),region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE){
+plot_eke <- function(vars,vars_sig,farb_mitte,name_zusatz,period,ausschnitt=c(-80,80),region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE){
 	# eke analysis
 
     for (season in seasons){
@@ -218,14 +215,14 @@ plot_eke <- function(vars,vars_sig,farbe_mitte,name_zusatz,period,ausschnitt=c(-
 			if (!is.na(vars_sig)){reihen_sig[lvl,]=y_sig[1:ntot,lvl]}
 			titel[lvl]=paste("Eddy kinetic Energy",name_zusatz,"in",season,"in",period,"at",pressure[lvl],"mbar")
 		}
-		map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,
+		map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette="regenbogen",
 			filename_plot=paste("../plots/eke/eke_",vars,"_",season,"_",period,".pdf",sep=""),
 			worldmap=worldmap,ausschnitt,region=region,regionColor="black",grid=grid)		
 	}
 }
 
 plot_2_vergleich <- function(trendID,states,period,var1,var2,var1_sig=NA,var2_sig=NA,quA=5,
-	farbe_mitte,name_zusatz,region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE){
+	farb_mitte,farb_palette,name_zusatz,region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE){
 
 	titel_zusatz="blabla"
 	if (states==2){
@@ -267,7 +264,7 @@ plot_2_vergleich <- function(trendID,states,period,var1,var2,var1_sig=NA,var2_si
 	asdas
 	map_allgemein(dat=dat,
 		filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/",trendID,"_vergleich_",season,"_",name_zusatz,"_",period,".pdf",sep=""),
-		worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farbe_mitte=farbe_mitte,grid=grid,ausschnitt=c(30,90))
+		worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,grid=grid,ausschnitt=c(30,90))
 
 }
 
@@ -287,22 +284,22 @@ dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 #location_view()
 
 full_plot <- function(trendID,states,ausschnitt=c(-80,80)){
-	plot_markov(trendID,states=states,vars="mean",vars_sig=NA,farbe_mitte="mean",titel_zusatz="climatology",period="1950-2014",ausschnitt=ausschnitt)
+	plot_markov(trendID,states=states,vars="mean",vars_sig=NA,farb_mitte="mean",farb_palette="regenbogen",titel_zusatz="climatology",period="1950-2014",ausschnitt=ausschnitt)
 	plot_duration_climatology(trendID,states=states,period="1950-2014",ausschnitt=ausschnitt)
 	for (yearperiod in c("1950-1980","1950-2014","1980-2014")){
 		print(yearperiod)
-		plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farbe_mitte="0",titel_zusatz="MannKendall test",period=yearperiod,ausschnitt=ausschnitt)
-		plot_markov(trendID,states=states,vars="LR",vars_sig="LR_sig",farbe_mitte="0",titel_zusatz="Linear Regression",period=yearperiod,ausschnitt=ausschnitt)
+		plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farb_mitte="0",farb_palette="lila-gruen",titel_zusatz="MannKendall test",period=yearperiod,ausschnitt=ausschnitt)
+		plot_markov(trendID,states=states,vars="LR",vars_sig="LR_sig",farb_mitte="0",farb_palette="lila-gruen",titel_zusatz="Linear Regression",period=yearperiod,ausschnitt=ausschnitt)
 		plot_duration_vergleich(trendID,states=states,period=yearperiod,ausschnitt=ausschnitt)
 	}
 }
 
-#plot_correl_markov("91_5",states=2,vars="correlation",vars_sig=NA,farbe_mitte="0")
-#plot_correl_markov("91_3",states=2,vars="correlation",vars_sig=NA,farbe_mitte="0")
+#plot_correl_markov("91_5",states=2,vars="correlation",vars_sig=NA,farb_mitte="0")
+#plot_correl_markov("91_3",states=2,vars="correlation",vars_sig=NA,farb_mitte="0")
 
-#plot_correl_duration("91_5",states=2,vars="correlation",vars_sig=NA,farbe_mitte="0")
-#plot_eke(vars="MK",vars_sig="MK_sig",farbe_mitte="0",name_zusatz="MannKendall test",period="1979-2014",ausschnitt=c(-80,80))
-#plot_eke(vars="mean",vars_sig=NA,farbe_mitte="mean",name_zusatz="climatology",period="1979-2014",ausschnitt=c(-80,80))
+#plot_correl_duration("91_5",states=2,vars="correlation",vars_sig=NA,farb_mitte="0")
+#plot_eke(vars="MK",vars_sig="MK_sig",farb_mitte="0",name_zusatz="MannKendall test",period="1979-2014",ausschnitt=c(-80,80))
+#plot_eke(vars="mean",vars_sig=NA,farb_mitte="mean",name_zusatz="climatology",period="1979-2014",ausschnitt=c(-80,80))
 
 #plot_duration_distribution("91_5",2,"1950-2014")
 
@@ -311,12 +308,12 @@ trendID="91_5"
 states=2
 yearperiod="1980-2014"
 
-#plot_2_vergleich(trendID=trendID,states=states,period=yearperiod,farbe_mitte="0",name_zusatz="test",var1="MK",var2="dur_ana_full")
+#plot_2_vergleich(trendID=trendID,states=states,period=yearperiod,farb_mitte="0",name_zusatz="test",var1="MK",var2="dur_ana_full")
 
 
-#plot_duration_climatology(trendID,states=states,period="1950-2014",farbe_mitte=c(-10,30),seasons=c("summer"))
-plot_duration_vergleich("91_5",states=2,period="1980-2014",farbe_mitte=c(0.6,0.6),seasons=c("summer"),name_zusatz="quaReg_colore")
-#plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farbe_mitte="0",titel_zusatz="MannKendall test",name_zusatz="MK_grid",period=yearperiod,grid=TRUE)
+#plot_duration_climatology(trendID,states=states,period="1950-2014",farb_mitte=c(-10,30),seasons=c("summer"))
+plot_duration_vergleich("91_5",states=2,period="1980-2014",farb_mitte=c(0.6,0.6),seasons=c("summer"),name_zusatz="quaReg_colore")
+#plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farb_mitte="0",titel_zusatz="MannKendall test",name_zusatz="MK_grid",period=yearperiod,grid=TRUE)
 
 
 sdfsd

@@ -3,6 +3,8 @@ source("write.r")
 source("load.r")
 
 per_duration <- function(ind,time,state){
+    # ind is time serie of states for one grid point
+    # finds periods of duration for given state
     act_state=ind[1]
     period=ind*NA
     period_mid=ind*NA    

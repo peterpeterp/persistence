@@ -1,5 +1,6 @@
 
 wave_region <- function(wavenumber,trough,lats){
+    # creates a table with coordinates of rectangles representing wave ridges and troughs
     wellen=array(NA,dim=c(40,13))
     brei=360/wavenumber/4
     lon=trough
@@ -36,6 +37,8 @@ wave_region <- function(wavenumber,trough,lats){
 }
 
 points_to_regions <- function(dat,region_names=c("srex","7rect","6wave","7wave","8wave")){
+    # loads region coordinates and writes a file in which grid points are associated to regions
+    # outpufile has following columns: ID, regions from region_names
     library(SDMTools)
     ntot=length(dat$ID)
     points=cbind(x=dat$lon,y=dat$lat)
@@ -67,13 +70,16 @@ points_to_regions <- function(dat,region_names=c("srex","7rect","6wave","7wave",
 }
 
 markov_regional_trend <- function(dat,value,regions,yearPeriod,regNumb){
-    # value is an array of dim=c(1319,??)
+    # value is an array of dim=c(1319,years)
+    # averages values in one region
+    # performs linear regression and Mann-Kendall test for averaged values
+
     yearPeriod=yearPeriod-1949
-    size=dim(value)[2]
-    valOut=array(NA,dim=c(regNumb,size))
+    years=dim(value)[2]
+    valOut=array(NA,dim=c(regNumb,years))
     for (reg in 1:regNumb){
         inside=which(regions==reg)
-        for (j in 1:size){
+        for (j in 1:years){
             valOut[reg,j]=mean(value[inside,j],na.rm=TRUE)
         }
     }
@@ -96,7 +102,8 @@ markov_regional_trend <- function(dat,value,regions,yearPeriod,regNumb){
 }
 
 duration_regional_quantile <- function(dat,dur,dur_mid,regions,yearPeriod,regNumb){
-    # value is an array of dim=c(1319,??)
+    # dur and dur_mid is an array of dim=c(1319,# of periods)
+
     taus=c(0.75,0.9,0.95,0.98)
     out=array(NA,c(length(taus),regNumb))
     out_sig=array(NA,c(length(taus),regNumb))
@@ -105,6 +112,7 @@ duration_regional_quantile <- function(dat,dur,dur_mid,regions,yearPeriod,regNum
         duration=array(NA,dim=c(100000))
         duration_mid=array(NA,dim=c(100000))
         count=1
+        # combines the recorded periods from all the grid points of one region in one array
         for (i in inside){
             values=length(which(!is.na(dur[i,])))
             duration[count:(count+values)]=dur[i,1:values]
@@ -115,6 +123,7 @@ duration_regional_quantile <- function(dat,dur,dur_mid,regions,yearPeriod,regNum
         duration_mid=duration_mid[!is.na(duration_mid)]
         ord=order(duration_mid)
         if (length(duration)>1000){
+            # performs a quantile regression for each region
             for (i in 1:length(taus)){
                 print(paste(reg,taus[i]))
                 y=as.vector(duration[ord])
@@ -135,6 +144,11 @@ duration_regional_quantile <- function(dat,dur,dur_mid,regions,yearPeriod,regNum
 }
 
 regional_analysis <- function(dat,yearPeriod,filepath,region_name){
+    # performs the entire regional analysis of markov and duration
+    # result will be written in ncdf file
+
+    # pnly for one trend and 2 states until now
+
     nday=91
     nyr=5
     ntot=length(dat$ID)
@@ -177,7 +191,9 @@ regional_analysis <- function(dat,yearPeriod,filepath,region_name){
 }
 
 regions_color <- function(reihen,reihen_sig,worldmap,titles,poli,filename_plot){
-    jet.colors <- colorRampPalette( c( "violet","blue","white","yellow","red") )
+    # plots worldmap and colored regions on it
+    jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.2),rgb(0.5,1,0.5), rgb(0.98,0.98,0.98) ,rgb(1,0.5,1),rgb(0.6,0.2,0.6)))
+    
     nbcol <- 101
     color <- jet.colors(nbcol)
 
