@@ -360,18 +360,24 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
 
 
     season_names=c("spring","summer","autumn","winter","year")
+    season_auswahl=c(1,2,3,4,5)
+
     state_names=c("warm","cold")
 
     pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.pdf",sep=""))
-    par(mfrow=c(length(state_names),length(season_names)))
+    par(fin=c(200,300))
+    par(mfcol=c(length(regions)*2,length(season_auswahl)))
+    par(mar=c(2,2,2,2))
 
-    logDistr=try(log(distributions))
-    logDistr[logDistr=="-Inf"]=NA
 
-    for (reg in regions){
-        for (sea in 1:length(season_names)){
-            par(mar=c(4,2,1,1))
-            plot(NA,xlim=c(0,40),ylim=c(0,0.3),ylab="",xlab="",,main=paste(season_names[sea],reg),frame.plot=FALSE)
+
+   
+    for (sea in season_auswahl){
+        for (reg in regions){
+            par(pin=c(1,0.5))
+            plot(NA,xlim=c(0,30),ylim=c(-0.05,0.3),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+            if (reg==length(regions)){axis(1, col="black",col.axis="black",las=1,cex.axis=1,cex.lab=1)}
+            if (sea==1){axis(2,ylim=c(0,0.3), col="black",col.axis="black",cex.axis=0.5,cex.lab=0.5)}
             for (br in 1:100){
                 y=distributions[sea,1,reg,br]
                 polygon(x=c(br+0.5,br-0.5,br-0.5,br+0.5),y=c(0,0,y,y),border=color[1],col=color[1])
@@ -381,24 +387,27 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
                 y=distributions[sea,2,reg,br]
                 polygon(x=c(br+0.5,br-0.5,br-0.5,br+0.5),y=c(0,0,y,y),border=color[2],col=color[2])
             }                
-
-            par(new=TRUE,plt=c(0.57,0.82,0.57,0.93))
-            plot(NA, xlim=c(0,100),ylim=c(0,30),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+            box("inner", lty="dotted", col="green")
+            box("outer", lty="solid", col="green") 
+            box("figure", lty="dotted", col="blue")
+            #par(new=TRUE,plt=c(0.57,0.82,0.57,0.93))
+            par(pin=c(1,0.2))
+            plot(NA, xlim=c(0,30),ylim=c(-0.05,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 
             for (state in 1:2){
                 quAn=quantiles[sea,state,reg,]
-                mitte=20+(state-1)*40
-                links=mitte-15
-                rechts=mitte+15
-                polygon(x=c(rechts,links,links,rechts),y=c(quAn[2],quAn[2],quAn[4],quAn[4]),col=color[state])
-                lines(c(mitte,mitte),c(quAn[1],quAn[5]))
-                lines(c(links,rechts),c(quAn[1],quAn[1]))
-                lines(c(links,rechts),c(quAn[5],quAn[5]))
-                points(mitte,quAn[3])
-                points(mitte,quAn[10],pch=4)
+                mitte=-0.04+(state-1)*0.02
+                links=mitte-0.009
+                rechts=mitte+0.009
+                polygon(x=c(quAn[2],quAn[2],quAn[4],quAn[4]),y=c(rechts,links,links,rechts),col=color[state])
+                lines(c(quAn[1],quAn[5]),c(mitte,mitte))
+                lines(c(quAn[1],quAn[1]),c(links,rechts))
+                lines(c(quAn[5],quAn[5]),c(links,rechts))
+                lines(c(quAn[3],quAn[3]),c(links,rechts))
+                points(quAn[10],mitte,pch=4)
             }
-
-            axis(2, col="black",col.axis="black",cex.axis=0.7,cex.lab=0.7)
+            mtext(paste("Test ",format(Sys.time(), "%Y-%m-%d %H:%M")),cex=0.75, line=0, side=SOUTH<-1, adj=0, outer=TRUE)
+            box("figure", lty="dotted", col="green")
 
     
         }
