@@ -101,26 +101,34 @@ markov_regional_trend <- function(dat,value,regions,yearPeriod,regNumb){
     return(list(out=out,out_sig=out_sig))
 }
 
-duration_regional_quantile <- function(dat,dur,dur_mid,regions,yearPeriod,regNumb){
+duration_region <- function(regions,reg,dur,dur_mid){
+    # combines all recorded durations of one region to one duration array, same for dur_mid
+    inside=which(regions==reg)
+    duration=array(NA,dim=c(100000))
+    duration_mid=array(NA,dim=c(100000))
+    count=1
+    # combines the recorded periods from all the grid points of one region in one array
+    for (i in inside){
+        values=length(which(!is.na(dur[i,])))
+        duration[count:(count+values)]=dur[i,1:values]
+        duration_mid[count:(count+values)]=dur_mid[i,1:values]
+        count=count+values
+    }
+    duration=duration[!is.na(duration)]
+    duration_mid=duration_mid[!is.na(duration_mid)]
+    return(list(duration=duration,duration_mid=duration_mid))
+}
+
+duration_regional_quantile <- function(dur,dur_mid,regions,yearPeriod,regNumb){
     # dur and dur_mid is an array of dim=c(1319,# of periods)
 
     taus=c(0.75,0.9,0.95,0.98)
     out=array(NA,c(length(taus),regNumb))
     out_sig=array(NA,c(length(taus),regNumb))
     for (reg in 1:regNumb){
-        inside=which(regions==reg)
-        duration=array(NA,dim=c(100000))
-        duration_mid=array(NA,dim=c(100000))
-        count=1
-        # combines the recorded periods from all the grid points of one region in one array
-        for (i in inside){
-            values=length(which(!is.na(dur[i,])))
-            duration[count:(count+values)]=dur[i,1:values]
-            duration_mid[count:(count+values)]=dur_mid[i,1:values]
-            count=count+values
-        }
-        duration=duration[!is.na(duration)]
-        duration_mid=duration_mid[!is.na(duration_mid)]
+        tmp=duration_region(regions,reg,dur,dur_mid)
+        duration=tmp$duration
+        duration_mid=tmp$duration_mid
         ord=order(duration_mid)
         if (length(duration)>1000){
             # performs a quantile regression for each region
@@ -143,7 +151,7 @@ duration_regional_quantile <- function(dat,dur,dur_mid,regions,yearPeriod,regNum
     return(list(out=out,out_sig=out_sig))
 }
 
-regional_analysis <- function(dat,yearPeriod,filepath,region_name){
+regional_trends <- function(dat,yearPeriod,filepath,region_name){
     # performs the entire regional analysis of markov and duration
     # result will be written in ncdf file
 
@@ -237,5 +245,140 @@ regions_color <- function(reihen,reihen_sig,worldmap,titles,poli,filename_plot){
     return()
 }
 
+duration_regional_distribution <- function(dur,dur_mid,regions,yearPeriod,regNumb,maxDur){
+    # dur and dur_mid is an array of dim=c(1319,# of periods)
+    breaks=seq(0,maxDur,1)
+    density=array(NA,dim=c(regNumb,maxDur))
+    for (reg in 1:regNumb){
+        tmp=duration_region(regions,reg,dur,dur_mid)
+        duration=tmp$duration
+        duration_mid=tmp$duration_mid
+        ord=order(duration_mid)
+        if (length(duration)>1000){
+            y=as.vector(duration[ord])
+            x=as.vector(duration_mid[ord])
+            inYearPeriod=which(x>yearPeriod[1] & x<yearPeriod[2])
+            y=y[inYearPeriod]
+            x=x[inYearPeriod]
+            histo=hist(duration,breaks,plot=FALSE)
+            density[reg,]=histo$density
+        }
+    }
+    return(list(density=density))
+}
 
+regional_climatology <- function(trendID,dat,yearPeriod,region_name){
+    # performs the entire regional analysis of markov and duration
+    # result will be written in ncdf file
+
+    # pnly for one trend and 2 states until now
+    maxDur=200
+    print(seq(0,(maxDur-1),1)+0.5)
+    ntot=length(dat$ID)
+    library(quantreg)
+
+    IDregions=read.table("../data/ID-regions.txt")
+
+    poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
+
+    regNumb=dim(poli)[1]
+    IDregions=points_to_regions(dat,c(region_name))
+
+    print(IDregions)
+
+    season_names=c("spring","summer","autumn","winter","year")
+
+    distributions=array(NA,dim=c(length(season_names),2,regNumb,maxDur))
+
+    for (season in 1:length(season_names)){   
+        print(season_names[season]) 
+
+        nc_dur=open.ncdf(paste("../data/",trendID,"/2_states/duration/",trendID,"_duration_2s_",season_names[season],".nc",sep=""))
+        dur=get.var.ncdf(nc_dur,"dur")
+        dur_mid=get.var.ncdf(nc_dur,"dur_mid")
+        for (state in 1:2){
+            tmp=duration_regional_distribution(dur[1:ntot,state,],dur_mid[1:ntot,state,],IDregions,yearPeriod=yearPeriod,regNumb=regNumb,maxDur=maxDur)
+            distributions[season,state,,]=tmp$density
+        }
+    }
+
+    ncRegion <- dim.def.ncdf("region",units="region",vals=1:regNumb, unlim=FALSE)
+    ncStates <- dim.def.ncdf("states",units="states",vals=1:2,unlim=FALSE)
+    ncSeason <- dim.def.ncdf("seasons",units="seasons",vals=1:5,unlim=FALSE)
+
+    mids=seq(0,(maxDur-1),1)+0.5
+    ncMids <- dim.def.ncdf("mids",units="days",vals=mids,unlim=FALSE)
+    
+    poli_points <- dim.def.ncdf("poli_points",units="id",vals=1:12,unlim=FALSE)
+
+    region_coordinates <- var.def.ncdf(name="region_coordinates",units="deg",longname="1:6 lon - 7:12 lat",dim=list(ncRegion,poli_points),missval=-9999.0)
+
+    ncDistributions <- var.def.ncdf(name="distributions",units="density 0-1",longname="histogramm density of durations recorded in region",dim=list(ncSeason,ncStates,ncRegion,ncMids), missval=-9999.0)
+    
+    vars=list(ncDistributions,region_coordinates)
+   
+    nc = create.ncdf(paste("../data/",trendID,"/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_distributions.nc",sep=""),vars)
+    put.var.ncdf(nc,ncDistributions,distributions)      
+
+    pol_poi=array(NA,c(dim(poli)[1],12))
+    for (i in 1:dim(poli)[1]){
+        for (j in 1:12){
+            
+            if (is.numeric(poli[i,j])){
+                pol_poi[i,j]=poli[i,j]
+            }
+        }
+    }
+    put.var.ncdf(nc,region_coordinates,pol_poi)      
+
+    close.ncdf(nc) 
+
+}
+
+
+
+
+plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
+
+    nc=open.ncdf(paste("../data/",trendID,"/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_distributions.nc",sep=""))
+    distributions=get.var.ncdf(nc,"distributions")
+    regions=get.var.ncdf(nc,"region")
+    mids=get.var.ncdf(nc,"mids")
+
+
+
+
+    season_names=c("spring","summer","autumn","winter","year")
+    state_names=c("warm","cold")
+
+    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.pdf",sep=""))
+    par(mfrow=c(length(state_names),length(season_names)))
+
+    logDistr=try(log(distributions))
+    logDistr[logDistr=="-Inf"]=NA
+
+    for (reg in regions){
+        for (state in 1:length(state_names)){
+            for (sea in 1:length(season_names)){
+                #plot(NA,xlim=c(0,50),ylim=c(0,0.3),ylab="",xlab="")
+                for (br in 1:100){
+                    y=distributions[sea,state,reg,br]
+
+                    #polygon(x=c(br+0.5,br-0.5,br-0.5,br+0.5),y=c(-50,-50,y,y),col="blue",border="blue")
+
+                }
+                par(mar=c(4,2,1,1))
+                plot(distributions[sea,state,reg,], type='h',lwd=1.5, lend=5, xlim=c(0,50),ylim=c(0,0.3),ylab="",xlab="",frame.plot=FALSE,main=paste(season_names[sea],state_names[state],reg))
+                par(new=TRUE,plt=c(0.57,0.82,0.44,0.95))
+                plot(distributions[sea,state,reg,],log="y", type='h', xlim=c(0,60),ylab="",xlab="",frame.plot=FALSE,col="red",axes=FALSE)
+                #mtext("Cell Density",side=4,col="red",line=4) 
+                axis(1, col="red",col.axis="red",las=1)
+                axis(2, col="red",col.axis="red")
+
+            }
+        }
+    }
+    graphics.off()
+
+}
 
