@@ -227,6 +227,7 @@ plot_2_vergleich <- function(trendID,states,period,var1,var2,var1_sig=NA,var2_si
 	titel_zusatz="blabla"
 	if (states==2){
 		state_names=c("cold","warm")
+		trans_names=c("cold to cold","na","na","warm to warm")
 		trans_auswahl=c(1,4)
 	}
 	if (states==3){
@@ -234,41 +235,31 @@ plot_2_vergleich <- function(trendID,states,period,var1,var2,var1_sig=NA,var2_si
 		trans_auswahl=c(1,5,9)
 	}	
 
-	reihen=array(NA,dim=c(states*2*length(seasons),ntot))
-	reihen_sig=array(NA,dim=c(states*2*length(seasons),ntot))
+	reihen=array(NA,dim=c(states*length(seasons),ntot))
+	reihen_sig=array(NA,dim=c(states*length(seasons),ntot))
 	titel=c()
 
-    for (sea in 1:length(seasons)){
+	season_auswahl=c(5,1,2,3,4)
+    for (i in 1:length(season_auswahl)){
+    	sea=season_auswahl[i]
     	season=seasons[sea]
 
 		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/markov/",period,"/",trendID,"_mar",states,"s_trend_",season,".nc",sep=""))
 		y=get.var.ncdf(nc,var1)
 		if (!is.na(var1_sig)){y_sig=get.var.ncdf(nc,var1_sig)}
 		for (trans in 1:length(trans_auswahl)){
-			index=(sea-1)*states*2+trans*2-1
+			#index=(trans-1)*length(seasons)+sea
+			index=(i-1)*states+trans
 			reihen[index,]=y[1:ntot,trans_auswahl[trans]]
 			if (!is.na(var1_sig)){reihen_sig[index,]=y_sig[1:ntot,trans_auswahl[trans]]}
-			titel[index]=paste(titel_zusatz,"for transition from","trarata","in",season,"in",period)
-		}
-
-		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",period,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""))
-		for (state in 1:states){
-			index=(sea-1)*states*2+state*2
-
-			reihen[index,]=get.var.ncdf(nc,var2)[1:ntot,state,quA,1]
-			reihen_sig[index,]=get.var.ncdf(nc,var2)[1:ntot,state,quA,2]
-			titel[index]=paste("trend for",titel_zusatz[1],"of",state_names[state],"period duration in",season,"in",period)
+			titel[index]=paste(state_names[trans],"to",state_names[trans],"-",season)
 		}
 	}
-	print(titel)
-	#asdas
-	#worldmap = getMap(resolution = "low",ylim=ausschnitt)
 
 	map_allgemein(dat=dat,
 		filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/",trendID,"_vergleich_",season,"_",name_zusatz,"_",period,".pdf",sep=""),
 		worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,grid=grid,
-		ausschnitt=c(30,80),col_row=c(6,1),paper=c(8,12),region="7rect")
-
+		ausschnitt=c(30,80),col_row=c(10,2),paper=c(8,12))
 }
 
 #init
@@ -309,9 +300,9 @@ full_plot <- function(trendID,states,ausschnitt=c(-80,80)){
 
 trendID="91_5"
 states=2
-yearperiod="1980-2014"
+yearperiod="1950-2014"
 
-plot_2_vergleich(trendID=trendID,states=states,period=yearperiod,farb_mitte=c(-0.6,0.6),name_zusatz="test",var1="MK",var2="dur_ana_full")
+plot_2_vergleich(trendID=trendID,states=states,period=yearperiod,farb_mitte=c(0.65,0.9),name_zusatz="uebersicht",var1="mean",var2="dur_ana_full")
 
 
 #plot_duration_climatology(trendID,states=states,period="1950-2014",farb_mitte=c(-10,30),seasons=c("summer"))

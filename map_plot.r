@@ -70,6 +70,10 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
     par(mar=c(1,1,2,4))
 	par(mfrow=col_row)
 
+	if (col_row[1]>1 | col_row[2]>1){
+		subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z")
+		par(cex=0.4)
+	}
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
 	if (farb_mitte=="gemeinsam 0"){
@@ -166,7 +170,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 		facetcol <- cut(y,nbcol)
 		plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])
 
-		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=1.2)
+		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]])
 		points(lon,lat,pch=sig)
 		points(dat$lon,dat$lat,pch=nas)
 
@@ -183,12 +187,15 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 		if (!is.na(region)){
 			add_region(region,regionColor)
 		}
-		if (subCount==(col_row[1]-1)){
-			image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,legend.mar=5.1)
-			subCount=0
-			plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+		if (col_row[1]>1 | col_row[2]>1){
+			text(x=175,y=(ausschnitt[2]-2),label=subIndex[subCount],col=rgb(0.6,0.6,0.6,0.9),cex=1.5)
+			if (subCount==dim(reihen)[1]){
+				image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,legend.mar=0)
+				subCount=0
+				#plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+				#legend("topleft",pch=c(4,13),legend=c("significance at 5% level","missing values"))
+			}
 		}
-		
 	}
     graphics.off()
 }
