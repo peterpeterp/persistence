@@ -44,7 +44,7 @@ add_region <- function(region_name,farbe){
 }
 
 map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA,titel,
-	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor=NA,grid=FALSE,ausschnitt=c(-80,80)){
+	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8)){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
 	#worldmap background of lon lat plot
@@ -66,9 +66,9 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 	nbcol <- 101
 	color <- jet.colors(nbcol)	
 
-	pdf(file = filename_plot,width=12,height=8)
+	pdf(file = filename_plot,width=paper[1],height=paper[2])
     par(mar=c(1,1,2,4))
-	par(mfrow=c(1,1))
+	par(mfrow=col_row)
 
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
@@ -80,7 +80,9 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))-mi,mi-abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
 	}
 
+	subCount=0
 	for (i in 1:dim(reihen)[1]){
+		subCount=subCount+1
 		print(titel[i])
 		size=length(mid_lat)
 		regio=array(NA,size)
@@ -181,7 +183,12 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 		if (!is.na(region)){
 			add_region(region,regionColor)
 		}
-		image.plot(legend.only=T, zlim=range(y), col=color)
+		if (subCount==(col_row[1]-1)){
+			image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,legend.mar=5.1)
+			subCount=0
+			plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+		}
+		
 	}
     graphics.off()
 }

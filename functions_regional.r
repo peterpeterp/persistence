@@ -357,6 +357,7 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
 
     color=c(rgb(1,0,0,0.6),rgb(0,0,1,0.4))
 
+    plot_names=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s")
 
     region_names=c("western \n N. America","central \n N. America","eastern \n N. America","Europe","western \n Asia","central \n Asia","eastern \n Asia")
     region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
@@ -368,53 +369,50 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
     state_names=c("warm","cold")
 
     pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.pdf",sep=""),,width=8,height=12)
-    #par(fin=c(20,30))
-    #par(mfcol=c(length(regions)+1,length(season_auswahl)+1))
-    #par(mar=c(0,0,4,0))
-    #par(pin=c(1,0.2))
+
     par(cex.lab=0.5,cex.axis=0.5)
 
     plot(NA,xlim=c(0,100),ylim=c(0,100),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 
 
     breite=1/(length(season_auswahl)+2)
-    hoehe=1/(length(regions)+1)
-
+    hoehe=1/(length(regions)+2)
 
 
 
     for (sea in season_auswahl){
         for (reg in regions){
             if (reg==1){
-                xPos=breite*sea+breite
-                yPos=hoehe*length(regions)-hoehe
+                xPos=breite*sea
+                yPos=hoehe*length(regions)
                 par(new=TRUE,plt=c(xPos,xPos+breite,yPos,yPos+hoehe))
                 plot(NA,xlim=c(0,30),ylim=c(0,0.3),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
                 axis(3, col="black",col.axis="black")
-                xPos=breite*sea+breite
-                yPos=hoehe*length(regions)
+                xPos=breite*sea
+                yPos=hoehe*length(regions)+hoehe
                 par(new=TRUE,plt=c(xPos,xPos+breite,yPos,yPos+hoehe))
                 plot(NA,xlim=c(0,30),ylim=c(0,0.3),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
                 text(x=15,y=0.1,label=season_names[sea])
             }
             if (sea==1){
-                xPos=breite+breite
-                yPos=hoehe*reg-hoehe+hoehe/4
+                xPos=breite
+                yPos=hoehe*reg+hoehe/4
                 par(new=TRUE,plt=c(xPos,xPos+breite,yPos,yPos+3/4*hoehe))
                 plot(NA,xlim=c(0,30),ylim=c(0,0.3),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
                 axis(2, col="black",col.axis="black")
-                xPos=breite
-                yPos=hoehe*reg-hoehe+hoehe/4
+                xPos=0.0
+                yPos=hoehe*reg+hoehe/4
                 par(new=TRUE,plt=c(xPos,xPos+breite,yPos,yPos+3/4*hoehe))
                 plot(NA,xlim=c(0,30),ylim=c(0,0.3),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-                text(x=15,y=0.15,label=region_names[8-reg])
+                text(x=15,y=0.15,label=region_names[reg])
             }
 
 
-            xPos=breite*sea+breite
-            yPos=hoehe*reg-hoehe+hoehe/4
+            xPos=breite*sea
+            yPos=hoehe*reg+hoehe/4
             par(new=TRUE,plt=c(xPos,xPos+breite,yPos,yPos+3/4*hoehe))
             plot(NA,xlim=c(0,30),ylim=c(0,0.3),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+            text(x=25,y=0.25,label=((7-reg)*length(season_auswahl)+sea),col=rgb(0.6,0.6,0.6,0.9))
 
             for (br in 1:100){
                 y=distributions[sea,1,reg,br]
@@ -425,40 +423,26 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
                 y=distributions[sea,2,reg,br]
                 polygon(x=c(br+0.5,br-0.5,br-0.5,br+0.5),y=c(0,0,y,y),border=color[2],col=color[2])
             }                
-            box("inner", lty="dotted", col="green")
-            box("outer", lty="solid", col="green") 
-            box("figure", lty="dotted", col="blue")
-            #par(new=TRUE,plt=c(0.57,0.82,0.57,0.93))
-            #par(new=TRUE)
-            #plot(NA, xlim=c(0,30),ylim=c(-0.05,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-            xPos=breite*sea+breite
-            yPos=hoehe*reg-hoehe
-            par(new=TRUE,plt=c(xPos,xPos+breite,yPos,yPos+hoehe))
-            plot(NA,xlim=c(0,30),ylim=c(0,0.3),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+
+            xPos=breite*sea
+            yPos=hoehe*reg
+            par(new=TRUE,plt=c(xPos,xPos+breite,yPos,yPos+1/4*hoehe))
+            plot(NA,xlim=c(0,30),ylim=c(0,10),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
             for (state in 1:2){
                 quAn=quantiles[sea,state,reg,]
-                mitte=0.27+(state-1)*0.02
-                links=mitte-0.009
-                rechts=mitte+0.009
+                mitte=4+(state-1)*3
+                links=mitte-1
+                rechts=mitte+1
                 polygon(x=c(quAn[2],quAn[2],quAn[4],quAn[4]),y=c(rechts,links,links,rechts),col=color[state])
                 lines(c(quAn[1],quAn[5]),c(mitte,mitte))
                 lines(c(quAn[1],quAn[1]),c(links,rechts))
                 lines(c(quAn[5],quAn[5]),c(links,rechts))
                 lines(c(quAn[3],quAn[3]),c(links,rechts))
                 points(quAn[10],mitte,pch=4)
-            }
-            mtext(paste("Test ",format(Sys.time(), "%Y-%m-%d %H:%M")),cex=0.75, line=0, side=SOUTH<-1, adj=0, outer=TRUE)
-            box("figure", lty="dotted", col="green")
-
-    
+            }  
         }
     }
-    for (reg in regions){
-        text(x=5,y=(110-reg*16),label=region_names[reg])
-    }   
-    for (sea in season_auswahl){
-        text(x=(15+sea*16),y=130,label=season_names[sea])
-    }
+
 
     graphics.off()
 
