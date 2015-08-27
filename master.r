@@ -118,7 +118,8 @@ master_regional_climatology <- function(yearPeriod,region_name,trendID){
     source("functions_regional.r")
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     #regional_climatology(trendID=trendID,dat=dat,yearPeriod=yearPeriod,region_name=region_name)
-    plot_regional_distributions(trendID,dat,yearPeriod,region_name)
+    #plot_regional_distributions(trendID,dat,yearPeriod,region_name)
+    plot_regional_boxplots(trendID,dat,yearPeriod,region_name)
 }
 
 

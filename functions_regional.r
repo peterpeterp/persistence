@@ -344,7 +344,48 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name){
 
 }
 
+plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
+    nc=open.ncdf(paste("../data/",trendID,"/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_distributions.nc",sep=""))
+    regions=get.var.ncdf(nc,"region")
+    quantiles=get.var.ncdf(nc,"quantile")
 
+    color=c(rgb(0,0,1,0.6),rgb(1,0,0,0.4))
+
+    plot_names=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s")
+
+    region_names=c("western \n N. America","central \n N. America","eastern \n N. America","Europe","western \n Asia","central \n Asia","eastern \n Asia")
+    region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
+
+    season_names=c("spring","summer","autumn","winter","year")
+    season_names=c("MAM","JJA","SON","DJF","year")
+    season_auswahl=c(5,1,2,3,4)
+
+    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_boxplots.pdf",sep=""),width=8,height=12)
+    par(mfrow=c(5,2))
+
+    for (sea in season_auswahl){
+        print(sea)
+        print(season_names[sea])
+        for (state in 1:2){
+            plot(NA,xlim=c(0.5,length(regions)),ylim=c(-3,24),frame.plot=FALSE,axes=FALSE,ylab="# days",xlab="",main=season_names[sea])
+            axis(2,ylim=c(-3,24))
+            for (reg in regions){
+                quAn=quantiles[sea,state,reg,]
+                mitte=reg
+                links=mitte-0.2
+                rechts=mitte+0.2
+                polygon(x=c(rechts,links,links,rechts),y=c(quAn[2],quAn[2],quAn[4],quAn[4]),col=color[state])
+                lines(c(mitte,mitte),c(quAn[1],quAn[5]))
+                lines(c(links,rechts),c(quAn[1],quAn[1]))
+                lines(c(links,rechts),c(quAn[5],quAn[5]))
+                lines(c(links,rechts),c(quAn[3],quAn[3]))
+                points(mitte,quAn[10],pch=4)
+                text(mitte,-3,region_names[reg])
+            }
+        }
+    }
+    graphics.off()
+}
 
 
 plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
@@ -355,7 +396,7 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
     mids=get.var.ncdf(nc,"mids")
     quantiles=get.var.ncdf(nc,"quantile")
 
-    color=c(rgb(1,0,0,0.6),rgb(0,0,1,0.4))
+    color=c(rgb(0,0,1,0.6),rgb(1,0,0,0.4))
 
     plot_names=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s")
 
@@ -368,7 +409,7 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
 
     state_names=c("warm","cold")
 
-    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.pdf",sep=""),,width=8,height=12)
+    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.pdf",sep=""),width=8,height=12)
 
     par(cex.lab=0.5,cex.axis=0.5)
 
@@ -416,12 +457,12 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
 
             for (br in 1:100){
                 y=distributions[sea,1,reg,br]
-                polygon(x=c(br+0.5,br-0.5,br-0.5,br+0.5),y=c(0,0,y,y),border=color[1],col=color[1])
+                polygon(x=c(br+0.45,br-0.45,br-0.45,br+0.45),y=c(0,0,y,y),border=NA,col=color[1])
             }
             par(new=TRUE)
             for (br in 1:100){
                 y=distributions[sea,2,reg,br]
-                polygon(x=c(br+0.5,br-0.5,br-0.5,br+0.5),y=c(0,0,y,y),border=color[2],col=color[2])
+                polygon(x=c(br+0.45,br-0.45,br-0.45,br+0.45),y=c(0,0,y,y),border=NA,col=color[2])
             }                
 
             xPos=breite*sea
