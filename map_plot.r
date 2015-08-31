@@ -44,7 +44,9 @@ add_region <- function(region_name,farbe){
 }
 
 map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA,titel,
-	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8)){
+	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",
+	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,
+	subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z")){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
 	#worldmap background of lon lat plot
@@ -57,7 +59,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.6),rgb(0.5,1,1), rgb(0.98,0.98,0.98) ,rgb(1,1,0),rgb(0.6,0.6,0)))
 	}
 	if (farb_palette=="lila-gruen"){
-		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.2),rgb(0.5,1,0.5), rgb(0.98,0.98,0.98) ,rgb(1,0.5,1),rgb(0.6,0.2,0.6)))
+		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.2),rgb(0.5,1,0.5), rgb(0.0,0.0,0.0) ,rgb(1,0.5,1),rgb(0.6,0.2,0.6)))
 	}
 	if (farb_palette=="regenbogen"){
 		jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
@@ -71,8 +73,21 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 	par(mfrow=col_row)
 
 	if (col_row[1]>1 | col_row[2]>1){
-		subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z")
-		par(cex=0.4)
+		par(cex=cex)
+		pointsize=1
+		mat=c()
+		index=0
+		for (row in 1:(col_row[1]-1)){
+			index=index+1
+			mat[((row-1)*6+1):(row*6)]=c(index,index+1,index,index+1,index,index+1)
+			index=index+1
+		}
+
+		mat[((col_row[1]*col_row[2]-2)*3+1):((col_row[1]*col_row[2]-2)*3+2)]=c(index+1,index+1)#,index+1,index+1)
+		layout(matrix(mat,length(mat)/2,2, byrow = TRUE))
+	}
+	else {
+		pointsize=1.2
 	}
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
@@ -170,9 +185,9 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 		facetcol <- cut(y,nbcol)
 		plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])
 
-		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]])
-		points(lon,lat,pch=sig)
-		points(dat$lon,dat$lat,pch=nas)
+		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=pointsize)
+		points(lon,lat,pch=sig,cex=pointsize)
+		points(dat$lon,dat$lat,pch=nas,cex=pointsize)
 
 		if (grid==TRUE){
 			for (longi in seq(-180,180,30)){
@@ -190,11 +205,12 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 		if (col_row[1]>1 | col_row[2]>1){
 			text(x=175,y=(ausschnitt[2]-2),label=subIndex[subCount],col=rgb(0.6,0.6,0.6,0.9),cex=1.5)
 			if (subCount==dim(reihen)[1]){
-				image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,legend.mar=0)
-				subCount=0
-				#plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-				#legend("topleft",pch=c(4,13),legend=c("significance at 5% level","missing values"))
+				plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+				image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,legend.mar=8,smallplot=c(0.1,0.9,0.6,0.95))
 			}
+		}
+		else {
+			image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE)
 		}
 	}
     graphics.off()

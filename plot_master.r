@@ -119,9 +119,9 @@ plot_duration_climatology <- function(trendID,states,period,ausschnitt=c(-80,80)
 	if (states==3){
 		state_names=c("cold","normal","warm")
 	}	
-	titel_zusatz=c("0.25","0.5","0.75","0.9","0.95","0.98")
+	titel_zusatz=c("0.25","0.5","0.75","0.9","0.95","0.98","mean")
 	vars=c("dur_ana_full")
-	auswahl=c(1,2,3,4,5,6)
+	auswahl=c(1,2,3,4,5,6,8)
 
 	for (season in seasons){
 		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",period,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""))
@@ -221,47 +221,6 @@ plot_eke <- function(vars,vars_sig,farb_mitte,name_zusatz,period,ausschnitt=c(-8
 	}
 }
 
-plot_2_vergleich <- function(trendID,states,period,var1,var2,var1_sig=NA,var2_sig=NA,quA=5,
-	farb_mitte,farb_palette="regenbogen",name_zusatz,region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE){
-
-	titel_zusatz="blabla"
-	if (states==2){
-		state_names=c("cold","warm")
-		trans_names=c("cold to cold","na","na","warm to warm")
-		trans_auswahl=c(1,4)
-	}
-	if (states==3){
-		state_names=c("cold","normal","warm")
-		trans_auswahl=c(1,5,9)
-	}	
-
-	reihen=array(NA,dim=c(states*length(seasons),ntot))
-	reihen_sig=array(NA,dim=c(states*length(seasons),ntot))
-	titel=c()
-
-	season_auswahl=c(5,1,2,3,4)
-    for (i in 1:length(season_auswahl)){
-    	sea=season_auswahl[i]
-    	season=seasons[sea]
-
-		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/markov/",period,"/",trendID,"_mar",states,"s_trend_",season,".nc",sep=""))
-		y=get.var.ncdf(nc,var1)
-		if (!is.na(var1_sig)){y_sig=get.var.ncdf(nc,var1_sig)}
-		for (trans in 1:length(trans_auswahl)){
-			#index=(trans-1)*length(seasons)+sea
-			index=(i-1)*states+trans
-			reihen[index,]=y[1:ntot,trans_auswahl[trans]]
-			if (!is.na(var1_sig)){reihen_sig[index,]=y_sig[1:ntot,trans_auswahl[trans]]}
-			titel[index]=paste(state_names[trans],"to",state_names[trans],"-",season)
-		}
-	}
-
-	map_allgemein(dat=dat,
-		filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/",trendID,"_vergleich_",season,"_",name_zusatz,"_",period,".pdf",sep=""),
-		worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,grid=grid,
-		ausschnitt=c(30,80),col_row=c(10,2),paper=c(8,12))
-}
-
 #init
 library(SDMTools)
 source("functions_regional.r")
@@ -298,11 +257,7 @@ full_plot <- function(trendID,states,ausschnitt=c(-80,80)){
 #plot_duration_distribution("91_5",2,"1950-2014")
 
 
-trendID="91_5"
-states=2
-yearperiod="1950-2014"
 
-plot_2_vergleich(trendID=trendID,states=states,period=yearperiod,farb_mitte=c(0.65,0.9),name_zusatz="uebersicht",var1="mean",var2="dur_ana_full")
 
 
 #plot_duration_climatology(trendID,states=states,period="1950-2014",farb_mitte=c(-10,30),seasons=c("summer"))
@@ -310,7 +265,6 @@ plot_2_vergleich(trendID=trendID,states=states,period=yearperiod,farb_mitte=c(0.
 #plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farb_mitte="0",titel_zusatz="MannKendall test",name_zusatz="MK_grid",period=yearperiod,grid=TRUE)
 
 
-sdfsd
 full_plot("91_5",2)
 full_plot("91_5",3)
 full_plot("91_3",2)

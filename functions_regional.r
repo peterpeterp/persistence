@@ -263,9 +263,34 @@ duration_regional_distribution <- function(dur,dur_mid,regions,yearPeriod,regNum
             x=x[inYearPeriod]
             histo=hist(duration,breaks,plot=FALSE)
             density[reg,]=histo$density
+
             quantiles[reg,1:6]=quantile(duration,probs=c(0.05,0.25,0.5,0.75,0.95,1))
             quantiles[reg,10]=mean(duration,na.rm=TRUE)
             quantiles[reg,9]=sd(duration,na.rm=TRUE)
+
+            x=seq(1,max(duration,na.rm=TRUE),1)
+            print(x)
+            y=x*NA
+            for (i in 1:length(y)){
+                y[i]=1-length(which(duration>x[i]))/length(duration)
+            }
+            pdf(file="../plots/bla_ecdf.pdf")
+            plot(x,y)
+            print(y)
+            quANs=c()
+            taus=c(0.05,0.25,0.5,0.75,0.95,1)
+            for (i in 1:length(taus)){
+                drueber=min(which(y>taus[i]))
+                print(x[drueber])
+                interpol=x[(drueber-1)]+(y[drueber]-y[(drueber-1)])(x[drueber]-x[drueber-1])
+                print()
+
+            }
+            print(quANs)
+            print(quantiles[reg,1:6])
+
+
+            adsas
         }
     }
     return(list(density=density,quantiles=quantiles))
@@ -360,28 +385,30 @@ plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
     season_names=c("MAM","JJA","SON","DJF","year")
     season_auswahl=c(5,1,2,3,4)
 
-    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_boxplots.pdf",sep=""),width=8,height=12)
-    par(mfrow=c(5,2))
+    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_boxplots.pdf",sep=""),width=5,height=12)
+    par(mfrow=c(5,1))
 
     for (sea in season_auswahl){
-        print(sea)
-        print(season_names[sea])
-        for (state in 1:2){
-            plot(NA,xlim=c(0.5,length(regions)),ylim=c(-3,24),frame.plot=FALSE,axes=FALSE,ylab="# days",xlab="",main=season_names[sea])
-            axis(2,ylim=c(-3,24))
-            for (reg in regions){
+        plot(NA,xlim=c(0.5,length(regions)),ylim=c(-3,24),frame.plot=FALSE,axes=FALSE,ylab="# days",xlab="",main=season_names[sea])
+        axis(2,ylim=c(-3,24))
+        for (i in seq(0,25,5)){
+            abline(h=i,col=rgb(0.8,0.8,0.8,0.6))
+        }
+        for (reg in regions){
+            for (state in 1:2){
                 quAn=quantiles[sea,state,reg,]
-                mitte=reg
-                links=mitte-0.2
-                rechts=mitte+0.2
+                print(quAn)
+                mitte=reg-0.1+0.2*(state-1)
+                links=mitte-0.1
+                rechts=mitte+0.1
                 polygon(x=c(rechts,links,links,rechts),y=c(quAn[2],quAn[2],quAn[4],quAn[4]),col=color[state])
                 lines(c(mitte,mitte),c(quAn[1],quAn[5]))
                 lines(c(links,rechts),c(quAn[1],quAn[1]))
                 lines(c(links,rechts),c(quAn[5],quAn[5]))
                 lines(c(links,rechts),c(quAn[3],quAn[3]))
                 points(mitte,quAn[10],pch=4)
-                text(mitte,-3,region_names[reg])
             }
+            text(reg,-3,region_names[reg])
         }
     }
     graphics.off()
