@@ -267,29 +267,6 @@ duration_regional_distribution <- function(dur,dur_mid,regions,yearPeriod,regNum
             quantiles[reg,1:6]=quantile(duration,probs=c(0.05,0.25,0.5,0.75,0.95,1))
             quantiles[reg,10]=mean(duration,na.rm=TRUE)
             quantiles[reg,9]=sd(duration,na.rm=TRUE)
-
-            x=seq(1,max(duration,na.rm=TRUE),1)
-            print(x)
-            y=x*NA
-            for (i in 1:length(y)){
-                y[i]=1-length(which(duration>x[i]))/length(duration)
-            }
-            pdf(file="../plots/bla_ecdf.pdf")
-            plot(x,y)
-            print(y)
-            quANs=c()
-            taus=c(0.05,0.25,0.5,0.75,0.95,1)
-            for (i in 1:length(taus)){
-                drueber=min(which(y>taus[i]))
-                print(x[drueber])
-                interpol=x[(drueber-1)]+(y[drueber]-y[(drueber-1)])(x[drueber]-x[drueber-1])
-
-            }
-            print(quANs)
-            print(quantiles[reg,1:6])
-
-
-            adsas
         }
     }
     return(list(density=density,quantiles=quantiles))
