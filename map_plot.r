@@ -206,7 +206,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 			text(x=175,y=(ausschnitt[2]-2),label=subIndex[subCount],col=rgb(0.6,0.6,0.6,0.9),cex=1.5)
 			if (subCount==dim(reihen)[1]){
 				plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-				image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,legend.mar=8,smallplot=c(0.1,0.9,0.6,0.95))
+				image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,legend.mar=8,smallplot=c(0.1,0.9,0.7,0.95))
 			}
 		}
 		else {

@@ -283,7 +283,6 @@ duration_regional_distribution <- function(dur,dur_mid,regions,yearPeriod,regNum
                 drueber=min(which(y>taus[i]))
                 print(x[drueber])
                 interpol=x[(drueber-1)]+(y[drueber]-y[(drueber-1)])(x[drueber]-x[drueber-1])
-                print()
 
             }
             print(quANs)
