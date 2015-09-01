@@ -59,7 +59,8 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.6),rgb(0.5,1,1), rgb(0.98,0.98,0.98) ,rgb(1,1,0),rgb(0.6,0.6,0)))
 	}
 	if (farb_palette=="lila-gruen"){
-		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.2),rgb(0.5,1,0.5), rgb(0.0,0.0,0.0) ,rgb(1,0.5,1),rgb(0.6,0.2,0.6)))
+		jet.colors <- colorRampPalette( c(rgb(0.5,1,0.5),rgb(0.2,0.6,0.2), rgb(0.0,0.0,0.0),rgb(0.6,0.2,0.6),rgb(1,0.5,1)))
+		jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(0.0,0.0,0.0),rgb(1,0.5,1),rgb(1,0.7,0.7)))
 	}
 	if (farb_palette=="regenbogen"){
 		jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
@@ -70,7 +71,6 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 
 	pdf(file = filename_plot,width=paper[1],height=paper[2])
     par(mar=c(1,1,2,4))
-	par(mfrow=col_row)
 
 	if (col_row[1]>1 | col_row[2]>1){
 		par(cex=cex)

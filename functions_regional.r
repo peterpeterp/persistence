@@ -304,6 +304,7 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name){
         dur_mid=get.var.ncdf(nc_dur,"dur_mid")
         for (state in 1:2){
             tmp=duration_regional_distribution(dur[1:ntot,state,],dur_mid[1:ntot,state,],IDregions,yearPeriod=yearPeriod,regNumb=regNumb,maxDur=maxDur)
+            print(tmp)
             distributions[season,state,,]=tmp$density
             quantiles[season,state,,]=tmp$quantiles
         }
@@ -348,7 +349,7 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name){
 plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
     nc=open.ncdf(paste("../data/",trendID,"/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_distributions.nc",sep=""))
     regions=get.var.ncdf(nc,"region")
-    quantiles=get.var.ncdf(nc,"quantile")
+    quantiles=array(get.var.ncdf(nc,"quantile"),dim=c(5,2,length(regions),10))
 
     color=c(rgb(0,0,1,0.6),rgb(1,0,0,0.4))
 
@@ -394,10 +395,11 @@ plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
 plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
 
     nc=open.ncdf(paste("../data/",trendID,"/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_distributions.nc",sep=""))
-    distributions=get.var.ncdf(nc,"density")
     regions=get.var.ncdf(nc,"region")
     mids=get.var.ncdf(nc,"mids")
-    quantiles=get.var.ncdf(nc,"quantile")
+    quantiles=array(get.var.ncdf(nc,"quantile"),dim=c(5,2,length(regions),10))
+    distributions=array(get.var.ncdf(nc,"density"),dim=c(5,2,length(regions),length(mids)))
+
 
     color=c(rgb(0,0,1,0.6),rgb(1,0,0,0.4))
 
@@ -424,6 +426,7 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
 
 
 
+    print(regions)
     for (sea in season_auswahl){
         for (reg in regions){
             if (reg==1){

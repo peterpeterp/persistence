@@ -4,26 +4,38 @@
 source("write.r")
 source("load.r")
 
-plot_numbWarm <- function(grid=FALSE){
+plot_numbWarm <- function(grid=FALSE,ausschnitt=c(-80,80)){
 	library(SDMTools)
-	source("region_average.r")
 	source("map_plot.r")
-	source("trend_control.r")
+	source("trend_view.r")
 	library(rworldmap)
 	library(fields)
 	worldmap = getMap(resolution = "low")
-	nday = 91
-	nyr = 5
-	ntot=1319
-	dat=dat_load("../data/dat_regional.nc",reg=1)
-	per=markov_load(sprintf("../data/%s_%s/%s_%s_markov.nc",nday,nyr,nday,nyr))
 
-	numbWarm=trend_control_warm_days(dat,per,c(1),c(365),filename=sprintf("../data/warmTage_tremds_year.nc"))
-	reihen=array(numbWarm,dim=c(1,ntot))
-	map_allgemein(dat=dat,reihen=reihen,titel=c("yearly increase in 'warm days' from 1950 to 2011"),farb_mitte="0",
-		filename_plot=sprintf("../plots/maps/%s_%s_warm_days.pdf",nday,nyr),worldmap=worldmap,ausschnitt=c(35,66))
-	map_regional(dat=dat,toPlot=reihen,titles=c("yearly increase in 'warm days' from 1950 to 2011"),worldmap=worldmap,
-		filename_plot=sprintf("../plots/regions/%s_%s_warm_days_regio.pdf",nday,nyr),grid=grid)
+	data=read.table("../data/sonstiges/warmeTage_trends_5seasons_1950-2014.txt")
+
+	seasons=c("spring","summer","autumn","winter","year")
+	reihen=array(NA,dim=c(5,ntot))
+	reihen_sig=array(NA,dim=c(5,ntot))
+	titel=c()
+	for (sea in 1:5){
+		reihen[sea,]=data[1:ntot,sea]
+		reihen_sig[sea,]=data[1:ntot,(5+sea)]
+		titel[sea]=paste("yearly increase in 'warm days' from 1950 to 2014 in",seasons[sea])
+	}
+
+	map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte="0",
+		farb_palette="lila-gruen",
+		filename_plot=sprintf("../plots/91_5/sonstiges/91_5_warm_days_trend.pdf"),worldmap=worldmap,ausschnitt=ausschnitt)
+
+	for (sea in 1:5){
+		reihen[sea,]=data[1:ntot,(10+sea)]
+		titel[sea]=paste("percentage of 'warm days' from 1950 to 2014 in",seasons[sea])
+	}
+
+	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="mean",
+		farb_palette="lila-gruen",
+		filename_plot=sprintf("../plots/91_5/sonstiges/91_5_warm_days_percentage.pdf"),worldmap=worldmap,ausschnitt=ausschnitt)
 }
 
 plot_nas <- function(grid=FALSE){
@@ -48,7 +60,9 @@ plot_nas <- function(grid=FALSE){
 }
 
 
-plot_markov <- function(trendID,states,vars,vars_sig,farb_mitte,farb_palette="lila-gruen",name_zusatz=vars,titel_zusatz,period,ausschnitt=c(-80,80),region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE){
+plot_markov <- function(trendID,states,vars,vars_sig,farb_mitte,farb_palette="lila-gruen",
+	name_zusatz=vars,titel_zusatz,period,ausschnitt=c(-80,80),region=NA,
+	seasons=c("spring","summer","autumn","winter","year"),grid=FALSE){
 	# markov xx states
 	if (states==2){
 		state_names=c("cold","warm")
@@ -265,8 +279,9 @@ full_plot <- function(trendID,states,ausschnitt=c(-80,80)){
 #plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farb_mitte="0",titel_zusatz="MannKendall test",name_zusatz="MK_grid",period=yearperiod,grid=TRUE)
 
 
-full_plot("91_5",2)
-full_plot("91_5",3)
-full_plot("91_3",2)
-full_plot("91_3",3)
+#full_plot("91_5",2)
+#full_plot("91_5",3)
+#full_plot("91_3",2)
+#full_plot("91_3",3)
 
+plot_numbWarm()

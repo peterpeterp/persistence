@@ -1,11 +1,11 @@
 
-trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,242,334,1),seasonStop=c(150,241,333,424,365),filename="../data/warmeTage_trends_5seasons.txt"){
+trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,242,334,1),seasonStop=c(150,241,333,424,365),filename="../data/warmeTage_trends_5seasons_1950-2014.txt"){
     ntot=length(dat$ID)
-    waTrend=array(NA,dim=c(ntot,10))
+    waTrend=array(NA,dim=c(ntot,15))
     for (q in 1:ntot){
         for (sea in 1:length(seasonStart)){
-            warmeTage=array(NA,62)
-            kalteTage=array(NA,62)
+            warmeTage=array(NA,65)
+            kalteTage=array(NA,65)
             for (i in 1:61){
                 if (seasonStop[sea]>365){
                     warmeTage[i]=length(which(ind[q,seasonStart[sea]:365,i]==1))
@@ -26,7 +26,8 @@ trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,242,334,1),seas
             if (length(which(is.na(warmeTage)))<30){ 
                 lm.r=lm(warmeTage~dat$year)
                 waTrend[q,sea]=summary(lm.r)$coefficients[2]
-                waTrend[q,(4+sea)]=summary(lm.r)$coefficients[4]
+                waTrend[q,(5+sea)]=summary(lm.r)$coefficients[4]
+                waTrend[q,(10+sea)]=sum(warmeTage,na.rm=TRUE)/sum(c(warmeTage,kalteTage),na.rm=TRUE)
             }
         }
     }
@@ -260,8 +261,12 @@ method_explanation <- function(yearReal=2003,todo=c(1,1,1,1),name="full"){
     graphics.off()
 }
 
-method_explanation(2003,c(2,2,2,2),"1")
-method_explanation(2003,c(1,2,2,2),"2")
-method_explanation(2003,c(1,1,2,2),"3")
-method_explanation(2003,c(1,1,1,2),"4")
-method_explanation(2003,c(1,1,1,1),"5")
+if (1==2){
+    method_explanation(2003,c(2,2,2,2),"1")
+    method_explanation(2003,c(1,2,2,2),"2")
+    method_explanation(2003,c(1,1,2,2),"3")
+    method_explanation(2003,c(1,1,1,2),"4")
+    method_explanation(2003,c(1,1,1,1),"5")
+}
+
+

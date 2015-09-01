@@ -12,17 +12,17 @@ master_nas <- function(){
     find_nas(dat)    
 }
 
-master_trend <- function(nday,nyr,trendID){
+master_trend <- function(trendID){
     # calculate trend
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     trend=calc_trend(dat,paste("../data/",trendID,"/",trendID,"_trend.nc",sep=""),nday,nyr)
 }
 
-master_trend_control <- function(nday,nyr,trendID){
+master_trend_control <- function(trendID,states){
     # trend control
-    source("trend_control.r")
+    source("trend_view.r")
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-    nc=open.ncdf(paste("../data/",trendID,"/",trendID,"_markov2s.nc",sep=""))
+    nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/markov/",trendID,"_markov_",states,"states.nc",sep=""))
     ind=get.var.ncdf(nc,"ind")
     trend_control_warm_days(dat,ind)   
 }
@@ -117,7 +117,7 @@ master_regional_trend <- function(yearPeriod,region_name,trendID){
 master_regional_climatology <- function(yearPeriod,region_name,trendID){
     source("functions_regional.r")
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-    regional_climatology(trendID=trendID,dat=dat,yearPeriod=yearPeriod,region_name=region_name)
+    #regional_climatology(trendID=trendID,dat=dat,yearPeriod=yearPeriod,region_name=region_name)
     plot_regional_distributions(trendID,dat,yearPeriod,region_name)
     plot_regional_boxplots(trendID,dat,yearPeriod,region_name)
 }
@@ -172,7 +172,9 @@ full_3states <- function(nday,nyr){
 #full_3states(91,3)
 #full_2states(91,5)
 
+master_trend_control(trendID="91_5",states=2)
+
 #master_regional_climatology(yearPeriod=c(1950,2014),region_name="7rect",trendID="91_5")
-master_regional_climatology(yearPeriod=c(1950,2014),region_name="midlat",trendID="91_5")
+#master_regional_climatology(yearPeriod=c(1950,2014),region_name="midlat",trendID="91_5")
 #master_regional_climatology(yearPeriod=c(1950,1980),region_name="7rect",trendID="91_5")
 #master_regional_climatology(yearPeriod=c(1980,2014),region_name="7rect",trendID="91_5")
