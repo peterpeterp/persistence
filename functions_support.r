@@ -238,7 +238,7 @@ end_aussage <- function(dat,yearPeriod,trendID,states,seasons=c("spring","summer
         quantiles=get.var.ncdf(nc,"quantiles")
         outs=get.var.ncdf(nc,"outs")
         percentage=array(NA,dim=c(states,length(quantiles)))
-        for (state in states){
+        for (state in 1:states){
             for (quan in quantiles){
                 slope=dur_ana_full[1:1319,state,quan,1]
                 inside_region=which(dat$lon>region[1] & dat$lon<region[2] & dat$lat>region[3] & dat$lat< region[4])
