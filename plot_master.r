@@ -4,7 +4,7 @@
 source("write.r")
 source("load.r")
 
-plot_numbWarm <- function(grid=FALSE,ausschnitt=c(-80,80)){
+plot_numbWarm <- function(trendID="91_5",states=2,grid=FALSE,ausschnitt=c(-80,80)){
 	library(SDMTools)
 	source("map_plot.r")
 	source("trend_view.r")
@@ -12,7 +12,7 @@ plot_numbWarm <- function(grid=FALSE,ausschnitt=c(-80,80)){
 	library(fields)
 	worldmap = getMap(resolution = "low")
 
-	data=read.table("../data/sonstiges/warmeTage_trends_5seasons_1950-2014.txt")
+	data=read.table(paste("../data/",trendID,"/",states,"_states/sonstiges/",trendID,"warmeTage_trends_5seasons_1950-2014.txt",sep=""))
 
 	seasons=c("spring","summer","autumn","winter","year")
 	reihen=array(NA,dim=c(5,ntot))
@@ -26,7 +26,7 @@ plot_numbWarm <- function(grid=FALSE,ausschnitt=c(-80,80)){
 
 	map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte="0",
 		farb_palette="lila-gruen",
-		filename_plot=sprintf("../plots/91_5/sonstiges/91_5_warm_days_trend.pdf"),worldmap=worldmap,ausschnitt=ausschnitt)
+		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_warm_days_trend.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 
 	for (sea in 1:5){
 		reihen[sea,]=data[1:ntot,(10+sea)]
@@ -35,7 +35,7 @@ plot_numbWarm <- function(grid=FALSE,ausschnitt=c(-80,80)){
 
 	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="mean",
 		farb_palette="lila-gruen",
-		filename_plot=sprintf("../plots/91_5/sonstiges/91_5_warm_days_percentage.pdf"),worldmap=worldmap,ausschnitt=ausschnitt)
+		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_warm_days_percentage.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 }
 
 plot_nas <- function(grid=FALSE){
@@ -284,4 +284,5 @@ full_plot <- function(trendID,states,ausschnitt=c(-80,80)){
 #full_plot("91_3",2)
 #full_plot("91_3",3)
 
-plot_numbWarm()
+plot_numbWarm(trendID="61_5",states=2)
+#plot_numbWarm(trendID="91_3",states=2)

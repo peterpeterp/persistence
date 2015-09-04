@@ -1,5 +1,6 @@
 
-trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,242,334,1),seasonStop=c(150,241,333,424,365),filename="../data/warmeTage_trends_5seasons_1950-2014.txt"){
+trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,242,334,1),seasonStop=c(150,241,333,424,365),
+    filename="../data/warmeTage_trends_5seasons_1950-2014.txt"){
     ntot=length(dat$ID)
     waTrend=array(NA,dim=c(ntot,15))
     for (q in 1:ntot){

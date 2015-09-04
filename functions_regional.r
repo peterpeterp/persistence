@@ -362,7 +362,7 @@ plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
     season_names=c("MAM","JJA","SON","DJF","year")
     season_auswahl=c(5,1,2,3,4)
 
-    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_boxplots.pdf",sep=""),width=5,height=12)
+    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_boxplots.pdf",sep=""),width=8,height=12)
     par(mfrow=c(5,1))
 
     for (sea in season_auswahl){

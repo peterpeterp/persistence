@@ -104,7 +104,7 @@ calc_trend <- function(dat,filename,nday,nyr){
     ntot = length(dat$ID)
     trend=dat$tas*NA
     for (q in 1:ntot) {
-        temp = r_calc_runmean_2D(dat$tas[q,,],nday=nday,nyr=nyr)
+        temp = c_calc_runmean_2D(dat$tas[q,,],nday=nday,nyr=nyr)
         temp[1:trash]=NA
         temp[(length(dat$time)-trash):length(dat$time)]=NA
         trend[q,,]=temp
@@ -226,7 +226,29 @@ global_analysis <- function(toAna,yearPeriod,yearshift=1949){
     return(analysis)
 }
 
-
+end_aussage <- function(dat,yearPeriod,trendID,states,seasons=c("spring","summer","autumn","winter","year"),region=c(-180,180,30,60)){
+    # calculates percentage of grid points in region having positive trend
+    # calculates big average
+    print(yearPeriod)
+    for (season in seasons){
+        print(season)
+        nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",yearPeriod,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""))
+        dur_ana_full=get.var.ncdf(nc,"dur_ana_full")
+        #duration_analysis_write(paste("../data/",trendID,"/",states,"_states/duration/",yearPeriod,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""),dur_ana_full,season)
+        quantiles=get.var.ncdf(nc,"quantiles")
+        outs=get.var.ncdf(nc,"outs")
+        percentage=array(NA,dim=c(states,length(quantiles)))
+        for (state in states){
+            for (quan in quantiles){
+                slope=dur_ana_full[1:1319,state,quan,1]
+                inside_region=which(dat$lon>region[1] & dat$lon<region[2] & dat$lat>region[3] & dat$lat< region[4])
+                noNa=which(!is.na(slope[inside_region]))
+                percentage[state,quan]=length(which(slope[inside_region[noNa]]>0))/length(noNa)
+            }
+        }
+        print(percentage)
+    }
+}
 
 
 

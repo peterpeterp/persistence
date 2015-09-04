@@ -112,14 +112,14 @@ duration_write <- function(filename,dur,dur_mid,len)
     close.ncdf(nc) 
 }
 
-duration_analysis_write <- function(filename,dur,season,trenn){
+duration_analysis_write <- function(filename,dur,season){
     print(filename)
     states=dim(dur)[2]
     ntot=1319
     ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
     varstates <- dim.def.ncdf("states",units="states",vals=1:(states),unlim=FALSE)
-    quantiles <- dim.def.ncdf("0.25 0.5 0.75 0.9 0.95 0.98 NA lr",units="0-1",vals=1:8,unlim=FALSE)
-    outs <- dim.def.ncdf("quantile_slope quantile_slope_sig quantile_mean quantile_mean_sd quantile_intercept",units="0-1",vals=1:5,unlim=FALSE)
+    quantiles <- dim.def.ncdf("quantiles",units="0.25 0.5 0.75 0.9 0.95 0.98 NA lr",vals=1:8,unlim=FALSE)
+    outs <- dim.def.ncdf("outs",units="quantile_slope quantile_slope_sig quantile_mean quantile_mean_sd quantile_intercept",vals=1:5,unlim=FALSE)
 
     dur_ana_full <- var.def.ncdf(name="dur_ana_full",units="values",longname=paste("analysis of duration of periods in",season),dim=list(ID,varstates,quantiles,outs), missval=-9999.0)
     
