@@ -235,6 +235,19 @@ plot_eke <- function(vars,vars_sig,farb_mitte,name_zusatz,period,ausschnitt=c(-8
 	}
 }
 
+full_plot <- function(trendID,states,ausschnitt=c(-80,80)){
+	plot_markov(trendID,states=states,vars="mean",vars_sig=NA,farb_mitte="mean",farb_palette="regenbogen",titel_zusatz="climatology",period="1950-2014",ausschnitt=ausschnitt)
+	plot_duration_climatology(trendID,states=states,period="1950-2014",ausschnitt=ausschnitt)
+	for (yearperiod in c("1950-1980","1950-2014","1980-2014")){
+		print(yearperiod)
+		plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farb_mitte="0",farb_palette="lila-gruen",titel_zusatz="MannKendall test",period=yearperiod,ausschnitt=ausschnitt)
+		plot_markov(trendID,states=states,vars="LR",vars_sig="LR_sig",farb_mitte="0",farb_palette="lila-gruen",titel_zusatz="Linear Regression",period=yearperiod,ausschnitt=ausschnitt)
+		plot_duration_vergleich(trendID,states=states,period=yearperiod,ausschnitt=ausschnitt)
+	}
+}
+
+
+
 #init
 library(SDMTools)
 source("functions_regional.r")
@@ -246,20 +259,23 @@ worldmap = getMap(resolution = "low")
 ntot=1319
 dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
+
+
 #commands
+if (1==1){
+	trendID="91_5"
+	yearPeriod=c(1950,2014)
+	region_name="7rect"
+	#plot_regional_boxplots(trendID,dat,yearPeriod,region_name)
+	plot_regional_distributions(trendID,dat,yearPeriod,region_name)
+
+}
+
+
 #wave_region(7,78,c(40,70))
 #location_view()
 
-full_plot <- function(trendID,states,ausschnitt=c(-80,80)){
-	plot_markov(trendID,states=states,vars="mean",vars_sig=NA,farb_mitte="mean",farb_palette="regenbogen",titel_zusatz="climatology",period="1950-2014",ausschnitt=ausschnitt)
-	plot_duration_climatology(trendID,states=states,period="1950-2014",ausschnitt=ausschnitt)
-	for (yearperiod in c("1950-1980","1950-2014","1980-2014")){
-		print(yearperiod)
-		plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farb_mitte="0",farb_palette="lila-gruen",titel_zusatz="MannKendall test",period=yearperiod,ausschnitt=ausschnitt)
-		plot_markov(trendID,states=states,vars="LR",vars_sig="LR_sig",farb_mitte="0",farb_palette="lila-gruen",titel_zusatz="Linear Regression",period=yearperiod,ausschnitt=ausschnitt)
-		plot_duration_vergleich(trendID,states=states,period=yearperiod,ausschnitt=ausschnitt)
-	}
-}
+
 
 #plot_correl_markov("91_5",states=2,vars="correlation",vars_sig=NA,farb_mitte="0")
 #plot_correl_markov("91_3",states=2,vars="correlation",vars_sig=NA,farb_mitte="0")
@@ -284,5 +300,5 @@ full_plot <- function(trendID,states,ausschnitt=c(-80,80)){
 #full_plot("91_3",2)
 #full_plot("91_3",3)
 
-plot_numbWarm(trendID="61_5",states=2)
+#plot_numbWarm(trendID="61_5",states=2)
 #plot_numbWarm(trendID="91_3",states=2)

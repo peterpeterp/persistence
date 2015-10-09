@@ -1,3 +1,5 @@
+source("write.r")
+source("load.r")
 
 trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,242,334,1),seasonStop=c(150,241,333,424,365),
     filename="../data/warmeTage_trends_5seasons_1950-2014.txt"){
@@ -270,4 +272,32 @@ if (1==2){
     method_explanation(2003,c(1,1,1,1),"5")
 }
 
+asymmetry_analysis <- function(q=459){
+    trend=trend_load("../data/91_5/91_5_trend.nc")
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
+    y=dat$tas[q,,]-trend[q,,]
+    mittel=mean(y,na.rm=TRUE)
+    std=sd(y,na.rm=TRUE)
 
+    sd1h=length(which(y>(1*std)))
+    sd2h=length(which(y>(2*std)))
+    sd3h=length(which(y>(3*std)))
+
+    sd1t=length(which(y<(-1*std)))
+    sd2t=length(which(y<(-2*std)))
+    sd3t=length(which(y<(-3*std)))
+
+    print(sd1h)
+    print(sd2h)
+    print(sd3h)
+    print(sd1t)
+    print(sd2t)
+    print(sd3t)
+
+    pdf(file="../plots/zwischenzeugs/asymmetry.pdf")
+    plot(dat$time,y,xlim=c(2000,2010))
+
+}
+
+
+asymmetry_analysis()
