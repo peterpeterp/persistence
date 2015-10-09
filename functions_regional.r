@@ -472,10 +472,8 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
             for (br in 1:100){
                 y=distributions[sea,2,reg,br]
                 br=br-0.5
-                print(br)
                 polygon(x=c(br+0.45,br-0.45,br-0.45,br+0.45),y=c(0,0,y,y),border=NA,col=color[2])
             }                
-            print(mids)
 
             xPos=breite*sea
             yPos=hoehe*reg
@@ -484,14 +482,14 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
             for (state in 1:2){
                 quAn=quantiles[sea,state,reg,]
                 mitte=4+(state-1)*3
-                links=mitte-1
-                rechts=mitte+1
-                polygon(x=c(quAn[2],quAn[2],quAn[4],quAn[4]),y=c(rechts,links,links,rechts),col=color[state])
+                unten=mitte-1
+                oben=mitte+1
+                polygon(x=c(quAn[2],quAn[2],quAn[4],quAn[4]),y=c(oben,unten,unten,oben),col=color[state])
                 lines(c(quAn[1],quAn[5]),c(mitte,mitte))
-                lines(c(quAn[1],quAn[1]),c(links,rechts))
-                lines(c(quAn[5],quAn[5]),c(links,rechts))
-                lines(c(quAn[3],quAn[3]),c(links,rechts))
-                points(quAn[10],mitte,pch=4)
+                lines(c(quAn[1],quAn[1]),c(unten,oben))
+                lines(c(quAn[5],quAn[5]),c(unten,oben))
+                lines(c(quAn[3],quAn[3]),c(unten,oben))
+                points(quAn[10],mitte,pch=4,cex=0.8)
             }  
         }
     }
