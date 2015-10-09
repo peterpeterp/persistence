@@ -266,7 +266,7 @@ if (1==1){
 	trendID="91_5"
 	yearPeriod=c(1950,2014)
 	region_name="7rect"
-	#plot_regional_boxplots(trendID,dat,yearPeriod,region_name)
+	plot_regional_boxplots(trendID,dat,yearPeriod,region_name)
 	plot_regional_distributions(trendID,dat,yearPeriod,region_name)
 
 }
