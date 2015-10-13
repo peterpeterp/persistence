@@ -33,6 +33,8 @@ trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,242,334,1),seas
                 waTrend[q,(10+sea)]=sum(warmeTage,na.rm=TRUE)/sum(c(warmeTage,kalteTage),na.rm=TRUE)
             }
         }
+        cat(waTrend[q,15])
+        cat("__")
     }
     write.table(waTrend,filename)
     return(waTrend[1:ntot,1:4])
@@ -299,5 +301,29 @@ asymmetry_analysis <- function(q=459){
 
 }
 
+trend_mean_median <- function(q,start,stop){
+    trendID="91_5"
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
+    trend_mean=trend_load(paste("../data/",trendID,"/",trendID,"_trend.nc",sep=""))
+    trend_median=trend_load(paste("../data/",trendID,"/",trendID,"_trend_median.nc",sep=""))
+    pdf(file=sprintf("../plots/zwischenzeugs/trend_91_5_mean_median_station%s.pdf",dat$ID[q]))
 
-asymmetry_analysis()
+    selection=which(dat$time > start & dat$time < stop)
+    plot(dat$time[selection],as.vector(dat$tas[q,,])[selection])
+    lines(dat$time,trend_mean[q,,],col="blue")
+    lines(dat$time,trend_median[q,,],col="green")
+
+    y=as.vector(dat$tas[q,,])[which(!is.na(dat$tas[q,,]))]
+    between1=which(y>trend_mean[q,,] & y<trend_median[q,,])
+    points(dat$time[between1],y[between1],pch=4,col="red")
+
+    between2=which(y<trend_mean[q,,] & y>trend_median[q,,])
+    points(dat$time[between2],y[between2],pch=4,col="orange")
+        
+    legend("bottomright",legend=paste((length(between1)+length(between2))/length(y),"% of days between the trends",sep=""))
+
+    graphics.off()
+
+}
+
+#trend_mean_median(152,2000,2010)

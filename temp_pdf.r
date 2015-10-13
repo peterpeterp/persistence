@@ -2,8 +2,29 @@ source("load.r")
 library(MASS)
 library(moments)
 
-
+trendID="91_5"
+trend_median=trend_load(paste("../data/",trendID,"/",trendID,"_trend_median.nc",sep=""))
 dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
+q=1011
+
+y=dat$tas[q,,]
+nona=which(!is.na(y))
+x=y[1:1000]
+
+mitte=median(x)
+print(mitte)
+print(length(which(x>mitte))/length(x))
+print(length(which(x<mitte))/length(x))
+
+warm=which(trend_median[q,,]>=dat$tas[q,,])
+kalt=which(trend_median[q,,]<dat$tas[q,,])
+
+print(length(warm))
+print(length(kalt))
+print(length(kalt)/(length(warm)+length(kalt)))
+
+
+adsasd
 
 pdf(file="../plots/zwischenzeugs/temp_pdf.pdf")
 
@@ -62,4 +83,6 @@ print(mean(y))
 schiefe=1/length(y)*sum(((y-fit$estimate[1])/(fit$estimate[2]))^3)
 print(schiefe)
 print(skewness(y))
+
+
 

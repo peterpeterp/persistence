@@ -4,7 +4,7 @@
 source("write.r")
 source("load.r")
 
-plot_numbWarm <- function(trendID="91_5",states=2,grid=FALSE,ausschnitt=c(-80,80)){
+plot_numbWarm <- function(trendID="91_5",states=2,grid=FALSE,ausschnitt=c(-80,80),trend_style=""){
 	library(SDMTools)
 	source("map_plot.r")
 	source("trend_view.r")
@@ -12,30 +12,30 @@ plot_numbWarm <- function(trendID="91_5",states=2,grid=FALSE,ausschnitt=c(-80,80
 	library(fields)
 	worldmap = getMap(resolution = "low")
 
-	data=read.table(paste("../data/",trendID,"/",states,"_states/sonstiges/",trendID,"warmeTage_trends_5seasons_1950-2014.txt",sep=""))
+	data=read.table(paste("../data/",trendID,"/",states,"_states",trend_style,"/sonstiges/",trendID,"warmeTage_trends_5seasons_1950-2014.txt",sep=""))
 
 	seasons=c("spring","summer","autumn","winter","year")
 	reihen=array(NA,dim=c(5,ntot))
 	reihen_sig=array(NA,dim=c(5,ntot))
 	titel=c()
 	for (sea in 1:5){
-		reihen[sea,]=1-data[1:ntot,sea]
+		reihen[sea,]=data[1:ntot,sea]
 		reihen_sig[sea,]=data[1:ntot,(5+sea)]
 		titel[sea]=paste("yearly increase in 'cold days' from 1950 to 2014 in",seasons[sea])
 	}
 
 	map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte="0",
 		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_cold_days_trend.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
+		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_cold_days_trend.pdf",trend_style,"",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 
 	for (sea in 1:5){
 		reihen[sea,]=1-data[1:ntot,(10+sea)]
 		titel[sea]=paste("percentage of 'cold days' from 1950 to 2014 in",seasons[sea])
 	}
 
-	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="mean",
+	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte=c(0.45,0.55),
 		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_cold_days_percentage.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
+		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_cold_days_percentage",trend_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 }
 
 plot_skewness <- function(dat,grid=FALSE,ausschnitt=c(-80,80)){
@@ -53,7 +53,7 @@ plot_skewness <- function(dat,grid=FALSE,ausschnitt=c(-80,80)){
 		reihen[1,q]=skewness(y)
 	}
 
-	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="mean",
+	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="0",
 		farb_palette="lila-gruen",
 		filename_plot=paste("../plots/zwischenzeugs/skewness.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 }
@@ -279,7 +279,7 @@ worldmap = getMap(resolution = "low")
 ntot=1319
 dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
-plot_skewness(dat=dat)
+#plot_skewness(dat=dat)
 
 #commands
 if (1==2){
@@ -321,4 +321,5 @@ if (1==2){
 #full_plot("91_3",3)
 
 #plot_numbWarm(trendID="61_5",states=2)
-#plot_numbWarm(trendID="91_5",states=2)
+plot_numbWarm(trendID="91_5",states=2,trend_style="")
+plot_numbWarm(trendID="91_5",states=2,trend_style="_median")
