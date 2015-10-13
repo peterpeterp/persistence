@@ -19,23 +19,23 @@ plot_numbWarm <- function(trendID="91_5",states=2,grid=FALSE,ausschnitt=c(-80,80
 	reihen_sig=array(NA,dim=c(5,ntot))
 	titel=c()
 	for (sea in 1:5){
-		reihen[sea,]=data[1:ntot,sea]
+		reihen[sea,]=1-data[1:ntot,sea]
 		reihen_sig[sea,]=data[1:ntot,(5+sea)]
-		titel[sea]=paste("yearly increase in 'warm days' from 1950 to 2014 in",seasons[sea])
+		titel[sea]=paste("yearly increase in 'cold days' from 1950 to 2014 in",seasons[sea])
 	}
 
 	map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte="0",
 		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_warm_days_trend.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
+		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_cold_days_trend.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 
 	for (sea in 1:5){
-		reihen[sea,]=data[1:ntot,(10+sea)]
-		titel[sea]=paste("percentage of 'warm days' from 1950 to 2014 in",seasons[sea])
+		reihen[sea,]=1-data[1:ntot,(10+sea)]
+		titel[sea]=paste("percentage of 'cold days' from 1950 to 2014 in",seasons[sea])
 	}
 
 	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="mean",
 		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_warm_days_percentage.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
+		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_cold_days_percentage.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 }
 
 plot_nas <- function(grid=FALSE){
@@ -262,7 +262,7 @@ dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
 
 #commands
-if (1==1){
+if (1==2){
 	trendID="91_5"
 	yearPeriod=c(1950,2014)
 	region_name="7rect"
@@ -301,4 +301,4 @@ if (1==1){
 #full_plot("91_3",3)
 
 #plot_numbWarm(trendID="61_5",states=2)
-#plot_numbWarm(trendID="91_3",states=2)
+plot_numbWarm(trendID="91_5",states=2)

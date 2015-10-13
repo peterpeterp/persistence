@@ -61,6 +61,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 	if (farb_palette=="lila-gruen"){
 		jet.colors <- colorRampPalette( c(rgb(0.5,1,0.5),rgb(0.2,0.6,0.2), rgb(0.0,0.0,0.0),rgb(0.6,0.2,0.6),rgb(1,0.5,1)))
 		jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(0.0,0.0,0.0),rgb(1,0.5,1),rgb(1,0.7,0.7)))
+		jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(1,1,1),rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
 	}
 	if (farb_palette=="regenbogen"){
 		jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
@@ -187,7 +188,8 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 
 		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=pointsize)
 		points(lon,lat,pch=sig,cex=pointsize)
-		points(dat$lon,dat$lat,pch=nas,cex=pointsize)
+		#mark nas
+		#points(dat$lon,dat$lat,pch=nas,cex=pointsize)
 
 		if (grid==TRUE){
 			for (longi in seq(-180,180,30)){

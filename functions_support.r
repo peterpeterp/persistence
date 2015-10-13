@@ -29,6 +29,36 @@ r_calc_runmean_2D <- function(y2D,nday,nyr){
     return(trend)
 }
 
+r_calc_runmedian_2D <- function(y2D,nday,nyr){
+    # Input 2D array: y[day,year],
+    # Calculate the running mean given a window of nyrs and ndays 
+    # around each point in time
+    nbuff1 = (nday-1)/2 
+    nbuff2 = (nyr-1)/2 
+    buffer = c(nbuff1,nbuff2)
+
+    dims0 = dim(y2D)
+    dims  = dim(y2D)
+    dims[1] = dims[1]+2*nbuff1
+    dims[2] = dims[2]+2*nbuff2
+
+    y2Dex = array(NA,dim=c(dims[1],dims[2]))
+    y2Dex[(nbuff1+1):(dims[1]-nbuff1),(nbuff2+1):(dims[2]-nbuff2)] = y2D[,]
+    y2Dex[1:nbuff1,(nbuff2+2):(dims[2]-nbuff2+1)] = y2D[(dims0[1]-nbuff1+1):dims0[1],]   
+    y2Dex[(dims[1]-nbuff1+1):dims[1],(nbuff2):(dims[2]-nbuff2-1)] = y2D[1:nbuff1,] 
+
+
+    trend=y2D*NA
+
+    for (i in 1:365){
+        for (j in 1:65){
+            trend[i,j]=median(y2Dex[(i+nbuff1-nbuff1):(i+nbuff1+nbuff1),(j+nbuff2-nbuff2):(j+nbuff2+nbuff2)],na.rm=TRUE)
+        }
+    }
+    cat("-")
+    return(trend)
+}
+
 c_calc_runmean_2D <- function(y2D,nday,nyr){
     # Input 2D array: y[day,year],
     # Calculate the running mean given a window of nyrs and ndays 
@@ -97,14 +127,14 @@ seasonal_matrix_out <- function(input,model=markov_2states,states=2,seasons=arra
     return(list(out=out,out_conf=out_conf))
 }   
 
-calc_trend <- function(dat,filename,nday,nyr){
+calc_trend <- function(dat,filename,nday,nyr,procedure){
     # calculates running mean for each grid point
     # can choose between the c script and r function
     trash = ((nyr-1)/2*365+(nday-1))
     ntot = length(dat$ID)
     trend=dat$tas*NA
     for (q in 1:ntot) {
-        temp = c_calc_runmean_2D(dat$tas[q,,],nday=nday,nyr=nyr)
+        temp = procedure(dat$tas[q,,],nday=nday,nyr=nyr)
         temp[1:trash]=NA
         temp[(length(dat$time)-trash):length(dat$time)]=NA
         trend[q,,]=temp

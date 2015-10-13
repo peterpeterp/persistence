@@ -15,7 +15,13 @@ master_nas <- function(){
 master_trend <- function(trendID,nday,nyr){
     # calculate trend
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-    trend=calc_trend(dat,paste("../data/",trendID,"/",trendID,"_trend.nc",sep=""),nday,nyr)
+    trend=calc_trend(dat,paste("../data/",trendID,"/",trendID,"_trend.nc",sep=""),nday,nyr,procedure=r_calc_runmean_2D)
+}
+
+master_trend_median <- function(trendID,nday,nyr){
+    # calculate trend
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
+    trend=calc_trend(dat,paste("../data/",trendID,"/",trendID,"_trend_median.nc",sep=""),nday,nyr,procedure=r_calc_runmedian_2D)
 }
 
 master_trend_control <- function(trendID,states){
@@ -129,7 +135,7 @@ full_2states <- function(nday,nyr){
     #complete 2 states analysis 
     trendID=paste(nday,"_",nyr,sep="")
 
-    #master_trend(nday,nyr,trendID)
+    master_trend_median(nday,nyr,trendID)
 
     #master_markov(nday,nyr,trendID,states=2,transition_names=c("cc wc cw ww"))
 
@@ -170,7 +176,7 @@ full_3states <- function(nday,nyr){
 
 #full_3states(91,5)
 #full_3states(91,3)
-#full_2states(91,5)
+full_2states(91,5)
 
 #master_trend(trendID="61_5",nday=61,nyr=5)
 #master_markov(nday=61,nyr=5,trendID="61_5",states=2,transition_names=c("cc wc cw ww"))
@@ -184,10 +190,12 @@ full_3states <- function(nday,nyr){
 #master_regional_climatology(yearPeriod=c(1950,1980),region_name="7rect",trendID="91_5")
 #master_regional_climatology(yearPeriod=c(1980,2014),region_name="7rect",trendID="91_5")
 
-dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-points=c(1950,2014,1950,1980,1980,2014)
-for (i in 1:3){
-    period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
-    print(paste(period,sep="-"))
-    end_aussage(dat=dat,yearPeriod=paste(period[1],period[2],sep="-"),states=2,trendID="91_5")
+if (1==2){
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
+    points=c(1950,2014,1950,1980,1980,2014)
+    for (i in 1:3){
+        period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
+        print(paste(period,sep="-"))
+        end_aussage(dat=dat,yearPeriod=paste(period[1],period[2],sep="-"),states=2,trendID="91_5")
+    }
 }
