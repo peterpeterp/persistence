@@ -12,13 +12,13 @@ master_nas <- function(){
     find_nas(dat)    
 }
 
-master_trend <- function(trendID,nday,nyr){
+master_trend <- function(nday,nyr,trendID){
     # calculate trend
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     trend=calc_trend(dat,paste("../data/",trendID,"/",trendID,"_trend.nc",sep=""),nday,nyr,procedure=r_calc_runmean_2D)
 }
 
-master_trend_median <- function(trendID,nday,nyr){
+master_trend_median <- function(nday,nyr,trendID){
     # calculate trend
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     trend=calc_trend(dat,paste("../data/",trendID,"/",trendID,"_trend_median.nc",sep=""),nday,nyr,procedure=r_calc_runmedian_2D)

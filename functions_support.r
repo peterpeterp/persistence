@@ -130,6 +130,8 @@ seasonal_matrix_out <- function(input,model=markov_2states,states=2,seasons=arra
 calc_trend <- function(dat,filename,nday,nyr,procedure){
     # calculates running mean for each grid point
     # can choose between the c script and r function
+    print(nyr)
+    asdas
     trash = ((nyr-1)/2*365+(nday-1))
     ntot = length(dat$ID)
     trend=dat$tas*NA

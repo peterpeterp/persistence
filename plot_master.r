@@ -38,6 +38,26 @@ plot_numbWarm <- function(trendID="91_5",states=2,grid=FALSE,ausschnitt=c(-80,80
 		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_cold_days_percentage.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 }
 
+plot_skewness <- function(dat,grid=FALSE,ausschnitt=c(-80,80)){
+	library(moments)
+
+	reihen=array(NA,dim=c(1,ntot))
+	reihen_sig=array(NA,dim=c(1,ntot))
+	titel=c("skewness")
+
+	for (q in 1:1319){
+		cat("-")
+		y=as.vector(dat$tas[q,,])
+		nona=which(!is.na(y))
+		y=y[nona]
+		reihen[1,q]=skewness(y)
+	}
+
+	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="mean",
+		farb_palette="lila-gruen",
+		filename_plot=paste("../plots/zwischenzeugs/skewness.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
+}
+
 plot_nas <- function(grid=FALSE){
 	library(SDMTools)
 	source("map_plot.r")
@@ -259,7 +279,7 @@ worldmap = getMap(resolution = "low")
 ntot=1319
 dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
-
+plot_skewness(dat=dat)
 
 #commands
 if (1==2){
@@ -301,4 +321,4 @@ if (1==2){
 #full_plot("91_3",3)
 
 #plot_numbWarm(trendID="61_5",states=2)
-plot_numbWarm(trendID="91_5",states=2)
+#plot_numbWarm(trendID="91_5",states=2)
