@@ -282,12 +282,12 @@ dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 #plot_skewness(dat=dat)
 
 #commands
-if (1==2){
+if (1==1){
 	trendID="91_5"
 	yearPeriod=c(1950,2014)
 	region_name="7rect"
 	plot_regional_boxplots(trendID,dat,yearPeriod,region_name)
-	plot_regional_distributions(trendID,dat,yearPeriod,region_name)
+	#plot_regional_distributions(trendID,dat,yearPeriod,region_name)
 
 }
 
@@ -321,5 +321,5 @@ if (1==2){
 #full_plot("91_3",3)
 
 #plot_numbWarm(trendID="61_5",states=2)
-plot_numbWarm(trendID="91_5",states=2,trend_style="")
-plot_numbWarm(trendID="91_5",states=2,trend_style="_median")
+#plot_numbWarm(trendID="91_5",states=2,trend_style="")
+#plot_numbWarm(trendID="91_5",states=2,trend_style="_median")

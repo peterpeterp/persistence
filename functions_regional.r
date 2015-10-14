@@ -395,6 +395,7 @@ plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
     }
     graphics.off()
 
+
     # seasonal focus
     pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_boxplots_sea.pdf",sep=""),width=4,height=12)
     par(mfrow=c(7,1))
@@ -424,6 +425,84 @@ plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
         }
     }
     graphics.off()
+
+    #regional focus normalized -> are the behaviours of different quantiles different?
+    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_normalized_reg.pdf",sep=""),width=8,height=12)
+    par(mfrow=c(6,2))
+    par(mar=c(1,5,4,3))
+
+    qua_selection=c(1,2,3,4,5,10)
+    qua_names=c("5 percentile","25 percentile","median","75 percentile","95 percentile","mean")
+    qua_colors=c(rgb(0.1,0.1,0.6),rgb(0.2,0.4,0.7),rgb(0,0,0),rgb(0.7,0.2,0.4),rgb(1,0,0),rgb(0,1,0))
+    qua_colors=c("lightblue","blue","black","orange","red","green")
+    qua_ltys=c(1,2,1,2,1,1)
+    qua_pchs=c(13,1,15,1,13,4)
+    state_names=c("warm","cold")
+
+    x=regions
+
+    for (sea in season_auswahl){
+        for (state in 1:2){
+            plot(NA,xlim=c(0,length(regions)),ylim=c(-0.1,1),frame.plot=FALSE,axes=FALSE,ylab="normalized # days",xlab="",main=paste(season_names[sea],"  ",state_names[state]))
+            axis(2,ylim=c(0,1))
+
+            for (reg in regions){
+                text(reg,-0.1,region_names[reg])
+            }
+            for (qua_index in 1:length(qua_selection)){
+                qua=qua_selection[qua_index]
+                y=quantiles[sea,state,,qua]
+                y_norm=(y-min(y,na.rm=TRUE))/(max(y,na.rm=TRUE)-min(y,na.rm=TRUE))
+                lines(x,y_norm,col=qua_colors[qua_index],lty=qua_ltys[qua_index])
+                points(x,y_norm,col=qua_colors[qua_index],pch=qua_pchs[qua_index])
+            }
+        }
+        
+    }
+    plot(NA,xlim=c(0,length(regions)),ylim=c(-0.1,1),frame.plot=FALSE,axes=FALSE,ylab="",xlab="",main="")
+    legend("topleft",col=qua_colors,lty=qua_ltys,legend=qua_names,pch=qua_pchs)
+    graphics.off()
+
+    #seasonal focus normalized -> are the behaviours of different quantiles different?
+    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_normalized_sea.pdf",sep=""),width=8,height=12)
+    par(mfrow=c(7,2))
+    par(mar=c(1,5,4,3))
+
+    qua_selection=c(1,2,3,4,5,10)
+    qua_names=c("5 percentile","25 percentile","median","75 percentile","95 percentile","mean")
+    qua_colors=c(rgb(0.1,0.1,0.6),rgb(0.2,0.4,0.7),rgb(0,0,0),rgb(0.7,0.2,0.4),rgb(1,0,0),rgb(0,1,0))
+    qua_colors=c("lightblue","blue","black","orange","red","green")
+    qua_ltys=c(1,2,1,2,1,1)
+    qua_pchs=c(13,1,15,1,13,4)
+    state_names=c("warm","cold")
+
+    x=season_auswahl
+
+    for (reg in regions){
+        for (state in 1:2){
+            plot(NA,xlim=c(0,length(regions)),ylim=c(-0.1,1),frame.plot=FALSE,axes=FALSE,ylab="normalized # days",xlab="",main=paste(region_names[reg],"  ",state_names[state]))
+            axis(2,ylim=c(0,1))
+
+            for (sea in season_auswahl){
+                text(sea,-0.1,season_names[sea])
+            }
+            for (qua_index in 1:length(qua_selection)){
+                qua=qua_selection[qua_index]
+                y=quantiles[,state,reg,qua]
+                y_norm=(y-min(y,na.rm=TRUE))/(max(y,na.rm=TRUE)-min(y,na.rm=TRUE))
+                lines(x,y_norm,col=qua_colors[qua_index],lty=qua_ltys[qua_index])
+                points(x,y_norm,col=qua_colors[qua_index],pch=qua_pchs[qua_index])
+            }
+        }
+        if (2==1){
+            plot(NA,xlim=c(0,length(regions)),ylim=c(-0.1,1),frame.plot=FALSE,axes=FALSE,ylab="",xlab="",main="")
+            legend("topleft",col=qua_colors,lty=qua_ltys,legend=qua_names,pch=qua_pchs)
+        }
+        
+    }
+    graphics.off()
+
+
 }
 
 

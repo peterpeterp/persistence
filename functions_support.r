@@ -1,10 +1,17 @@
 
-estimate_mode <- function(x) {
-  d <- density(x)
-  return(d$x[which.max(d$y)])
+estimate_mode <- function(x,na.rm=TRUE) {
+    if (na.rm==TRUE){
+        x=x[which(!is.na(x))]
+    }
+    if (length(x)<20){return(NA)}
+    else {
+        d <- density(x)
+        return(d$x[which.max(d$y)])
+    }
 }
 
-r_calc_runmedian_2D <- function(y2D,nday,nyr){
+
+r_calc_runmode_2D <- function(y2D,nday,nyr){
     # Input 2D array: y[day,year],
     # Calculate the running mean given a window of nyrs and ndays 
     # around each point in time
@@ -165,8 +172,6 @@ seasonal_matrix_out <- function(input,model=markov_2states,states=2,seasons=arra
 calc_trend <- function(dat,filename,nday,nyr,procedure){
     # calculates running mean for each grid point
     # can choose between the c script and r function
-    print(nyr)
-    asdas
     trash = ((nyr-1)/2*365+(nday-1))
     ntot = length(dat$ID)
     trend=dat$tas*NA
@@ -224,9 +229,15 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
                 per_ind[detrended<(-threshold)]  = -1 
                 per_ind[detrended<threshold & detrended>(-threshold)] = 0 
             }
+
+
             if (states==2){
-                per_ind[y >= trend[q,,]]=1
+                per_ind[y > trend[q,,]]=1
                 per_ind[y < trend[q,,]]=-1
+            # the >= was somehow problematic, since it affects roughly 5% of the datapoints
+            # now the datapoints sitting on the trend are randomly attributed to warm or cold
+                per_ind[y == trend[q,,]]=0
+                per_ind[per_ind==0]=sample(c(-1,1),1)
             }
             markov_per$ind[q,,] = per_ind
             # Go through vector and calculate persistent events 

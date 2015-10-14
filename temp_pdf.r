@@ -1,6 +1,6 @@
 source("load.r")
 
-if (1==2){
+if (1==1){
 	library(MASS)
 	library(moments)
 
@@ -36,7 +36,7 @@ if (1==2){
 	print(length(warm))
 	print(length(kalt))
 	print(length(kalt)/(length(warm)+length(kalt)))
-	print(length(druuf)/length(y))
+	print(length(druuf)/length(y)*100)
 }
 
 
@@ -48,7 +48,7 @@ estimate_mode <- function(x,na.rm=TRUE) {
 	return(d$x[which.max(d$y)])
 }
 
-if (1==1){
+if (1==2){
 	library(MASS)
 	library(moments)
 
