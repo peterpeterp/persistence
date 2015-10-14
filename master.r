@@ -143,14 +143,14 @@ full_2states <- function(nday,nyr,trendID,trend_style="_mean",additional_style="
     points=c(1950,2014,1950,1980,1980,2014)
     for (i in 1:3){
         period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
-        #master_analyse_markov(yearPeriod=period,trendID,states=2,transition_names=c("cc wc cw ww"),trend_style=trend_style,additional_style=additional_style)
+        master_analyse_markov(yearPeriod=period,trendID,states=2,transition_names=c("cc wc cw ww"),trend_style=trend_style,additional_style=additional_style)
     }
 
     master_duration(nday,nyr,trendID,2,trend_style=trend_style,additional_style=additional_style)
     for (i in 1:3){
         period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
-        #master_analyse_duration(yearPeriod=period,trendID,states=2,trend_style=trend_style,additional_style=additional_style)
-        #master_duration_distribution(yearPeriod=period,trendID,states=2,trend_style=trend_style,additional_style=additional_style)
+        master_analyse_duration(yearPeriod=period,trendID,states=2,trend_style=trend_style,additional_style=additional_style)
+        master_duration_distribution(yearPeriod=period,trendID,states=2,trend_style=trend_style,additional_style=additional_style)
     }
 }
 
@@ -158,6 +158,7 @@ full_2states <- function(nday,nyr,trendID,trend_style="_mean",additional_style="
 #full_3states(91,5)
 #full_3states(91,3)
 full_2states(91,5,trend_style="_mode",additional_style="_TN")
+#full_2states(91,5,trend_style="_median",additional_style="_TX")
 
 
 

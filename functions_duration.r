@@ -167,7 +167,7 @@ duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=se
         }
     } 
     if (filename!=FALSE){
-        duration_analysis_write(filename,dur_ana,season,trenn)
+        duration_analysis_write(filename,dur_ana,season)
     }
 }
 
