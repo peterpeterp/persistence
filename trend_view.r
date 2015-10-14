@@ -306,7 +306,7 @@ trend_mean_median <- function(q,start,stop){
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     trend_mean=trend_load(paste("../data/",trendID,"/",trendID,"_trend.nc",sep=""))
     trend_median=trend_load(paste("../data/",trendID,"/",trendID,"_trend_median.nc",sep=""))
-    pdf(file=sprintf("../plots/zwischenzeugs/trend_91_5_mean_median_station%s.pdf",dat$ID[q]))
+    pdf(file=sprintf("../plots/91_5/sonstiges/trend_91_5_mean_median_station%s.pdf",dat$ID[q]))
 
     selection=which(dat$time > start & dat$time < stop)
     plot(dat$time[selection],as.vector(dat$tas[q,,])[selection])
@@ -320,10 +320,12 @@ trend_mean_median <- function(q,start,stop){
     between2=which(y<trend_mean[q,,] & y>trend_median[q,,])
     points(dat$time[between2],y[between2],pch=4,col="orange")
         
-    legend("bottomright",legend=paste((length(between1)+length(between2))/length(y),"% of days between the trends",sep=""))
+    legend("bottomright",legend=paste((length(between1)+length(between2))/length(y)*100,"% of days between the trends",sep=""))
 
     graphics.off()
 
 }
 
-#trend_mean_median(152,2000,2010)
+trend_mean_median(488,2000,2010)
+trend_mean_median(351,2000,2010)
+trend_mean_median(1011,2000,2010)
