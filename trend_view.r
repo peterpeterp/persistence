@@ -4,7 +4,7 @@ source("load.r")
 trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,242,334,1),seasonStop=c(150,241,333,424,365),
     filename="../data/warmeTage_trends_5seasons_1950-2014.txt"){
     ntot=length(dat$ID)
-    waTrend=array(NA,dim=c(ntot,15))
+    waTrend=array(NA,dim=c(ntot,20))
     for (q in 1:ntot){
         for (sea in 1:length(seasonStart)){
             warmeTage=array(NA,65)
@@ -31,6 +31,8 @@ trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,242,334,1),seas
                 waTrend[q,sea]=summary(lm.r)$coefficients[2]
                 waTrend[q,(5+sea)]=summary(lm.r)$coefficients[4]
                 waTrend[q,(10+sea)]=sum(warmeTage,na.rm=TRUE)/sum(c(warmeTage,kalteTage),na.rm=TRUE)
+                percentage_array=warmeTage/(warmeTage+kalteTage)
+                waTrend[q,(15+sea)]=sd(percentage_array,na.rm=TRUE)
             }
         }
         cat(waTrend[q,15])
@@ -298,7 +300,6 @@ asymmetry_analysis <- function(q=459){
 
     pdf(file="../plots/zwischenzeugs/asymmetry.pdf")
     plot(dat$time,y,xlim=c(2000,2010))
-
 }
 
 trend_mean_median <- function(q,start,stop){
@@ -325,6 +326,38 @@ trend_mean_median <- function(q,start,stop){
     graphics.off()
 
 }
+
+detrended_view <- function(q=52,trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_median"){
+    trend=trend_load("../data/91_5/91_5_trend_mean_TX.nc")
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
+    y=dat$tas[q,,]-trend[q,,]
+
+    nc=open.ncdf(paste("../data/",trendID,"/",trendID,trend_style,dataset,"_state_ind",additional_style,".nc",sep=""))
+    ind=get.var.ncdf(nc,"ind")[q,,]
+
+    for (year in 50:54){
+        spri=length(which(ind[59:150,year]>0))
+        sum=length(which(ind[151:242,year]>0))
+        aut=length(which(ind[243:334,year]>0))
+        win=length(which(ind[335:365,year]>0))+length(which(ind[1:58,year]>0))
+        print(paste(spri,sum,aut,win))
+        print(sum(c(spri,sum,aut,win)))
+        spri=length(which(ind[59:150,year]<0))
+        sum=length(which(ind[151:242,year]<0))
+        aut=length(which(ind[243:334,year]<0))
+        win=length(which(ind[335:365,year]<0))+length(which(ind[1:58,year]<0))
+        print(paste(spri,sum,aut,win))
+        print(sum(c(spri,sum,aut,win)))
+    }
+
+
+    pdf(file="../plots/zwischenzeugs/detrended_view.pdf")
+    plot(dat$time,y,xlim=c(2000,2004))
+    abline(h=median(y,na.rm=TRUE))
+}
+
+detrended_view(q=488)
+
 
 #trend_mean_median(488,2000,2010)
 #trend_mean_median(351,2000,2010)

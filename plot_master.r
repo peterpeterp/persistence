@@ -4,7 +4,7 @@
 source("write.r")
 source("load.r")
 
-plot_numbWarm <- function(trendID="91_5",states=2,grid=FALSE,ausschnitt=c(-80,80),trend_style=""){
+plot_numbWarm <- function(trendID="91_5",grid=FALSE,ausschnitt=c(-80,80),trend_style="_mean",dataset="_TX",additional_style="_median"){
 	library(SDMTools)
 	source("map_plot.r")
 	source("trend_view.r")
@@ -12,7 +12,7 @@ plot_numbWarm <- function(trendID="91_5",states=2,grid=FALSE,ausschnitt=c(-80,80
 	library(fields)
 	worldmap = getMap(resolution = "low")
 
-	data=read.table(paste("../data/",trendID,"/",states,"_states",trend_style,"/sonstiges/",trendID,"warmeTage_trends_5seasons_1950-2014",trend_style,".txt",sep=""))
+	data=read.table(paste("../data/",trendID,"/",additional_style,"/sonstiges/",trendID,trend_style,dataset,"_5seasons_warme_tage_control",additional_style,".txt",sep=""))
 
 	seasons=c("spring","summer","autumn","winter","year")
 	reihen=array(NA,dim=c(5,ntot))
@@ -26,7 +26,7 @@ plot_numbWarm <- function(trendID="91_5",states=2,grid=FALSE,ausschnitt=c(-80,80
 
 	map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte="0",
 		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_cold_days_trend.pdf",trend_style,"",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
+		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,trend_style,dataset,"_cold_days_trend",additional_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 
 	for (sea in 1:5){
 		reihen[sea,]=1-data[1:ntot,(10+sea)]
@@ -35,7 +35,16 @@ plot_numbWarm <- function(trendID="91_5",states=2,grid=FALSE,ausschnitt=c(-80,80
 
 	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte=c(0.45,0.55),
 		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_cold_days_percentage",trend_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
+		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,trend_style,dataset,"_cold_days_percentage",additional_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)	
+
+	for (sea in 1:5){
+		reihen[sea,]=1-data[1:ntot,(15+sea)]
+		titel[sea]=paste("variance of percentage of 'cold days' from 1950 to 2014 in",seasons[sea])
+	}
+
+	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="mean",
+		farb_palette="lila-gruen",
+		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,trend_style,dataset,"_cold_days_percentage_variance",additional_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 }
 
 plot_skewness <- function(dat,grid=FALSE,ausschnitt=c(-80,80)){
@@ -330,7 +339,7 @@ if (1==2){
 #plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farb_mitte="0",titel_zusatz="MannKendall test",name_zusatz="MK_grid",period=yearperiod,grid=TRUE)
 
 
-full_plot("91_5",2,trend_style="_mean_TX")
+#full_plot("91_5",2,trend_style="_mean_TX")
 #full_plot("91_5",3)
 #full_plot("91_3",2)
 #full_plot("91_3",3)
@@ -338,4 +347,4 @@ full_plot("91_5",2,trend_style="_mean_TX")
 #plot_numbWarm(trendID="91_5",states=2,trend_style="_median_TX")
 #plot_numbWarm(trendID="91_5",states=2,trend_style="_mode_TX")
 #plot_numbWarm(trendID="91_5",states=2,trend_style="_mean_TX")
-#plot_numbWarm(trendID="91_5",states=2,trend_style="_mean_TN")
+plot_numbWarm(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_median")
