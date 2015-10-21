@@ -89,10 +89,10 @@ master_duration <- function(nday,nyr,trendID,states,trend_style="_mean",dataset=
     dur=get.var.ncdf(nc,"dur")
     dur_mid=get.var.ncdf(nc,"dur_mid")
     
-    duration_seasons(dur,dur_mid,season=c(59,151),filename=paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_spring.nc",sep=""))
-    duration_seasons(dur,dur_mid,season=c(151,243),filename=paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_summer.nc",sep=""))
-    duration_seasons(dur,dur_mid,season=c(243,335),filename=paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_autumn.nc",sep=""))
-    duration_seasons(dur,dur_mid,season=c(335,425),filename=paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_winter.nc",sep=""))
+    duration_seasons(dur,dur_mid,season=c(60,151),filename=paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_spring.nc",sep=""))
+    duration_seasons(dur,dur_mid,season=c(152,243),filename=paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_summer.nc",sep=""))
+    duration_seasons(dur,dur_mid,season=c(244,334),filename=paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_autumn.nc",sep=""))
+    duration_seasons(dur,dur_mid,season=c(335,424),filename=paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_winter.nc",sep=""))
 }
 
 master_analyse_duration <- function(yearPeriod,trendID,states,seasons=c("spring","summer","autumn","winter","year")
