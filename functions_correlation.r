@@ -113,7 +113,8 @@ markov_correl <- function(trendID,states,toCor,toCor_name,toCor_short,toCor_shor
 
 
 
-duration_correl <- function(trendID,states,toCor,toCor_name,toCor_short,toCor_shortZu,toCor_startYear=1950,seasons=c("spring","summer","autumn","winter"),taus=c(0.25,0.5,0.75,0.9,0.95,0.98),stations=seq(1,1319,1),plot=FALSE){
+duration_correl <- function(trendID,states,toCor,toCor_name,toCor_short,toCor_shortZu,additional_style,
+	toCor_startYear=1950,seasons=c("spring","summer","autumn","winter","year"),taus=c(0.25,0.5,0.75,0.9,0.95,0.98),stations=seq(1,1319,1),plot=FALSE){
 	# toCor is array with dim=c(ntot,seasons,years) or dim=c(seasons,years) 
 	# function will follow different procedures depending on dim(toCor)
 
@@ -123,7 +124,7 @@ duration_correl <- function(trendID,states,toCor,toCor_name,toCor_short,toCor_sh
 	# using toCor_startYear and toCor_years the matching years from markov are determined
 	# from these years noNa are the years that will be plotted
 
-	toCor_years=dim(toCor)[-1]
+	toCor_years=dim(toCor)[3]
 
 	library(quantreg)
 	ntot=1319
@@ -131,7 +132,7 @@ duration_correl <- function(trendID,states,toCor,toCor_name,toCor_short,toCor_sh
 
 	# needed for the plots ------------------------------------
 	if (plot==TRUE){
-		pdf(file=paste("../plots/",trendID,"/",states,"_states/stations/dur_",toCor_short,"_",toCor_shortZu,"_",stations,".pdf",sep=""))
+		pdf(file=paste("../plots/",trendID,"/",states,"_states",additional_style,"/stations/dur_",toCor_short,"_",toCor_shortZu,"_",stations,".pdf",sep=""))
 		color=c("lightblue","blue","green","yellow","red","violet")
 		if (states==2){
 			state_names=c("cold","warm")
@@ -143,7 +144,7 @@ duration_correl <- function(trendID,states,toCor,toCor_name,toCor_short,toCor_sh
 	# ---------------------------------------------------------
 
 	for (sea in 1:length(seasons)){
-		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",trendID,"_duration_",states,"s_",seasons[sea],".nc",sep=""))
+		nc=open.ncdf(paste("../data/",trendID,"/",states,"_states",additional_style,"/duration/",trendID,"_duration_",states,"s_",seasons[sea],".nc",sep=""))
 		duration=get.var.ncdf(nc,"dur")
 		duration_mid=get.var.ncdf(nc,"dur_mid")
 
@@ -210,14 +211,14 @@ duration_correl <- function(trendID,states,toCor,toCor_name,toCor_short,toCor_sh
 	}
 	if (plot!=TRUE){
 		ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-		season <- dim.def.ncdf("season",units="uu",vals=1:4,unlim=FALSE)
+		season <- dim.def.ncdf("season",units="uu",vals=1:5,unlim=FALSE)
 		varstates <- dim.def.ncdf("states",units="uu",vals=1:states,unlim=FALSE)
 		quantiles <- dim.def.ncdf("quantiles",units="0-1",vals=taus,unlim=FALSE)
 
 		varCorrelation <- var.def.ncdf(name="correlation",longname=paste("correaltion between quantile values and",toCor_name,"values in season"),units="bla",dim=list(ID,season,varstates,quantiles), missval=-9999.0)
 		vars=list(varCorrelation)
 			 
-		nc = create.ncdf(paste("../data/",trendID,"/",states,"_states/correlations/",trendID,"_",toCor_short,"_",toCor_shortZu,"_duration_cor_",states,"states.nc",sep=""),vars)
+		nc = create.ncdf(paste("../data/",trendID,"/",states,"_states",additional_style,"/correlations/",trendID,"_",toCor_short,"_",toCor_shortZu,"_duration_cor_",states,"states.nc",sep=""),vars)
 
 		put.var.ncdf(nc,varCorrelation,correlation)
 	}
@@ -244,17 +245,15 @@ mar_correlation_plot <- function(additional_style,trendID="91_5",states=2,toCor_
 			titel[((sea-1)*4+trans)]=paste("correlation between",toCor_name,"and transition probability",transition_names[trans],"in",seasons[sea])
 		}
 	}
-
-
     map_allgemein(dat,filename_plot=paste("../plots/",trendID,"/",states,"_states",additional_style,"/maps/mar_cor/",trendID,"_",toCor_short,"_",toCor_shortZu,"_markov_",states,"states.pdf",sep=""),
     	worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte="0",farb_palette="gold-blau")
 }
 
-dur_correlation_plot <- function(trendID="91_5",states=2,toCor_short="nao",toCor_name="NAO",toCor_shortZu="",quA=0.95,
+dur_correlation_plot <- function(additional_style,trendID="91_5",states=2,toCor_short="nao",toCor_name="NAO",toCor_shortZu="",quA=0.95,
 	state_names=c("cold","warm"),seasons=c("spring","summer","autumn","winter","year"),
 	dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc"),worldmap = getMap(resolution = "low"),ntot=1319){
 
-    nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/correlations/",trendID,"_",toCor_short,"_",toCor_shortZu,"_duration_cor_",states,"states.nc",sep=""))
+    nc=open.ncdf(paste("../data/",trendID,"/",states,"_states",additional_style,"/correlations/",trendID,"_",toCor_short,"_",toCor_shortZu,"_duration_cor_",states,"states.nc",sep=""))
     correlation=get.var.ncdf(nc,"correlation")
 	reihen=array(NA,dim=c(8,ntot))
 	titel=c()
@@ -262,15 +261,13 @@ dur_correlation_plot <- function(trendID="91_5",states=2,toCor_short="nao",toCor
 	taus=get.var.ncdf(nc,"quantiles")
 	qu=which(taus==quA)
 
-	for (sea in 1:4){
+	for (sea in 1:5){
 		for (state in 1:states){
 			reihen[((sea-1)*states+state),]=correlation[,sea,state,qu]
 			titel[((sea-1)*states+state)]=paste("correlation between",toCor_name,"and",quA,"percentile of",state_names[state],"period duration in",seasons[sea])
 		}
 	}
-
-
-    map_allgemein(dat,filename_plot=paste("../plots/",trendID,"/",states,"_states/maps/dur_cor/",trendID,"_",toCor_short,"_",toCor_shortZu,"_duration_",quA,"_",states,"states.pdf",sep=""),
+    map_allgemein(dat,filename_plot=paste("../plots/",trendID,"/",states,"_states",additional_style,"/maps/dur_cor/",trendID,"_",toCor_short,"_",toCor_shortZu,"_duration_",quA,"_",states,"states.pdf",sep=""),
     	worldmap=worldmap,reihen=reihen,titel=titel,farb_mitte="0")
 }
 
@@ -284,26 +281,26 @@ eke_mar_correl <- function(additional_style,trendID="91_5",states=2,level=1,stat
 	markov_correl(additional_style=additional_style,trendID=trendID,states=states,stations=stations,plot=plot,toCor=eke[,level,,],toCor_name="eddy kynetic energy",toCor_short="eke",toCor_shortZu=paste(pressure[1],"mbar",sep=""),toCor_startYear=1979,transition_names=transition_names)
 }
 
-eke_dur_correl <- function(trendID="91_5",states=2,level=1,stations=seq(1,1319,1),plot=FALSE){
+eke_dur_correl <- function(additional_style,trendID="91_5",states=2,level=1,stations=seq(1,1319,1),plot=FALSE){
 	nc=open.ncdf("../data/eke/eke_ID.nc")
 	eke=get.var.ncdf(nc,"eke_sea")
 	pressure=get.var.ncdf(nc,"levelist")
 
-	duration_correl(trendID=trendID,states=states,stations=stations,plot=plot,toCor=eke[,level,,],toCor_name="eddy kynetic energy",toCor_short="eke",toCor_shortZu=paste(pressure[1],"mbar",sep=""),toCor_startYear=1979)
+	duration_correl(additional_style=additional_style,trendID=trendID,states=states,stations=stations,plot=plot,toCor=eke[,level,,],toCor_name="eddy kynetic energy",toCor_short="eke",toCor_shortZu=paste(pressure[1],"mbar",sep=""),toCor_startYear=1979)
 }
 
-index_mar_correl <- function(trendID="91_5",states=2,toCor_name="NAO",toCor_short="nao",stations=seq(1,1319,1),plot=FALSE,transition_names="cc wc cw ww"){
+index_mar_correl <- function(additional_style,trendID="91_5",states=2,toCor_name="NAO",toCor_short="nao",stations=seq(1,1319,1),plot=FALSE,transition_names="cc wc cw ww"){
 	nc=open.ncdf(paste("../data/roh_data/",toCor_name,"_sea.nc",sep=""))
 	index_sea=get.var.ncdf(nc,toCor_short)
 
-	markov_correl(trendID=trendID,states=states,stations=stations,plot=plot,toCor=index_sea,toCor_name=toCor_name,toCor_short=toCor_short,toCor_shortZu="",toCor_startYear=1950,transition_names=transition_names)
+	markov_correl(additional_style=additional_style,trendID=trendID,states=states,stations=stations,plot=plot,toCor=index_sea,toCor_name=toCor_name,toCor_short=toCor_short,toCor_shortZu="",toCor_startYear=1950,transition_names=transition_names)
 }
 
-index_dur_correl <- function(trendID="91_5",states=2,toCor_name="NAO",toCor_short="nao",stations=seq(1,1319,1),plot=FALSE){
+index_dur_correl <- function(additional_style,trendID="91_5",states=2,toCor_name="NAO",toCor_short="nao",stations=seq(1,1319,1),plot=FALSE){
 	nc=open.ncdf(paste("../data/roh_data/",toCor_name,"_sea.nc",sep=""))
 	index_sea=get.var.ncdf(nc,toCor_short)
 
-	duration_correl(trendID=trendID,states=states,stations=stations,plot=plot,toCor=index_sea,toCor_name=toCor_name,toCor_short=toCor_short,toCor_shortZu="",toCor_startYear=1950)
+	duration_correl(additional_style=additional_style,trendID=trendID,states=states,stations=stations,plot=plot,toCor=index_sea,toCor_name=toCor_name,toCor_short=toCor_short,toCor_shortZu="",toCor_startYear=1950)
 }
 
 
@@ -346,5 +343,7 @@ if (1==2){
 #index_mar_correl(toCor_short="nao",toCor_name="NAO",plot=TRUE,stations=488)
 
 #eke_mar_correl(additional_style="_mean_TX_not_random")
-mar_correlation_plot(additional_style="_mean_TX_not_random",toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar")
+#mar_correlation_plot(additional_style="_mean_TX_not_random",toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar")
 
+eke_dur_correl(additional_style="_mean_TX_not_random")
+dur_correlation_plot(additional_style="_mean_TX_not_random",toCor_short="eke",toCor_name="EKE",toCor_shortZu="",quA=0.95)

@@ -29,7 +29,7 @@ master_trend_control <- function(trendID,states,trend_style){
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     nc=open.ncdf(paste("../data/",trendID,"/",states,"_states",trend_style,"/markov/",trendID,"_markov_",states,"states.nc",sep=""))
     ind=get.var.ncdf(nc,"ind")
-    trend_control_warm_days(dat,ind,filename=paste("../data/",trendID,"/",states,"_states",trend_style,"/sonstiges/",trendID,"warmeTage_trends_5seasons_1950-2014.txt",sep=""))   
+    trend_control_warm_days(dat,ind,filename=paste("../data/",trendID,"/",states,"_states",trend_style,"/sonstiges/",trendID,"warmeTage_trends_5seasons_1950-2014",trend_style,".txt",sep=""))   
 }
 
 master_markov <- function(nday,nyr,trendID,states,transition_names,trend_style="_mean",additional_style=""){
@@ -136,7 +136,7 @@ full_2states <- function(nday,nyr,trendID,trend_style="_mean",additional_style="
     #complete 2 states analysis 
     trendID=paste(nday,"_",nyr,sep="")
 
-    master_trend(nday,nyr,trendID,trend_style=trend_style,additional_style=additional_style)
+    #master_trend(nday,nyr,trendID,trend_style=trend_style,additional_style=additional_style)
 
     master_markov(nday,nyr,trendID,states=2,transition_names=c("cc wc cw ww"),trend_style=trend_style,additional_style=additional_style)
 
@@ -157,7 +157,7 @@ full_2states <- function(nday,nyr,trendID,trend_style="_mean",additional_style="
 
 #full_3states(91,5)
 #full_3states(91,3)
-full_2states(91,5,trend_style="_mode",additional_style="_TN")
+#full_2states(91,5,trend_style="_mode",additional_style="_TX")
 #full_2states(91,5,trend_style="_median",additional_style="_TX")
 
 
@@ -166,7 +166,10 @@ full_2states(91,5,trend_style="_mode",additional_style="_TN")
 #master_markov(nday=61,nyr=5,trendID="61_5",states=2,transition_names=c("cc wc cw ww"))
 
 #master_trend_control(trendID="61_5",states=2)
-#master_trend_control(trendID="91_5",states=2,trend_style="_median")
+master_trend_control(trendID="91_5",states=2,trend_style="_median_TX")
+master_trend_control(trendID="91_5",states=2,trend_style="_mode_TX")
+master_trend_control(trendID="91_5",states=2,trend_style="_mean_TX")
+master_trend_control(trendID="91_5",states=2,trend_style="_mean_TN")
 
 #master_regional_climatology(yearPeriod=c(1950,2014),region_name="7rect",trendID="91_5")
 #master_regional_climatology(yearPeriod=c(1950,2014),region_name="midlat",trendID="91_5")

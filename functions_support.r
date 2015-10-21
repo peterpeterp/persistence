@@ -230,7 +230,6 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
                 per_ind[detrended<threshold & detrended>(-threshold)] = 0 
             }
 
-
             if (states==2){
                 per_ind[y > trend[q,,]]=1
                 per_ind[y < trend[q,,]]=-1
@@ -239,6 +238,7 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
                 per_ind[y == trend[q,,]]=0
                 per_ind[per_ind==0]=sample(c(-1,1),1)
             }
+
             markov_per$ind[q,,] = per_ind
             # Go through vector and calculate persistent events 
             # Perform this step on a 1D vector to avoid artificial cutoffs 
@@ -268,6 +268,61 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
     return(0)#list(markov_per=markov_per,shock_per=shock_per))
 }
 
+calc_states <- function(dat,trend,nday,nyr,filename){
+    source("functions_markov.r")
+
+    ## User parameters 
+    #trash is the number of data point which are wasted by detrending
+    trash = ((nyr-1)/2*365+(nday-1))
+    ntot = length(dat$ID)
+    laenge_zeit = length(dat$time)
+    transitions=states*states
+
+    # Calculate persistence information
+    #cat("Calculating persistence... ")
+
+    markov_per = list(ind=dat$tas*NA,markov=array(NA,dim=c(ntot,5,transitions,65)),markov_conf=array(NA,dim=c(ntot,5,65)))
+
+    for (q in 1:ntot) { 
+        cat("-")
+        if (length(which(is.na(dat$tas[q,,])))<(2*trash+365*20)){
+
+            # Calculate persistence vector
+            y = dat$tas[q,,]
+            per_ind = y*NA 
+
+            if (states==2){
+                detrended = y-trend[q,,]
+                threshold = median(detrended,na.rm=TRUE)
+                per_ind[detrended < threshold]=-1
+                per_ind[detrended > threshold]=1
+            # the >= was somehow problematic, since it affects roughly 5% of the datapoints
+            # now the datapoints sitting on the trend are randomly attributed to warm or cold
+                per_ind[detrended == threshold]=1
+                #per_ind[per_ind==0]=sample(c(-1,1),1)
+            }
+
+        } 
+        else {
+            cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[q],dat$lon[q],dat$lat[q]))
+        }
+     
+    }
+
+    day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
+    year <- dim.def.ncdf("year",units="year",vals=1:65, unlim=FALSE)
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+    varstates <- dim.def.ncdf("states",units="cold=-1 , warm=1",vals=1:states, unlim=FALSE)
+
+
+    ind <- var.def.ncdf(name="ind",units="1 or -1",dim=list(ID,day,year), missval=-9999.0)
+    nc = create.ncdf(filename,ind)
+    put.var.ncdf(nc,vars[[1]],per_ind)
+    close.ncdf(nc)
+
+    cat("done.\n")
+    return(0)#list(markov_per=markov_per,shock_per=shock_per))
+}
 
 trend_analysis <- function(x,y){
     library(Kendall)

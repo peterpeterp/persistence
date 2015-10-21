@@ -326,6 +326,6 @@ trend_mean_median <- function(q,start,stop){
 
 }
 
-trend_mean_median(488,2000,2010)
-trend_mean_median(351,2000,2010)
-trend_mean_median(1011,2000,2010)
+#trend_mean_median(488,2000,2010)
+#trend_mean_median(351,2000,2010)
+#trend_mean_median(1011,2000,2010)
