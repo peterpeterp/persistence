@@ -268,7 +268,7 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
     return(0)#list(markov_per=markov_per,shock_per=shock_per))
 }
 
-calc_states <- function(dat,trend,nday,nyr,filename){
+state_attribution <- function(dat,trend,nday,nyr,filename){
     source("functions_markov.r")
 
     ## User parameters 
