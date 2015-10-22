@@ -356,7 +356,7 @@ detrended_view <- function(q=52,trendID="91_5",trend_style="_mean",dataset="_TX"
     abline(h=median(y,na.rm=TRUE))
 }
 
-detrended_view(q=488)
+#detrended_view(q=488)
 
 
 #trend_mean_median(488,2000,2010)

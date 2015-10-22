@@ -268,7 +268,7 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
     return(0)#list(markov_per=markov_per,shock_per=shock_per))
 }
 
-state_attribution <- function(dat,trend,nday,nyr,filename){
+state_attribution <- function(dat,detrended,nday,nyr,filename){
     source("functions_markov.r")
 
     ## User parameters 
@@ -290,13 +290,12 @@ state_attribution <- function(dat,trend,nday,nyr,filename){
             y = dat$tas[q,,]
             per_ind = y*NA 
 
-            detrended = y-trend[q,,]
-            threshold = median(detrended,na.rm=TRUE)
-            per_ind[detrended < threshold]=-1
-            per_ind[detrended > threshold]=1
+            threshold = median(detrended[q,,],na.rm=TRUE)
+            per_ind[detrended[q,,] < threshold]=-1
+            per_ind[detrended[q,,] > threshold]=1
             # the >= was somehow problematic, since it affects roughly 5% of the datapoints
             # now the datapoints sitting on the trend are randomly attributed to warm or cold
-            per_ind[detrended == threshold]=1
+            per_ind[detrended[q,,] == threshold]=1
             #per_ind[per_ind==0]=sample(c(-1,1),1)
 
             state_ind[q,,]=per_ind

@@ -175,7 +175,7 @@ plot_diff_trend_duration <- function(trendID="91_5",states=2,period="1950-2014",
 		}
 	}
 
-	filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,"_vergleich_",version1,"_",version2,"_",name_zusatz,".pdf",sep="")
+	filename_plot=paste("../plots/",trendID,"/sonstiges/trend_vergleich/",trendID,"_vergleich_",version1,"_",version2,"_",name_zusatz,".pdf",sep="")
 
 	map_allgemein(dat=dat,
 		filename_plot=filename_plot,

@@ -12,7 +12,7 @@ master_nas <- function(){
     find_nas(dat)    
 }
 
-master_trend <- function(nday,nyr,trendID,trend_style="_mean",additional_style="_TX"){
+master_trend <- function(nday,nyr,trendID,trend_style="_mean",dataset="_TX"){
     # calculate trend
     # choice between mean, median and estimated mode is possible
     if (trend_style=="_mean"){procedure=r_calc_runmean_2D}
@@ -21,6 +21,23 @@ master_trend <- function(nday,nyr,trendID,trend_style="_mean",additional_style="
     if (additional_style=="_TX"){dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")}
     if (additional_style=="_TN"){dat=dat_load("../data/HadGHCND_TN_data3D.day1-365.1950-2014.nc")}    
     trend=calc_trend(dat,paste("../data/",trendID,"/",trendID,"_trend",trend_style,additional_style,".nc",sep=""),nday,nyr,procedure=procedure)
+}
+
+master_runmedian_on_detrended <- function(nday,nyr,trendID,trend_style="_mean",dataset="_TX",additional_style="_run_median"){
+    dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    trend=trend_load(paste("../data/",trendID,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""))
+    detrended=dat$tas-trend
+
+    #trash = ((nyr-1)/2*365+(nday-1))
+    ntot = length(dat$ID)
+    runmedian=dat$tas*NA
+    for (q in 1:ntot) {
+        temp = r_calc_runmedian_2D(detrended[q,,],nday=nday,nyr=nyr)
+        #temp[1:trash]=NA
+        #temp[(length(dat$time)-trash):length(dat$time)]=NA
+        runmedian[q,,]=temp
+    }
+    trend_write(paste("../data/",trendID,"/",trendID,trend_style,dataset,additional_style,".nc",sep=""),dat,runmedian)
 }
 
 master_trend_control <- function(trendID,trend_style="_mean",dataset="_TX",additional_style="_median"){
@@ -36,9 +53,19 @@ master_state_attribution <- function(nday,nyr,trendID,trend_style="_mean",datase
     # calculate persistence 2 states
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     trend=trend_load(paste("../data/",trendID,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""))
-    per=state_attribution(dat,trend,nday,nyr,
-            filename=paste("../data/",trendID,"/",trendID,trend_style,dataset,"_state_ind",additional_style,".nc",sep=""))
+    detrended=dat$tas-trend
+    per=state_attribution(dat,detrended,nday,nyr,
+        filename=paste("../data/",trendID,"/",trendID,trend_style,dataset,"_state_ind",additional_style,".nc",sep=""))
+}
 
+master_state_attribution_2_trends <- function(nday,nyr,trendID,trend_style="_mean",dataset="_TX",additional_style="_run_median"){
+    # calculate persistence 2 states
+    dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
+    trend1=trend_load(paste("../data/",trendID,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""))
+    trend2=trend_load(paste("../data/",trendID,"/",trendID,trend_style,dataset,"_run_median.nc",sep=""))
+    detrended=dat$tas-trend1-trend2
+    per=state_attribution(dat,detrended,nday,nyr,
+        filename=paste("../data/",trendID,"/",trendID,trend_style,dataset,"_state_ind",additional_style,".nc",sep=""))
 }
 
 master_markov <- function(nday,nyr,trendID,states,transition_names,trend_style="_mean",additional_style=""){
@@ -144,7 +171,9 @@ full_2states <- function(nday,nyr,trendID,trend_style="_mean",additional_style="
 
     #master_trend(nday,nyr,trendID,trend_style=trend_style,dataset=dataset)
 
-    #master_state_attribution(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
+
+    master_state_attribution(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
+    #master_state_attribution_2_trends(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 
     #master_markov(nday,nyr,trendID,states=2,transition_names=c("cc wc cw ww"),trend_style=trend_style,additional_style=additional_style)
 
@@ -168,6 +197,7 @@ full_2states <- function(nday,nyr,trendID,trend_style="_mean",additional_style="
 #full_2states(91,5,trend_style="_mode",additional_style="_TX")
 #full_2states(91,5,trend_style="_mean",dataset="_TX",additional_style="_median")
 
+master_runmedian_on_detrended(91,5,trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_run_median2")
 
 
 #master_trend(trendID="61_5",nday=61,nyr=5)
@@ -177,7 +207,7 @@ full_2states <- function(nday,nyr,trendID,trend_style="_mean",additional_style="
 #master_trend_control(trendID="91_5",states=2,trend_style="_median_TX")
 #master_trend_control(trendID="91_5",states=2,trend_style="_mode_TX")
 #master_trend_control(trendID="91_5",states=2,trend_style="_mean_TX")
-master_trend_control(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_median")
+#master_trend_control(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_run_median")
 
 #master_regional_climatology(yearPeriod=c(1950,2014),region_name="7rect",trendID="91_5")
 #master_regional_climatology(yearPeriod=c(1950,2014),region_name="midlat",trendID="91_5")

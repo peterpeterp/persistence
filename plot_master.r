@@ -26,7 +26,7 @@ plot_numbWarm <- function(trendID="91_5",grid=FALSE,ausschnitt=c(-80,80),trend_s
 
 	map_allgemein(dat=dat,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte="0",
 		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,trend_style,dataset,"_cold_days_trend",additional_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
+		filename_plot=paste("../plots/",trendID,"/sonstiges/numberColdDays/",trendID,trend_style,dataset,"_cold_days_trend",additional_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 
 	for (sea in 1:5){
 		reihen[sea,]=1-data[1:ntot,(10+sea)]
@@ -35,7 +35,7 @@ plot_numbWarm <- function(trendID="91_5",grid=FALSE,ausschnitt=c(-80,80),trend_s
 
 	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte=c(0.45,0.55),
 		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,trend_style,dataset,"_cold_days_percentage",additional_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)	
+		filename_plot=paste("../plots/",trendID,"/sonstiges/numberColdDays/",trendID,trend_style,dataset,"_cold_days_percentage",additional_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)	
 
 	for (sea in 1:5){
 		reihen[sea,]=1-data[1:ntot,(15+sea)]
@@ -44,41 +44,9 @@ plot_numbWarm <- function(trendID="91_5",grid=FALSE,ausschnitt=c(-80,80),trend_s
 
 	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="mean",
 		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/",trendID,"/sonstiges/",trendID,trend_style,dataset,"_cold_days_percentage_variance",additional_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
+		filename_plot=paste("../plots/",trendID,"/sonstiges/numberColdDays/",trendID,trend_style,dataset,"_cold_days_percentage_variance",additional_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 }
 
-plot_skewness <- function(dat,grid=FALSE,ausschnitt=c(-80,80)){
-	library(moments)
-
-	reihen=array(NA,dim=c(3,ntot))
-	reihen_sig=array(NA,dim=c(3,ntot))
-	titel=c("skewness of TX","skewness of TN","skewness(TX)-skewness(TN)")
-
-	for (q in 1:1319){
-		cat("-")
-		y=as.vector(dat$tas[q,,])
-		nona=which(!is.na(y))
-		y=y[nona]
-		reihen[1,q]=skewness(y)
-	}
-
-	#for TN
-	dat=dat_load("../data/HadGHCND_TN_data3D.day1-365.1950-2014.nc")
-
-	for (q in 1:1319){
-		cat("-")
-		y=as.vector(dat$tas[q,,])
-		nona=which(!is.na(y))
-		y=y[nona]
-		reihen[2,q]=skewness(y)
-	}
-
-	reihen[3,]=reihen[1,]-reihen[2,]
-
-	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="0",
-		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/zwischenzeugs/skewness.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
-}
 
 plot_nas <- function(grid=FALSE,trend_style=""){
 	library(SDMTools)
@@ -303,7 +271,6 @@ worldmap = getMap(resolution = "low")
 ntot=1319
 dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 
-#plot_skewness(dat=dat)
 
 #commands
 if (1==2){
@@ -347,4 +314,7 @@ if (1==2){
 #plot_numbWarm(trendID="91_5",states=2,trend_style="_median_TX")
 #plot_numbWarm(trendID="91_5",states=2,trend_style="_mode_TX")
 #plot_numbWarm(trendID="91_5",states=2,trend_style="_mean_TX")
-plot_numbWarm(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_median")
+plot_numbWarm(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_run_median")
+
+
+#plot_detrended_seasonal_skewness(dat,grid=FALSE,ausschnitt=c(-80,80),trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_median")
