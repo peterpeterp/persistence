@@ -261,24 +261,26 @@ duration_regional_distribution <- function(dur,dur_mid,regions,yearPeriod,regNum
             inYearPeriod=which(x>yearPeriod[1] & x<yearPeriod[2])
             y=y[inYearPeriod]
             x=x[inYearPeriod]
-            histo=hist(duration,breaks,plot=FALSE)
+
+            # y are now the duration length in selected yearPeriod
+            histo=hist(y,breaks,plot=FALSE)
             density[reg,]=histo$density
 
-            quantiles[reg,1:6]=quantile(duration,probs=c(0.05,0.25,0.5,0.75,0.95,1))
-            quantiles[reg,10]=mean(duration,na.rm=TRUE)
-            quantiles[reg,9]=sd(duration,na.rm=TRUE)
+            quantiles[reg,1:6]=quantile(y,probs=c(0.05,0.25,0.5,0.75,0.95,1))
+            quantiles[reg,10]=mean(y,na.rm=TRUE)
+            quantiles[reg,9]=sd(y,na.rm=TRUE)
         }
     }
     return(list(density=density,quantiles=quantiles))
 }
 
-regional_climatology <- function(trendID,dat,yearPeriod,region_name){
+regional_climatology <- function(trendID,dat,yearPeriod,region_name,additional_style){
     # performs the entire regional analysis of markov and duration
     # result will be written in ncdf file
 
     # pnly for one trend and 2 states until now
     maxDur=200
-    print(seq(0,(maxDur-1),1)+0.5)
+    #print(seq(0,(maxDur-1),1)+0.5)
     ntot=length(dat$ID)
     library(quantreg)
 
@@ -289,22 +291,18 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name){
     regNumb=dim(poli)[1]
     IDregions=points_to_regions(dat,c(region_name))
 
-    print(IDregions)
-
     season_names=c("spring","summer","autumn","winter","year")
 
     distributions=array(NA,dim=c(length(season_names),2,regNumb,maxDur))
     quantiles=array(NA,dim=c(length(season_names),2,regNumb,10))
 
     for (season in 1:length(season_names)){   
-        print(season_names[season]) 
 
-        nc_dur=open.ncdf(paste("../data/",trendID,"/2_states/duration/",trendID,"_duration_2s_",season_names[season],".nc",sep=""))
+        nc_dur=open.ncdf(paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_",season_names[season],".nc",sep=""))
         dur=get.var.ncdf(nc_dur,"dur")
         dur_mid=get.var.ncdf(nc_dur,"dur_mid")
         for (state in 1:2){
             tmp=duration_regional_distribution(dur[1:ntot,state,],dur_mid[1:ntot,state,],IDregions,yearPeriod=yearPeriod,regNumb=regNumb,maxDur=maxDur)
-            print(tmp)
             distributions[season,state,,]=tmp$density
             quantiles[season,state,,]=tmp$quantiles
         }
@@ -326,8 +324,11 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name){
     ncQuantile <- var.def.ncdf(name="quantile",units="density 0-1",longname="0.05,0.25,0.5,0.75,0.95,1,NA,NA,SD,Mean",dim=list(ncSeason,ncStates,ncRegion,ncOther), missval=-9999.0)
     
     vars=list(ncDensity,ncQuantile,region_coordinates)
+
+    print(yearPeriod)
+    print(quantiles[4,1,,c(5,10)])
    
-    nc = create.ncdf(paste("../data/",trendID,"/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_distributions.nc",sep=""),vars)
+    nc = create.ncdf(paste("../data/",trendID,"/",additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.nc",sep=""),vars)
     put.var.ncdf(nc,ncDensity,distributions)      
     put.var.ncdf(nc,ncQuantile,quantiles)      
 
@@ -347,8 +348,8 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name){
 }
 
 
-plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
-    nc=open.ncdf(paste("../data/",trendID,"/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_distributions.nc",sep=""))
+plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name,additional_style){
+    nc=open.ncdf(paste("../data/",trendID,"/",additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.nc",sep=""))
     regions=get.var.ncdf(nc,"region")
     quantiles=array(get.var.ncdf(nc,"quantile"),dim=c(5,2,length(regions),10))
 
@@ -366,7 +367,7 @@ plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
     season_auswahl=c(1,2,3,4,5)
 
     #regional focus
-    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_boxplots_reg.pdf",sep=""),width=4,height=12)
+    pdf(file=paste("../plots/",trendID,"/",additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_reg.pdf",sep=""),width=4,height=12)
     par(mfrow=c(5,1))
     par(mar=c(1,5,4,3))
 
@@ -397,7 +398,7 @@ plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
 
 
     # seasonal focus
-    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_boxplots_sea.pdf",sep=""),width=4,height=12)
+    pdf(file=paste("../plots/",trendID,"/",additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_sea.pdf",sep=""),width=4,height=12)
     par(mfrow=c(7,1))
     par(mar=c(1,5,4,3))
 
@@ -427,7 +428,7 @@ plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
     graphics.off()
 
     #regional focus normalized -> are the behaviours of different quantiles different?
-    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_normalized_reg.pdf",sep=""),width=8,height=12)
+    pdf(file=paste("../plots/",trendID,"/",additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_normalized_reg.pdf",sep=""),width=8,height=12)
     par(mfrow=c(6,2))
     par(mar=c(1,5,4,3))
 
@@ -464,7 +465,7 @@ plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name){
     graphics.off()
 
     #seasonal focus normalized -> are the behaviours of different quantiles different?
-    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_normalized_sea.pdf",sep=""),width=8,height=12)
+    pdf(file=paste("../plots/",trendID,"/",additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_normalized_sea.pdf",sep=""),width=8,height=12)
     par(mfrow=c(7,2))
     par(mar=c(1,5,4,3))
 

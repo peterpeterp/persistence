@@ -269,8 +269,56 @@ calc_per <- function(dat,trend,nday,nyr,model,states,transition_names,filename){
 }
 
 state_attribution <- function(dat,detrended,nday,nyr,filename){
-    source("functions_markov.r")
+    ## User parameters 
+    #trash is the number of data point which are wasted by detrending
+    trash = ((nyr-1)/2*365+(nday-1))
+    ntot = length(dat$ID)
+    laenge_zeit = length(dat$time)
 
+    # Calculate persistence information
+    #cat("Calculating persistence... ")
+
+    state_ind=dat$tas*NA
+
+    for (q in 1:ntot) { 
+        cat("-")
+        if (length(which(is.na(dat$tas[q,,])))<(2*trash+365*20)){
+
+            # Calculate persistence vector
+            y = detrended[q,,]
+            per_ind = y*NA 
+
+            threshold = 0
+            per_ind[detrended[q,,] < threshold]=-1
+            per_ind[detrended[q,,] > threshold]=1
+            # the >= was somehow problematic, since it affects roughly 5% of the datapoints
+            # now the datapoints sitting on the trend are randomly attributed to warm or cold
+            per_ind[detrended[q,,] == threshold]=1
+            #per_ind[per_ind==0]=sample(c(-1,1),1)
+
+            state_ind[q,,]=per_ind
+
+        } 
+        else {
+            cat(sprintf("> ID %s lon %s  lat %s <",dat$ID[q],dat$lon[q],dat$lat[q]))
+        }
+     
+    }
+
+    day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
+    year <- dim.def.ncdf("year",units="year",vals=1:65, unlim=FALSE)
+    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+
+    ind <- var.def.ncdf(name="ind",units="cold = -1 , warm = 1",dim=list(ID,day,year), missval=-9999.0)
+    nc = create.ncdf(filename,ind)
+    put.var.ncdf(nc,ind,state_ind)
+    close.ncdf(nc)
+
+    cat("done.\n")
+    return(0)#list(markov_per=markov_per,shock_per=shock_per))
+}
+
+state_attribution_old <- function(dat,detrended,nday,nyr,filename){
     ## User parameters 
     #trash is the number of data point which are wasted by detrending
     trash = ((nyr-1)/2*365+(nday-1))

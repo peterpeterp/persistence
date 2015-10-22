@@ -108,7 +108,6 @@ duration_seasons <- function(dur,dur_mid,season,filename){
 }
     
 duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=seq(1,1319,1)){
-    library(quantreg)
     yearPeriod=yearPeriod
     ntot=1319
     states=dim(dur)[2]

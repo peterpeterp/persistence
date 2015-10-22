@@ -87,11 +87,7 @@ plot_warm_cold_diff_markov <- function(trendID="91_5",states=2,period="1950-2014
 		ausschnitt=ausschnitt,col_row=col_row,cex=cex,subIndex=subIndex)
 }
 
-plot_warm_cold_diff_duration <- function(trendID="91_5",states=2,period="1950-2014",var1="dur_ana_full",var1_sig=NA,
-	farb_mitte="mean",farb_palette="regenbogen",version="_mean_TX",titel_zusatz="95_quan_diff"
-	,region=NA,seasons=c("spring","summer","autumn","winter","year"),
-	grid=FALSE,season_auswahl=c(5),col_row=c(5,2),ausschnitt=c(30,80),cex=cex,subIndex=c("a","b"),
-	filename_plot=paste("../plots/",trendID,"/",states,"_states",version,"/maps/",trendID,"_cold_warm_vergleich_",version,"_",period,".pdf",sep="")){
+plot_warm_cold_diff_duration <- function(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_seasonal_median",states=2,period="1950-2014",var1="dur_ana_full",var1_sig=NA,	farb_mitte="mean",farb_palette="regenbogen",titel_zusatz="95_quan_diff"	,region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE,season_auswahl=c(5),col_row=c(5,2),ausschnitt=c(30,80),cex=cex,subIndex=c("a","b"),	filename_plot=paste("../plots/",trendID,"/",additional_style,"/maps/",trendID,"_cold_warm_vergleich_",additional_style,"_",period,".pdf",sep="")){
 
 	if (states==2){
 		state_names=c("cold","warm")
@@ -115,7 +111,7 @@ plot_warm_cold_diff_duration <- function(trendID="91_5",states=2,period="1950-20
     	season=seasons[sea]
     	print(season)
 
-	nc=open.ncdf(paste("../data/",trendID,"/",states,"_states",version,"/duration/",period,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""))
+	nc=open.ncdf(paste("../data/",trendID,"/",additional_style,"/duration/",period,"/",trendID,trend_style,dataset,additional_style,"_duration_analysis_",season,".nc",sep=""))
 		y=get.var.ncdf(nc,var1)
 		index=(i-1)*2+1
 		reihen[index,]=y[1:ntot,1,5,3]-y[1:ntot,2,5,3]
@@ -293,12 +289,12 @@ yearperiod="1950-2014"
 #plot_multiple_markov(col_row=c(2,2),cex=0.6,name_zusatz="annual_mean",season_auswahl=c(5),var1="mean",titel_zusatz="mean",subIndex=c("a","b"))
 
 #plot_warm_cold_diff_markov(col_row=c(1,1),cex=0.6,name_zusatz="annual_cowa_mean",season_auswahl=c(5),var1="mean",ausschnitt=c(-80,80),farb_palette="lila-gruen",farb_mitte="0",trend_style="_median")
-#plot_warm_cold_diff_duration(col_row=c(1,1),cex=0.6,version="_median_TX",season_auswahl=c(1,2,3,4,5),var1="dur_ana_full",ausschnitt=c(-80,80),farb_palette="lila-gruen",farb_mitte="0")
+plot_warm_cold_diff_duration(col_row=c(1,1),cex=0.6,trend_style="_mean",dataset="_TX",additional_style="_seasonal_median",season_auswahl=c(1,2,3,4,5),var1="dur_ana_full",ausschnitt=c(-80,80),farb_palette="lila-gruen",farb_mitte="0")
 
 
 #plot_diff_trend_duration(version1="_mean_TX",version2="_mean_TN",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=c(-0.5,0.5))
 #plot_diff_trend_duration(version1="_mean_TX",version2="_mean_TX_not_random",quantiles=c(5,8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte="0")
-plot_diff_trend_duration(version1="_mean_TX",version2="_median_TX",verglichenee_ergebnis=1,name_zusatz="mean_trend",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=0)
+#plot_diff_trend_duration(version1="_mean_TX",version2="_median_TX",verglichenee_ergebnis=1,name_zusatz="mean_trend",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=0)
 #plot_diff_trend_duration(version1="_mean_TX",version2="_median_TX",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=c(-2,2))
 #plot_diff_trend_duration(version1="_median_TX",version2="_mode_TX",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=c(-2,2))
 #plot_diff_trend_duration(version1="_mean_TX",version2="_mode_TX",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=c(-3,3))

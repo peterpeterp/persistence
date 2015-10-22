@@ -9,7 +9,7 @@ trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,244,335,1),seas
         for (sea in 1:length(seasonStart)){
             warmeTage=array(NA,65)
             kalteTage=array(NA,65)
-            for (i in 1:61){
+            for (i in 1:64){
                 if (seasonStop[sea]>365){
                     warmeTage[i]=length(which(ind[q,seasonStart[sea]:365,i]==1))
                     kalteTage[i]=length(which(ind[q,seasonStart[sea]:365,i]==-1)) 
@@ -35,11 +35,11 @@ trend_control_warm_days <- function(dat,ind,seasonStart=c(60,151,244,335,1),seas
                 waTrend[q,(15+sea)]=sd(percentage_array,na.rm=TRUE)
             }
         }
-        cat(waTrend[q,15])
+        #cat(waTrend[q,15])
         cat("__")
     }
     write.table(waTrend,filename)
-    return(waTrend[1:ntot,1:4])
+    return(0)
 }
 
 
