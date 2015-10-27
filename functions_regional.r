@@ -69,38 +69,6 @@ points_to_regions <- function(dat,region_names=c("srex","7rect","6wave","7wave",
     return(region[1:ntot,2])
 }
 
-markov_regional_trend <- function(dat,value,regions,yearPeriod,regNumb){
-    # value is an array of dim=c(1319,years)
-    # averages values in one region
-    # performs linear regression and Mann-Kendall test for averaged values
-
-    yearPeriod=yearPeriod-1949
-    years=dim(value)[2]
-    valOut=array(NA,dim=c(regNumb,years))
-    for (reg in 1:regNumb){
-        inside=which(regions==reg)
-        for (j in 1:years){
-            valOut[reg,j]=mean(value[inside,j],na.rm=TRUE)
-        }
-    }
-    out=array(NA,c(2,regNumb))
-    out_sig=array(NA,c(2,regNumb))
-
-    x=seq(yearPeriod[1],yearPeriod[2],1)
-    for (reg in 1:regNumb){
-        y=valOut[reg,x]
-        if (length(which(is.nan(y)==1))<10){
-            tmp=MannKendall(y)
-            out[1,reg]=tmp[1]$tau
-            out_sig[1,reg]=tmp[2]$sl
-            lm.r=lm(y~x)
-            out[2,reg]=summary(lm.r)$coefficients[2]
-            out_sig[2,reg]=summary(lm.r)$coefficients[8]
-        }
-    }
-    return(list(out=out,out_sig=out_sig))
-}
-
 duration_region <- function(regions,reg,dur,dur_mid){
     # combines all recorded durations of one region to one duration array, same for dur_mid
     inside=which(regions==reg)
@@ -245,11 +213,14 @@ regions_color <- function(reihen,reihen_sig,worldmap,titles,poli,filename_plot){
     return()
 }
 
+# ------------------------------------------------------------------------------------------------
+
 duration_regional_distribution <- function(dur,dur_mid,regions,yearPeriod,regNumb,maxDur){
     # dur and dur_mid is an array of dim=c(1319,# of periods)
     breaks=seq(0,maxDur,1)
     density=array(NA,dim=c(regNumb,maxDur))
     quantiles=array(NA,dim=c(regNumb,10))
+
     for (reg in 1:regNumb){
         tmp=duration_region(regions,reg,dur,dur_mid)
         duration=tmp$duration
@@ -270,8 +241,73 @@ duration_regional_distribution <- function(dur,dur_mid,regions,yearPeriod,regNum
             quantiles[reg,10]=mean(y,na.rm=TRUE)
             quantiles[reg,9]=sd(y,na.rm=TRUE)
         }
+
     }
     return(list(density=density,quantiles=quantiles))
+}
+
+regional_climatology <- function(trendID,dat,yearPeriod,region_name,additional_style){
+    # performs the entire regional analysis of markov and duration
+    # result will be written in ncdf file
+
+    # pnly for one trend and 2 states until now
+    maxDur=200
+    #print(seq(0,(maxDur-1),1)+0.5)
+    ntot=length(dat$ID)
+    library(quantreg)
+
+    IDregions=read.table("../data/ID-regions.txt")
+
+    poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
+
+    regNumb=dim(poli)[1]
+    IDregions=points_to_regions(dat,c(region_name))
+
+    season_names=c("spring","summer","autumn","winter","year")
+    region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
+
+    dists=list()
+    pdf(file=paste("../plots/zwischenzeugs/","bla"))
+    at_=seq(1, regNumb, 1)
+    at_=c(at_-0.15,at_+0.15)
+    color=c()
+
+    for (season in 1:length(season_names)){   
+
+        nc_dur=open.ncdf(paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_",season_names[season],".nc",sep=""))
+        dur=get.var.ncdf(nc_dur,"dur")
+        dur_mid=get.var.ncdf(nc_dur,"dur_mid")
+        
+        for (state in 1:2){
+            for (reg in 1:regNumb){
+            
+                tmp=duration_region(IDregions,reg,dur[1:ntot,state,],dur_mid[1:ntot,state,])
+                duration=tmp$duration
+                duration_mid=tmp$duration_mid
+                ord=order(duration_mid)
+                if (length(duration)>1000){
+                    y=as.vector(duration[ord])
+                    x=as.vector(duration_mid[ord])
+                    inYearPeriod=which(x>yearPeriod[1] & x<yearPeriod[2])
+                    y=y[inYearPeriod]
+                    x=x[inYearPeriod]
+
+                    # y are now the duration length in selected yearPeriod
+                    dists=append(dists,list(y))
+                    if (state==1){color=c(color,rgb(0.5,0.5,1,0.8))}
+                    if (state==2){color=c(color,rgb(1,0.5,0.5,0.8))}
+                }
+            }
+
+
+        }
+        boxplot(dists,at=at_,col=color,boxwex=0.3,names=c(region_names,1:regNumb*NA),cex=0.1,frame.plot=FALSE,axes=FALSE,main=)
+        axis(2)
+        for (reg in 1:regNumb){
+            text(reg,100,region_names[reg])
+        }
+        asdas
+    }
 }
 
 regional_climatology <- function(trendID,dat,yearPeriod,region_name,additional_style){

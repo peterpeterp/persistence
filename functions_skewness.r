@@ -31,7 +31,7 @@ calc_runskew <- function(nday=91,trendID="91_5",trend_style="_mean",dataset="_TX
 	write.table(runskew,paste("../data/",trendID,"/",trendID,trend_style,dataset,"_daily_skewness.txt",sep=""))
 }
 
-plot_daily_skew_cycle <- function(stations=c(52,1233,1318),trendID="91_5",trend_style="_mean",dataset="_TX"){
+plot_daily_skew_cycle <- function(stations=c(52,1233),trendID="91_5",trend_style="_mean",dataset="_TX"){
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 	runskew=read.table(paste("../data/",trendID,"/",trendID,trend_style,dataset,"_daily_skewness.txt",sep=""))
     nc=open.ncdf(paste("../data/",trendID,"/",trendID,trend_style,dataset,"_daily_median.nc",sep=""))
@@ -40,8 +40,8 @@ plot_daily_skew_cycle <- function(stations=c(52,1233,1318),trendID="91_5",trend_
     seasonal_median=get.var.ncdf(nc,"_seasonal_median")
 
 	pdf(file="../plots/zwischenzeugs/skewness/daily_cycle.pdf")
-	plot(NA,NA,xlim=c(1,450),ylim=c(-1,1),xlab="day in year",ylab="skewness or median")
-	color=c("red","blue","green")
+	plot(NA,NA,xlim=c(1,450),ylim=c(-1,1),xlab="day in year",ylab="-skewness or median",main="daily skewness cycle averaged over all years")
+	color=c("red","blue")
 	x=1:365
 	y=x*NA
 	data=array(NA,dim=c(1319,365))
@@ -52,12 +52,13 @@ plot_daily_skew_cycle <- function(stations=c(52,1233,1318),trendID="91_5",trend_
 		abline(v=sea,col=rgb(0.5,0.5,0.5,0.5))
 	}
 	for (q in 1:length(stations)){
-		lines(x,data[stations[q],],col=color[q],lty=3)
-		lines(x,daily_median[stations[q],],col=color[q],lty=1)
+		lines(x,-data[stations[q],],col=color[q],lty=1)
+		#lines(x,daily_median[stations[q],],col=color[q],lty=1)
 		lines(x,seasonal_median[stations[q],],col=color[q],lty=2)
 		#abline(h=mean(data[stations[q],],na.rm=TRUE),col=color[q],lty=2)
 	}
-	legend("bottomright",col=c(color,"black","black","black"),lty=c(NA,NA,NA,3,1,2),pch=c(16,16,16,NA,NA,NA),legend=c(paste("station ID",stations),"skewness","daily median*","seasonal median"))
+	#legend("bottomright",col=c(color,"black","black"),lty=c(NA,NA,NA,3,1,2),pch=c(16,16,16,NA,NA,NA),legend=c(paste("station ID",stations),"skewness","daily median*","seasonal median"))
+	legend("bottomright",col=c(color,"black","black"),lty=c(NA,NA,1,2),pch=c(16,16,NA,NA),legend=c(paste("station ID",stations),"-skewness","seasonal median"))
 
 }
 

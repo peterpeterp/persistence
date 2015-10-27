@@ -1,9 +1,8 @@
-
+source("load.r")
 
 method_explanation <- function(yearReal=2003,todo=c(1,1,1,1),name="full"){
     year=yearReal-1949
     q=488
-    source("load.r")
     trend=trend_load("../data/91_5/91_5_trend.nc")
     dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
     nc=open.ncdf("../data/91_5/2_states/duration/91_5_duration_2s_year.nc")
@@ -96,3 +95,62 @@ if (1==2){
     method_explanation(2003,c(1,1,1,2),"4")
     method_explanation(2003,c(1,1,1,1),"5")
 }
+
+method_seasonal_median <- function(q=507,yearReal=2003,trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_seasonal_median"){
+
+    dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    trend=trend_load(paste("../data/",trendID,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""))
+    nc=open.ncdf(paste("../data/",trendID,"/",trendID,trend_style,dataset,additional_style,".nc",sep=""))
+    seasonal_median=get.var.ncdf(nc,additional_style)
+
+    year=yearReal-1949
+
+    pdf(file="../plots/zwischenzeugs/state_attribution.pdf")
+    par(mfrow=c(2,1))
+    par(mar=c(3,5,4,3))
+
+    
+    plot(NA,xlim=c(1950,2014),ylim=c(-22,25),xlab="",ylab="temp deg C",main="detrending")
+    points(dat$time,dat$tas[q,,],xlim=c(year,year+1),cex=0.1)
+    lines(dat$time,trend[q,,],col="green")
+    abline(v=c(2003,2004),col="violet")
+
+    plot(NA,xlim=c(2003,2004),ylim=c(-5,5),xlab="",ylab="temp deg C",main="difference between annual and seasonal median")
+    #points(dat$time,dat$tas[q,,]-trend[q,,])
+    x=seq(2003,2004,1/365)[1:365]
+    lines(x,seasonal_median[q,],col="orange",lty=1)    
+    x=seq(2004,20045,1/365)[1:365]
+    lines(x,seasonal_median[q,],col="orange",lty=1)
+
+    abline(h=median(dat$tas[q,,]-trend[q,,],na.rm=TRUE),col="black")
+
+    time=seq(yearReal,(yearReal+1),1/365)[1:365]
+    time=time+0.1*1/365
+    warm=dat$tas[q,,year]-trend[q,,year]
+    warm[warm<median(dat$tas[q,,]-trend[q,,],na.rm=TRUE)]=NA
+    points(time,warm,pch=2,cex=0.5,col="red")
+    cold=dat$tas[q,,year]-trend[q,,year]
+    cold[cold>median(dat$tas[q,,]-trend[q,,],na.rm=TRUE)]=NA
+    points(time,cold,pch=2,cex=0.5,col="blue")
+
+    time=seq(yearReal,(yearReal+1),1/365)[1:365]
+    time=time+0.9*1/365
+    warm=dat$tas[q,,year]-trend[q,,year]
+    warm[warm<seasonal_median[q,]]=NA
+    points(time,warm,pch=6,cex=0.4,col="red")
+    cold=dat$tas[q,,year]-trend[q,,year]
+    cold[cold>seasonal_median[q,]]=NA
+    points(time,cold,pch=6,cex=0.4,col="blue")
+
+    time=seq(yearReal,(yearReal+1),1/365)[1:365]
+    time=time+0.5*1/365
+    critical=dat$tas[q,,year]-trend[q,,year]
+    critical[critical>seasonal_median[q,] & critical>median(dat$tas[q,,]-trend[q,,],na.rm=TRUE)]=NA
+    critical[critical<seasonal_median[q,] & critical<median(dat$tas[q,,]-trend[q,,],na.rm=TRUE)]=NA
+    points(time,critical,pch=1,cex=1.5,col="green")
+
+
+
+}
+
+method_seasonal_median()

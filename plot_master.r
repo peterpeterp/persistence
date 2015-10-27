@@ -38,7 +38,7 @@ plot_numbWarm <- function(trendID="91_5",grid=FALSE,ausschnitt=c(-80,80),trend_s
 		filename_plot=paste("../plots/",trendID,"/sonstiges/numberColdDays/",trendID,trend_style,dataset,"_cold_days_percentage",additional_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)	
 
 	for (sea in 1:5){
-		reihen[sea,]=1-data[1:ntot,(15+sea)]
+		reihen[sea,]=data[1:ntot,(15+sea)]
 		titel[sea]=paste("variance of percentage of 'cold days' from 1950 to 2014 in",seasons[sea])
 	}
 
@@ -241,10 +241,10 @@ additional_style="_seasonal_median"
 
 dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
-full_plot(trendID=trendID,states=states,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
+#full_plot(trendID=trendID,states=states,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 
 #commands
-if (1==1){
+if (1==2){
 	trendID="91_5"
 	yearPeriod=c(1950,2014)
 	region_name="7rect"
@@ -254,6 +254,7 @@ if (1==1){
 
 
 #plot_numbWarm(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_seasonal_median")
+plot_numbWarm(trendID="91_3",trend_style="_mean",dataset="_TX",additional_style="_seasonal_median")
 
 
 #wave_region(7,78,c(40,70))
@@ -279,14 +280,8 @@ if (1==1){
 #plot_markov(trendID,states=states,vars="MK",vars_sig="MK_sig",farb_mitte="0",titel_zusatz="MannKendall test",name_zusatz="MK_grid",period=yearperiod,grid=TRUE)
 
 
-#full_plot("91_5",2,trend_style="_mean_TX")
-#full_plot("91_5",3)
-#full_plot("91_3",2)
-#full_plot("91_3",3)
 
-#plot_numbWarm(trendID="91_5",states=2,trend_style="_median_TX")
-#plot_numbWarm(trendID="91_5",states=2,trend_style="_mode_TX")
-#plot_numbWarm(trendID="91_5",states=2,trend_style="_mean_TX")
+
 
 
 #plot_detrended_seasonal_skewness(dat,grid=FALSE,ausschnitt=c(-80,80),trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_median")
