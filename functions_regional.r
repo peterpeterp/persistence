@@ -69,24 +69,56 @@ points_to_regions <- function(dat,region_names=c("srex","7rect","6wave","7wave",
     return(region[1:ntot,2])
 }
 
-duration_region <- function(regions,reg,dur,dur_mid){
-    # combines all recorded durations of one region to one duration array, same for dur_mid
-    inside=which(regions==reg)
-    duration=array(NA,dim=c(100000))
-    duration_mid=array(NA,dim=c(100000))
-    count=1
-    # combines the recorded periods from all the grid points of one region in one array
-    for (i in inside){
-        values=length(which(!is.na(dur[i,])))
-        duration[count:(count+values)]=dur[i,1:values]
-        duration_mid[count:(count+values)]=dur_mid[i,1:values]
-        count=count+values
+
+regions_color <- function(reihen,reihen_sig,worldmap,titles,poli,filename_plot){
+    # plots worldmap and colored regions on it
+    jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.2),rgb(0.5,1,0.5), rgb(0.98,0.98,0.98) ,rgb(1,0.5,1),rgb(0.6,0.2,0.6)))
+    
+    nbcol <- 101
+    color <- jet.colors(nbcol)
+
+    pdf(file = filename_plot,width=12,height=8)
+
+    for (rei in 1:dim(reihen)[1]){            
+        y=c()
+        index=c()
+        signi=c()
+        j=0
+        for (i in 1:dim(poli)[1]){
+            poliLabel=i
+            if (!is.na(reihen[rei,poliLabel])){
+                j=j+1
+                y[j]=reihen[rei,poliLabel]
+                index[j]=i 
+                if (abs(reihen[rei,poliLabel])>0.0001){
+                    signi[j]=sprintf("%.04f",reihen_sig[rei,poliLabel])
+                }         
+            }
+        }
+        aushol=max(c(abs(max(y)),abs(min(y))))
+        y[j+1]=-aushol
+        y[j+2]=aushol
+        facetcol <- cut(y,nbcol)  
+
+        print(titles[rei])
+        plot(worldmap,main=titles[rei])
+
+        for (i in 1:j){
+            lon=poli[index[i],1:6]
+            lat=poli[index[i],7:12]
+            lon=lon[!is.na(lon)]
+            lat=lat[!is.na(lat)]
+             polygon(x=lon,y=lat,col=color[facetcol[i]],border="green")
+            text(mean(lon),mean(lat),label=signi[i],cex=0.7,col="black")
+        }
+        image.plot(legend.only=T, zlim=range(y), col=color)
     }
-    duration=duration[!is.na(duration)]
-    duration_mid=duration_mid[!is.na(duration_mid)]
-    return(list(duration=duration,duration_mid=duration_mid))
+    graphics.off()
+    return()
 }
 
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 duration_regional_quantile <- function(dur,dur_mid,regions,yearPeriod,regNumb){
     # dur and dur_mid is an array of dim=c(1319,# of periods)
 
@@ -162,117 +194,55 @@ regional_trends <- function(dat,yearPeriod,filepath,region_name){
         }
         regional_analysis_write(paste(filepath,season_names[season],"_",region_name,".nc",sep=""),result,sig,poli)
     }
-
-
 }
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-regions_color <- function(reihen,reihen_sig,worldmap,titles,poli,filename_plot){
-    # plots worldmap and colored regions on it
-    jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.2),rgb(0.5,1,0.5), rgb(0.98,0.98,0.98) ,rgb(1,0.5,1),rgb(0.6,0.2,0.6)))
-    
-    nbcol <- 101
-    color <- jet.colors(nbcol)
-
-    pdf(file = filename_plot,width=12,height=8)
-
-    for (rei in 1:dim(reihen)[1]){            
-        y=c()
-        index=c()
-        signi=c()
-        j=0
-        for (i in 1:dim(poli)[1]){
-            poliLabel=i
-            if (!is.na(reihen[rei,poliLabel])){
-                j=j+1
-                y[j]=reihen[rei,poliLabel]
-                index[j]=i 
-                if (abs(reihen[rei,poliLabel])>0.0001){
-                    signi[j]=sprintf("%.04f",reihen_sig[rei,poliLabel])
-                }         
-            }
-        }
-        aushol=max(c(abs(max(y)),abs(min(y))))
-        y[j+1]=-aushol
-        y[j+2]=aushol
-        facetcol <- cut(y,nbcol)  
-
-        print(titles[rei])
-        plot(worldmap,main=titles[rei])
-
-        for (i in 1:j){
-            lon=poli[index[i],1:6]
-            lat=poli[index[i],7:12]
-            lon=lon[!is.na(lon)]
-            lat=lat[!is.na(lat)]
-             polygon(x=lon,y=lat,col=color[facetcol[i]],border="green")
-            text(mean(lon),mean(lat),label=signi[i],cex=0.7,col="black")
-        }
-        image.plot(legend.only=T, zlim=range(y), col=color)
+#============================================================================================================================
+duration_region <- function(regions,reg,dur,dur_mid){
+    # combines all recorded durations of one region to one duration array, same for dur_mid
+    inside=which(regions==reg)
+    duration=array(NA,dim=c(100000))
+    duration_mid=array(NA,dim=c(100000))
+    count=1
+    # combines the recorded periods from all the grid points of one region in one array
+    for (i in inside){
+        values=length(which(!is.na(dur[i,])))
+        duration[count:(count+values)]=dur[i,1:values]
+        duration_mid[count:(count+values)]=dur_mid[i,1:values]
+        count=count+values
     }
-    graphics.off()
-    return()
+    duration=duration[!is.na(duration)]
+    duration_mid=duration_mid[!is.na(duration_mid)]
+    return(list(duration=duration,duration_mid=duration_mid))
 }
 
 # ------------------------------------------------------------------------------------------------
 
-duration_regional_distribution <- function(dur,dur_mid,regions,yearPeriod,regNumb,maxDur){
-    # dur and dur_mid is an array of dim=c(1319,# of periods)
-    breaks=seq(0,maxDur,1)
-    density=array(NA,dim=c(regNumb,maxDur))
-    quantiles=array(NA,dim=c(regNumb,10))
-
-    for (reg in 1:regNumb){
-        tmp=duration_region(regions,reg,dur,dur_mid)
-        duration=tmp$duration
-        duration_mid=tmp$duration_mid
-        ord=order(duration_mid)
-        if (length(duration)>1000){
-            y=as.vector(duration[ord])
-            x=as.vector(duration_mid[ord])
-            inYearPeriod=which(x>yearPeriod[1] & x<yearPeriod[2])
-            y=y[inYearPeriod]
-            x=x[inYearPeriod]
-
-            # y are now the duration length in selected yearPeriod
-            histo=hist(y,breaks,plot=FALSE)
-            density[reg,]=histo$density
-
-            quantiles[reg,1:6]=quantile(y,probs=c(0.05,0.25,0.5,0.75,0.95,1))
-            quantiles[reg,10]=mean(y,na.rm=TRUE)
-            quantiles[reg,9]=sd(y,na.rm=TRUE)
-        }
-
-    }
-    return(list(density=density,quantiles=quantiles))
-}
-
-regional_climatology <- function(trendID,dat,yearPeriod,region_name,additional_style){
+direct_regional_boxplots <- function(trendID,dat,yearPeriod,region_name,additional_style){
     # performs the entire regional analysis of markov and duration
     # result will be written in ncdf file
 
     # pnly for one trend and 2 states until now
-    maxDur=200
-    #print(seq(0,(maxDur-1),1)+0.5)
     ntot=length(dat$ID)
-    library(quantreg)
 
-    IDregions=read.table("../data/ID-regions.txt")
 
     poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
-
     regNumb=dim(poli)[1]
     IDregions=points_to_regions(dat,c(region_name))
 
     season_names=c("spring","summer","autumn","winter","year")
     region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
+    season_short=c("MAM","JJA","SON","DJF","year")
 
-    dists=list()
-    pdf(file=paste("../plots/zwischenzeugs/","bla"))
+    pdf(file=paste("../plots/",trendID,"/",additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_regional.pdf",sep=""),width=4,height=12)
+    par(mfrow=c(5,1))
+    par(mar=c(2,5,4,3))   
     at_=seq(1, regNumb, 1)
     at_=c(at_-0.15,at_+0.15)
     color=c()
 
     for (season in 1:length(season_names)){   
+        dists=list()
 
         nc_dur=open.ncdf(paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_",season_names[season],".nc",sep=""))
         dur=get.var.ncdf(nc_dur,"dur")
@@ -301,85 +271,15 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name,additional_s
 
 
         }
-        boxplot(dists,at=at_,col=color,boxwex=0.3,names=c(region_names,1:regNumb*NA),cex=0.1,frame.plot=FALSE,axes=FALSE,main=)
+        boxplot(dists,at=at_,col=color,boxwex=0.3,names=c(region_names,1:regNumb*NA),cex=0.1,frame.plot=FALSE,axes=FALSE,main=season_short[season])
         axis(2)
         for (reg in 1:regNumb){
-            text(reg,100,region_names[reg])
+            text(reg,-5,region_names[reg])
         }
-        asdas
     }
+    graphics.off()
+    adsas
 }
-
-regional_climatology <- function(trendID,dat,yearPeriod,region_name,additional_style){
-    # performs the entire regional analysis of markov and duration
-    # result will be written in ncdf file
-
-    # pnly for one trend and 2 states until now
-    maxDur=200
-    #print(seq(0,(maxDur-1),1)+0.5)
-    ntot=length(dat$ID)
-    library(quantreg)
-
-    IDregions=read.table("../data/ID-regions.txt")
-
-    poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
-
-    regNumb=dim(poli)[1]
-    IDregions=points_to_regions(dat,c(region_name))
-
-    season_names=c("spring","summer","autumn","winter","year")
-
-    distributions=array(NA,dim=c(length(season_names),2,regNumb,maxDur))
-    quantiles=array(NA,dim=c(length(season_names),2,regNumb,10))
-
-    for (season in 1:length(season_names)){   
-
-        nc_dur=open.ncdf(paste("../data/",trendID,"/",additional_style,"/duration/",trendID,trend_style,dataset,additional_style,"_duration_",season_names[season],".nc",sep=""))
-        dur=get.var.ncdf(nc_dur,"dur")
-        dur_mid=get.var.ncdf(nc_dur,"dur_mid")
-        for (state in 1:2){
-            tmp=duration_regional_distribution(dur[1:ntot,state,],dur_mid[1:ntot,state,],IDregions,yearPeriod=yearPeriod,regNumb=regNumb,maxDur=maxDur)
-            distributions[season,state,,]=tmp$density
-            quantiles[season,state,,]=tmp$quantiles
-        }
-    }
-
-    ncRegion <- dim.def.ncdf("region",units="region",vals=1:regNumb, unlim=FALSE)
-    ncStates <- dim.def.ncdf("states",units="states",vals=1:2,unlim=FALSE)
-    ncSeason <- dim.def.ncdf("seasons",units="seasons",vals=1:5,unlim=FALSE)
-
-    mids=seq(0,(maxDur-1),1)+0.5
-    ncMids <- dim.def.ncdf("mids",units="days",vals=mids,unlim=FALSE)
-    ncOther <- dim.def.ncdf("other",units="0.05,0.25,0.5,0.75,0.95,1,NA,NA,SD,Mean",vals=1:10,unlim=FALSE)
-    
-    poli_points <- dim.def.ncdf("poli_points",units="id",vals=1:12,unlim=FALSE)
-
-    region_coordinates <- var.def.ncdf(name="region_coordinates",units="deg",longname="1:6 lon - 7:12 lat",dim=list(ncRegion,poli_points),missval=-9999.0)
-
-    ncDensity <- var.def.ncdf(name="density",units="density 0-1",longname="histogramm density of durations recorded in region",dim=list(ncSeason,ncStates,ncRegion,ncMids), missval=-9999.0)
-    ncQuantile <- var.def.ncdf(name="quantile",units="density 0-1",longname="0.05,0.25,0.5,0.75,0.95,1,NA,NA,SD,Mean",dim=list(ncSeason,ncStates,ncRegion,ncOther), missval=-9999.0)
-    
-    vars=list(ncDensity,ncQuantile,region_coordinates)
-   
-    nc = create.ncdf(paste("../data/",trendID,"/",additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.nc",sep=""),vars)
-    put.var.ncdf(nc,ncDensity,distributions)      
-    put.var.ncdf(nc,ncQuantile,quantiles)      
-
-    pol_poi=array(NA,c(dim(poli)[1],12))
-    for (i in 1:dim(poli)[1]){
-        for (j in 1:12){
-            
-            if (is.numeric(poli[i,j])){
-                pol_poi[i,j]=poli[i,j]
-            }
-        }
-    }
-    put.var.ncdf(nc,region_coordinates,pol_poi)      
-
-    close.ncdf(nc) 
-
-}
-
 
 plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name,additional_style){
     nc=open.ncdf(paste("../data/",trendID,"/",additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.nc",sep=""))
