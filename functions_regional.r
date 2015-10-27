@@ -324,9 +324,6 @@ regional_climatology <- function(trendID,dat,yearPeriod,region_name,additional_s
     ncQuantile <- var.def.ncdf(name="quantile",units="density 0-1",longname="0.05,0.25,0.5,0.75,0.95,1,NA,NA,SD,Mean",dim=list(ncSeason,ncStates,ncRegion,ncOther), missval=-9999.0)
     
     vars=list(ncDensity,ncQuantile,region_coordinates)
-
-    print(yearPeriod)
-    print(quantiles[4,1,,c(5,10)])
    
     nc = create.ncdf(paste("../data/",trendID,"/",additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.nc",sep=""),vars)
     put.var.ncdf(nc,ncDensity,distributions)      
@@ -507,9 +504,9 @@ plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name,additional
 }
 
 
-plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
+plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name,additional_style){
 
-    nc=open.ncdf(paste("../data/",trendID,"/2_states/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_distributions.nc",sep=""))
+    nc=open.ncdf(paste("../data/",trendID,"/",additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.nc",sep=""))
     regions=get.var.ncdf(nc,"region")
     mids=get.var.ncdf(nc,"mids")
     quantiles=array(get.var.ncdf(nc,"quantile"),dim=c(5,2,length(regions),10))
@@ -532,7 +529,7 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
     state_names=c("warm","cold")
 
     # regional focus
-    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions_reg.pdf",sep=""),width=8,height=12)
+    pdf(file=paste("../plots/",trendID,"/",additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions_reg.pdf",sep=""),width=8,height=12)
     par(cex.lab=0.5,cex.axis=0.5)
     plot(NA,xlim=c(0,100),ylim=c(0,100),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 
@@ -614,7 +611,7 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name){
     #seasonal focus
     graphics.off()
 
-    pdf(file=paste("../plots/",trendID,"/2_states/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions_sea.pdf",sep=""),width=8,height=12)
+    pdf(file=paste("../plots/",trendID,"/",additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions_sea.pdf",sep=""),width=8,height=12)
     par(cex.lab=0.5,cex.axis=0.5)
     plot(NA,xlim=c(0,100),ylim=c(0,100),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 
