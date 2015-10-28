@@ -216,9 +216,10 @@ master_regional_trend <- function(yearPeriod,region_name,trendID,trend_style="_m
 master_regional_climatology <- function(yearPeriod,region_name,trendID,trend_style="_mean",dataset="_TX",additional_style="_seasonal_median"){
     source("functions_regional.r")
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-    regional_climatology(trendID=trendID,additional_style=additional_style,dat=dat,yearPeriod=yearPeriod,region_name=region_name)
-    plot_regional_distributions(trendID,dat,yearPeriod,region_name,additional_style=additional_style)
-    plot_regional_boxplots(trendID,dat,yearPeriod,region_name,additional_style=additional_style)
+    #regional_climatology(trendID=trendID,additional_style=additional_style,dat=dat,yearPeriod=yearPeriod,region_name=region_name)
+    #plot_regional_distributions(trendID,dat,yearPeriod,region_name,additional_style=additional_style)
+    #plot_regional_boxplots(trendID,dat,yearPeriod,region_name,additional_style=additional_style)
+    direct_regional_boxplots(trendID=trendID,additional_style=additional_style,dat=dat,yearPeriod=yearPeriod,region_name=region_name)
 }
 
 master_endaussage <- function(){
