@@ -1,7 +1,7 @@
 source("load.r")
 
 
-plot_warm_cold_diff_duration <- function(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_seasonal_median",states=2,period="1950-2014",var1="dur_ana_full",var1_sig=NA,	farb_mitte="mean",farb_palette="regenbogen",titel_zusatz="95_quan_diff"	,region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE,season_auswahl=c(5),col_row=c(5,2),ausschnitt=c(30,80),cex=cex,subIndex=c("a","b"),	filename_plot=paste("../plots/",trendID,"/",additional_style,"/maps/",trendID,"_cold_warm_vergleich_",additional_style,"_",period,".pdf",sep="")){
+plot_warm_cold_diff_duration <- function(trendID="91_5",dataset="_TX",additional_style="_seasonal_median",states=2,period="1950-2014",var1="dur_ana_full",var1_sig=NA,	farb_mitte="mean",farb_palette="regenbogen",titel_zusatz="95_quan_diff"	,region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE,season_auswahl=c(5),col_row=c(5,2),ausschnitt=c(30,80),cex=cex,subIndex=c("a","b")){
 
 	if (states==2){
 		state_names=c("cold","warm")
@@ -25,7 +25,7 @@ plot_warm_cold_diff_duration <- function(trendID="91_5",trend_style="_mean",data
     	season=seasons[sea]
     	print(season)
 
-	nc=open.ncdf(paste("../data/",trendID,"/",additional_style,"/duration/",period,"/",trendID,trend_style,dataset,additional_style,"_duration_analysis_",season,".nc",sep=""))
+	nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,dataset,"_duration_analysis_",season,".nc",sep=""))
 		y=get.var.ncdf(nc,var1)
 		index=(i-1)*2+1
 		reihen[index,]=y[1:ntot,1,5,3]-y[1:ntot,2,5,3]
@@ -35,14 +35,11 @@ plot_warm_cold_diff_duration <- function(trendID="91_5",trend_style="_mean",data
 		titel[index]=paste("cold - warm for mean duration length",season)
 	}
 
-	map_allgemein(dat=dat,
-		filename_plot=filename_plot,
-		worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,grid=grid,
-		ausschnitt=ausschnitt,col_row=col_row,cex=cex,subIndex=subIndex)
+	filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/",trendID,dataset,"_cold_warm_vergleich_",additional_style,"_",period,".pdf",sep="")
+	map_allgemein(dat=dat,		filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt,col_row=col_row,cex=cex,subIndex=subIndex)
 }
 
-plot_diff_trend_duration <- function(trendID="91_5",states=2,period="1950-2014",var="dur_ana_full",version1="_mean_TX",version2="_mean_TN",
-	farb_mitte="0",farb_palette="lila-gruen",name_zusatz="mean_dur_len",titel_zusatz="95_quan_diff"
+plot_diff_trend_duration <- function(trendID="91_5",states=2,period="1950-2014",var="dur_ana_full",version1="_mean_TX",version2="_mean_TN",	farb_mitte="0",farb_palette="lila-gruen",name_zusatz="mean_dur_len",titel_zusatz="95_quan_diff"
 	,region=NA,seasons=c("spring","summer","autumn","winter","year"),verglichenee_ergebnis=3,
 	grid=FALSE,season_auswahl=c(1,2,3,4,5),quantiles=c(1,2,3,4,5,6,8),col_row=c(5,2),ausschnitt=c(30,80),cex=1,subIndex=c("a","b")){
 
@@ -68,8 +65,8 @@ plot_diff_trend_duration <- function(trendID="91_5",states=2,period="1950-2014",
     	season=seasons[sea]
     	print(season)
 
-		nc1=open.ncdf(paste("../data/",trendID,"/",states,"_states",version1,"/duration/",period,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""))
-		nc2=open.ncdf(paste("../data/",trendID,"/",states,"_states",version2,"/duration/",period,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""))
+		nc1=open.ncdf(paste("../data/",trendID,"/",version1,"/duration/",period,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""))
+		nc2=open.ncdf(paste("../data/",trendID,"/",version2,"/duration/",period,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""))
 		y1=get.var.ncdf(nc1,var)
 		y2=get.var.ncdf(nc2,var)
 
@@ -95,7 +92,7 @@ plot_diff_trend_duration <- function(trendID="91_5",states=2,period="1950-2014",
 
 
 
-plot_seasonal_anomalie_duration <- function(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_seasonal_median",period="1950-2014",var1="dur_ana_full",var1_sig=NA,var_qua=5,farb_mitte="mean",farb_palette="regenbogen",name_zusatz="bla",titel_zusatz="sd",region=NA,seasons=c("spring","summer","autumn","winter"),paper=c(12,8),grid=FALSE,season_auswahl=c(1,2,3,4),col_row=c(5,2),ausschnitt=c(30,80),cex=cex,subIndex=c("a","b")){
+plot_seasonal_anomalie_duration <- function(trendID="91_5",dataset="_TX",additional_style="",period="1950-2014",var1="dur_ana_full",var1_sig=NA,var_qua=5,farb_mitte="mean",farb_palette="regenbogen",name_zusatz="bla",titel_zusatz="sd",region=NA,seasons=c("MAM","JJA","SON","DJF"),paper=c(12,8),grid=FALSE,season_auswahl=c(1,2,3,4),col_row=c(5,2),ausschnitt=c(30,80),cex=cex,subIndex=c("a","b")){
 
 	if (states==2){
 		state_names=c("cold","warm")
@@ -107,7 +104,7 @@ plot_seasonal_anomalie_duration <- function(trendID="91_5",trend_style="_mean",d
 		paper=c(12,((col_row[1]-1)*7/5+1))
 	}
 
-	nc=open.ncdf(paste("../data/",trendID,"/",additional_style,"/duration/",period,"/",trendID,trend_style,dataset,additional_style,"_duration_analysis_year.nc",sep=""))
+	nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,dataset,"_duration_analysis_year.nc",sep=""))
 	ground=get.var.ncdf(nc,var1)
 
 	reihen=array(NA,dim=c(states*length(season_auswahl),ntot))
@@ -117,7 +114,7 @@ plot_seasonal_anomalie_duration <- function(trendID="91_5",trend_style="_mean",d
     	sea=season_auswahl[i]
     	season=seasons[sea]
 
-		nc=open.ncdf(paste("../data/",trendID,"/",additional_style,"/duration/",period,"/",trendID,trend_style,dataset,additional_style,"_duration_analysis_",season,".nc",sep=""))
+		nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,dataset,"_duration_analysis_",season,".nc",sep=""))
 		y=get.var.ncdf(nc,var1)
 		for (trans in 1:length(trans_auswahl)){
 			index=(i-1)*states+trans
@@ -125,7 +122,7 @@ plot_seasonal_anomalie_duration <- function(trendID="91_5",trend_style="_mean",d
 			titel[index]=paste(season,titel_zusatz,state_names[trans],"period anomalie to annual mean")
 		}
 	}
-	filename_plot=paste("../plots/",trendID,"/",additional_style,"/maps/",trendID,"_vergleich_",name_zusatz,"_",period,"_",titel_zusatz,"_kompakt.pdf",sep="")
+	filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/",trendID,"_vergleich_",name_zusatz,"_",period,"_",titel_zusatz,"_kompakt.pdf",sep="")
 	map_allgemein(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt,col_row=col_row,paper=paper,cex=cex,subIndex=subIndex)
 }
 
@@ -142,28 +139,17 @@ trendID="91_5"
 states=2
 yearperiod="1950-2014"
 
-#plot_duration_climatology(trendID,states=states,period="1950-2014",ausschnitt=c(-80,80))
 
-#plot_multiple_markov(col_row=c(2,2),cex=0.6,name_zusatz="annual_std",season_auswahl=c(5),var1="std",titel_zusatz="sd",subIndex=c("a","b"))
+#plot_warm_cold_diff_duration(col_row=c(1,1),cex=0.6,dataset="_TX",additional_style="",season_auswahl=c(1,2,3,4,5),var1="dur_ana_full",ausschnitt=c(-80,80),farb_palette="lila-gruen",farb_mitte="0")
 
-#plot_multiple_markov(col_row=c(2,2),cex=0.6,name_zusatz="annual_mean",season_auswahl=c(5),var1="mean",titel_zusatz="mean",subIndex=c("a","b"))
-
-#plot_warm_cold_diff_markov(col_row=c(1,1),cex=0.6,name_zusatz="annual_cowa_mean",season_auswahl=c(5),var1="mean",ausschnitt=c(-80,80),farb_palette="lila-gruen",farb_mitte="0",trend_style="_median")
-#plot_warm_cold_diff_duration(col_row=c(1,1),cex=0.6,trend_style="_mean",dataset="_TX",additional_style="_seasonal_median",season_auswahl=c(1,2,3,4,5),var1="dur_ana_full",ausschnitt=c(-80,80),farb_palette="lila-gruen",farb_mitte="0")
-
-
-#plot_diff_trend_duration(version1="_mean_TX",version2="_mean_TN",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=c(-0.5,0.5))
-#plot_diff_trend_duration(version1="_mean_TX",version2="_mean_TX_not_random",quantiles=c(5,8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte="0")
-#plot_diff_trend_duration(version1="_mean_TX",version2="_median_TX",verglichenee_ergebnis=1,name_zusatz="mean_trend",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=0)
-#plot_diff_trend_duration(version1="_mean_TX",version2="_median_TX",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=c(-2,2))
-#plot_diff_trend_duration(version1="_median_TX",version2="_mode_TX",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=c(-2,2))
 #plot_diff_trend_duration(version1="_mean_TX",version2="_mode_TX",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=c(-3,3))
 
 if (1==1){
-	plot_seasonal_anomalie_duration(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_seasonal_median",farb_mitte=c(-12,12),farb_palette="lila-gruen",name_zusatz="seas_anom",titel_zusatz="95_quantile",var1="dur_ana_full",var_qua=5,season_auswahl=c(1,2,3,4),col_row=c(1,1),cex=1,ausschnitt=c(-80,80))
-	plot_seasonal_anomalie_duration(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_seasonal_median",farb_mitte=c(-12,12),farb_palette="lila-gruen",name_zusatz="seas_anom_klein",titel_zusatz="95_quantile",var1="dur_ana_full",var_qua=5,season_auswahl=c(1,2,3,4),col_row=c(1,1),cex=1,col_row=c(5,2),cex=0.6)
+	plot_seasonal_anomalie_duration(trendID="91_5",dataset="_TX",additional_style="",farb_mitte=c(-12,12),farb_palette="lila-gruen",name_zusatz="seas_anom",titel_zusatz="95_quantile",var1="dur_ana_full",var_qua=5,season_auswahl=c(1,2,3,4),col_row=c(1,1),cex=1,ausschnitt=c(-80,80))
+	plot_seasonal_anomalie_duration(trendID="91_5",dataset="_TX",additional_style="",farb_mitte=c(-12,12),farb_palette="lila-gruen",name_zusatz="seas_anom_klein",titel_zusatz="95_quantile",var1="dur_ana_full",var_qua=5,season_auswahl=c(1,2,3,4),col_row=c(1,1),cex=1,col_row=c(5,2),cex=0.6)
 
-	plot_seasonal_anomalie_duration(trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_seasonal_median",farb_mitte=c(-2,2),farb_palette="lila-gruen",name_zusatz="seas_anom",titel_zusatz="mean",var1="dur_ana_full",var_qua=8,season_auswahl=c(1,2,3,4),col_row=c(1,1),cex=1,ausschnitt=c(-80,80))
+	plot_seasonal_anomalie_duration(trendID="91_5",dataset="_TX",additional_style="",farb_mitte=c(-2,2),farb_palette="lila-gruen",name_zusatz="seas_anom",titel_zusatz="mean",var1="dur_ana_full",var_qua=8,season_auswahl=c(1,2,3,4),col_row=c(1,1),cex=1,ausschnitt=c(-80,80))
 
-	#plot_seasonal_anomalie_duration(farb_mitte=c(-12,12),farb_palette="lila-gruen",name_zusatz="seas_anom",		titel_zusatz="95 quantile anomalie",var1="dur_ana_full",		subIndex=c("c","d","e","f","g","h","i","j"),season_auswahl=c(1,2,3,4),col_row=c(5,2),cex=0.6)
+	#plot_seasonal_anomalie_duration(farb_mitte=c(-12,12),farb_palette="lila-gruen",name_zusatz="seas_anom",		titel_zusatz="95 quantile anomalie",var1="dur_ana_full",subIndex=c("c","d","e","f","g","h","i","j"),season_auswahl=c(1,2,3,4),col_row=c(5,2),cex=0.6)
 }
+
