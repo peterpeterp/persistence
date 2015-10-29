@@ -12,13 +12,16 @@ master_nas <- function(){
     find_nas(dat)    
 }
 
-master_trend_control <- function(trendID,trend_style="_mean",dataset="_TX",additional_style="_median"){
+master_trend_control <- function(trendID,trend_style="_mean",dataset="_TX",additional_style=""){
     # trend control
     source("trend_view.r")
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-    nc=open.ncdf(paste("../data/",trendID,"/",trendID,trend_style,dataset,"_state_ind",additional_style,".nc",sep=""))
+    nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_median",".nc",sep=""))
     ind=get.var.ncdf(nc,"ind")
-    trend_control_warm_days(dat,ind,filename=paste("../data/",trendID,"/",additional_style,"/sonstiges/",trendID,trend_style,dataset,"_5seasons_warme_tage_control",additional_style,".txt",sep=""))   
+    trend_control_warm_days(dat,ind,filename=paste("../data/",trendID,"/",dataset,additional_style,"/sonstiges/",trendID,trend_style,dataset,"_5seasons_warme_tage_control",additional_style,"_year",".txt",sep=""))   
+    nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_seasonal_median",".nc",sep=""))
+    ind=get.var.ncdf(nc,"ind")
+    trend_control_warm_days(dat,ind,filename=paste("../data/",trendID,"/",dataset,additional_style,"/sonstiges/",trendID,trend_style,dataset,"_5seasons_warme_tage_control",additional_style,"_4seasons",".txt",sep=""))  
 }
 
 master_trend <- function(nday,nyr,trendID,trend_style="_mean",dataset="_TX",additional_style=""){
@@ -133,11 +136,13 @@ master_analyse_duration <- function(yearPeriod,trendID,seasons=c("MAM","JJA","SO
 }
 
 master_regional_climatology <- function(yearPeriod,region_name,trendID,dataset="_TX",additional_style=""){
+    library(quantreg)
     source("functions_regional.r")
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-    regional_climatology(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
-    plot_regional_distributions(dat,yearPeriod,region_name,trendID,dataset=dataset,additional_style=additional_style)
+    #regional_climatology(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
+    #plot_regional_distributions(dat,yearPeriod,region_name,trendID,dataset=dataset,additional_style=additional_style)
     direct_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+    #plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
 }
 
 
@@ -145,13 +150,13 @@ full <- function(nday,nyr,trend_style="_mean",dataset="_TX",additional_style="")
     #complete 2 states analysis 
     trendID=paste(nday,"_",nyr,sep="")
 
-    master_duration(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
+    #master_duration(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
     points=c(1950,2014,1950,1980,1980,2014)
     for (i in 1:3){
         period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
-        master_analyse_duration(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        #master_analyse_duration(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style)
         #master_duration_distribution(yearPeriod=period,trendID,trend_style=trend_style,additional_style=additional_style)
-        #master_regional_climatology(yearPeriod=period,region_name="7rect",trendID=trendID,dataset=dataset,additional_style=additional_style)
+        master_regional_climatology(yearPeriod=period,region_name="7rect",trendID=trendID,dataset=dataset,additional_style=additional_style)
 
     }
 }
@@ -170,7 +175,7 @@ additional_style=""
 #master_seasonal_median_on_detrended(nday=nday,nyr=nyr,trendID=trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 
 #master_state_attribution(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
-master_state_attribution_daily_median(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
+#master_state_attribution_daily_median(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 
 
 full(nday,nyr,trend_style="_mean",dataset="_TX",additional_style="")

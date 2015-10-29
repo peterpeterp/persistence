@@ -198,9 +198,9 @@ regional_trends <- function(dat,yearPeriod,filepath,region_name){
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name,additional_style){
+plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name,additional_style,dataset){
 
-    nc=open.ncdf(paste("../data/",trendID,"/",additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.nc",sep=""))
+    nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.nc",sep=""))
     regions=get.var.ncdf(nc,"region")
     mids=get.var.ncdf(nc,"mids")
     quantiles=array(get.var.ncdf(nc,"quantile"),dim=c(5,2,length(regions),10))
@@ -223,7 +223,7 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name,addit
     state_names=c("warm","cold")
 
     # regional focus
-    pdf(file=paste("../plots/",trendID,"/",additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions_reg.pdf",sep=""),width=8,height=12)
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions_reg.pdf",sep=""),width=8,height=12)
     par(cex.lab=0.5,cex.axis=0.5)
     plot(NA,xlim=c(0,100),ylim=c(0,100),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 
@@ -305,7 +305,7 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name,addit
     #seasonal focus
     graphics.off()
 
-    pdf(file=paste("../plots/",trendID,"/",additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions_sea.pdf",sep=""),width=8,height=12)
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions_sea.pdf",sep=""),width=8,height=12)
     par(cex.lab=0.5,cex.axis=0.5)
     plot(NA,xlim=c(0,100),ylim=c(0,100),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 
@@ -459,6 +459,7 @@ regional_climatology <- function(dat,yearPeriod,region_name,trendID,additional_s
     quantiles=array(NA,dim=c(length(season_names),2,regNumb,10))
 
     for (season in 1:length(season_names)){   
+        print(season_names[season])
 
         nc_dur=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season_names[season],".nc",sep=""))
         dur=get.var.ncdf(nc_dur,"dur")
@@ -529,6 +530,8 @@ direct_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,addition
     at_=c(at_-0.15,at_+0.15)
     color=c()
     maxi=c()
+    taus=c(0.05,0.25,0.5,0.75,0.95,1)
+    taus=c(0.91,0.95,0.98)
 
     for (season in season_names){   
         dists=list()
@@ -536,7 +539,7 @@ direct_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,addition
         nc_dur=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
         dur=get.var.ncdf(nc_dur,"dur")
         dur_mid=get.var.ncdf(nc_dur,"dur_mid")
-        
+        quantiles=array(NA,dim=c(regNumb,2,length(taus)))
         for (state in 1:2){
             for (reg in 1:regNumb){
             
@@ -556,25 +559,189 @@ direct_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,addition
                     maxi[reg+regNumb*(state-1)]=max(y)
                     if (state==1){color=c(color,rgb(0.5,0.5,1,0.8))}
                     if (state==2){color=c(color,rgb(1,0.5,0.5,0.8))}
+
+                    quantiles[reg,state,1:length(taus)]=quantile(y,probs=taus,na.rm=TRUE,type=1)
+
+
                 }
             }
 
 
         }
-        tmp=boxplot(dists,at=at_,col=color,boxwex=0.3,names=c(region_names,1:regNumb*NA),cex=0.1,pch=".",frame.plot=FALSE,axes=FALSE,main=season,log="y")
+        #tmp=boxplot(dists,at=at_,col=color,boxwex=0.3,names=c(region_names,1:regNumb*NA),cex=0.1,pch=".",frame.plot=FALSE,axes=FALSE,main=season,log="y")
+        #axis(2)
+        #for (reg in 1:regNumb){
+        #    text(reg,max(maxi),region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
+        #}
+        tmp=boxplot(dists,at=at_,col=color,ylim=c(0,(max(quantiles[,,])+4)),boxwex=0.3,names=c(region_names,1:regNumb*NA),outline=FALSE,frame.plot=FALSE,axes=FALSE,main=season)
         axis(2)
         for (reg in 1:regNumb){
-            text(reg,max(maxi),region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
+            text(reg,max(quantiles[,,])+2,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
         }
-        tmp=boxplot(dists,at=at_,col=color,boxwex=0.3,names=c(region_names,1:regNumb*NA),outline=FALSE,frame.plot=FALSE,axes=FALSE,main=season)
-        axis(2)
-        for (reg in 1:regNumb){
-            text(reg,max(tmp$stats),region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
+        for (quA in 1:length(taus)){
+            points(at_[1:regNumb],quantiles[,1,quA],col="blue",pch=quA)
+            lines(at_[1:regNumb],quantiles[,1,quA],col="blue",lty=quA)
+            points(at_[(regNumb+1):(regNumb*2)],quantiles[,2,quA],col="red",pch=quA)
+            lines(at_[(regNumb+1):(regNumb*2)],quantiles[,2,quA],col="red",lty=quA)
         }
     }
     graphics.off()
 }
 
 
+plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name,additional_style,dataset){
+    nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.nc",sep=""))
+    regions=get.var.ncdf(nc,"region")
+    quantiles=array(get.var.ncdf(nc,"quantile"),dim=c(5,2,length(regions),10))
 
+    color=c(rgb(0,0,1,0.6),rgb(1,0,0,0.4))
+
+    plot_names=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s")
+
+    region_names=c("western \n N. America","central \n N. America","eastern \n N. America","Europe","western \n Asia","central \n Asia","eastern \n Asia")
+    region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
+
+    season_names=c("spring","summer","autumn","winter","year")
+    season_names=c("MAM","JJA","SON","DJF","year")
+
+    # different order of seasonal_auswahl might result in strange things, dangerous
+    season_auswahl=c(1,2,3,4,5)
+
+    #regional focus
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_reg.pdf",sep=""),width=4,height=12)
+    par(mfrow=c(5,1))
+    par(mar=c(1,5,4,3))
+
+    for (sea in season_auswahl){
+        plot(NA,xlim=c(0.5,length(regions)*0.65),ylim=c(-3,24),frame.plot=FALSE,axes=FALSE,ylab="# days",xlab="",main=season_names[sea])
+        axis(2,ylim=c(-3,24))
+        for (i in seq(0,25,5)){
+            abline(h=i,col=rgb(0.8,0.8,0.8,0.6))
+        }
+        for (reg in regions){
+            for (state in 1:2){
+                quAn=quantiles[sea,state,reg,]
+                #print(quAn)
+                mitte=reg*0.6-0.1+0.2*(state-1)
+                links=mitte-0.1
+                rechts=mitte+0.1
+                polygon(x=c(rechts,links,links,rechts),y=c(quAn[2],quAn[2],quAn[4],quAn[4]),col=color[state])
+                lines(c(mitte,mitte),c(quAn[1],quAn[5]))
+                lines(c(links,rechts),c(quAn[1],quAn[1]))
+                lines(c(links,rechts),c(quAn[5],quAn[5]))
+                lines(c(links,rechts),c(quAn[3],quAn[3]))
+                points(mitte,quAn[10],pch=4)
+            }
+            text(reg*0.6,-3,region_names[reg])
+        }
+    }
+    graphics.off()
+
+
+    # seasonal focus
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_sea.pdf",sep=""),width=4,height=12)
+    par(mfrow=c(7,1))
+    par(mar=c(1,5,4,3))
+
+    for (reg in regions){
+        plot(NA,xlim=c(0.5,length(season_auswahl)*0.65),ylim=c(-3,24),frame.plot=FALSE,axes=FALSE,ylab="# days",xlab="",main=region_names[reg])
+        axis(2,ylim=c(-3,24))
+        for (i in seq(0,25,5)){
+            abline(h=i,col=rgb(0.8,0.8,0.8,0.6))
+        }
+        for (sea in season_auswahl){
+            for (state in 1:2){
+                quAn=quantiles[sea,state,reg,]
+                #print(quAn)
+                mitte=sea*0.6-0.1+0.2*(state-1)
+                links=mitte-0.1
+                rechts=mitte+0.1
+                polygon(x=c(rechts,links,links,rechts),y=c(quAn[2],quAn[2],quAn[4],quAn[4]),col=color[state])
+                lines(c(mitte,mitte),c(quAn[1],quAn[5]))
+                lines(c(links,rechts),c(quAn[1],quAn[1]))
+                lines(c(links,rechts),c(quAn[5],quAn[5]))
+                lines(c(links,rechts),c(quAn[3],quAn[3]))
+                points(mitte,quAn[10],pch=4)
+            }
+            text(sea*0.6,-3,season_names[sea])
+        }
+    }
+    graphics.off()
+
+    #regional focus normalized -> are the behaviours of different quantiles different?
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_normalized_reg.pdf",sep=""),width=8,height=12)
+    par(mfrow=c(6,2))
+    par(mar=c(1,5,4,3))
+
+    qua_selection=c(1,2,3,4,5,10)
+    qua_names=c("5 percentile","25 percentile","median","75 percentile","95 percentile","mean")
+    qua_colors=c(rgb(0.1,0.1,0.6),rgb(0.2,0.4,0.7),rgb(0,0,0),rgb(0.7,0.2,0.4),rgb(1,0,0),rgb(0,1,0))
+    qua_colors=c("lightblue","blue","black","orange","red","green")
+    qua_ltys=c(1,2,1,2,1,1)
+    qua_pchs=c(13,1,15,1,13,4)
+    state_names=c("warm","cold")
+
+    x=regions
+
+    for (sea in season_auswahl){
+        for (state in 1:2){
+            plot(NA,xlim=c(0,length(regions)),ylim=c(-0.1,1),frame.plot=FALSE,axes=FALSE,ylab="normalized # days",xlab="",main=paste(season_names[sea],"  ",state_names[state]))
+            axis(2,ylim=c(0,1))
+
+            for (reg in regions){
+                text(reg,-0.1,region_names[reg])
+            }
+            for (qua_index in 1:length(qua_selection)){
+                qua=qua_selection[qua_index]
+                y=quantiles[sea,state,,qua]
+                y_norm=(y-min(y,na.rm=TRUE))/(max(y,na.rm=TRUE)-min(y,na.rm=TRUE))
+                lines(x,y_norm,col=qua_colors[qua_index],lty=qua_ltys[qua_index])
+                points(x,y_norm,col=qua_colors[qua_index],pch=qua_pchs[qua_index])
+            }
+        }
+        
+    }
+    plot(NA,xlim=c(0,length(regions)),ylim=c(-0.1,1),frame.plot=FALSE,axes=FALSE,ylab="",xlab="",main="")
+    legend("topleft",col=qua_colors,lty=qua_ltys,legend=qua_names,pch=qua_pchs)
+    graphics.off()
+
+    #seasonal focus normalized -> are the behaviours of different quantiles different?
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_normalized_sea.pdf",sep=""),width=8,height=12)
+    par(mfrow=c(7,2))
+    par(mar=c(1,5,4,3))
+
+    qua_selection=c(1,2,3,4,5,10)
+    qua_names=c("5 percentile","25 percentile","median","75 percentile","95 percentile","mean")
+    qua_colors=c(rgb(0.1,0.1,0.6),rgb(0.2,0.4,0.7),rgb(0,0,0),rgb(0.7,0.2,0.4),rgb(1,0,0),rgb(0,1,0))
+    qua_colors=c("lightblue","blue","black","orange","red","green")
+    qua_ltys=c(1,2,1,2,1,1)
+    qua_pchs=c(13,1,15,1,13,4)
+    state_names=c("warm","cold")
+
+    x=season_auswahl
+
+    for (reg in regions){
+        for (state in 1:2){
+            plot(NA,xlim=c(0,length(regions)),ylim=c(-0.1,1),frame.plot=FALSE,axes=FALSE,ylab="normalized # days",xlab="",main=paste(region_names[reg],"  ",state_names[state]))
+            axis(2,ylim=c(0,1))
+
+            for (sea in season_auswahl){
+                text(sea,-0.1,season_names[sea])
+            }
+            for (qua_index in 1:length(qua_selection)){
+                qua=qua_selection[qua_index]
+                y=quantiles[,state,reg,qua]
+                y_norm=(y-min(y,na.rm=TRUE))/(max(y,na.rm=TRUE)-min(y,na.rm=TRUE))
+                lines(x,y_norm,col=qua_colors[qua_index],lty=qua_ltys[qua_index])
+                points(x,y_norm,col=qua_colors[qua_index],pch=qua_pchs[qua_index])
+            }
+        }
+        if (2==1){
+            plot(NA,xlim=c(0,length(regions)),ylim=c(-0.1,1),frame.plot=FALSE,axes=FALSE,ylab="",xlab="",main="")
+            legend("topleft",col=qua_colors,lty=qua_ltys,legend=qua_names,pch=qua_pchs)
+        }
+        
+    }
+    graphics.off()
+}
 
