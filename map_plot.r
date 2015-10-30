@@ -55,21 +55,6 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 	#titel liste von strings, plot-titles
 	#farb_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
 
-	if (farb_palette=="gold-blau"){
-		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.6),rgb(0.5,1,1), rgb(0.98,0.98,0.98) ,rgb(1,1,0),rgb(0.6,0.6,0)))
-	}
-	if (farb_palette=="lila-gruen"){
-		jet.colors <- colorRampPalette( c(rgb(0.5,1,0.5),rgb(0.2,0.6,0.2), rgb(0.0,0.0,0.0),rgb(0.6,0.2,0.6),rgb(1,0.5,1)))
-		jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(0.0,0.0,0.0),rgb(1,0.5,1),rgb(1,0.7,0.7)))
-		jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(1,1,1),rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
-	}
-	if (farb_palette=="regenbogen"){
-		jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
-	}
-
-	nbcol <- 101
-	color <- jet.colors(nbcol)	
-
 	pdf(file = filename_plot,width=paper[1],height=paper[2])
     par(mar=c(1,1,2,4))
 
@@ -136,7 +121,12 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 		}
 
 		# depending on color-cheme --------------------------------
-		if (farb_mitte=="cut"){
+		if ((length(farb_mitte)>1 & farb_mitte[1]=="individual")){
+			farb_mitte_loc=farb_mitte[(i+1)]
+		}
+		else {farb_mitte_loc=farb_mitte}
+
+		if (farb_mitte_loc=="cut"){
 			mi=mean(y,na.rm=TRUE)
 			sd=sd(y,na.rm=TRUE)
 			high=mi+1*sd
@@ -147,40 +137,61 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 			y[2]=high
 		}
 
-		if (farb_mitte=="gemeinsam 0"){
+		if (farb_mitte_loc=="gemeinsam 0"){
 			y[1]=-aushol
 			y[2]=aushol			
 		}
-		if (farb_mitte=="gemeinsam mean"){
+		if (farb_mitte_loc=="gemeinsam mean"){
 			y[1]=mi-aushol
 			y[2]=mi+aushol			
 		}
-		if (farb_mitte=="0"){
+		if (farb_mitte_loc=="0"){
 			aushol=max(c(abs(max(y,na.rm=TRUE)),abs(min(y,na.rm=TRUE))))
 			y[1]=-aushol
 			y[2]=aushol
 		}
-		if (farb_mitte=="mean"){
+		if (farb_mitte_loc=="mean"){
 			mi=mean(y,na.rm=TRUE)
 			y[1]=mi
 			y[2]=mi
 		}	
-		if ((length(farb_mitte)==2 & farb_mitte[1]!=farb_mitte[2])){
-			y[1]=farb_mitte[1]
-			y[2]=farb_mitte[2]
-			y[y>farb_mitte[2]]=farb_mitte[2]
-			y[y<farb_mitte[1]]=farb_mitte[1]
+		if ((length(farb_mitte_loc)==2 & farb_mitte_loc[1]!=farb_mitte_loc[2])){
+			y[1]=farb_mitte_loc[1]
+			y[2]=farb_mitte_loc[2]
+			y[y>farb_mitte_loc[2]]=farb_mitte_loc[2]
+			y[y<farb_mitte_loc[1]]=farb_mitte_loc[1]
 		}	
-		if ((length(farb_mitte)==2 & farb_mitte[1]==farb_mitte[2])){
-			y[1]=farb_mitte[1]
-			y[2]=farb_mitte[1]
-			y[y>farb_mitte[1]]=farb_mitte[1]
-			y[y<(-farb_mitte[1])]=(-farb_mitte[1])
+		if ((length(farb_mitte_loc)==2 & farb_mitte_loc[1]==farb_mitte_loc[2])){
+			y[1]=farb_mitte_loc[1]
+			y[2]=farb_mitte_loc[1]
+			y[y>farb_mitte_loc[1]]=farb_mitte_loc[1]
+			y[y<(-farb_mitte_loc[1])]=(-farb_mitte_loc[1])
 		}	
-		if (farb_mitte=="nichts"){
+		if (farb_mitte_loc=="nichts"){
 			y[1]=mean(y,na.rm=TRUE)
 			y[2]=mean(y,na.rm=TRUE)
-		}		
+		}
+
+		if ((length(farb_palette)>1 & farb_palette[1]=="individual")){
+			farb_palette_loc=farb_palette[(i+1)]
+		}
+		else {farb_palette_loc=farb_palette}	
+
+		if (farb_palette_loc=="gold-blau"){
+			jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.6),rgb(0.5,1,1), rgb(0.98,0.98,0.98) ,rgb(1,1,0),rgb(0.6,0.6,0)))
+		}
+		if (farb_palette_loc=="lila-gruen"){
+			jet.colors <- colorRampPalette( c(rgb(0.5,1,0.5),rgb(0.2,0.6,0.2), rgb(0.0,0.0,0.0),rgb(0.6,0.2,0.6),rgb(1,0.5,1)))
+			jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(0.0,0.0,0.0),rgb(1,0.5,1),rgb(1,0.7,0.7)))
+			jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(1,1,1),rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
+		}
+		if (farb_palette_loc=="regenbogen"){
+			jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
+		}
+		nbcol <- 101
+		color <- jet.colors(nbcol)	
+
+
 		# -----------------------------------------------------------------
 
 		facetcol <- cut(y,nbcol)

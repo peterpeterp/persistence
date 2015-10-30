@@ -75,7 +75,10 @@ master_state_attribution <- function(nday,nyr,trendID,trend_style="_mean",datase
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
     trend=trend_load(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""))
     detrended=dat$tas-trend
-    detrended=detrended-median(detrended,na.rm=TRUE)
+    for (q in 1:1319){
+       detrended[q,,]=detrended[q,,]-median(detrended[q,,],na.rm=TRUE) 
+    }
+    
     per=state_attribution(dat,detrended,nday,nyr,
         filename=paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_median",".nc",sep=""))
 }
@@ -135,14 +138,22 @@ master_analyse_duration <- function(yearPeriod,trendID,seasons=c("MAM","JJA","SO
     }
 }
 
-master_regional_climatology <- function(yearPeriod,region_name,trendID,dataset="_TX",additional_style=""){
+master_regional_climatology <- function(region_name,trendID,dataset="_TX",additional_style=""){
     library(quantreg)
     source("functions_regional.r")
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-    #regional_climatology(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
-    #plot_regional_distributions(dat,yearPeriod,region_name,trendID,dataset=dataset,additional_style=additional_style)
-    direct_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
-    #plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+
+    points=c(1950,2014,1950,1980,1980,2014)
+    for (i in 1:3){
+        yearPeriod=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
+        print(yearPeriod)
+        #regional_climatology(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
+        #plot_regional_distributions(dat,yearPeriod,region_name,trendID,dataset=dataset,additional_style=additional_style)
+        regional_quantiles(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+    }
+
+    plot_regional_boxplots_vergleich(dat=dat,yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
 }
 
 
@@ -155,9 +166,8 @@ full <- function(nday,nyr,trend_style="_mean",dataset="_TX",additional_style="")
     for (i in 1:3){
         period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
         #master_analyse_duration(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        master_analyse_duration(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style,seasons=c("year"))
         #master_duration_distribution(yearPeriod=period,trendID,trend_style=trend_style,additional_style=additional_style)
-        master_regional_climatology(yearPeriod=period,region_name="7rect",trendID=trendID,dataset=dataset,additional_style=additional_style)
-
     }
 }
 
@@ -178,11 +188,11 @@ additional_style=""
 #master_state_attribution_daily_median(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 
 
-full(nday,nyr,trend_style="_mean",dataset="_TX",additional_style="")
+#full(nday,nyr,trend_style="_mean",dataset="_TX",additional_style="")
 
 
 
 #master_trend_control(trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
-
+master_regional_climatology(region_name="7rect",trendID=trendID,dataset=dataset,additional_style=additional_style)
 
 
