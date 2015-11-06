@@ -41,11 +41,17 @@ add_region <- function(region_name,farbe){
         lat=lat[!is.na(lat)]
         polygon(x=lon,y=lat,border=farbe)
     }
+    reg_name=read.table(paste("../data/region_poligons/",region_name,"_labels.txt",sep=""))
+    for (i in 1:dim(poli)[1]){
+        lon=reg_name[i,1]
+        lat=reg_name[i,2]
+        text(label=reg_name[i,3],x=lon,y=lat,col=rgb(0.2,0.2,0.2,0.8))
+    }
 }
 
 map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA,titel,
-	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",
-	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,
+	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,
+	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",
 	subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z")){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
@@ -54,6 +60,9 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 	#reihen array(... dim=c(anzahl der plots, anzahl der stationen))
 	#titel liste von strings, plot-titles
 	#farb_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
+	if (ausschnitt[1]!=-80){
+		paper[2]=paper[2]*(ausschnitt[2]-ausschnitt[1])/160+1
+	}
 
 	pdf(file = filename_plot,width=paper[1],height=paper[2])
     par(mar=c(1,1,2,4))
@@ -88,7 +97,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 	subCount=0
 	for (i in 1:dim(reihen)[1]){
 		subCount=subCount+1
-		print(titel[i])
+		if (titel[1]!=""){print(titel[i])}
 		size=length(mid_lat)
 		regio=array(NA,size)
 		lon=array(NA,size)
@@ -195,10 +204,20 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 		# -----------------------------------------------------------------
 
 		facetcol <- cut(y,nbcol)
-		plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])
+		if (titel[1]==""){plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5)}
+		else{plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])}
+
+
+		#plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])
 
 		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=pointsize)
 		points(lon,lat,pch=sig,cex=pointsize)
+
+		print(average)
+		if (average==TRUE){
+			text(-165,ausschnitt[1]+10,paste("mean:",round(mean(y,na.rm=TRUE),02)))
+			text(-165,ausschnitt[1]+5,paste("sd:",round(sd(y,na.rm=TRUE),02)))
+		}
 		#mark nas
 		#points(dat$lon,dat$lat,pch=nas,cex=pointsize)
 
@@ -223,7 +242,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 			}
 		}
 		else {
-			image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE)
+			image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE,legend.lab=color_lab)
 		}
 	}
     graphics.off()

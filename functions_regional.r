@@ -508,18 +508,19 @@ regional_climatology <- function(dat,yearPeriod,region_name,trendID,additional_s
 #==========================================================================================================================
 
 # ------------------------------------------------------------------------------------------------
-plot_boxplot <- function(quans,x,width,color){
+plot_boxplot <- function(quans,x,width,color="white",border="black",density=NA){
 
     links=x-width/2
     rechts=x+width/2
-    polygon(x=c(rechts,links,links,rechts),y=c(quans[2],quans[2],quans[4],quans[4]),col=color)    
+    polygon(x=c(rechts,links,links,rechts),y=c(quans[2],quans[2],quans[4],quans[4]),col=color,border=border,density=density)    
+    #polygon(x=c(rechts,links,links,rechts),y=c(quans[2],quans[2],quans[4],quans[4]),col=color,border=border,density=density)    
     for (qu in quans[1:5]){
-        lines(c(links,rechts),c(qu,qu))
+        lines(c(links,rechts),c(qu,qu),col=border)
     }
-    lines(c(links,links),quans[c(2,4)])
-    lines(c(rechts,rechts),quans[c(2,4)])
-    lines(c(x,x),quans[c(1,2)],lty=2)
-    lines(c(x,x),quans[c(4,5)],lty=2)
+    lines(c(links,links),quans[c(2,4)],col=border)
+    lines(c(rechts,rechts),quans[c(2,4)],col=border)
+    lines(c(x,x),quans[c(1,2)],lty=2,col=border)
+    lines(c(x,x),quans[c(4,5)],lty=2,col=border)
 }
 
 
@@ -534,37 +535,190 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
     quantiles=get.var.ncdf(nc,"quantiles")
     regions=get.var.ncdf(nc,"region")
     regNumb=7
+    seaNumb=6
     region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
     season_names=c("MAM","JJA","SON","DJF","year","4seasons")
 
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_regional.pdf",sep=""))
-    par(mfrow=c(1,1))
-    par(mar=c(1,5,4,3))   
-    at_=seq(1, regNumb, 1)
-    at_=c(at_-0.15,at_+0.15)
-    color=c()
-    maxi=c()
-    taus=c(0.05,0.25,0.5,0.75,0.95,0.91,0.98)
     color=c(rgb(0.5,0.5,1,0.8),rgb(1,0.5,0.5,0.8))
     pos=c(-1,1)*0.15
+    width=6
+    height=3
 
+    # regional focus
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_regional.pdf",sep=""),width=width,height=height)
+    par(mfrow=c(1,1))
+    par(mar=c(1,4,2,0))   
+    at_=seq(1, regNumb, 1)
+    at_=c(at_-0.15,at_+0.15)
+    buchstaben=c("a","b","c","d")
+    drueber=2
     for (sea in 1:length(season_names)){   
         season=season_names[sea]
 
-        plot(NA,xlim=c(0,8),ylim=c(0,(max(quantiles[sea,,,])+4)),frame.plot=FALSE,axes=FALSE,main=season,ylab="days")
+        plot(NA,xlim=c(0,8),ylim=c(0,(max(quantiles[sea,,,1:5])+drueber)),frame.plot=FALSE,axes=FALSE,ylab="days")
         axis(2)
+        for (i in axis(2)){
+            abline(h=i,col=rgb(0.5,0.5,0.5,0.5),lty=3)
+        }
+        text(8,(max(quantiles[sea,,,1:5],na.rm=TRUE)+drueber-0.5),label=buchstaben[sea],cex=2)
+
         for (reg in 1:regNumb){
             for (state in 1:2){
                 plot_boxplot(quantiles[sea,reg,state,],reg+pos[state],0.3,color[state])
-                text(reg,max(quantiles[sea,,,])+2,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
+                text(reg,max(quantiles[sea,,,1:5])+drueber,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
             }
         }
-        for (quA in c(9,7)){
-            points(at_[1:regNumb],quantiles[sea,,1,quA],col="blue",pch=quA)
-            lines(at_[1:regNumb],quantiles[sea,,1,quA],col="blue",lty=quA)
-            points(at_[(regNumb+1):(regNumb*2)],quantiles[sea,,2,quA],col="red",pch=quA)
-            lines(at_[(regNumb+1):(regNumb*2)],quantiles[sea,,2,quA],col="red",lty=quA)
+        #for (quA in c(9)){
+        #    points(at_[1:regNumb],quantiles[sea,,1,quA],col="blue",pch=1)
+        #    lines(at_[1:regNumb],quantiles[sea,,1,quA],col="blue",lty=3)
+        #    points(at_[(regNumb+1):(regNumb*2)],quantiles[sea,,2,quA],col="red",pch=1)
+        #    lines(at_[(regNumb+1):(regNumb*2)],quantiles[sea,,2,quA],col="red",lty=3)
+        #}
+    }
+    graphics.off()
+
+    # seasonal focus
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_seasonal.pdf",sep=""),width=width,height=height)
+    par(mfrow=c(1,1))
+    par(mar=c(1,4,2,0))   
+    at_=seq(1, seaNumb, 1)
+    at_=c(at_-0.15,at_+0.15)
+    drueber=2
+
+    for (reg in 1:regNumb){
+        plot(NA,xlim=c(0,8),ylim=c(0,(max(quantiles[,reg,,1:5])+drueber)),frame.plot=FALSE,axes=FALSE,ylab="days")
+        axis(2)
+        for (i in axis(2)){
+            abline(h=i,col=rgb(0.5,0.5,0.5,0.5),lty=3)
+        }        
+        text(8,(max(quantiles[,reg,,1:5],na.rm=TRUE)+drueber-0.5),label=buchstaben[reg],cex=2)
+
+        for (sea in 1:seaNumb){   
+            season=season_names[sea]     
+            for (state in 1:2){
+                plot_boxplot(quantiles[sea,reg,state,],sea+pos[state],0.3,color[state])
+                text(sea,max(quantiles[,reg,,1:5])+drueber,season_names[sea],col=rgb(0.5,0.5,0.5,0.5))
+            }
         }
+    }
+    graphics.off()
+
+    # seasonal anomaly
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_seasonal_anomaly.pdf",sep=""),width=width,height=height)
+    par(mfrow=c(1,1))
+    par(mar=c(1,4,2,0))   
+    at_=seq(1, regNumb, 1)
+    at_=c(at_-0.15,at_+0.15)
+    buchstaben=c("e","f","g","h","i","j")
+    drueber=0.5
+
+    anomaly=quantiles*NA
+    for (sea in 1:4){  
+        anomaly[sea,,,]=quantiles[sea,,,]-quantiles[6,,,]
+    }
+    for (sea in 1:4){   
+        season=season_names[sea]
+        plot(NA,xlim=c(0,8),ylim=c(min(anomaly[sea,,,1:5],na.rm=TRUE),(max(anomaly[sea,,,1:5],na.rm=TRUE)+drueber)),frame.plot=FALSE,axes=FALSE,ylab="days")
+        axis(2)
+        for (i in axis(2)){
+            abline(h=i,col=rgb(0.5,0.5,0.5,0.5),lty=3)
+        }        
+        text(8,(max(anomaly[sea,,,1:5],na.rm=TRUE)+drueber-0.5),label=buchstaben[sea],cex=2)
+
+        for (reg in 1:regNumb){
+            for (state in 1:2){
+                plot_boxplot(anomaly[sea,reg,state,],reg+pos[state],0.3,color[state])
+                text(reg,max(anomaly[sea,,,1:5],na.rm=TRUE)+drueber,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
+            }
+        }
+        for (quA in c(4,5)){
+            points(at_[1:regNumb],anomaly[sea,,1,quA],col="black",pch=2)
+            points(at_[(regNumb+1):(regNumb*2)],anomaly[sea,,2,quA],col="black",pch=2)
+        }
+    }
+
+    pdf(file="../plots/zwischenzeugs/pch_palette.pdf")
+    plot(1:30,1:30,pch=1:30)
+    graphics.off()    
+
+    # regional focus kind of seasonal anomaly
+    color=c(rgb(0.5,0.5,1,0.8),rgb(1,0.5,0.5,0.8),rgb(0.5,0.5,1,0.4),rgb(1,0.5,0.5,0.4))
+
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_seas_kind_anomaly.pdf",sep=""))
+    par(mfrow=c(1,1))
+    par(mar=c(1,4,2,0))   
+    at_=seq(1, regNumb, 1)
+    at_=c(at_-0.15,at_+0.15)
+
+    for (sea in 1:4){   
+        season=season_names[sea]
+
+        plot(NA,xlim=c(0,8),ylim=c(0,(max(quantiles[sea,,,1:5])+4)),frame.plot=FALSE,axes=FALSE,main=season,ylab="days")
+        axis(2)
+        for (i in axis(2)){
+            abline(h=i,col=rgb(0.5,0.5,0.5,0.5),lty=3)
+        }        
+        for (reg in 1:regNumb){
+            for (state in 1:2){
+                plot_boxplot(quantiles[6,reg,state,],reg+pos[state],0.3,color=color[2+state],border=rgb(0.5,0.5,0.5,0.5))
+            }
+        }
+        for (reg in 1:regNumb){
+            for (state in 1:2){
+                plot_boxplot(quantiles[sea,reg,state,],reg+pos[state],0.3,color=color[2+state])
+                text(reg,max(quantiles[sea,,,1:5])+2,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
+            }
+        }
+
+    }
+    graphics.off()
+
+    # regional focus plus seasonal anomaly
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_seas_combi_anomaly.pdf",sep=""))
+    par(mfrow=c(2,1),cex=1)
+    par(mar=c(1,4,2,0))   
+    at_=seq(1, regNumb, 1)
+    at_=c(at_-0.15,at_+0.15)
+    buchstaben=c("a","b","c","d","e","f","g","h","i","j")
+    drueber=c(1,1.5)
+    index=0
+    for (sea in 1:4){   
+        season=season_names[sea]
+        par(mar=c(1,4,2,0))
+        index=index+1
+        plot(NA,xlim=c(0,8),ylim=c(min(anomaly[sea,,,1:5],na.rm=TRUE),(max(anomaly[sea,,,1:5],na.rm=TRUE)+drueber[1])),frame.plot=FALSE,axes=FALSE,ylab="days")#,main=season)
+        axis(2)
+        for (i in axis(2)){
+            abline(h=i,col=rgb(0.5,0.5,0.5,0.5),lty=3)
+        }        
+        text(8,(max(anomaly[sea,,,1:5],na.rm=TRUE)+drueber[1]),label=buchstaben[index],cex=2)
+        for (reg in 1:regNumb){
+            for (state in 1:2){
+                plot_boxplot(anomaly[sea,reg,state,],reg+pos[state],0.3,color[state])
+                #text(reg,max(anomaly[sea,,,1:5],na.rm=TRUE)+0.5,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
+            }
+        }
+
+        for (quA in c(4,5)){
+            points(at_[1:regNumb],anomaly[sea,,1,quA],col="black",pch=2)
+            points(at_[(regNumb+1):(regNumb*2)],anomaly[sea,,2,quA],col="black",pch=2)
+        }
+        par(mar=c(1,4,1,0))
+        index=index+1
+        plot(NA,xlim=c(0,8),ylim=c(0,(max(quantiles[sea,,,1:5])+drueber[2])),frame.plot=FALSE,axes=FALSE,ylab="days")
+        text(8,(max(quantiles[sea,,,1:5],na.rm=TRUE)+drueber[2]),label=buchstaben[index],cex=2)
+        axis(2)
+        for (i in axis(2)){
+            abline(h=i,col=rgb(0.5,0.5,0.5,0.5),lty=3)
+        }   
+        for (reg in 1:regNumb){
+            for (state in 1:2){
+                plot_boxplot(quantiles[sea,reg,state,],reg+pos[state],0.3,color=color[state])
+                text(reg,max(quantiles[sea,,,1:5])+drueber[2],region_names[reg],col=rgb(0.5,0.5,0.5,0.5),cex=1.3)
+            }
+        }
+
+
     }
     graphics.off()
 }
@@ -582,6 +736,7 @@ plot_regional_boxplots_vergleich <- function(dat,yearPeriod1,yearPeriod2,region_
     quantiles2=get.var.ncdf(nc,"quantiles")
     regions=get.var.ncdf(nc,"region")
     regNumb=7
+    seaNumb=6
     region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
     season_names=c("MAM","JJA","SON","DJF","year","4seasons")
 
@@ -598,6 +753,7 @@ plot_regional_boxplots_vergleich <- function(dat,yearPeriod1,yearPeriod2,region_
 
     quantiles=quantiles2-quantiles1
 
+    # regional focus
     for (sea in 1:length(season_names)){   
         season=season_names[sea]
 
@@ -610,10 +766,40 @@ plot_regional_boxplots_vergleich <- function(dat,yearPeriod1,yearPeriod2,region_
             }
         }
         for (quA in c(9)){
-            points(at_[1:regNumb],quantiles[sea,,1,quA],col="blue",pch=quA)
-            lines(at_[1:regNumb],quantiles[sea,,1,quA],col="blue",lty=quA)
-            points(at_[(regNumb+1):(regNumb*2)],quantiles[sea,,2,quA],col="red",pch=quA)
-            lines(at_[(regNumb+1):(regNumb*2)],quantiles[sea,,2,quA],col="red",lty=quA)
+            points(at_[1:regNumb],quantiles[sea,,1,quA],col="blue",pch=1)
+            lines(at_[1:regNumb],quantiles[sea,,1,quA],col="blue",lty=3)
+            points(at_[(regNumb+1):(regNumb*2)],quantiles[sea,,2,quA],col="red",pch=1)
+            lines(at_[(regNumb+1):(regNumb*2)],quantiles[sea,,2,quA],col="red",lty=3)
+        }
+        for (quA in c(4,5)){
+            points(at_[1:regNumb],quantiles[sea,,1,quA],col="black",pch=2)
+            points(at_[(regNumb+1):(regNumb*2)],quantiles[sea,,2,quA],col="black",pch=2)
+        }
+    }
+    graphics.off()
+
+    # seasonal focus
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/","/",yearPeriod2[1],"-",yearPeriod2[2],"_diff_",yearPeriod1[1],"-",yearPeriod1[2],"_boxplots_seasonal.pdf",sep=""))
+    par(mfrow=c(1,1))
+    par(mar=c(1,5,4,3))   
+    at_=seq(1, seaNumb, 1)
+    at_=c(at_-0.15,at_+0.15)
+
+    for (reg in 1:regNumb){
+        plot(NA,xlim=c(0,8),ylim=c(min(quantiles[,reg,,1:5]),(max(quantiles[,reg,,1:5])+0.5)),frame.plot=FALSE,axes=FALSE,main=region_names[reg],ylab="days")
+        axis(2)
+        for (sea in 1:seaNumb){   
+            season=season_names[sea]     
+            for (state in 1:2){
+                plot_boxplot(quantiles[sea,reg,state,],sea+pos[state],0.3,color[state])
+                text(sea,max(quantiles[,reg,,1:5])+0.5,season_names[sea],col=rgb(0.5,0.5,0.5,0.5))
+            }
+        }
+        for (quA in c(9)){
+            points(at_[1:seaNumb],quantiles[,reg,1,quA],col="blue",pch=1)
+            lines(at_[1:seaNumb],quantiles[,reg,1,quA],col="blue",lty=3)
+            points(at_[(seaNumb+1):(seaNumb*2)],quantiles[,reg,2,quA],col="red",pch=1)
+            lines(at_[(seaNumb+1):(seaNumb*2)],quantiles[,reg,2,quA],col="red",lty=3)
         }
     }
     graphics.off()
@@ -657,8 +843,11 @@ regional_quantiles <- function(dat,yearPeriod,region_name,trendID,additional_sty
     region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
     season_names=c("MAM","JJA","SON","DJF","year","4seasons")
 
-    taus=c(0.05,0.25,0.5,0.75,0.95,0.91,0.98)
-    quantiles=array(NA,dim=c(length(season_names),regNumb,2,length(taus)+2))
+    taus=c(0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1)
+    quantiles=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
+    others=array(NA,dim=c(length(season_names),regNumb,2,8))
+
+    pdf(file=paste("../plots/zwischenzeugs/reg_dist_diff_fit_plot_",yearPeriod[1],"-",yearPeriod[2],".pdf",sep=""))
 
     for (sea in 1:length(season_names)){   
         season=season_names[sea]
@@ -683,10 +872,29 @@ regional_quantiles <- function(dat,yearPeriod,region_name,trendID,additional_sty
                     x=x[inYearPeriod]
 
                     # y are now the duration length in selected yearPeriod
+                    # quantile determination
                     dists=append(dists,list(y))
                     quantiles[sea,reg,state,1:length(taus)]=quantile_pete(y,taus=taus,na.rm=TRUE)
-                    quantiles[sea,reg,state,(length(taus)+1)]=sd(y,na.rm=TRUE)
-                    quantiles[sea,reg,state,(length(taus)+2)]=mean(y,na.rm=TRUE)
+
+                    # exponential fit + other values
+                    br=seq(1,max(y,na.rm=TRUE,1))
+                    histo=hist(y,breaks=br,plot=FALSE)
+
+                    dens=histo$density
+                    dens[dens==0]=NA
+                    fit=summary(lm(log(dens)~histo$mids))
+                    A=exp(fit$coefficients[1])
+                    b=-fit$coefficients[2]
+                    R2=fit$r.squared
+                    mean=mean(y,na.rm=TRUE)
+                    sd=sd(y,na.rm=TRUE)
+                    skew=skewness(y,na.rm=TRUE)
+
+                    others[sea,reg,state,1:8]=c(mean,sd,sd/mean,skew,A,b,1/b,R2)
+
+                    print(others[sea,reg,state,1:8])
+                    plot(dens-(A*exp(-b*histo$mids)),main=paste(season,region_names[reg],state))
+
                 }
             }
         }
@@ -696,18 +904,20 @@ regional_quantiles <- function(dat,yearPeriod,region_name,trendID,additional_sty
     ncStates <- dim.def.ncdf("states",units="states",vals=1:2,unlim=FALSE)
     ncSeason <- dim.def.ncdf("seasons",units="seasons",vals=1:6,unlim=FALSE)
 
-    ncOther <- dim.def.ncdf("other",units="0.05,0.25,0.5,0.75,0.95,0.91,0.98,SD,Mean",vals=1:9,unlim=FALSE)
-    
+    ncCharacteristics <- dim.def.ncdf("other",units="dimension for both quantiles an others",vals=1:8,unlim=FALSE)
+   
     poli_points <- dim.def.ncdf("poli_points",units="id",vals=1:12,unlim=FALSE)
 
     region_coordinates <- var.def.ncdf(name="region_coordinates",units="deg",longname="1:6 lon - 7:12 lat",dim=list(ncRegion,poli_points),missval=-9999.0)
 
-    ncQuantile <- var.def.ncdf(name="quantiles",units="quantile values in days",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,SD,Mean",,dim=list(ncSeason,ncRegion,ncStates,ncOther), missval=-9999.0)
+    ncQuantile <- var.def.ncdf(name="quantiles",units="quantile values in days",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncCharacteristics), missval=-9999.0)
+    ncOthers <- var.def.ncdf(name="others",units="different analysis values",longname="mean sd sd/mean skewness A b 1/b R2",dim=list(ncSeason,ncRegion,ncStates,ncCharacteristics), missval=-9999.0)
     
-    vars=list(ncQuantile,region_coordinates)
+    vars=list(ncQuantile,ncOthers,region_coordinates)
    
     nc = create.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_quantiles.nc",sep=""),vars)
     put.var.ncdf(nc,ncQuantile,quantiles)      
+    put.var.ncdf(nc,ncOthers,others)      
 
     pol_poi=array(NA,c(dim(poli)[1],12))
     for (i in 1:dim(poli)[1]){

@@ -127,7 +127,7 @@ master_duration <- function(nday,nyr,trendID,trend_style="_mean",dataset="_TX",a
     duration_seasons(dur,dur_mid,season=c(335,424),filename=paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_DJF.nc",sep=""))
 }
 
-master_analyse_duration <- function(yearPeriod,trendID,seasons=c("MAM","JJA","SON","DJF","year"),dataset="_TX",additional_style=""){
+master_analyse_duration <- function(yearPeriod,trendID,seasons=c("MAM","JJA","SON","DJF","year","4seasons"),dataset="_TX",additional_style=""){
     library(quantreg)
     # analyse duration periods 2 states
     for (season in seasons){
@@ -138,8 +138,22 @@ master_analyse_duration <- function(yearPeriod,trendID,seasons=c("MAM","JJA","SO
     }
 }
 
+master_duration_distribution <- function(yearPeriod,trendID,seasons=c("MAM","JJA","SON","DJF","year","4seasons"),dataset="_TX",additional_style=""){
+    library(moments)
+    # analyse duration periods 2 states
+    for (season in seasons){
+        print(season)
+        nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
+        dur=get.var.ncdf(nc,"dur")
+        dur_mid=get.var.ncdf(nc,"dur_mid")
+        duration_distribution(dur,dur_mid,filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,dataset,"_duration_distribution_ana_",season,".nc",sep=""),
+            season=season,yearPeriod)#,stations=seq(487,489,1))#,stations=134:136)
+    }
+}
+
 master_regional_climatology <- function(region_name,trendID,dataset="_TX",additional_style=""){
     library(quantreg)
+    library(moments)
     source("functions_regional.r")
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
@@ -163,11 +177,12 @@ full <- function(nday,nyr,trend_style="_mean",dataset="_TX",additional_style="")
 
     #master_duration(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
     points=c(1950,2014,1950,1980,1980,2014)
+    points=c(1950,1980,1980,2014)
     for (i in 1:3){
         period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
         #master_analyse_duration(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style)
-        master_analyse_duration(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style,seasons=c("year"))
-        #master_duration_distribution(yearPeriod=period,trendID,trend_style=trend_style,additional_style=additional_style)
+        #master_analyse_duration(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style,seasons=c("year"))
+        master_duration_distribution(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style)
     }
 }
 

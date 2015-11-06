@@ -94,17 +94,13 @@ plot_diff_trend_duration <- function(trendID="91_5",states=2,period="1950-2014",
 
 plot_seasonal_anomalie_duration <- function(trendID="91_5",dataset="_TX",additional_style="",period="1950-2014",var1="dur_ana_full",var1_sig=NA,var_qua=5,farb_mitte="mean",farb_palette="regenbogen",name_zusatz="bla",titel_zusatz="sd",region=NA,seasons=c("MAM","JJA","SON","DJF"),paper=c(12,8),grid=FALSE,season_auswahl=c(1,2,3,4),col_row=c(5,2),ausschnitt=c(30,80),cex=cex,subIndex=c("a","b")){
 
-	if (states==2){
-		state_names=c("cold","warm")
-		trans_names=c("cold to cold","na","na","warm to warm")
-		trans_auswahl=c(1,2)
-	}
+	state_names=c("cold","warm")
 
 	if (col_row[1]>1){
 		paper=c(12,((col_row[1]-1)*7/5+1))
 	}
 
-	nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,dataset,"_duration_analysis_year.nc",sep=""))
+	nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,dataset,"_duration_analysis_","4seasons",".nc",sep=""))
 	ground=get.var.ncdf(nc,var1)
 
 	reihen=array(NA,dim=c(states*length(season_auswahl),ntot))
@@ -116,14 +112,50 @@ plot_seasonal_anomalie_duration <- function(trendID="91_5",dataset="_TX",additio
 
 		nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,dataset,"_duration_analysis_",season,".nc",sep=""))
 		y=get.var.ncdf(nc,var1)
-		for (trans in 1:length(trans_auswahl)){
-			index=(i-1)*states+trans
-			reihen[index,]=y[1:ntot,trans_auswahl[trans],var_qua,3]-ground[1:ntot,trans_auswahl[trans],var_qua,3]
-			titel[index]=paste(season,titel_zusatz,state_names[trans],"period anomalie to annual mean")
+		for (state in 1:2){
+			index=(i-1)*states+state
+			reihen[index,]=y[1:ntot,state,var_qua,3]-ground[1:ntot,state,var_qua,3]
+			titel[index]=paste(season,titel_zusatz,state_names[state],"period anomalie to annual mean")
 		}
 	}
 	filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/",trendID,"_vergleich_",name_zusatz,"_",period,"_",titel_zusatz,"_kompakt.pdf",sep="")
 	map_allgemein(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt,col_row=col_row,paper=paper,cex=cex,subIndex=subIndex)
+
+	# wa co anomaly
+	nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,dataset,"_duration_analysis_","4seasons",".nc",sep=""))
+	ground=get.var.ncdf(nc,var1)
+
+	reihen=array(NA,dim=c(states*length(season_auswahl),ntot))
+	reihen_sig=array(NA,dim=c(states*length(season_auswahl),ntot))
+	titel=c()
+	farb_mitte=c()
+	farb_palette=c()
+	farb_mitte[1]="individual"
+	farb_palette[1]="individual"
+    for (i in 1:length(season_auswahl)){
+    	sea=season_auswahl[i]
+    	season=seasons[sea]
+
+		nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,dataset,"_duration_analysis_",season,".nc",sep=""))
+		y=get.var.ncdf(nc,var1)
+		
+
+		index=(i-1)*states+1
+		zwi=(y[,1,var_qua,3]+y[,2,var_qua,3])/2-(ground[,1,var_qua,3]+ground[,2,var_qua,3])/2
+		reihen[index,]=zwi
+		titel[index]=paste(season,titel_zusatz,"period anomalie to annual mean")
+		farb_mitte[index+1]="0"
+		farb_palette[index+1]="lila-gruen"
+		index=(i-1)*states+2
+		zwi=(y[,2,var_qua,3] - ground[,2,var_qua,3])-(y[,1,var_qua,3] - ground[,1,var_qua,3])
+		reihen[index,]=zwi
+		titel[index]=paste(season,titel_zusatz,"period anomalie to annual mean difference warm - cold")
+		farb_mitte[index+1]="0"
+		farb_palette[index+1]="lila-gruen"
+	}
+	filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/",trendID,"_vergleich_",name_zusatz,"_",period,"_",titel_zusatz,"_kompakt_waco.pdf",sep="")
+	map_allgemein(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt,col_row=col_row,paper=paper,cex=cex,subIndex=subIndex)
+
 }
 
 #init
@@ -146,7 +178,7 @@ yearperiod="1950-2014"
 
 if (1==1){
 	plot_seasonal_anomalie_duration(trendID="91_5",dataset="_TX",additional_style="",farb_mitte=c(-12,12),farb_palette="lila-gruen",name_zusatz="seas_anom",titel_zusatz="95_quantile",var1="dur_ana_full",var_qua=5,season_auswahl=c(1,2,3,4),col_row=c(1,1),cex=1,ausschnitt=c(-80,80))
-	plot_seasonal_anomalie_duration(trendID="91_5",dataset="_TX",additional_style="",farb_mitte=c(-12,12),farb_palette="lila-gruen",name_zusatz="seas_anom_klein",titel_zusatz="95_quantile",var1="dur_ana_full",var_qua=5,season_auswahl=c(1,2,3,4),col_row=c(1,1),cex=1,col_row=c(5,2),cex=0.6)
+	plot_seasonal_anomalie_duration(trendID="91_5",dataset="_TX",additional_style="",farb_mitte=c(-12,12),farb_palette="lila-gruen",name_zusatz="seas_anom_klein",titel_zusatz="95_quantile",var1="dur_ana_full",var_qua=5,season_auswahl=c(1,2,3,4),col_row=c(5,2),cex=0.6)
 
 	plot_seasonal_anomalie_duration(trendID="91_5",dataset="_TX",additional_style="",farb_mitte=c(-2,2),farb_palette="lila-gruen",name_zusatz="seas_anom",titel_zusatz="mean",var1="dur_ana_full",var_qua=8,season_auswahl=c(1,2,3,4),col_row=c(1,1),cex=1,ausschnitt=c(-80,80))
 
