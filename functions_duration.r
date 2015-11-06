@@ -174,32 +174,36 @@ duration_distribution <- function(dur,dur_mid,filename,season,yearPeriod,station
     ntot=1319
     states=dim(dur)[2]
     out=array(NA,dim=c(ntot,states,8))
-    br=seq(0,500,1)
+    
     for (state in 1:states){
         for (q in 1:ntot){
             if (length(which(!is.na(dur[q,state,])))>30){
                 inside=which(dur_mid[q,state,]>yearPeriod[1] & dur_mid[q,state,]<yearPeriod[2])
+                br=seq(0,max(dur[q,state,inside],na.rm=TRUE),1)
                 histo=hist(dur[q,state,inside],breaks=br,plot=FALSE)
                 
 
-                #xy=data.frame(y=histo$density,x=histo$mids)
-                #fit=nls(y~(exp(a+b*x)),data=xy,start=list(a=0,b=0)) 
-                #A=exp(summary(fit)$parameters[1])
-                #b=-summary(fit)$parameters[2]
-                #t=1/b
-                #yfit=exp(A-histo$mids*b)
-                #chi2=chisq.test(histo$density,yfit)$p.value
+                xy=data.frame(y=histo$density,x=histo$mids)
+                fit=nls(y~(a*exp(-b*x)),data=xy,start=list(a=0.1,b=0.1),na.action=na.exclude) 
+                a=summary(fit)$parameters[1]
+                b=summary(fit)$parameters[2]
+                yfit=a*exp(-histo$mids*b)
+                R2=1-sum(((histo$density-yfit)^2),na.rm=TRUE)/sum(((histo$density-mean(histo$density,na.rm=TRUE))^2),na.rm=TRUE)
+                mean=mean(y,na.rm=TRUE)
+                sd=sd(y,na.rm=TRUE)
+                skew=skewness(y,na.rm=TRUE)
+                others[sea,reg,state,1:8]=c(mean,sd,sd/mean,skew,a,b,1/b,R2)
 
-                y=histo$density
-                y[y==0]=NA
-                fit=summary(lm(log(y)~histo$mids))
-                A=exp(fit$coefficients[1])
-                b=-fit$coefficients[2]
-                R2=fit$r.squared
-                mean=mean(dur[q,state,inside],na.rm=TRUE)
-                sd=sd(dur[q,state,inside],na.rm=TRUE)
-                skew=skewness(dur[q,state,inside],na.rm=TRUE)
-                out[q,state,1:8]=c(mean,sd,sd/mean,skew,A,b,1/b,R2)
+                #y=histo$density
+                #y[y==0]=NA
+                #fit=summary(lm(log(y)~histo$mids))
+                #A=exp(fit$coefficients[1])
+                #b=-fit$coefficients[2]
+                #R2=fit$r.squared
+                #mean=mean(dur[q,state,inside],na.rm=TRUE)
+                #sd=sd(dur[q,state,inside],na.rm=TRUE)
+                #skew=skewness(dur[q,state,inside],na.rm=TRUE)
+                #out[q,state,1:8]=c(mean,sd,sd/mean,skew,A,b,1/b,R2)
                 #cat(paste("-",q," "))
             }
         }

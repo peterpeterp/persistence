@@ -533,6 +533,7 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
 
     nc = open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_quantiles.nc",sep=""))
     quantiles=get.var.ncdf(nc,"quantiles")
+    others=get.var.ncdf(nc,"others")
     regions=get.var.ncdf(nc,"region")
     regNumb=7
     seaNumb=6
@@ -547,7 +548,7 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
     # regional focus
     pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_regional.pdf",sep=""),width=width,height=height)
     par(mfrow=c(1,1))
-    par(mar=c(1,4,2,0))   
+    par(mar=c(1,4,2,3))   
     at_=seq(1, regNumb, 1)
     at_=c(at_-0.15,at_+0.15)
     buchstaben=c("a","b","c","d")
@@ -555,7 +556,7 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
     for (sea in 1:length(season_names)){   
         season=season_names[sea]
 
-        plot(NA,xlim=c(0,8),ylim=c(0,(max(quantiles[sea,,,1:5])+drueber)),frame.plot=FALSE,axes=FALSE,ylab="days")
+        plot(NA,xlim=c(0,7.5),ylim=c(0,(max(quantiles[sea,,,1:5])+drueber)),frame.plot=FALSE,axes=FALSE,ylab="days")
         axis(2)
         for (i in axis(2)){
             abline(h=i,col=rgb(0.5,0.5,0.5,0.5),lty=3)
@@ -567,38 +568,28 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
                 plot_boxplot(quantiles[sea,reg,state,],reg+pos[state],0.3,color[state])
                 text(reg,max(quantiles[sea,,,1:5])+drueber,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
             }
-        }
-        #for (quA in c(9)){
-        #    points(at_[1:regNumb],quantiles[sea,,1,quA],col="blue",pch=1)
-        #    lines(at_[1:regNumb],quantiles[sea,,1,quA],col="blue",lty=3)
-        #    points(at_[(regNumb+1):(regNumb*2)],quantiles[sea,,2,quA],col="red",pch=1)
-        #    lines(at_[(regNumb+1):(regNumb*2)],quantiles[sea,,2,quA],col="red",lty=3)
-        #}
-    }
-    graphics.off()
-
-    # seasonal focus
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_boxplots_seasonal.pdf",sep=""),width=width,height=height)
-    par(mfrow=c(1,1))
-    par(mar=c(1,4,2,0))   
-    at_=seq(1, seaNumb, 1)
-    at_=c(at_-0.15,at_+0.15)
-    drueber=2
-
-    for (reg in 1:regNumb){
-        plot(NA,xlim=c(0,8),ylim=c(0,(max(quantiles[,reg,,1:5])+drueber)),frame.plot=FALSE,axes=FALSE,ylab="days")
-        axis(2)
-        for (i in axis(2)){
-            abline(h=i,col=rgb(0.5,0.5,0.5,0.5),lty=3)
         }        
-        text(8,(max(quantiles[,reg,,1:5],na.rm=TRUE)+drueber-0.5),label=buchstaben[reg],cex=2)
+        #for (oth in c(1,7)){
+        #    points(at_[1:regNumb],others[sea,,1,oth],col="blue",pch=oth)
+        #    lines(at_[1:regNumb],others[sea,,1,oth],col="blue",lty=3)
+        #    points(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",pch=oth)
+        #    lines(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",lty=3)
+        #}
 
-        for (sea in 1:seaNumb){   
-            season=season_names[sea]     
-            for (state in 1:2){
-                plot_boxplot(quantiles[sea,reg,state,],sea+pos[state],0.3,color[state])
-                text(sea,max(quantiles[,reg,,1:5])+drueber,season_names[sea],col=rgb(0.5,0.5,0.5,0.5))
-            }
+
+
+        #for (i in 1:8){
+        #    others[sea,,1,i]=(others[sea,,1,i]-min(others[sea,,1,i],na.rm=TRUE))/(max(others[sea,,1,i],na.rm=TRUE)-min(others[sea,,1,i],na.rm=TRUE))
+        #    others[sea,,2,i]=(others[sea,,2,i]-min(others[sea,,2,i],na.rm=TRUE))/(max(others[sea,,2,i],na.rm=TRUE)-min(others[sea,,2,i],na.rm=TRUE))
+        #}
+        for (oth in c(7,11)){
+            par(new=TRUE)
+            plot(NA,xlim=c(0,7.5),ylim=c(min(others[sea,,,oth],na.rm=TRUE),max(others[sea,,,oth],na.rm=TRUE)),frame.plot=FALSE,axes=FALSE,ylab="")
+            axis(4,col="green",ylab="R2")
+            points(at_[1:regNumb],others[sea,,1,oth],col="blue",pch=oth)
+            lines(at_[1:regNumb],others[sea,,1,oth],col="blue",lty=3)
+            points(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",pch=oth)
+            lines(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",lty=3)
         }
     }
     graphics.off()
@@ -845,7 +836,8 @@ regional_quantiles <- function(dat,yearPeriod,region_name,trendID,additional_sty
 
     taus=c(0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1)
     quantiles=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
-    others=array(NA,dim=c(length(season_names),regNumb,2,8))
+    quantiles_vergleich=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
+    others=array(NA,dim=c(length(season_names),regNumb,2,11))
 
     pdf(file=paste("../plots/zwischenzeugs/reg_dist_diff_fit_plot_",yearPeriod[1],"-",yearPeriod[2],".pdf",sep=""))
 
@@ -875,25 +867,60 @@ regional_quantiles <- function(dat,yearPeriod,region_name,trendID,additional_sty
                     # quantile determination
                     dists=append(dists,list(y))
                     quantiles[sea,reg,state,1:length(taus)]=quantile_pete(y,taus=taus,na.rm=TRUE)
+                    quantiles_vergleich[sea,reg,state,1:length(taus)]=quantile(y,prob=taus,na.rm=TRUE)
 
                     # exponential fit + other values
-                    br=seq(1,max(y,na.rm=TRUE,1))
+                    br=seq(0,max(y,na.rm=TRUE),1)
                     histo=hist(y,breaks=br,plot=FALSE)
 
-                    dens=histo$density
-                    dens[dens==0]=NA
-                    fit=summary(lm(log(dens)~histo$mids))
-                    A=exp(fit$coefficients[1])
-                    b=-fit$coefficients[2]
-                    R2=fit$r.squared
+                    # linear log fit
+                    if (1==2){
+                        dens=histo$density
+                        dens[dens==0]=NA
+                        fit=summary(lm(log(dens)~histo$mids))
+                        A=exp(fit$coefficients[1])
+                        b=-fit$coefficients[2]
+                        R2=fit$r.squared
+                        mean=mean(y,na.rm=TRUE)
+                        sd=sd(y,na.rm=TRUE)
+                        skew=skewness(y,na.rm=TRUE)
+
+                        others[sea,reg,state,1:8]=c(mean,sd,sd/mean,skew,A,b,1/b,R2)
+                        print(others[sea,reg,state,1:8])
+                    }
+
+                    Y=histo$density
+                    X=histo$mids
+                    xy=data.frame(y=Y,x=X)
+                    fit=nls(y~(a*exp(-b*x)),data=xy,start=list(a=0.1,b=0.1),na.action=na.exclude) 
+                    a=summary(fit)$parameters[1]
+                    b=summary(fit)$parameters[2]
+                    yfit=a*exp(-X*b)
+                    R2=1-sum(((Y-yfit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
                     mean=mean(y,na.rm=TRUE)
                     sd=sd(y,na.rm=TRUE)
                     skew=skewness(y,na.rm=TRUE)
+                    others[sea,reg,state,1:8]=c(mean,sd,sd/mean,skew,a,b,1/b,R2)
+                    par(mar=c(5, 4, 4, 4) + 0.1)
+                    plot(histo$density,main=paste(season,region_names[reg],state))
+                    lines(yfit,col="red")
+                    text(40,0.03,paste("R^2:",round(R2,03)))
+                    par(new=TRUE,plt=c(0.5,0.82,0.5,0.87))
+                    z=histo$density-yfit
+                    plot(z,ylim=c(-0.02,0.02))
+                    abline(v=mean(y,na.rm=TRUE))
+                    text(20,0.017,round(sum(z[round(mean(y,na.rm=TRUE)):length(z)]),02))
+                    z2=z
+                    z2[1:round(mean(y,na.rm=TRUE))]=NA
+                    points(z2,col="green")
+                    text(20,0.014,round(mean(z2,na.rm=TRUE),04))
+                    z2=z2[!is.na(z2)]
+                    perc=length(z2[z2>0])/length(z2)*100
+                    text(30,0.012,round(sum(z,na.rm=TRUE),03))
+                   
+                    others[sea,reg,state,9:11]=c(sum(z,na.rm=TRUE),sum(z[round(mean(y,na.rm=TRUE)):length(z)]),mean(z2,na.rm=TRUE))
+                    print(others[sea,reg,state,8:11])
 
-                    others[sea,reg,state,1:8]=c(mean,sd,sd/mean,skew,A,b,1/b,R2)
-
-                    print(others[sea,reg,state,1:8])
-                    plot(dens-(A*exp(-b*histo$mids)),main=paste(season,region_names[reg],state))
 
                 }
             }
@@ -904,19 +931,22 @@ regional_quantiles <- function(dat,yearPeriod,region_name,trendID,additional_sty
     ncStates <- dim.def.ncdf("states",units="states",vals=1:2,unlim=FALSE)
     ncSeason <- dim.def.ncdf("seasons",units="seasons",vals=1:6,unlim=FALSE)
 
-    ncCharacteristics <- dim.def.ncdf("other",units="dimension for both quantiles an others",vals=1:8,unlim=FALSE)
+    ncTaus <- dim.def.ncdf("taus",units="dimension for both quantile",vals=1:8,unlim=FALSE)
+    ncOuts <- dim.def.ncdf("outs",units="dimension for others",vals=1:11,unlim=FALSE)
    
     poli_points <- dim.def.ncdf("poli_points",units="id",vals=1:12,unlim=FALSE)
 
     region_coordinates <- var.def.ncdf(name="region_coordinates",units="deg",longname="1:6 lon - 7:12 lat",dim=list(ncRegion,poli_points),missval=-9999.0)
 
-    ncQuantile <- var.def.ncdf(name="quantiles",units="quantile values in days",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncCharacteristics), missval=-9999.0)
-    ncOthers <- var.def.ncdf(name="others",units="different analysis values",longname="mean sd sd/mean skewness A b 1/b R2",dim=list(ncSeason,ncRegion,ncStates,ncCharacteristics), missval=-9999.0)
+    ncQuantile <- var.def.ncdf(name="quantiles",units="quantile values in days evaluated by quantile_pete",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncTaus), missval=-9999.0)
+    ncQuantile_vergleich <- var.def.ncdf(name="quantiles_2",units="quantile values in days evaluated by quantile()",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncTaus), missval=-9999.0)
+    ncOthers <- var.def.ncdf(name="others",units="different analysis values",longname="mean sd sd/mean skewness A b 1/b R2 sum(deviation of density from fit) sum(deviation of density from fit[values above mean]) mean(deviation of density from fit[values above mean])",dim=list(ncSeason,ncRegion,ncStates,ncOuts), missval=-9999.0)
     
-    vars=list(ncQuantile,ncOthers,region_coordinates)
+    vars=list(ncQuantile,ncQuantile_vergleich,ncOthers,region_coordinates)
    
     nc = create.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_quantiles.nc",sep=""),vars)
     put.var.ncdf(nc,ncQuantile,quantiles)      
+    put.var.ncdf(nc,ncQuantile_vergleich,quantiles_vergleich)      
     put.var.ncdf(nc,ncOthers,others)      
 
     pol_poi=array(NA,c(dim(poli)[1],12))
