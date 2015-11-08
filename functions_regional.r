@@ -901,29 +901,97 @@ regional_quantiles <- function(dat,yearPeriod,region_name,trendID,additional_sty
                     sd=sd(y,na.rm=TRUE)
                     skew=skewness(y,na.rm=TRUE)
                     others[sea,reg,state,1:8]=c(mean,sd,sd/mean,skew,a,b,1/b,R2)
+
+                    # plotstuff
                     par(mar=c(5, 4, 4, 4) + 0.1)
                     plot(histo$density,main=paste(season,region_names[reg],state))
                     lines(yfit,col="red")
-                    text(40,0.03,paste("R^2:",round(R2,03)))
+                    #text(40,0.03,paste("R^2:",round(R2,03)))
+
+                    z=histo$density-yfit
+                    z2=z
+                    z2[1:round(mean(y,na.rm=TRUE))]=NA
+                    nona=!is.na(z2)
+                    xy=data.frame(y=z,x=X)
+
+                    fit=try(nls(y~(a*exp(-(b-x)^2/sigma^2)),data=xy,start=list(a=0.005,b=14,sigma=7),na.action=na.exclude))
+                    if (class(fit)!="try-error"){
+                        A=summary(fit)$parameters[1]
+                        B=summary(fit)$parameters[2]                   
+                        sigma=summary(fit)$parameters[3]   
+                        print(paste(region_names[reg],a,b,sigma))
+                        zfit=(a*exp(-(b-X)^2/sigma^2))      
+
+                    }  
+                    else{
+                        A=0.005
+                        B=14
+                        sigma=8
+                    }
+                    zfit=(a*exp(-b*X)+A*exp(-(B-X)^2/sigma^2))      
+                    lines(zfit,col="orange") 
+                    A=0.01
+                    B=12
+                    sigma=7
+
+                    xy=data.frame(y=Y,x=X)
+                    nls.control(maxiter = 100, tol = 1e-05)
+                    fit=try(nls(y~(a*exp(-b*x)+A*exp(-(B-x)^2/sigma^2)),data=xy,start=list(a=a,b=b,A=A,B=B,sigma=sigma),na.action=na.exclude,nls.control(maxiter = 100, tol = 1e-01, minFactor=1/1024)))
+                    if (class(fit)!="try-error"){
+
+                        a=summary(fit)$parameters[1]
+                        b=summary(fit)$parameters[2]  
+                        A=summary(fit)$parameters[3]
+                        B=summary(fit)$parameters[4]                   
+                        sigma=summary(fit)$parameters[5]   
+                        zfit=(a*exp(-b*X)+A*exp(-(B-X)^2/sigma^2))      
+                        lines(zfit,col="blue")   
+                    } 
+
+
+
+
+
                     par(new=TRUE,plt=c(0.5,0.82,0.5,0.87))
                     z=histo$density-yfit
                     plot(z,ylim=c(-0.02,0.02))
                     abline(v=mean(y,na.rm=TRUE))
-                    text(20,0.017,round(sum(z[round(mean(y,na.rm=TRUE)):length(z)]),02))
+                    #text(20,0.017,round(sum(z[round(mean(y,na.rm=TRUE)):length(z)]),02))
                     z2=z
                     z2[1:round(mean(y,na.rm=TRUE))]=NA
                     points(z2,col="green")
-                    text(20,0.014,round(mean(z2,na.rm=TRUE),04))
-                    z2=z2[!is.na(z2)]
-                    perc=length(z2[z2>0])/length(z2)*100
-                    text(30,0.012,round(sum(z,na.rm=TRUE),03))
+                    #text(20,0.014,round(mean(z2,na.rm=TRUE),04))
+                    nona=!is.na(z2)
+                    z2=z2[nona]
+                    perc=length(z[z>0])/length(z)*100
+                    #text(30,0.012,round(sum(z,na.rm=TRUE),03))
                    
                     others[sea,reg,state,9:11]=c(sum(z,na.rm=TRUE),sum(z[round(mean(y,na.rm=TRUE)):length(z)]),mean(z2,na.rm=TRUE))
                     print(others[sea,reg,state,8:11])
+                    
+                    xy=data.frame(y=z,x=X)
+                    a=0.01
+                    b=7
+                    sigma=5
+                    #lines(a*exp(-(b-X)^2/sigma^2),col="blue")
+                    fit=try(nls(y~(a*exp(-(b-x)^2/sigma^2)),data=xy,start=list(a=0.01,b=12,sigma=7),na.action=na.exclude))
+                    if (class(fit)!="try-error"){
+                        a=summary(fit)$parameters[1]
+                        b=summary(fit)$parameters[2]                   
+                        sigma=summary(fit)$parameters[3]   
+                        print(paste(region_names[reg],a,b,sigma))
+                        zfit=(a*exp(-(b-X)^2/sigma^2))      
+                        lines(zfit,col="blue")    
 
+                        gaussR2=1-sum(((z2-zfit)^2),na.rm=TRUE)/sum(((mean(z2,na.rm=TRUE)-zfit)^2),na.rm=TRUE) 
+                        text(40,0.015,gaussR2)
+                        text(40,0.017,sum(((z2-zfit)^2),na.rm=TRUE))
+                        text(40,0.02,sum(((mean(z2,na.rm=TRUE)-zfit)^2),na.rm=TRUE))
+                    }  
 
                 }
             }
+            adsas
         }
     }
 
