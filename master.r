@@ -158,6 +158,7 @@ master_regional_climatology <- function(region_name,trendID,dataset="_TX",additi
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
     points=c(1950,2014,1950,1980,1980,2014)
+    points=c(1950,1980,1980,2014)
     for (i in 1:3){
         yearPeriod=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
         print(yearPeriod)

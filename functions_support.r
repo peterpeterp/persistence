@@ -308,5 +308,3 @@ end_aussage <- function(dat,yearPeriod,trendID,states,seasons=c("spring","summer
     }
 }
 
-
-
