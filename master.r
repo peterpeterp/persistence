@@ -158,13 +158,14 @@ master_regional_climatology <- function(region_name,trendID,dataset="_TX",additi
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
     points=c(1950,2014,1950,1980,1980,2014)
-    points=c(1950,1980,1980,2014)
+    #points=c(1950,1980,1980,2014)
     for (i in 1:3){
         yearPeriod=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
         print(yearPeriod)
         #regional_climatology(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
         #plot_regional_distributions(dat,yearPeriod,region_name,trendID,dataset=dataset,additional_style=additional_style)
-        regional_quantiles(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        plot_regional_fit_parameters(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
         plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
     }
 

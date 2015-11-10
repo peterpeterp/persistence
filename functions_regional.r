@@ -505,6 +505,241 @@ regional_climatology <- function(dat,yearPeriod,region_name,trendID,additional_s
 
     close.ncdf(nc) 
 }
+
+quantile_pete <- function(dist,taus,na.rm=TRUE){
+    if (na.rm==TRUE){dist=dist[which(!is.na(dist))]}
+
+    cdf=array(NA,max(dist))
+    out=taus*NA
+
+    cum=0
+    for (i in 1:max(dist)){
+        cum=cum+length(which(dist>i))
+        cdf[i]=cum
+    }
+    cdf=cdf/cdf[length(cdf)]
+
+    for (qu in 1:length(taus)){
+        ueb=which(cdf>taus[qu])[1]
+        unt=ueb-1
+        if (unt<1){out[qu]=ueb}
+        else {out[qu]=ueb-(cdf[ueb]-taus[qu])/(cdf[ueb]-cdf[unt])}
+    }  
+    return(out)
+}
+
+regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additional_style,dataset){
+    # performs the entire regional analysis of markov and duration
+    # result will be written in ncdf file
+
+    # pnly for one trend and 2 states until now
+    ntot=length(dat$ID)
+
+
+    poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
+    regNumb=dim(poli)[1]
+    IDregions=points_to_regions(dat,c(region_name))
+
+    region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
+    season_names=c("MAM","JJA","SON","DJF","year","4seasons")
+
+    taus=c(0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1)
+    quantiles=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
+    quantiles_vergleich=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
+    others=array(NA,dim=c(length(season_names),regNumb,2,4))
+    fitstuff=array(NA,dim=c(length(season_names),regNumb,2,22))
+
+    pdf(file=paste("../plots/zwischenzeugs/reg_dist_diff_fit_plot_",yearPeriod[1],"-",yearPeriod[2],".pdf",sep=""))
+
+    #for (sea in 1:length(season_names)){   
+    for (sea in c(6)){   
+        season=season_names[sea]
+        dists=list()
+
+        nc_dur=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
+        dur=get.var.ncdf(nc_dur,"dur")
+        dur_mid=get.var.ncdf(nc_dur,"dur_mid")
+        
+        for (state in 1:2){
+            for (reg in 1:regNumb){
+            
+                tmp=duration_region(IDregions,reg,dur[1:ntot,state,],dur_mid[1:ntot,state,])
+                duration=tmp$duration
+                duration_mid=tmp$duration_mid
+                ord=order(duration_mid)
+                if (length(duration)>1000){
+                    y=as.vector(duration[ord])
+                    x=as.vector(duration_mid[ord])
+                    inYearPeriod=which(x>yearPeriod[1] & x<yearPeriod[2])
+                    y=y[inYearPeriod]
+                    x=x[inYearPeriod]
+
+                    # y are now the duration length in selected yearPeriod
+                    # quantile determination
+                    dists=append(dists,list(y))
+                    quantiles[sea,reg,state,1:length(taus)]=quantile_pete(y,taus=taus,na.rm=TRUE)
+                    quantiles_vergleich[sea,reg,state,1:length(taus)]=quantile(y,prob=taus,na.rm=TRUE)
+
+                    # exponential fit + other values
+                    br=seq(0,max(y,na.rm=TRUE),1)
+                    histo=hist(y,breaks=br,plot=FALSE)
+
+                    # data to be fitted
+                    Y=histo$density
+                    X=histo$mids
+
+                    # epontential fit 
+                    xy=data.frame(y=Y,x=X)
+                    exp_nls=nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.1),na.action=na.exclude) 
+                    a=summary(exp_nls)$parameters[1]
+                    b=summary(exp_nls)$parameters[2]
+                    expfit=a*exp(-X*b)
+                    expR2=1-sum(((Y-expfit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
+                    fitstuff[sea,reg,state,1:4]=c(a,b,NA,expR2)
+
+
+                    # tests to reproduce loglik
+                    # no idea where the facto -0.5 is coming from....
+                    #n=length(X)
+                    #print(-0.5*(length(X)*log(b)-b*sum(X,na.rm=TRUE)))
+                    #print(-0.5*log(b^n*exp(-b*n*mean(X,na.rm=TRUE))))
+                    #print(-0.5*sum(log(expfit)))
+                    #print(logLik(exp_nls))
+
+                    #print(BIC(exp_nls))
+                    #print(AIC(exp_nls))
+                    #print(sum(log(expfit))+3*log(n))
+                    #print(log(b^n*exp(-b*n*mean(X,na.rm=TRUE)))+3*log(n))
+
+
+                    # difference fit with gaussian
+                    z=histo$density-expfit
+                    xy=data.frame(y=z,x=X)
+                    gau_nls=try(nls(y~(A*exp(-(B-x)^2/sigma^2)),algorithm="port",data=xy,start=c(A=0.01,B=12,sigma=7),lower=c(A=0,B=0,sigma=0),na.action=na.exclude))
+                    if (class(gau_nls)!="try-error"){
+                        A=summary(gau_nls)$parameters[1]
+                        B=summary(gau_nls)$parameters[2]                   
+                        sigma=summary(gau_nls)$parameters[3]   
+                        zfit=(A*exp(-(B-X)^2/sigma^2))      
+                    }  
+                    else{
+                        A=0.005
+                        B=14
+                        sigma=8
+                    }
+
+
+                    # fit expo + gaussian together
+                    # first with big restrainst to get a forced result
+                    xy=data.frame(y=Y,x=X)
+                    dev=1/1000
+                    combi_nls=try(nls(y~(a*exp(-b*x)+A*exp(-(B-x)^2/sigma^2)),algorithm="port",data=xy,start=c(a=a,b=b,A=A,B=B,sigma=sigma),lower=c(a=a-dev*sqrt(a^2),b=b-dev*sqrt(b^2),A=A-dev*sqrt(b^2),B=B-dev*sqrt(b^2),sigma=sigma-dev*sqrt(sigma^2)),upper=c(a=a+dev*sqrt(a^2),b=b+dev*sqrt(b^2),A=A+dev*sqrt(b^2),B=B+dev*sqrt(b^2),sigma=sigma+dev*sqrt(sigma^2)),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=TRUE)))
+                    #if (class(combi_nls)!="try-error"){
+                    if (1==1){
+                        a=summary(combi_nls)$parameters[1]
+                        b=summary(combi_nls)$parameters[2]  
+                        A=summary(combi_nls)$parameters[3]
+                        B=summary(combi_nls)$parameters[4]                   
+                        sigma=summary(combi_nls)$parameters[5]   
+                        combifit=(a*exp(-b*X)+A*exp(-(B-X)^2/sigma^2)) 
+                        combiR2=1-sum(((Y-combifit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
+                    } 
+                    else{ 
+                        print(reg)
+                        print(state)        
+                        combifit=x*NA
+                        combiR2=NA
+                    }
+                    fitstuff[sea,reg,state,5:8]=c(A,B,sigma,combiR2)
+
+                    # now with weaker restrainst to get a good result
+                    opti_nls=try(nls(y~(a*exp(-b*x)+A*exp(-(B-x)^2/sigma^2)),algorithm="port",data=xy,start=c(a=a,b=b,A=A,B=B,sigma=sigma),lower=c(a=-Inf,b=-Inf,A=0,B=mean(Y,na.rm=TRUE),sigma=0),upper=c(a=Inf,b=Inf,A=max(z,na.rm=TRUE),B=Inf,sigma=Inf),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=FALSE)))
+                    if (class(opti_nls)!="try-error"){
+                        a=summary(opti_nls)$parameters[1]
+                        b=summary(opti_nls)$parameters[2]  
+                        A=summary(opti_nls)$parameters[3]
+                        B=summary(opti_nls)$parameters[4]                   
+                        sigma=summary(opti_nls)$parameters[5]   
+                        optifit=(a*exp(-b*X)+A*exp(-(B-X)^2/sigma^2)) 
+                        optiR2=1-sum(((Y-optifit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
+                    } 
+                    fitstuff[sea,reg,state,9:16]=c(a,b,NA,NA,A,B,sigma,optiR2)
+
+                    
+                    n=length(X)
+                    if (class(exp_nls)!="try-error"){
+                        fitstuff[sea,reg,state,17]=BIC(exp_nls)
+                        #if (class(gau_nls)!="try-error"){
+                        if (1==1){
+                            fitstuff[sea,reg,state,18]=BIC(combi_nls)
+                            if (class(opti_nls)!="try-error"){
+                                fitstuff[sea,reg,state,19]=BIC(opti_nls)
+                            }
+                        }
+                    }
+
+                    mean=mean(y,na.rm=TRUE)
+                    sd=sd(y,na.rm=TRUE)
+                    skew=skewness(y,na.rm=TRUE)
+                    others[sea,reg,state,1:4]=c(mean,sd,sd/mean,skew)
+
+
+                    # plotstuff
+                    par(mar=c(5, 4, 4, 4) + 0.1)
+                    plot(histo$density,main=paste(season,region_names[reg],state))
+                    lines(expfit,col="red")
+                    lines(combifit,col="blue")
+                    lines(optifit,col="green",lty=2)
+                    par(new=TRUE,plt=c(0.4,0.8,0.4,0.8))
+                    plot(z,main=paste("R2 exp:",round(expR2,03),"R2 opti:",round(optiR2,03),"R2 combi:",round(combiR2,03)))
+                    lines(zfit,col="orange")
+                    lines((A*exp(-(B-X)^2/sigma^2)),col="green",lty=2)
+
+                    print(fitstuff[sea,reg,state,])
+                }
+            }
+        }
+    }
+
+    ncRegion <- dim.def.ncdf("region",units="region",vals=1:regNumb, unlim=FALSE)
+    ncStates <- dim.def.ncdf("states",units="states",vals=1:2,unlim=FALSE)
+    ncSeason <- dim.def.ncdf("seasons",units="seasons",vals=1:6,unlim=FALSE)
+
+    ncTaus <- dim.def.ncdf("taus",units="dimension for both quantile",vals=1:8,unlim=FALSE)
+    ncOuts <- dim.def.ncdf("outs",units="dimension for others",vals=1:4,unlim=FALSE)
+    ncFits <- dim.def.ncdf("fits",units="dimension for fitstuff",vals=1:19,unlim=FALSE)
+   
+    poli_points <- dim.def.ncdf("poli_points",units="id",vals=1:12,unlim=FALSE)
+
+    region_coordinates <- var.def.ncdf(name="region_coordinates",units="deg",longname="1:6 lon - 7:12 lat",dim=list(ncRegion,poli_points),missval=-9999.0)
+
+    ncQuantile <- var.def.ncdf(name="quantiles",units="quantile values in days evaluated by quantile_pete",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncTaus), missval=-9999.0)
+    ncQuantile_vergleich <- var.def.ncdf(name="quantiles_2",units="quantile values in days evaluated by quantile()",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncTaus), missval=-9999.0)
+    ncOthers <- var.def.ncdf(name="others",units="different analysis values",longname="mean sd sd/mean skewness",dim=list(ncSeason,ncRegion,ncStates,ncOuts), missval=-9999.0)
+    ncFitstuff <- var.def.ncdf(name="fitstuff",units="different analysis values",longname="Exp: [a,b,NA,expR2] combi: [A,B,sigma,combiR2] opti:[a,b,NA,NA,A,B,sigma,optiR2] BIC(opti) BIC(exp) diff(BIC(opti)-BIC(exp))",dim=list(ncSeason,ncRegion,ncStates,ncFits), missval=-9999.0)
+    
+    vars=list(ncQuantile,ncQuantile_vergleich,ncOthers,ncFitstuff,region_coordinates)
+   
+    nc = create.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_quantiles.nc",sep=""),vars)
+    put.var.ncdf(nc,ncQuantile,quantiles)      
+    put.var.ncdf(nc,ncQuantile_vergleich,quantiles_vergleich)      
+    put.var.ncdf(nc,ncOthers,others)      
+    put.var.ncdf(nc,ncFitstuff,fitstuff)      
+
+    pol_poi=array(NA,c(dim(poli)[1],12))
+    for (i in 1:dim(poli)[1]){
+        for (j in 1:12){
+            
+            if (is.numeric(poli[i,j])){
+                pol_poi[i,j]=poli[i,j]
+            }
+        }
+    }
+    put.var.ncdf(nc,region_coordinates,pol_poi)      
+
+    close.ncdf(nc) 
+}
+
 #==========================================================================================================================
 
 # ------------------------------------------------------------------------------------------------
@@ -537,9 +772,6 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
     fitstuff=get.var.ncdf(nc,"fitstuff")
     regions=get.var.ncdf(nc,"region")
 
-    print(fitstuff[,,,4])
-    print(fitstuff[,,,8])
-    print(fitstuff[,,,16])
 
     regNumb=7
     seaNumb=6
@@ -575,64 +807,12 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
                 text(reg,max(quantiles[sea,,,1:5])+drueber,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
             }
         }        
-        #for (oth in c(1,7)){
-        #    points(at_[1:regNumb],others[sea,,1,oth],col="blue",pch=oth)
-        #    lines(at_[1:regNumb],others[sea,,1,oth],col="blue",lty=3)
-        #    points(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",pch=oth)
-        #    lines(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",lty=3)
-        #}
-
-
-
-        #for (i in 1:8){
-        #    others[sea,,1,i]=(others[sea,,1,i]-min(others[sea,,1,i],na.rm=TRUE))/(max(others[sea,,1,i],na.rm=TRUE)-min(others[sea,,1,i],na.rm=TRUE))
-        #    others[sea,,2,i]=(others[sea,,2,i]-min(others[sea,,2,i],na.rm=TRUE))/(max(others[sea,,2,i],na.rm=TRUE)-min(others[sea,,2,i],na.rm=TRUE))
-        #}
-        if (1==1){
-
-            par(new=TRUE)
-            y=array(NA,7)
-            for (i in 1:7){
-                if (!is.na(fitstuff[sea,i,1,16])){y[i]=fitstuff[sea,i,1,16]-fitstuff[sea,i,1,4]}
-                if (is.na(fitstuff[sea,i,1,16])){y[i]=fitstuff[sea,i,1,8]-fitstuff[sea,i,1,4]}
-                if (is.na(fitstuff[sea,i,1,16])){y[i]=0}
-            }
-            print(paste("-",sea,1))
-            print(paste(fitstuff[sea,,1,4],fitstuff[sea,,1,8],fitstuff[sea,,1,16]))
-            print(y)
-
-            plot(NA,xlim=c(0,7.5),ylim=c(min(y,na.rm=TRUE),max(y,na.rm=TRUE)),frame.plot=FALSE,axes=FALSE,ylab="")
-            axis(4,col="green",ylab="R2")
-            points(at_[1:regNumb],y,col="blue",pch=4)
-            lines(at_[1:regNumb],y,col="blue",lty=3)
-
-            y=array(NA,7)
-            for (i in 1:7){
-                if (!is.na(fitstuff[sea,i,2,16])){y[i]=fitstuff[sea,i,2,16]-fitstuff[sea,i,2,4]}
-                if (is.na(fitstuff[sea,i,2,16])){y[i]=fitstuff[sea,i,2,8]-fitstuff[sea,i,2,4]}
-                if (is.na(fitstuff[sea,i,2,16])){y[i]=0}
-            }
-            print(paste("-",sea,2))
-            print(paste(fitstuff[sea,,2,4],fitstuff[sea,,2,8],fitstuff[sea,,2,16]))
-            print(y)
-
-            par(new=TRUE)
-            plot(NA,xlim=c(0,7.5),ylim=c(min(y,na.rm=TRUE),max(y,na.rm=TRUE)),frame.plot=FALSE,axes=FALSE,ylab="")
-            axis(4,col="green",ylab="R2")
-            points(at_[1:regNumb],y,col="red",pch=4)
-            lines(at_[1:regNumb],y,col="red",lty=3)
+        for (oth in c(1)){
+            points(at_[1:regNumb],others[sea,,1,oth],col="blue",pch=oth)
+            lines(at_[1:regNumb],others[sea,,1,oth],col="blue",lty=3)
+            points(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",pch=oth)
+            lines(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",lty=3)
         }
-
-        #for (oth in c(4,8,16)){
-        #    par(new=TRUE)
-        #    plot(NA,xlim=c(0,7.5),ylim=c(min(fitstuff[sea,,,oth],na.rm=TRUE),max(fitstuff[sea,,,oth],na.rm=TRUE)),frame.plot=FALSE,axes=FALSE,ylab="")
-        #    axis(4,col="green",ylab="R2")
-        #    points(at_[1:regNumb],fitstuff[sea,,1,oth],col="blue",pch=oth)
-        #    lines(at_[1:regNumb],fitstuff[sea,,1,oth],col="blue",lty=3)
-        #    points(at_[(regNumb+1):(regNumb*2)],fitstuff[sea,,2,oth],col="red",pch=oth)
-        #    lines(at_[(regNumb+1):(regNumb*2)],fitstuff[sea,,2,oth],col="red",lty=3)
-        #}
-
     }
     graphics.off()
 
@@ -839,193 +1019,83 @@ plot_regional_boxplots_vergleich <- function(dat,yearPeriod1,yearPeriod2,region_
 }
 
 
-quantile_pete <- function(dist,taus,na.rm=TRUE){
-    if (na.rm==TRUE){dist=dist[which(!is.na(dist))]}
 
-    cdf=array(NA,max(dist))
-    out=taus*NA
 
-    cum=0
-    for (i in 1:max(dist)){
-        cum=cum+length(which(dist>i))
-        cdf[i]=cum
-    }
-    cdf=cdf/cdf[length(cdf)]
 
-    for (qu in 1:length(taus)){
-        ueb=which(cdf>taus[qu])[1]
-        unt=ueb-1
-        if (unt<1){out[qu]=ueb}
-        else {out[qu]=ueb-(cdf[ueb]-taus[qu])/(cdf[ueb]-cdf[unt])}
-    }  
-    return(out)
-}
-
-regional_quantiles <- function(dat,yearPeriod,region_name,trendID,additional_style,dataset){
+plot_regional_fit_parameters <- function(dat,yearPeriod,region_name,trendID,additional_style,dataset){
     # performs the entire regional analysis of markov and duration
     # result will be written in ncdf file
 
     # pnly for one trend and 2 states until now
     ntot=length(dat$ID)
 
+    nc = open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_quantiles.nc",sep=""))
+    quantiles=get.var.ncdf(nc,"quantiles")
+    others=get.var.ncdf(nc,"others")
+    fitstuff=get.var.ncdf(nc,"fitstuff")
+    regions=get.var.ncdf(nc,"region")
 
-    poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
-    regNumb=dim(poli)[1]
-    IDregions=points_to_regions(dat,c(region_name))
-
+    regNumb=7
+    seaNumb=6
     region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
     season_names=c("MAM","JJA","SON","DJF","year","4seasons")
 
-    taus=c(0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1)
-    quantiles=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
-    quantiles_vergleich=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
-    others=array(NA,dim=c(length(season_names),regNumb,2,4))
-    fitstuff=array(NA,dim=c(length(season_names),regNumb,2,16))
+    color=c(rgb(0.5,0.5,1,0.8),rgb(1,0.5,0.5,0.8))
+    color=c("blue","red")
+    pos=c(-1,1)*0.15
+    width=3
+    height=3
 
-    pdf(file=paste("../plots/zwischenzeugs/reg_dist_diff_fit_plot_",yearPeriod[1],"-",yearPeriod[2],".pdf",sep=""))
+    # regional focus
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_fit_params_regional.pdf",sep=""),width=width,height=height)
+    par(mfrow=c(4,1))
+    par(mar=c(1,4,2,3))   
 
-    for (sea in 1:length(season_names)){   
-        season=season_names[sea]
-        dists=list()
-
-        nc_dur=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
-        dur=get.var.ncdf(nc_dur,"dur")
-        dur_mid=get.var.ncdf(nc_dur,"dur_mid")
+    for (sea in 1:seaNumb){
         
+        y=array(NA,c(7,2))
         for (state in 1:2){
-            for (reg in 1:regNumb){
-            
-                tmp=duration_region(IDregions,reg,dur[1:ntot,state,],dur_mid[1:ntot,state,])
-                duration=tmp$duration
-                duration_mid=tmp$duration_mid
-                ord=order(duration_mid)
-                if (length(duration)>1000){
-                    y=as.vector(duration[ord])
-                    x=as.vector(duration_mid[ord])
-                    inYearPeriod=which(x>yearPeriod[1] & x<yearPeriod[2])
-                    y=y[inYearPeriod]
-                    x=x[inYearPeriod]
-
-                    # y are now the duration length in selected yearPeriod
-                    # quantile determination
-                    dists=append(dists,list(y))
-                    quantiles[sea,reg,state,1:length(taus)]=quantile_pete(y,taus=taus,na.rm=TRUE)
-                    quantiles_vergleich[sea,reg,state,1:length(taus)]=quantile(y,prob=taus,na.rm=TRUE)
-
-                    # exponential fit + other values
-                    br=seq(0,max(y,na.rm=TRUE),1)
-                    histo=hist(y,breaks=br,plot=FALSE)
-
-                    # data to be fitted
-                    Y=histo$density
-                    X=histo$mids
-
-                    # epontential fit 
-                    xy=data.frame(y=Y,x=X)
-                    fit=nls(y~(a*exp(-b*x)),data=xy,start=list(a=0.1,b=0.1),na.action=na.exclude) 
-                    a=summary(fit)$parameters[1]
-                    b=summary(fit)$parameters[2]
-                    expfit=a*exp(-X*b)
-                    expR2=1-sum(((Y-expfit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-
-                    fitstuff[sea,reg,state,1:4]=c(a,b,NA,expR2)
-
-                    # difference fit with gaussian
-                    z=histo$density-expfit
-                    xy=data.frame(y=z,x=X)
-                    fit=try(nls(y~(A*exp(-(B-x)^2/sigma^2)),algorithm="port",data=xy,start=c(A=0.01,B=12,sigma=7),lower=c(A=0,B=0,sigma=0),na.action=na.exclude))
-                    if (class(fit)!="try-error"){
-                        A=summary(fit)$parameters[1]
-                        B=summary(fit)$parameters[2]                   
-                        sigma=summary(fit)$parameters[3]   
-                        zfit=(A*exp(-(B-X)^2/sigma^2))      
-                    }  
-                    else{
-                        A=0.005
-                        B=14
-                        sigma=8
-                    }
-                    combifit=(a*exp(-b*X)+A*exp(-(B-X)^2/sigma^2))   
-                    combiR2=1-sum(((Y-combifit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-                    fitstuff[sea,reg,state,5:8]=c(A,B,sigma,combiR2)
-
-                    # fit expo + gaussian together
-                    xy=data.frame(y=Y,x=X)
-                    fit=try(nls(y~(a*exp(-b*x)+A*exp(-(B-x)^2/sigma^2)),algorithm="port",data=xy,start=c(a=a,b=b,A=A,B=B,sigma=sigma),lower=c(a=-Inf,b=-Inf,A=0,B=0,sigma=0),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=FALSE)))
-                    if (class(fit)!="try-error"){
-                        a=summary(fit)$parameters[1]
-                        b=summary(fit)$parameters[2]  
-                        A=summary(fit)$parameters[3]
-                        B=summary(fit)$parameters[4]                   
-                        sigma=summary(fit)$parameters[5]   
-                        optifit=(a*exp(-b*X)+A*exp(-(B-X)^2/sigma^2)) 
-                        optiR2=1-sum(((Y-optifit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-                    } 
-                    else{
-                        optifit=X*NA
-                        optiR2=NA
-                    }
-                    fitstuff[sea,reg,state,9:16]=c(a,b,NA,NA,A,B,sigma,optiR2)
-
-
-                    mean=mean(y,na.rm=TRUE)
-                    sd=sd(y,na.rm=TRUE)
-                    skew=skewness(y,na.rm=TRUE)
-                    others[sea,reg,state,1:4]=c(mean,sd,sd/mean,skew)
-
-
-                    # plotstuff
-                    par(mar=c(5, 4, 4, 4) + 0.1)
-                    plot(histo$density,main=paste(season,region_names[reg],state))
-                    lines(expfit,col="red")
-                    lines(combifit,col="blue")
-                    lines(optifit,col="green")
-                    par(new=TRUE,plt=c(0.5,0.9,0.5,0.9))
-                    plot(z)
-                    lines(zfit,col="orange")
-
-                }
+            for (i in 1:7){
+                if (!is.na(fitstuff[sea,i,state,16])){y[i,state]=fitstuff[sea,i,state,16]-fitstuff[sea,i,state,4]}
+                if (is.na(fitstuff[sea,i,state,16])){y[i,state]=fitstuff[sea,i,state,8]-fitstuff[sea,i,state,4]}
             }
         }
-    }
+        y[y<0]=0
 
-    ncRegion <- dim.def.ncdf("region",units="region",vals=1:regNumb, unlim=FALSE)
-    ncStates <- dim.def.ncdf("states",units="states",vals=1:2,unlim=FALSE)
-    ncSeason <- dim.def.ncdf("seasons",units="seasons",vals=1:6,unlim=FALSE)
+        plot(NA,xlim=c(0,7.5),ylim=c(min(y,na.rm=TRUE),max(y,na.rm=TRUE)),frame.plot=FALSE,axes=FALSE,ylab="")
+        axis(2,col="black",ylab="R2 differences")
+        for (state in 1:2){
+            points(y[,state],col=color[state],pch=4)
+            lines(y[,state],col=color[state],lty=3)
+        }
 
-    ncTaus <- dim.def.ncdf("taus",units="dimension for both quantile",vals=1:8,unlim=FALSE)
-    ncOuts <- dim.def.ncdf("outs",units="dimension for others",vals=1:4,unlim=FALSE)
-    ncFits <- dim.def.ncdf("fits",units="dimension for fitstuff",vals=1:16,unlim=FALSE)
-   
-    poli_points <- dim.def.ncdf("poli_points",units="id",vals=1:12,unlim=FALSE)
+        noopti=which(is.na(fitstuff[sea,,,16]) & (fitstuff[sea,i,state,8]-fitstuff[sea,i,state,4])<0)
 
-    region_coordinates <- var.def.ncdf(name="region_coordinates",units="deg",longname="1:6 lon - 7:12 lat",dim=list(ncRegion,poli_points),missval=-9999.0)
-
-    ncQuantile <- var.def.ncdf(name="quantiles",units="quantile values in days evaluated by quantile_pete",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncTaus), missval=-9999.0)
-    ncQuantile_vergleich <- var.def.ncdf(name="quantiles_2",units="quantile values in days evaluated by quantile()",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncTaus), missval=-9999.0)
-    ncOthers <- var.def.ncdf(name="others",units="different analysis values",longname="mean sd sd/mean skewness",dim=list(ncSeason,ncRegion,ncStates,ncOuts), missval=-9999.0)
-    ncFitstuff <- var.def.ncdf(name="fitstuff",units="different analysis values",longname="Exp: [a,b,NA,expR2] combi: [A,B,sigma,combiR2] opti:[a,b,NA,NA,A,B,sigma,optiR2]",dim=list(ncSeason,ncRegion,ncStates,ncFits), missval=-9999.0)
-    
-    vars=list(ncQuantile,ncQuantile_vergleich,ncOthers,ncFitstuff,region_coordinates)
-   
-    nc = create.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_quantiles.nc",sep=""),vars)
-    put.var.ncdf(nc,ncQuantile,quantiles)      
-    put.var.ncdf(nc,ncQuantile_vergleich,quantiles_vergleich)      
-    put.var.ncdf(nc,ncOthers,others)      
-    put.var.ncdf(nc,ncFitstuff,fitstuff)      
-
-    pol_poi=array(NA,c(dim(poli)[1],12))
-    for (i in 1:dim(poli)[1]){
-        for (j in 1:12){
-            
-            if (is.numeric(poli[i,j])){
-                pol_poi[i,j]=poli[i,j]
+        for (val in c(19,13)){
+            y=fitstuff[sea,,,val]
+            y[noopti]=NA
+            print(y)
+            plot(NA,xlim=c(0,7.5),ylim=c(min(y,na.rm=TRUE),max(y,na.rm=TRUE)),frame.plot=FALSE,axes=FALSE,ylab="")
+            axis(2,col="black",ylab="gauss pos")
+            abline(h=0,col=rgb(0.5,0.5,0.5,0.5))
+            for (state in 1:2){
+                points(y[,state],col=color[state],pch=4)
+                lines(y[,state],col=color[state],lty=3)
             }
         }
-    }
-    put.var.ncdf(nc,region_coordinates,pol_poi)      
 
-    close.ncdf(nc) 
+        for (val in c(10)){
+            y=1/fitstuff[sea,,,val]
+            y[noopti]=NA
+
+            plot(NA,xlim=c(0,7.5),ylim=c(min(y,na.rm=TRUE),max(y,na.rm=TRUE)),frame.plot=FALSE,axes=FALSE,ylab="")
+            axis(2,col="black",ylab="gauss pos")
+            for (state in 1:2){
+                points(y[,state],col=color[state],pch=4)
+                lines(y[,state],col=color[state],lty=3)
+            }
+        }
+
+    }
 }
-
 
