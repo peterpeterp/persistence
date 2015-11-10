@@ -547,12 +547,12 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
     quantiles=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
     quantiles_vergleich=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
     others=array(NA,dim=c(length(season_names),regNumb,2,4))
-    fitstuff=array(NA,dim=c(length(season_names),regNumb,2,22))
+    fitstuff=array(NA,dim=c(length(season_names),regNumb,2,19))
 
     pdf(file=paste("../plots/zwischenzeugs/reg_dist_diff_fit_plot_",yearPeriod[1],"-",yearPeriod[2],".pdf",sep=""))
 
     #for (sea in 1:length(season_names)){   
-    for (sea in c(6)){   
+    for (sea in c(1,2,3,4,5,6)){   
         season=season_names[sea]
         dists=list()
 
@@ -595,21 +595,7 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
                     b=summary(exp_nls)$parameters[2]
                     expfit=a*exp(-X*b)
                     expR2=1-sum(((Y-expfit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-                    fitstuff[sea,reg,state,1:4]=c(a,b,NA,expR2)
-
-
-                    # tests to reproduce loglik
-                    # no idea where the facto -0.5 is coming from....
-                    #n=length(X)
-                    #print(-0.5*(length(X)*log(b)-b*sum(X,na.rm=TRUE)))
-                    #print(-0.5*log(b^n*exp(-b*n*mean(X,na.rm=TRUE))))
-                    #print(-0.5*sum(log(expfit)))
-                    #print(logLik(exp_nls))
-
-                    #print(BIC(exp_nls))
-                    #print(AIC(exp_nls))
-                    #print(sum(log(expfit))+3*log(n))
-                    #print(log(b^n*exp(-b*n*mean(X,na.rm=TRUE)))+3*log(n))
+                    fitstuff[sea,reg,state,1:3]=c(a,b,NA)
 
 
                     # difference fit with gaussian
@@ -650,7 +636,7 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
                         combifit=x*NA
                         combiR2=NA
                     }
-                    fitstuff[sea,reg,state,5:8]=c(A,B,sigma,combiR2)
+                    fitstuff[sea,reg,state,4:6]=c(A,B,sigma)
 
                     # now with weaker restrainst to get a good result
                     opti_nls=try(nls(y~(a*exp(-b*x)+A*exp(-(B-x)^2/sigma^2)),algorithm="port",data=xy,start=c(a=a,b=b,A=A,B=B,sigma=sigma),lower=c(a=-Inf,b=-Inf,A=0,B=mean(Y,na.rm=TRUE),sigma=0),upper=c(a=Inf,b=Inf,A=max(z,na.rm=TRUE),B=Inf,sigma=Inf),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=FALSE)))
@@ -663,20 +649,21 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
                         optifit=(a*exp(-b*X)+A*exp(-(B-X)^2/sigma^2)) 
                         optiR2=1-sum(((Y-optifit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
                     } 
-                    fitstuff[sea,reg,state,9:16]=c(a,b,NA,NA,A,B,sigma,optiR2)
+                    fitstuff[sea,reg,state,7:12]=c(a,b,NA,A,B,sigma)
+                    fitstuff[sea,reg,state,13:15]=c(expR2,combiR2,optiR2)
 
-                    
                     n=length(X)
                     if (class(exp_nls)!="try-error"){
-                        fitstuff[sea,reg,state,17]=BIC(exp_nls)
+                        fitstuff[sea,reg,state,16]=BIC(exp_nls)
                         #if (class(gau_nls)!="try-error"){
                         if (1==1){
-                            fitstuff[sea,reg,state,18]=BIC(combi_nls)
+                            fitstuff[sea,reg,state,17]=BIC(combi_nls)
                             if (class(opti_nls)!="try-error"){
-                                fitstuff[sea,reg,state,19]=BIC(opti_nls)
+                                fitstuff[sea,reg,state,18]=BIC(opti_nls)
                             }
                         }
                     }
+                    fitstuff[sea,reg,state,19]=sum(A*exp(-(B-X)^2/sigma^2))
 
                     mean=mean(y,na.rm=TRUE)
                     sd=sd(y,na.rm=TRUE)
@@ -696,6 +683,7 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
                     lines((A*exp(-(B-X)^2/sigma^2)),col="green",lty=2)
 
                     print(fitstuff[sea,reg,state,])
+
                 }
             }
         }
@@ -716,7 +704,7 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
     ncQuantile <- var.def.ncdf(name="quantiles",units="quantile values in days evaluated by quantile_pete",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncTaus), missval=-9999.0)
     ncQuantile_vergleich <- var.def.ncdf(name="quantiles_2",units="quantile values in days evaluated by quantile()",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncTaus), missval=-9999.0)
     ncOthers <- var.def.ncdf(name="others",units="different analysis values",longname="mean sd sd/mean skewness",dim=list(ncSeason,ncRegion,ncStates,ncOuts), missval=-9999.0)
-    ncFitstuff <- var.def.ncdf(name="fitstuff",units="different analysis values",longname="Exp: [a,b,NA,expR2] combi: [A,B,sigma,combiR2] opti:[a,b,NA,NA,A,B,sigma,optiR2] BIC(opti) BIC(exp) diff(BIC(opti)-BIC(exp))",dim=list(ncSeason,ncRegion,ncStates,ncFits), missval=-9999.0)
+    ncFitstuff <- var.def.ncdf(name="fitstuff",units="different analysis values",longname="Exp: [a,b,NA] combi: [A,B,sigma] opti:[a,b,NA,A,B,sigma] R2: [exp,combi,opti] BIC: [exp,combi,opti] percent of gaussian area",dim=list(ncSeason,ncRegion,ncStates,ncFits), missval=-9999.0)
     
     vars=list(ncQuantile,ncQuantile_vergleich,ncOthers,ncFitstuff,region_coordinates)
    
@@ -1043,59 +1031,200 @@ plot_regional_fit_parameters <- function(dat,yearPeriod,region_name,trendID,addi
     color=c(rgb(0.5,0.5,1,0.8),rgb(1,0.5,0.5,0.8))
     color=c("blue","red")
     pos=c(-1,1)*0.15
-    width=3
+    width=4
     height=3
 
     # regional focus
     pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_fit_params_regional.pdf",sep=""),width=width,height=height)
-    par(mfrow=c(4,1))
-    par(mar=c(1,4,2,3))   
+    par(mfrow=c(3,1))
+    par(mar=c(1,5,0,1))   
+
+
 
     for (sea in 1:seaNumb){
-        
-        y=array(NA,c(7,2))
-        for (state in 1:2){
-            for (i in 1:7){
-                if (!is.na(fitstuff[sea,i,state,16])){y[i,state]=fitstuff[sea,i,state,16]-fitstuff[sea,i,state,4]}
-                if (is.na(fitstuff[sea,i,state,16])){y[i,state]=fitstuff[sea,i,state,8]-fitstuff[sea,i,state,4]}
-            }
-        }
-        y[y<0]=0
-
-        plot(NA,xlim=c(0,7.5),ylim=c(min(y,na.rm=TRUE),max(y,na.rm=TRUE)),frame.plot=FALSE,axes=FALSE,ylab="")
-        axis(2,col="black",ylab="R2 differences")
-        for (state in 1:2){
-            points(y[,state],col=color[state],pch=4)
-            lines(y[,state],col=color[state],lty=3)
+        plot(NA,xlim=c(0.5,7.5),ylim=c(0,10),frame.plot=FALSE,axes=FALSE,ylab="")
+        for (reg in 1:regNumb){
+            text(reg,1,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
         }
 
-        noopti=which(is.na(fitstuff[sea,,,16]) & (fitstuff[sea,i,state,8]-fitstuff[sea,i,state,4])<0)
+        #for (val in c(18)){
+        #    y=fitstuff[sea,,,val]-fitstuff[sea,,,(val-2)]
+        #    y2=fitstuff[sea,,,val-1]-fitstuff[sea,,,(val-2)]
+        #    y[is.na(fitstuff[sea,,,val])]=y2[is.na(fitstuff[sea,,,val])]
+        #    mini=min(y,na.rm=TRUE)
+        #    maxi=max(y,na.rm=TRUE)
+        #    range=maxi-mini
+        #    dev=range/100
+        #    plot(NA,xlim=c(0,7.5),ylim=c(mini-dev,maxi+dev),frame.plot=FALSE,axes=FALSE,ylab="BIC diff",main="")
+        #    axis(2,col="black",ylab="")
+        #    text(7.5,maxi-dev,"a",cex=1)
+        #    abline(h=0,col=rgb(0.5,0.5,0.5,0.5))
+        #    #abline(h=c(-6,6),col=rgb(0.5,0.5,0.5,0.5),lty=2)
+        #    for (state in 1:2){
+        #        points(y[,state],col=color[state],pch=1)
+        #        lines(y[,state],col=color[state],lty=3)
+        #        y[,state][y[,state]<0]=NA
+        #        points(y[,state],col="green",pch=4)
+        #    }
+        #}
 
-        for (val in c(19,13)){
-            y=fitstuff[sea,,,val]
-            y[noopti]=NA
-            print(y)
-            plot(NA,xlim=c(0,7.5),ylim=c(min(y,na.rm=TRUE),max(y,na.rm=TRUE)),frame.plot=FALSE,axes=FALSE,ylab="")
-            axis(2,col="black",ylab="gauss pos")
-            abline(h=0,col=rgb(0.5,0.5,0.5,0.5))
-            for (state in 1:2){
-                points(y[,state],col=color[state],pch=4)
-                lines(y[,state],col=color[state],lty=3)
-            }
-        }
+        noopti=which(is.na(fitstuff[sea,,,18]) & (fitstuff[sea,,,17]-fitstuff[sea,,,16])>0)
+        # a b NA 
 
-        for (val in c(10)){
+        for (val in c(8)){
             y=1/fitstuff[sea,,,val]
-            y[noopti]=NA
+            
+            y[noopti]=1/fitstuff[sea,,,2][noopti]
+            mini=min(y,na.rm=TRUE)
+            maxi=max(y,na.rm=TRUE)
+            range=maxi-mini
+            dev=range/100
 
-            plot(NA,xlim=c(0,7.5),ylim=c(min(y,na.rm=TRUE),max(y,na.rm=TRUE)),frame.plot=FALSE,axes=FALSE,ylab="")
-            axis(2,col="black",ylab="gauss pos")
+            plot(NA,xlim=c(0.5,7.5),ylim=c(mini-dev,maxi+dev),frame.plot=FALSE,axes=FALSE,ylab="lifetime [days]",main="")
+            axis(2,col="black",ylab="lifetime [days]")
+            text(7.5,maxi-dev,"a",cex=1)
             for (state in 1:2){
-                points(y[,state],col=color[state],pch=4)
+                points(y[,state],col=color[state],pch=1)
                 lines(y[,state],col=color[state],lty=3)
             }
         }
+
+        for (val in c(19)){
+            
+            y=fitstuff[sea,,,val]
+            
+            y[noopti]=NA
+            mini=min(y,na.rm=TRUE)
+            maxi=max(y,na.rm=TRUE)
+            range=maxi-mini
+            dev=range/100
+
+            plot(NA,xlim=c(0.5,7.5),ylim=c(mini-dev,maxi+dev),frame.plot=FALSE,axes=FALSE,ylab="% gaussian",main="")
+            axis(2,col="black",ylab="")
+            text(7.5,maxi-dev,"b",cex=1)
+            for (state in 1:2){
+                points(y[,state],col=color[state],pch=1)
+                lines(y[,state],col=color[state],lty=3)
+            }
+        }
+
+        #for (val in c(11)){
+        #    
+        #    y=fitstuff[sea,,,val]
+        #    
+        #    y[noopti]=NA
+        #    mini=min(y,na.rm=TRUE)
+        #    maxi=max(y,na.rm=TRUE)
+        #    range=maxi-mini
+        #    dev=range/100
+        #    plot(NA,xlim=c(0.5,7.5),ylim=c(mini-dev,maxi+dev),frame.plot=FALSE,axes=FALSE,ylab="days",main="")
+        #    axis(2,col="black",ylab="")
+        #    text(7.5,maxi-dev,"c",cex=1)
+        #    for (state in 1:2){
+        #        points(y[,state],col=color[state],pch=1)
+        #        lines(y[,state],col=color[state],lty=3)
+        #    }
+        #}
 
     }
+
+
+    # write column for latex
+    bicdiff=fitstuff[,,,18]-fitstuff[,,,16]
+    y2=fitstuff[,,,17]-fitstuff[,,,16]
+    bicdiff[is.na(fitstuff[,,,18])]=y2[is.na(fitstuff[,,,18])]
+
+
+
+    table<-file(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_seasons_latex.txt",sep=""))
+    lines=c()
+    auswahl=c(1,2,3,4,6)
+    for (sea in auswahl){
+        newline=season_names[sea]
+        for (reg in 1:regNumb){
+            newline=paste(newline,"&")
+            for (state in 1:2){
+                newline=paste(newline,round(bicdiff[sea,reg,state]))
+            }
+        }
+        newline=paste(newline,paste("\\","\\",sep=""))
+        lines[sea]=newline
+    }
+    writeLines(lines[auswahl], table)
+
+    sea=6
+    color=c("lightblue","lightred")
+
+    table<-file(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_params_latex.txt",sep=""))
+    options(scipen=100)
+
+    lines=c()
+    y=fitstuff[sea,,,15]-fitstuff[sea,,,13]
+    y2=fitstuff[sea,,,14]-fitstuff[sea,,,13]
+    y[is.na(fitstuff[sea,,,15])]=y2[is.na(fitstuff[sea,,,15])]
+
+    for (state in 1:2){
+        if (state==1){newline=paste("\\","multirow{2}{*}{R2 diff}",sep="")}
+        else{newline=" "}
+        for (reg in 1:regNumb){
+            newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
+            newline=paste(newline,round(y[reg,state],04))
+            #}
+        }
+        newline=paste(newline,paste("\\","\\",sep=""))
+        if (state==2){newline=paste(newline,"\n\\hline")}
+        lines[state]=newline
+    }
+
+    y=fitstuff[sea,,,18]-fitstuff[sea,,,16]
+    y2=fitstuff[sea,,,17]-fitstuff[sea,,,16]
+    y[is.na(fitstuff[sea,,,18])]=y2[is.na(fitstuff[sea,,,18])]    
+
+    for (state in 1:2){
+        if (state==1){newline=paste("\\","multirow{2}{*}{BIC diff}",sep="")}
+        else{newline=""}
+        for (reg in 1:regNumb){
+            newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
+            newline=paste(newline,round(y[reg,state]))
+        }
+        newline=paste(newline,paste("\\","\\",sep=""))
+        if (state==2){newline=paste(newline,"\n\\hline")}
+        lines[(state+2)]=newline
+    } 
+
+    y=1/fitstuff[sea,,,8]
+    y2=1/fitstuff[sea,,,2]
+    y[is.na(fitstuff[sea,,,8])]=y2[is.na(fitstuff[sea,,,8])]    
+
+    for (state in 1:2){
+        if (state==1){newline=paste("\\","multirow{2}{*}{1/b}",sep="")}
+        else{newline=""}
+        for (reg in 1:regNumb){
+            newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
+            newline=paste(newline,round(y[reg,state],02))
+        }
+        newline=paste(newline,paste("\\","\\",sep=""))
+        if (state==2){newline=paste(newline,"\n\\hline")}
+        lines[(state+4)]=newline
+    } 
+
+    y=fitstuff[sea,,,10]
+    y[is.na(fitstuff[sea,,,10])]=NA   
+
+    for (state in 1:2){
+        if (state==1){newline=paste("\\","multirow{2}{*}{A}",sep="")}
+        else{newline=""}
+        for (reg in 1:regNumb){
+            newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
+            newline=paste(newline,round(y[reg,state],03))
+        }
+        newline=paste(newline,paste("\\","\\",sep=""))
+        if (state==2){newline=paste(newline,"\n\\hline")}
+        lines[(state+6)]=newline
+    } 
+    
+    writeLines(lines, table)
+
+    close(table)
 }
 
