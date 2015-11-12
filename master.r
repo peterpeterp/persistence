@@ -164,7 +164,7 @@ master_regional_climatology <- function(region_name,trendID,dataset="_TX",additi
         print(yearPeriod)
         #regional_climatology(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
         #plot_regional_distributions(dat,yearPeriod,region_name,trendID,dataset=dataset,additional_style=additional_style)
-        #regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
         plot_regional_fit_parameters(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
         plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
     }
@@ -177,13 +177,12 @@ full <- function(nday,nyr,trend_style="_mean",dataset="_TX",additional_style="")
     #complete 2 states analysis 
     trendID=paste(nday,"_",nyr,sep="")
 
-    #master_duration(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
+    master_duration(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
     points=c(1950,2014,1950,1980,1980,2014)
-    points=c(1950,1980,1980,2014)
+    #points=c(1950,1980,1980,2014)
     for (i in 1:3){
         period=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
-        #master_analyse_duration(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style)
-        #master_analyse_duration(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style,seasons=c("year"))
+        master_analyse_duration(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style)
         master_duration_distribution(yearPeriod=period,trendID=trendID,dataset=dataset,additional_style=additional_style)
     }
 }
@@ -192,7 +191,7 @@ full <- function(nday,nyr,trend_style="_mean",dataset="_TX",additional_style="")
 nday=91
 nyr=5
 trendID=paste(nday,"_",nyr,sep="")
-dataset="_TX"
+dataset="_T_mean"
 trend_style="_mean"
 additional_style=""
 
@@ -205,7 +204,7 @@ additional_style=""
 #master_state_attribution_daily_median(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 
 
-#full(nday,nyr,trend_style="_mean",dataset="_TX",additional_style="")
+full(nday,nyr,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 
 
 

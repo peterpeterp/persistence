@@ -148,10 +148,11 @@ plot_duration_distribution <- function(period="1950-2015",trendID="91_5",dataset
 			    titel[((i-1)*states+state)]=paste(titel_zusatz[i],"of",state_names[state],"period duration in",season)
 			}
 		}	
-		print(mean(reihen[1,],na.rm=TRUE))	
-		print(mean(reihen[2,],na.rm=TRUE))	
-		print(sd(reihen[1,],na.rm=TRUE))	
-		print(sd(reihen[2,],na.rm=TRUE))	
+		#print(mean(reihen[1,],na.rm=TRUE))	
+		#print(mean(reihen[2,],na.rm=TRUE))	
+		#print(sd(reihen[1,],na.rm=TRUE))	
+		#print(sd(reihen[2,],na.rm=TRUE))
+
 		map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/duration/",period,"/",season,"/duration_distr_",trendID,"_",season,"_",additional_style,"_",name_zusatz,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette="regenbogen",region=region,grid=grid,average=average)
 	}
 }
@@ -211,7 +212,7 @@ ntot=1319
 
 states=2
 trendID="91_5"
-dataset="_TX"
+dataset="_TN"
 additional_style=""
 
 dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
@@ -234,7 +235,7 @@ for (i in c(1,2,3,4,5,6)){
 
 
 
-#full_plot(trendID=trendID,states=states,dataset=dataset,additional_style=additional_style)
+full_plot(trendID=trendID,states=states,dataset=dataset,additional_style=additional_style)
 
 #commands
 if (1==2){

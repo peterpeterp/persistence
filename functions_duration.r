@@ -69,7 +69,6 @@ calc_global_dur <- function(dat,ind,trash,filename,states=c(-1,1)){
         }
         maxis[q]=max(len,na.rm=TRUE)
     }
-
     duration_write(filename,dur[1:ntot,1:length(states),1:max(maxis,na.rm=TRUE)],
         dur_mid[1:ntot,1:length(states),1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
 }
@@ -189,10 +188,11 @@ duration_distribution <- function(dur,dur_mid,filename,season,yearPeriod,station
                 b=summary(fit)$parameters[2]
                 yfit=a*exp(-histo$mids*b)
                 R2=1-sum(((histo$density-yfit)^2),na.rm=TRUE)/sum(((histo$density-mean(histo$density,na.rm=TRUE))^2),na.rm=TRUE)
+                y=dur[q,state,inside]
                 mean=mean(y,na.rm=TRUE)
                 sd=sd(y,na.rm=TRUE)
                 skew=skewness(y,na.rm=TRUE)
-                others[sea,reg,state,1:8]=c(mean,sd,sd/mean,skew,a,b,1/b,R2)
+                out[q,state,1:8]=c(mean,sd,sd/mean,skew,a,b,1/b,R2)
 
                 #y=histo$density
                 #y[y==0]=NA

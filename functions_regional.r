@@ -546,10 +546,10 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
     taus=c(0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1)
     quantiles=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
     quantiles_vergleich=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
-    others=array(NA,dim=c(length(season_names),regNumb,2,4))
+    others=array(NA,dim=c(length(season_names),regNumb,25,4))
     fitstuff=array(NA,dim=c(length(season_names),regNumb,2,19))
 
-    pdf(file=paste("../plots/zwischenzeugs/reg_dist_diff_fit_plot_",yearPeriod[1],"-",yearPeriod[2],".pdf",sep=""))
+    pdf(file=paste("../plots/zwischenzeugs/reg_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],".pdf",sep=""),width=3,height=4)
 
     #for (sea in 1:length(season_names)){   
     for (sea in c(1,2,3,4,5,6)){   
@@ -672,17 +672,93 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
 
 
                     # plotstuff
-                    par(mar=c(5, 4, 4, 4) + 0.1)
-                    plot(histo$density,main=paste(season,region_names[reg],state))
-                    lines(expfit,col="red")
-                    lines(combifit,col="blue")
-                    lines(optifit,col="green",lty=2)
-                    par(new=TRUE,plt=c(0.4,0.8,0.4,0.8))
-                    plot(z,main=paste("R2 exp:",round(expR2,03),"R2 opti:",round(optiR2,03),"R2 combi:",round(combiR2,03)))
-                    lines(zfit,col="orange")
-                    lines((A*exp(-(B-X)^2/sigma^2)),col="green",lty=2)
+                    #reference
+                    par(mar=c(0, 0, 0, 0) + 0.1)
+                    plot(NA,xlim=c(0,1),ylim=c(0,1),axes=FALSE,frame.plot=FALSE)
+                    text(0.5,0.5,paste(season,region_names[reg],state))
 
-                    print(fitstuff[sea,reg,state,])
+                    #first plot
+                    par(mar=c(0, 4, 0, 4) + 0.1)
+                    layout(matrix(c(1,1,1,1,2,2,3,3,3), 9, 1, byrow = TRUE))
+                    plot(histo$density,xlab="days",ylab="density",log="y",axes=FALSE,frame.plot=TRUE,pch=20)#,main=paste(season,region_names[reg],state))
+                    at_=axis(2,labels=FALSE,col="black")
+                    if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
+                    axis(2,at=at_)
+                    lines(expfit,col="red")
+                    if (class(opti_nls)!="try-error"){lines(optifit,col="green",lty=1)}
+                    else{lines(combifit,col="green",lty=1)}
+                    lines(a*exp(-X*b),col="green",lty=2)
+                    legend("topright",legend=c("a"),bty="n")
+
+                    plot(z,axes=FALSE,frame.plot=TRUE,xlab="",ylab="density",pch=20)
+                    at_=axis(2,labels=FALSE,col="black")
+                    if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
+                    axis(2,at=at_)
+                    lines(zfit,col="orange")
+                    legend("topright",legend=c("b"),bty="n")
+
+                    par(mar=c(4, 4, 0, 4) + 0.1)
+                    plot((Y-a*exp(-X*b)),axes=FALSE,frame.plot=TRUE,xlab="days",ylab="density",pch=20)
+                    lines(A*exp(-(B-X)^2/sigma^2),col="cyan",lty=1)
+                    axis(1)
+                    at_=axis(2,labels=FALSE,col="black")
+                    if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
+                    axis(2,at=at_)
+                    legend("topright",legend=c("c"),bty="n")
+
+
+
+                    # second version
+                    par(mar=c(0, 4, 0, 4) + 0.1)
+                    layout(matrix(c(1,1,1,1,2,2), 6, 1, byrow = TRUE))
+                    plot(histo$density,xlab="days",ylab="density",axes=FALSE,frame.plot=TRUE,log="xy",pch=20)#,main=paste(season,region_names[reg],state))
+                    at_=axis(2,labels=FALSE,col="black")
+                    if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
+                    axis(2,at=at_)
+                    lines(expfit,col="red")
+                    if (class(opti_nls)!="try-error"){lines(optifit,col="green",lty=1)}
+                    else{lines(combifit,col="green",lty=1)}
+                    legend("topright",legend=c("a"),bty="n")
+
+                    par(mar=c(4, 4, 0, 4) + 0.1)
+                    plot((Y-a*exp(-X*b)),axes=FALSE,frame.plot=TRUE,xlab="days",ylab="density",log="x",pch=20)
+                    lines(A*exp(-(B-X)^2/sigma^2),col="cyan",lty=1)
+                    axis(1)
+                    axis(2)
+                    legend("topright",legend=c("b"),bty="n")
+
+                    #third plot
+                    par(mar=c(0, 4, 0, 4) + 0.1)
+                    layout(matrix(c(1,1,1,2,3,3), 6, 1, byrow = TRUE))
+                    plot(histo$density,xlab="days",ylab="density",axes=FALSE,frame.plot=TRUE,pch=20)#,main=paste(season,region_names[reg],state))
+                    at_=axis(2,labels=FALSE,col="black")
+                    if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
+                    axis(2,at=at_)
+                    lines(expfit,col="red")
+                    if (class(opti_nls)!="try-error"){lines(optifit,col="green",lty=1)}
+                    else{lines(combifit,col="green",lty=1)}
+                    lines(a*exp(-X*b),col="green",lty=2)
+                    legend("topright",legend=c("a"),bty="n")
+
+                    plot(z,axes=FALSE,frame.plot=TRUE,xlab="",ylab="density",pch=20)
+                    at_=axis(2,labels=FALSE,col="black")
+                    if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
+                    axis(2,at=at_)
+                    lines(zfit,col="orange")
+                    legend("topright",legend=c("b"),bty="n")
+
+                    par(mar=c(4, 4, 0, 4) + 0.1)
+                    plot((Y-a*exp(-X*b)-A*exp(-(X-B)^2/sigma^2)),axes=FALSE,frame.plot=TRUE,xlab="days",ylab="density",pch=20)
+                    #lines(A*exp(-(B-X)^2/sigma^2),col="cyan",lty=1)
+                    axis(1)
+                    at_=axis(2,labels=FALSE,col="black")
+                    if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
+                    axis(2,at=at_)
+                    legend("topright",legend=c("c"),bty="n")
+
+
+                    #print(fitstuff[sea,reg,state,])
+                    print(paste(sea,reg,state))
 
                 }
             }
@@ -1164,7 +1240,7 @@ plot_regional_fit_parameters <- function(dat,yearPeriod,region_name,trendID,addi
     y[is.na(fitstuff[sea,,,15])]=y2[is.na(fitstuff[sea,,,15])]
 
     for (state in 1:2){
-        if (state==1){newline=paste("\\","multirow{2}{*}{R2 diff}",sep="")}
+        if (state==1){newline=paste("\\","multirow{2}{*}{$\\Delta R^2$}",sep="")}
         else{newline=" "}
         for (reg in 1:regNumb){
             newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
@@ -1181,11 +1257,12 @@ plot_regional_fit_parameters <- function(dat,yearPeriod,region_name,trendID,addi
     y[is.na(fitstuff[sea,,,18])]=y2[is.na(fitstuff[sea,,,18])]    
 
     for (state in 1:2){
-        if (state==1){newline=paste("\\","multirow{2}{*}{BIC diff}",sep="")}
+        if (state==1){newline=paste("\\","multirow{2}{*}{$\\Delta$BIC}",sep="")}
         else{newline=""}
         for (reg in 1:regNumb){
             newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
-            newline=paste(newline,round(y[reg,state]))
+            if (y[reg,state]<0){newline=paste(newline,"\\textit{\\textbf{",round(y[reg,state]),"}}")}
+            else{newline=paste(newline,round(y[reg,state]))}
         }
         newline=paste(newline,paste("\\","\\",sep=""))
         if (state==2){newline=paste(newline,"\n\\hline")}
@@ -1209,7 +1286,6 @@ plot_regional_fit_parameters <- function(dat,yearPeriod,region_name,trendID,addi
     } 
 
     y=fitstuff[sea,,,10]
-    y[is.na(fitstuff[sea,,,10])]=NA   
 
     for (state in 1:2){
         if (state==1){newline=paste("\\","multirow{2}{*}{A}",sep="")}
@@ -1221,6 +1297,19 @@ plot_regional_fit_parameters <- function(dat,yearPeriod,region_name,trendID,addi
         newline=paste(newline,paste("\\","\\",sep=""))
         if (state==2){newline=paste(newline,"\n\\hline")}
         lines[(state+6)]=newline
+    } 
+    y=fitstuff[sea,,,13]
+
+    for (state in 1:2){
+        if (state==1){newline=paste("\\","multirow{2}{*}{R2(exp)}",sep="")}
+        else{newline=""}
+        for (reg in 1:regNumb){
+            newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
+            newline=paste(newline,round(y[reg,state],03))
+        }
+        newline=paste(newline,paste("\\","\\",sep=""))
+        if (state==2){newline=paste(newline,"\n\\hline")}
+        lines[(state+8)]=newline
     } 
     
     writeLines(lines, table)
