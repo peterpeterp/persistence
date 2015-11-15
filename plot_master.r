@@ -212,30 +212,33 @@ ntot=1319
 
 states=2
 trendID="91_5"
-dataset="_TN"
+dataset="_TMean"
 additional_style=""
 
 dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
 
-#plot_duration_climatology(trendID,states=states,period="1950-2014",dataset=dataset,additional_style="",name_zusatz="mean_7rect",auswahl=c(8),titel_zusatz=c(""),farb_mitte="gemeinsam mean",seasons=c("4seasons"),region="7rect",grid=TRUE)
+#plot_duration_climatology(trendID,period="1950-2014",dataset=dataset,additional_style="",name_zusatz="mean_7rect",auswahl=c(8),titel_zusatz=c(""),farb_mitte="gemeinsam mean",seasons=c("4seasons"),region="7rect",grid=FALSE)
 
-titel=c("mean","relative sd","skewness","1/b","R2","A")
-name=c("mean","rel_sd","skew","t","R2","A")
-farb=c(3,7.5,0.8,1.2,2,4,3,12,0.7,1,0.02,0.2)
-auswahl=c(1,3,4,7,8,5)
-#for (i in c(1)){
-for (i in c(1,2,3,4,5,6)){
-	for (period in c("1950-2014","1950-1980","1980-2014")){
-		if (is.na(farb[(i-1)*2+2])){farb_mitte="mean"}
-		else {farb_mitte=farb[((i-1)*2+1):((i-1)*2+2)]}
-		plot_duration_distribution(trendID=trendID,period=period,dataset=dataset,additional_style="",auswahl=c(auswahl[i]),farb_mitte=farb_mitte,titel_zusatz=c(titel[i]),name_zusatz=name[i],seasons=c("4seasons"),average=TRUE,ausschnitt=c(35,60),region="7rect")
+
+
+if (1==2){
+	titel=c("mean","relative sd","skewness","1/b","R2","A")
+	name=c("mean","rel_sd","skew","t","R2","A")
+	farb=c(3,7.5,0.8,1.2,2,4,3,12,0.7,1,0.02,0.2)
+	auswahl=c(1,3,4,7,8,5)
+	#for (i in c(1)){
+	for (i in c(1,2,3,4,5,6)){
+		for (period in c("1950-2014","1950-1980","1980-2014")){
+			if (is.na(farb[(i-1)*2+2])){farb_mitte="mean"}
+			else {farb_mitte=farb[((i-1)*2+1):((i-1)*2+2)]}
+			plot_duration_distribution(trendID=trendID,period=period,dataset=dataset,additional_style="",auswahl=c(auswahl[i]),farb_mitte=farb_mitte,titel_zusatz=c(titel[i]),name_zusatz=name[i],seasons=c("4seasons"),average=TRUE,ausschnitt=c(35,60),region="7rect")
+		}
 	}
 }
 
 
-
-full_plot(trendID=trendID,states=states,dataset=dataset,additional_style=additional_style)
+#full_plot(trendID=trendID,states=states,dataset=dataset,additional_style=additional_style)
 
 #commands
 if (1==2){
@@ -276,4 +279,4 @@ if (1==2){
 
 
 
-#plot_detrended_seasonal_skewness(dat,grid=FALSE,ausschnitt=c(-80,80),trendID="91_5",trend_style="_mean",dataset="_TX",additional_style="_median")
+plot_numbWarm(trendID="91_5",dataset=dataset,additional_style=additional_style,version="_4seasons")

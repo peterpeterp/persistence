@@ -49,9 +49,9 @@ add_region <- function(region_name,farbe){
     }
 }
 
-map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA,titel,
-	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,
-	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",
+map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),
+	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,
+	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),
 	subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z")){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
@@ -66,6 +66,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 
 	pdf(file = filename_plot,width=paper[1],height=paper[2])
     par(mar=c(1,1,2,4))
+    par(cex.axis=cex_axis,cex.lab=cex_axis)
 
 	if (col_row[1]>1 | col_row[2]>1){
 		par(cex=cex)
@@ -82,7 +83,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 		layout(matrix(mat,length(mat)/2,2, byrow = TRUE))
 	}
 	else {
-		pointsize=1.2
+		pointsize=pointsize
 	}
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
@@ -202,7 +203,7 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 
 
 		# -----------------------------------------------------------------
-
+		print(y)
 		facetcol <- cut(y,nbcol)
 		if (titel[1]==""){plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5)}
 		else{plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])}
@@ -212,6 +213,9 @@ map_allgemein <- function(dat,filename_plot,worldmap,reihen,reihen_sig=reihen*NA
 
 		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=pointsize)
 		points(lon,lat,pch=sig,cex=pointsize)
+		for (rad in c(1,1.5,1.9,2.3)){
+			points(dat$lon[highlight_points],dat$lat[highlight_points],col=highlight_color,pch=1,cex=(pointsize*rad))
+		}
 
 		print(average)
 		if (average==TRUE){

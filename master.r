@@ -166,10 +166,10 @@ master_regional_climatology <- function(region_name,trendID,dataset="_TX",additi
         #plot_regional_distributions(dat,yearPeriod,region_name,trendID,dataset=dataset,additional_style=additional_style)
         regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
         plot_regional_fit_parameters(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
-        plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,quantile_style="quantiles_2")
     }
 
-    #plot_regional_boxplots_vergleich(dat=dat,yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+    plot_regional_boxplots_vergleich(dat=dat,yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,quantile_style="quantiles_2")
 }
 
 
@@ -191,7 +191,7 @@ full <- function(nday,nyr,trend_style="_mean",dataset="_TX",additional_style="")
 nday=91
 nyr=5
 trendID=paste(nday,"_",nyr,sep="")
-dataset="_T_mean"
+dataset="_TMean"
 trend_style="_mean"
 additional_style=""
 
@@ -204,11 +204,12 @@ additional_style=""
 #master_state_attribution_daily_median(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 
 
-full(nday,nyr,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
+#full(nday,nyr,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 
 
 
 #master_trend_control(trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 master_regional_climatology(region_name="7rect",trendID=trendID,dataset=dataset,additional_style=additional_style)
+
 
 
