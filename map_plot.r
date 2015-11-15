@@ -68,6 +68,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
     par(mar=c(1,1,2,4))
     par(cex.axis=cex_axis,cex.lab=cex_axis)
 
+
 	if (col_row[1]>1 | col_row[2]>1){
 		par(cex=cex)
 		pointsize=1
@@ -90,6 +91,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 	if (farb_mitte=="gemeinsam 0"){
 		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)),abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
 	}
+
 	if (farb_mitte=="gemeinsam mean"){	
 		mi=mean(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)
 		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))-mi,mi-abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))

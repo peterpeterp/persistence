@@ -506,7 +506,7 @@ regional_climatology <- function(dat,yearPeriod,region_name,trendID,additional_s
     close.ncdf(nc) 
 }
 
-quantile_pete <- function(dist,taus,na.rm=TRUE){
+quantile_pete <- function(dist,taus,na.rm=TRUE,plot=TRUE){
     if (na.rm==TRUE){dist=dist[which(!is.na(dist))]}
 
     cdf=array(NA,max(dist))
@@ -523,15 +523,18 @@ quantile_pete <- function(dist,taus,na.rm=TRUE){
         if (unt<1){out[qu]=ueb}
         else {out[qu]=ueb-(cdf[ueb]-taus[qu])/(cdf[ueb]-cdf[unt])}
     }  
-    graphics.off()
-    print(dist)
-    pdf(file="../plots/zwischenzeugs/quantile_test.pdf")
-    plot(1:length(cdf),cdf)
-    print(cdf)
-    lines(ecdf(dist))
-    lines(cdf,col="red")
-    qraphics.off()
-    adas
+
+    if (plot==TRUE){    
+        #pdf(file="../plots/zwischenzeugs/quantile_test.pdf")
+        plot(ecdf(dist))
+        lines(cdf,col="red")
+        for (qu in c(2,4,5)){
+            abline(v=out[qu],col="blue")
+            abline(h=taus[qu],col="blue")
+            #print(quantile(dist,prob=taus[qu]))
+            abline(v=quantile(dist,prob=taus[qu]),col="green",lty=2)
+        }
+    }
     return(out)
 }
 
@@ -856,7 +859,7 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
 
     # regional focus
     pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_",quantile_style,"_boxplots_regional.pdf",sep=""),width=width,height=height)
-    par(mfrow=c(1,1))
+    par(mfrow=c(1,1),cex.legend=2)
     par(mar=c(1,4,2,3))   
     at_=seq(1, regNumb, 1)
     at_=c(at_-0.15,at_+0.15)
@@ -865,17 +868,18 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
     for (sea in 1:length(season_names)){   
         season=season_names[sea]
 
-        plot(NA,xlim=c(0,7.5),ylim=c(0,(max(quantiles[sea,,,1:5])+drueber)),frame.plot=FALSE,axes=FALSE,ylab="days")
+        plot(NA,xlim=c(0,7.5),ylim=c(0,25),frame.plot=FALSE,axes=FALSE,ylab="days")#(max(quantiles[sea,,,1:5])+drueber)
         axis(2)
         for (i in axis(2)){
             abline(h=i,col=rgb(0.5,0.5,0.5,0.5),lty=3)
         }
-        text(8,(max(quantiles[sea,,,1:5],na.rm=TRUE)+drueber-0.5),label=buchstaben[sea],cex=2)
+        legend("topright",legend=c(buchstaben[sea]),bty="n")
+        #text(8,23,label=buchstaben[sea],cex=2)#(max(quantiles[sea,,,1:5],na.rm=TRUE)+drueber-0.5)
 
         for (reg in 1:regNumb){
             for (state in 1:2){
                 plot_boxplot(quantiles[sea,reg,state,],reg+pos[state],0.3,color[state])
-                text(reg,max(quantiles[sea,,,1:5])+drueber,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))
+                text(reg,24,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))#max(quantiles[sea,,,1:5])+drueber
             }
         }        
         for (oth in c(1)){
@@ -897,6 +901,7 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
     drueber=0.5
 
     anomaly=quantiles*NA
+    other_anom=others*NA
     for (sea in 1:4){  
         anomaly[sea,,,]=quantiles[sea,,,]-quantiles[6,,,]
     }
@@ -918,6 +923,14 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
         for (quA in c(4,5)){
             points(at_[1:regNumb],anomaly[sea,,1,quA],col="black",pch=2)
             points(at_[(regNumb+1):(regNumb*2)],anomaly[sea,,2,quA],col="black",pch=2)
+        }
+
+        other_anom[sea,,,]=others[sea,,,]-others[6,,,]
+        for (oth in c(1)){
+            points(at_[1:regNumb],other_anom[sea,,1,oth],col="blue",pch=oth)
+            lines(at_[1:regNumb],other_anom[sea,,1,oth],col="blue",lty=3)
+            points(at_[(regNumb+1):(regNumb*2)],other_anom[sea,,2,oth],col="red",pch=oth)
+            lines(at_[(regNumb+1):(regNumb*2)],other_anom[sea,,2,oth],col="red",lty=3)
         }
     }
 

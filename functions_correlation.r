@@ -181,7 +181,8 @@ dur_correlation_plot <- function(dat,trendID="91_5",dataset="_TX",additional_sty
 			titel[((sea-1)*states+state)]=paste("correlation between",toCor_name,"and",quA,"percentile of",state_names[state],"period duration in",seasons[sea])
 		}
 	}
-    map_allgemein(dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/dur_cor/",trendID,"_",toCor_short,"_",toCor_shortZu,"_duration_",quA,"_",states,"states.pdf",sep=""),
+	#print(paste("../plots/",trendID,"/",dataset,additional_style,"/maps/dur_cor/",trendID,"_",toCor_short,"_",toCor_shortZu,"_duration_",quA,"_",states,"states.pdf",sep=""))
+    map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/dur_cor/",trendID,"_",toCor_short,"_",toCor_shortZu,"_duration_",quA,"_",states,"states.pdf",sep=""),
     	worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette="gold-blau")
 
     # mean duration length
@@ -228,13 +229,13 @@ if (1==1){
 	library(fields)
 	worldmap = getMap(resolution = "low")
 	ntot=1319
-	dataset="_TX"
+	dataset="_TMean"
 	additional_style=""
 	dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 }
 
 
-if (1==2){
+if (1==1){
 	source("load.r")
 
 	#eke_mar_correl(level=1)
@@ -245,11 +246,11 @@ if (1==2){
 		indexKl=indicesKl[i]
 
 		index_dur_correl(dat,dataset=dataset,additional_style=additional_style,toCor_name=indexGr,toCor_short=indexKl)
-		dur_correlation_plot(dat,dataset=dataset,additional_style=additional_style,toCor_short=indexKl,toCor_name=indexGr,toCor_shortZu="",quA=0.95)
+		dur_correlation_plot(dat,dataset=dataset,additional_style=additional_style,toCor_short=indexKl,toCor_name=indexGr,toCor_shortZu="",quA=0.95,farb_mitte="0")
 	}
 }
 
 
-#eke_dur_correl(dat,dataset=dataset,additional_style=additional_style)
+eke_dur_correl(dat,dataset=dataset,additional_style=additional_style)
 dur_correlation_plot(dat,dataset=dataset,additional_style=additional_style,toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",quA=0.95,farb_mitte=c(-2,2))
 
