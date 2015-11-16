@@ -52,7 +52,7 @@ add_region <- function(region_name,farbe){
 map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),
 	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,
 	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),
-	subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z")){
+	subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA)){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
 	#worldmap background of lon lat plot
@@ -60,7 +60,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 	#reihen array(... dim=c(anzahl der plots, anzahl der stationen))
 	#titel liste von strings, plot-titles
 	#farb_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
-	if (ausschnitt[1]!=-80){
+	if (ausschnitt[1]!=-80 & col_row[1]==1){
 		paper[2]=paper[2]*(ausschnitt[2]-ausschnitt[1])/160+1
 	}
 
@@ -69,6 +69,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
     par(cex.axis=cex_axis,cex.lab=cex_axis)
 
 
+    # create layout matrix for multiplots in style c(1,2,1,2,1,2,3,4,3,4,3,4 ..)
 	if (col_row[1]>1 | col_row[2]>1){
 		par(cex=cex)
 		pointsize=1
@@ -80,9 +81,26 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 			index=index+1
 		}
 
-		mat[((col_row[1]*col_row[2]-2)*3+1):((col_row[1]*col_row[2]-2)*3+2)]=c(index+1,index+1)#,index+1,index+1)
+		mat[((col_row[1]*col_row[2]-2)*3+1):((col_row[1]*col_row[2]-2)*3+4)]=c(index+1,index+1,index+1,index+1)#,index+1,index+1)
 		layout(matrix(mat,length(mat)/2,2, byrow = TRUE))
 	}
+
+	if (col_row[1]>1 | col_row[2]==1){
+		par(cex=cex)
+		pointsize=1
+		mat=c()
+		for (row in 1:(col_row[1])){
+			mat[((row-1)*7+1):(row*7)]=c(row,row,row,row,row,row,col_row[1]+1)
+		}
+		layout(matrix(mat,col_row[1],length(mat)/col_row[1], byrow = TRUE))
+	}
+
+	if (!is.na(layout_mat[1])){
+		par(cex=cex)
+		pointsize=1
+		layout(matrix(mat,col_row[1],length(mat)/col_row[1], byrow = TRUE))
+	}
+
 	else {
 		pointsize=pointsize
 	}
@@ -205,7 +223,6 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 
 
 		# -----------------------------------------------------------------
-		print(y)
 		facetcol <- cut(y,nbcol)
 		if (titel[1]==""){plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5)}
 		else{plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])}
@@ -219,7 +236,6 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 			points(dat$lon[highlight_points],dat$lat[highlight_points],col=highlight_color,pch=1,cex=(pointsize*rad))
 		}
 
-		print(average)
 		if (average==TRUE){
 			text(-165,ausschnitt[1]+10,paste("mean:",round(mean(y,na.rm=TRUE),02)))
 			text(-165,ausschnitt[1]+5,paste("sd:",round(sd(y,na.rm=TRUE),02)))
@@ -240,15 +256,24 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		if (!is.na(region)){
 			add_region(region,regionColor)
 		}
-		if (col_row[1]>1 | col_row[2]>1){
-			text(x=175,y=(ausschnitt[2]-2),label=subIndex[subCount],col=rgb(0.6,0.6,0.6,0.9),cex=1.5)
+		print(y)
+		if (col_row[1]>1 & col_row[2]>1){
+			legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
 			if (subCount==dim(reihen)[1]){
 				plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-				image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,legend.mar=8,smallplot=c(0.1,0.9,0.7,0.95))
+				image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,legend.mar=8,smallplot=c(0.1,0.9,0.85,0.95),legend.lab=color_lab)
+			}
+		}
+		if (col_row[1]>1 & col_row[2]==1){
+			legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
+			if (subCount==dim(reihen)[1]){
+				plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+				image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.2,0.1,0.90),legend.lab=color_lab)
 			}
 		}
 		else {
-			image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE,legend.lab=color_lab)
+			image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE,smallplot=c(0.97,0.99,0.1,0.90),legend.lab=color_lab)
+			#image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE,legend.lab=color_lab)
 		}
 	}
     graphics.off()
