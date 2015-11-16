@@ -177,7 +177,7 @@ plot_seasonal_anomalie_duration <- function(trendID="91_5",dataset="_TX",additio
 		mat[((row-1)*7+1):(row*7)]=c(row,row,row,row,row,row,legende[row])
 	}
 	filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/",trendID,"_vergleich_",name_zusatz,"_",period,"_",titel_zusatz,"_kompakt_sd(seas_anom).pdf",sep="")
-	map_allgemein(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen2,titel=c(""),farb_mitte="mean",farb_palette="regenbogen",grid=grid,ausschnitt=ausschnitt,col_row=c(1,1),cex_axis=1,cex=1,paper=c(8,3))
+	map_allgemein(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen2,titel=c(""),farb_mitte=c(0,1.2),farb_palette="regenbogen",grid=grid,ausschnitt=c(30,80),col_row=c(1,1),cex_axis=1,cex=1,paper=c(8,3),color_lab="interseasonal variability")
 
 }
 

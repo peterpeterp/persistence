@@ -95,10 +95,10 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		layout(matrix(mat,col_row[1],length(mat)/col_row[1], byrow = TRUE))
 	}
 
-	if (!is.na(layout_mat[1])){
+	if (col_row[1]==1){
 		par(cex=cex)
 		pointsize=1
-		layout(matrix(mat,col_row[1],length(mat)/col_row[1], byrow = TRUE))
+		layout(matrix(c(1,1,1,1,1,1,1,1,1,1,1,2,3),1,13, byrow = TRUE))
 	}
 
 	else {
@@ -270,6 +270,14 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 				plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 				image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.2,0.1,0.90),legend.lab=color_lab)
 			}
+		}
+		if (col_row[1]==1){
+			par(mar=c(1,0,1,0))
+			legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
+			plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+			image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.2,0.1,0.90))
+			plot(NA,xlim=c(0,1),ylim=c(0,1),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+			text(0.3,0.5,label=color_lab,cex=1,srt=90)
 		}
 		else {
 			image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE,smallplot=c(0.97,0.99,0.1,0.90),legend.lab=color_lab)
