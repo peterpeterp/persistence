@@ -36,7 +36,7 @@ wave_region <- function(wavenumber,trough,lats){
     write.table(wellen[1:length(which(!is.na(wellen[,13]))),],paste("../data/region_poligons/",wavenumber,"wave.txt",sep=""))
 }
 
-points_to_regions <- function(dat,region_names=c("srex","7rect","6wave","7wave","8wave")){
+points_to_regions <- function(dat,region_names=c("mid_lat_belt","srex","7rect","6wave","7wave","8wave")){
     # loads region coordinates and writes a file in which grid points are associated to regions
     # outpufile has following columns: ID, regions from region_names
     library(SDMTools)
@@ -393,8 +393,8 @@ plot_regional_distributions <- function(trendID,dat,yearPeriod,region_name,addit
 duration_region <- function(regions,reg,dur,dur_mid){
     # combines all recorded durations of one region to one duration array, same for dur_mid
     inside=which(regions==reg)
-    duration=array(NA,dim=c(100000))
-    duration_mid=array(NA,dim=c(100000))
+    duration=array(NA,dim=c(1000000))
+    duration_mid=array(NA,dim=c(1000000))
     count=1
     # combines the recorded periods from all the grid points of one region in one array
     for (i in inside){
@@ -559,7 +559,7 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
     others=array(NA,dim=c(length(season_names),regNumb,25,4))
     fitstuff=array(NA,dim=c(length(season_names),regNumb,2,19))
 
-    pdf(file=paste("../plots/zwischenzeugs/reg_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],".pdf",sep=""),width=3,height=4)
+    pdf(file=paste("../plots/zwischenzeugs/",region_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],".pdf",sep=""),width=3,height=4)
 
     #for (sea in 1:length(season_names)){   
     for (sea in c(1,2,3,4,5,6)){   
@@ -795,6 +795,7 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
     vars=list(ncQuantile,ncQuantile_vergleich,ncOthers,ncFitstuff,region_coordinates)
    
     nc = create.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_quantiles.nc",sep=""),vars)
+    print(dim(quantiles))
     put.var.ncdf(nc,ncQuantile,quantiles)      
     put.var.ncdf(nc,ncQuantile_vergleich,quantiles_vergleich)      
     put.var.ncdf(nc,ncOthers,others)      
@@ -1095,11 +1096,15 @@ plot_regional_boxplots_vergleich <- function(dat,yearPeriod1,yearPeriod2,region_
                 text(sea,max(quantiles[,reg,,1:5])+0.5,season_names[sea],col=rgb(0.5,0.5,0.5,0.5))
             }
         }
-        for (quA in c(1)){
-            points(at_[1:seaNumb],quantiles[,reg,1,quA],col="blue",pch=1)
-            lines(at_[1:seaNumb],quantiles[,reg,1,quA],col="blue",lty=3)
-            points(at_[(seaNumb+1):(seaNumb*2)],quantiles[,reg,2,quA],col="red",pch=1)
-            lines(at_[(seaNumb+1):(seaNumb*2)],quantiles[,reg,2,quA],col="red",lty=3)
+        for (oth in c(1)){
+            points(at_[1:seaNumb],others[,reg,1,oth],col="blue",pch=1)
+            lines(at_[1:seaNumb],others[,reg,1,oth],col="blue",lty=3)
+            points(at_[(seaNumb+1):(seaNumb*2)],others[,reg,2,oth],col="red",pch=1)
+            lines(at_[(seaNumb+1):(seaNumb*2)],others[,reg,2,oth],col="red",lty=3)
+        }
+        for (quA in c(4,5)){
+            points(at_[1:seaNumb],quantiles[,reg,1,quA],col="black",pch=2)
+            points(at_[(seaNumb+1):(seaNumb*2)],quantiles[,reg,2,quA],col="black",pch=2)
         }
     }
     graphics.off()

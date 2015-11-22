@@ -130,7 +130,7 @@ plot_duration_climatology <- function(period,trendID="91_5",dataset="_TX",additi
 	}
 }
 
-plot_duration_distribution <- function(period="1950-2015",trendID="91_5",dataset="_TX",additional_style="_seasonal_median",ausschnitt=c(-80,80),auswahl=c(7,8),titel_zusatz=c("lifetime 1/b","r squared"),name_zusatz="b_R2",seasons=c("MAM","JJA","SON","DJF","year","4seasons"),farb_mitte="mean",farb_palette="lila-gruen",grid=FALSE,region=NA,average=FALSE){
+plot_duration_distribution <- function(period="1950-2015",trendID="91_5",dataset="_TX",additional_style="_seasonal_median",ausschnitt=c(-80,80),auswahl=c(7,8),titel_zusatz=c("lifetime 1/b","r squared"),name_zusatz="b_R2",seasons=c("MAM","JJA","SON","DJF","year","4seasons"),farb_mitte="mean",farb_palette="lila-gruen",grid=FALSE,region=NA,average=FALSE,color_lab="bla"){
 	# duration climatology
 	state_names=c("cold","warm")
 
@@ -153,7 +153,7 @@ plot_duration_distribution <- function(period="1950-2015",trendID="91_5",dataset
 		#print(sd(reihen[1,],na.rm=TRUE))	
 		#print(sd(reihen[2,],na.rm=TRUE))
 
-		map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/duration/",period,"/",season,"/duration_distr_",trendID,"_",season,"_",additional_style,"_",name_zusatz,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette="regenbogen",region=region,grid=grid,average=average)
+		map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/duration/",period,"/",season,"/duration_distr_",trendID,"_",season,"_",additional_style,"_",name_zusatz,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette="regenbogen",region=region,grid=grid,average=average,color_lab=color_lab)
 	}
 }
 
@@ -222,17 +222,17 @@ dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",se
 
 
 
-if (1==2){
-	titel=c("mean","relative sd","skewness","1/b","R2","A")
-	name=c("mean","rel_sd","skew","t","R2","A")
-	farb=c(3,7.5,0.8,1.2,2,4,3,12,0.7,1,0.02,0.2)
-	auswahl=c(1,3,4,7,8,5)
+if (1==1){
+	titel=c("mean","sd","relative sd","skewness","1/b","R2","A")
+	name=c("mean","sd","rel_sd","skew","t","R2","A")
+	farb=c(3,7.5,0,6,0.8,1.2,2,4,3,12,0.7,1,0.02,0.2)
+	auswahl=c(1,2,3,4,7,8,5)
 	#for (i in c(1)){
 	for (i in c(1,2,3,4,5,6)){
 		for (period in c("1950-2014","1950-1980","1980-2014")){
 			if (is.na(farb[(i-1)*2+2])){farb_mitte="mean"}
 			else {farb_mitte=farb[((i-1)*2+1):((i-1)*2+2)]}
-			plot_duration_distribution(trendID=trendID,period=period,dataset=dataset,additional_style="",auswahl=c(auswahl[i]),farb_mitte=farb_mitte,titel_zusatz=c(titel[i]),name_zusatz=name[i],seasons=c("4seasons"),average=TRUE,ausschnitt=c(35,60),region="7rect")
+			plot_duration_distribution(trendID=trendID,period=period,dataset=dataset,additional_style="",auswahl=c(auswahl[i]),farb_mitte=farb_mitte,titel_zusatz=c(titel[i]),name_zusatz=name[i],seasons=c("4seasons"),average=TRUE,ausschnitt=c(35,60),region="7rect",color_lab=titel[i])
 		}
 	}
 }

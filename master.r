@@ -162,9 +162,7 @@ master_regional_climatology <- function(region_name,trendID,dataset="_TX",additi
     for (i in 1:3){
         yearPeriod=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
         print(yearPeriod)
-        #regional_climatology(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
-        #plot_regional_distributions(dat,yearPeriod,region_name,trendID,dataset=dataset,additional_style=additional_style)
-        #regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
         plot_regional_fit_parameters(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
         plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,quantile_style="quantiles")
     }
@@ -210,6 +208,7 @@ additional_style=""
 
 #master_trend_control(trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 master_regional_climatology(region_name="7rect",trendID=trendID,dataset=dataset,additional_style=additional_style)
+master_regional_climatology(region_name="mid_lat_belt",trendID=trendID,dataset=dataset,additional_style=additional_style)
 
 
 

@@ -1,5 +1,40 @@
 source("load.r")
 
+plot_temp_anom_trend <-function(trendID="91_5",dataset="_TMean",additional_style="",yearPeriod=c(1950,2014),var1="dur_ana_full",var1_sig=NA,var_qua=5,farb_mitte="mean",farb_palette="regenbogen",name_zusatz="bla",titel_zusatz="sd",region=NA,seasons=c("MAM","JJA","SON","DJF"),paper=c(12,8),grid=FALSE,season_auswahl=c(1,2,3,4),baseline="4seasons",col_row=c(5,2),ausschnitt=c(30,80),cex=cex,color_lab="mean duration length anomaly to annual mean",cex_axis=1){
+
+	period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
+	if (1==2){
+		inside=which(dat$time>yearPeriod[1] & dat$time<=yearPeriod[2])
+
+		reihen=array(NA,dim=c(1,ntot))
+		reihen_sig=reihen*NA
+		for (q in 1:ntot){
+			cat("-")
+			if (length(as.vector(dat$tas[q,,])[inside])>1000){
+				lr=summary(lm(as.vector(dat$tas[q,,])[inside]~dat$time[inside],na.rm=TRUE))
+				#print(lr)
+				reihen[1,q]=lr$coefficients[2]
+				reihen_sig[1,q]=lr$coefficients[8]
+			}
+		}
+		table=array(NA,dim=c(2,ntot))
+		table[1,]=reihen[1,]
+		table[2,]=reihen_sig[1,]
+		write.table(table,paste("../data/sonstiges/temp_anomaly_trend_",period,dataset,".txt",sep=""))
+	}
+	if (1==1){
+		table=read.table(paste("../data/sonstiges/temp_anomaly_trend_",period,dataset,".txt",sep=""))
+		reihen=array(NA,dim=c(1,ntot))
+		reihen_sig=reihen*NA
+		for (q in 1:ntot){
+			reihen[1,q]=table[1,q]
+			#reihen_sig[1,q]=table[2,q]
+		}
+	}
+
+	filename_plot=paste("../plots/zwischenzeugs/temp_trend_",period,dataset,".pdf",sep="")
+	map_allgemein(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=c(""),farb_mitte="0",farb_palette="blau-rot",grid=grid,ausschnitt=c(30,80),col_row=c(1,1),cex_axis=1,cex=1,paper=c(8,3))
+}
 
 plot_warm_cold_diff_duration <- function(trendID="91_5",dataset="_TX",additional_style="_seasonal_median",states=2,period="1950-2014",var1="dur_ana_full",var1_sig=NA,	farb_mitte="mean",farb_palette="regenbogen",titel_zusatz="95_quan_diff"	,region=NA,seasons=c("spring","summer","autumn","winter","year"),grid=FALSE,season_auswahl=c(5),col_row=c(5,2),ausschnitt=c(30,80),cex=cex,subIndex=c("a","b")){
 
@@ -164,7 +199,7 @@ plot_seasonal_anomalie_duration <- function(trendID="91_5",dataset="_TX",additio
 	reihen2=array(reihen[9,],dim=c(1,ntot))
 
 	filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/",trendID,"_vergleich_",name_zusatz,"_",period,"_",titel_zusatz,"_kompakt_mean(waco).pdf",sep="")
-	#map_allgemein(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen[c(1,3,5,7),],reihen_sig=reihen_sig[c(1,3,5,7),],titel=c(""),farb_mitte="gemeinsam 0",farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt,col_row=c(4,1),paper=c(8,7),cex=0.8,cex_axis=1.5,color_lab=color_lab)
+	map_allgemein(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen[c(1,3,5,7),],reihen_sig=reihen_sig[c(1,3,5,7),],titel=c(""),farb_mitte=c(-1.6,1.6),farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt,col_row=c(4,1),paper=c(8,7),cex=0.8,cex_axis=1.5,color_lab=color_lab)
 	
 	for (q in 1:ntot){
 		reihen[9,q]=sd(reihen[c(1,3,5,7),q])
@@ -189,7 +224,7 @@ library(rworldmap)
 library(fields)
 worldmap = getMap(resolution = "low")
 ntot=1319
-dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
+dat=dat_load("../data/HadGHCND_TMean_data3D.day1-365.1950-2014.nc")
 trendID="91_5"
 states=2
 yearperiod="1950-2014"
@@ -200,7 +235,11 @@ dataset="_TMean"
 
 #plot_diff_trend_duration(version1="_mean_TX",version2="_mode_TX",quantiles=c(8),col_row=c(1,1),cex=0.6,ausschnitt=c(-80,80),farb_mitte=c(-3,3))
 
-if (1==1){
+plot_temp_anom_trend(yearPeriod=c(1950,2014))
+plot_temp_anom_trend(yearPeriod=c(1950,1980))
+plot_temp_anom_trend(yearPeriod=c(1980,2014))
+
+if (1==2){
 	#plot_seasonal_anomalie_duration(trendID="91_5",dataset=dataset,additional_style="",farb_mitte="mean",farb_palette="lila-gruen",name_zusatz="seas_anom_to_DJF",titel_zusatz="95_quantile",var1="dur_ana_full",var_qua=5,season_auswahl=c(1,2,3),baseline="DJF",col_row=c(1,1),cex=1,ausschnitt=c(-80,80))
 	#plot_seasonal_anomalie_duration(trendID="91_5",dataset=dataset,additional_style="",farb_mitte="mean",farb_palette="lila-gruen",name_zusatz="seas_anom_to_4sea",titel_zusatz="95_quantile",var1="dur_ana_full",var_qua=5,season_auswahl=c(1,2,3,4),baseline="4seasons",col_row=c(1,1),cex=1,ausschnitt=c(-80,80))
 	#plot_seasonal_anomalie_duration(trendID="91_5",dataset=dataset,additional_style="",farb_mitte=c(-12,12),farb_palette="lila-gruen",name_zusatz="seas_anom_klein",titel_zusatz="95_quantile",var1="dur_ana_full",var_qua=5,season_auswahl=c(1,2,3,4),col_row=c(5,2),cex=0.6)

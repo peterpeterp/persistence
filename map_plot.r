@@ -95,14 +95,14 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		layout(matrix(mat,col_row[1],length(mat)/col_row[1], byrow = TRUE))
 	}
 
-	if (col_row[1]==1){
+	if (col_row[1]==1 & dim(reihen)[1]==1){
 		par(cex=cex)
 		pointsize=1
 		layout(matrix(c(1,1,1,1,1,1,1,1,1,1,1,2,3),1,13, byrow = TRUE))
 	}
-
-	else {
+	if (col_row[1]==1 & dim(reihen)[1]>1){
 		pointsize=pointsize
+		par(mfrow=c(1,1))
 	}
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
@@ -209,6 +209,9 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 
 		if (farb_palette_loc=="gold-blau"){
 			jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.6),rgb(0.5,1,1), rgb(0.98,0.98,0.98) ,rgb(1,1,0),rgb(0.6,0.6,0)))
+		}		
+		if (farb_palette_loc=="blau-rot"){
+			jet.colors <- colorRampPalette( c("blue","white","red"))
 		}
 		if (farb_palette_loc=="lila-gruen"){
 			jet.colors <- colorRampPalette( c(rgb(0.5,1,0.5),rgb(0.2,0.6,0.2), rgb(0.0,0.0,0.0),rgb(0.6,0.2,0.6),rgb(1,0.5,1)))
@@ -256,7 +259,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		if (!is.na(region)){
 			add_region(region,regionColor)
 		}
-		print(y)
+		#print(y)
 		if (col_row[1]>1 & col_row[2]>1){
 			legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
 			if (subCount==dim(reihen)[1]){
@@ -269,9 +272,16 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 			if (subCount==dim(reihen)[1]){
 				plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 				image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.2,0.1,0.90),legend.lab=color_lab)
+				#par(mar=c(1,0,1,0))
+				#legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
+				#plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+				#image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.2,0.1,0.90))
+				#plot(NA,xlim=c(0,1),ylim=c(0,1),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+				#text(0.3,0.5,label=color_lab,cex=1,srt=90)
+				#box("figure", col="blue") 
 			}
 		}
-		if (col_row[1]==1){
+		if (col_row[1]==1 & dim(reihen)[1]==1){
 			par(mar=c(1,0,1,0))
 			legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
 			plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
@@ -279,9 +289,9 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 			plot(NA,xlim=c(0,1),ylim=c(0,1),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 			text(0.3,0.5,label=color_lab,cex=1,srt=90)
 		}
-		else {
-			image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE,smallplot=c(0.97,0.99,0.1,0.90),legend.lab=color_lab)
-			#image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE,legend.lab=color_lab)
+		if (col_row[1]==1 & dim(reihen)[1]>1){
+			#image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE,smallplot=c(0.97,0.99,0.1,0.90),legend.lab=color_lab)
+			image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE,legend.lab=color_lab)
 		}
 	}
     graphics.off()
