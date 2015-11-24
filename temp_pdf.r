@@ -1,6 +1,6 @@
 source("load.r")
 
-if (1==1){
+if (1==2){
 	library(MASS)
 	library(moments)
 
@@ -117,4 +117,85 @@ if (1==2){
 	print(skewness(y))
 }
 
+if (1==2){
+	q=52
+	dat=dat_load("../data/HadGHCND_TMean_data3D.day1-365.1950-2014.nc")
+	pdf(file=paste("../plots/zwischenzeugs/temp_pdf_",q,".pdf",sep=""))
 
+	br=seq(-30,30,0.3)
+
+	color=rgb(0.6,0.8,0.5,0.5)
+	temp=hist(dat$tas[q,152:243,],breaks=br,plot=TRUE,col=color,border=color)
+	color=rgb(0.6,0.8,0.5,1)
+	abline(v=median(dat$tas[q,152:243,],na.rm=TRUE),col=color)
+	#color=rgb(0.8,0.6,0.5,0.5)
+	#temp=hist(dat$tas[q,244:334,],breaks=br,plot=TRUE,col=color,border=color,add=TRUE)
+	#color=rgb(0.8,0.4,0.8,0.5)
+	#temp=hist(dat$tas[q,60:151,],breaks=br,plot=TRUE,col=color,border=color,add=TRUE)
+	color=rgb(0.6,0.5,0.6,0.5)
+	temp=hist(dat$tas[q,c(1:60,335:365),],breaks=br,plot=TRUE,col=color,border=color,add=TRUE)
+	color=rgb(0.6,0.5,0.6,1)
+	abline(v=median(dat$tas[q,c(1:60,335:365),],na.rm=TRUE),col=color)
+
+	#abline(v=0)
+}
+
+if (1==2){
+
+	q1=488
+	q2=1233
+	dat=dat_load("../data/HadGHCND_TMean_data3D.day1-365.1950-2014.nc")
+	pdf(file=paste("../plots/zwischenzeugs/temp_pdf/temp_pdf_",q1,"_",q2,".pdf",sep=""))
+
+	br=seq(-30,30,0.3)
+
+	q=q1
+	color=rgb(0.6,0.8,0.5,0.5)
+	temp=hist(dat$tas[q,,],breaks=br,plot=TRUE,col=color,border=color)
+	color=rgb(0.6,0.8,0.5,1)
+	abline(v=median(dat$tas[q,,],na.rm=TRUE),col=color)
+
+	q=q2
+	color=rgb(0.6,0.5,0.6,0.5)
+	temp=hist(dat$tas[q,,],breaks=br,plot=TRUE,col=color,border=color,add=TRUE)
+	color=rgb(0.6,0.5,0.6,1)
+	abline(v=median(dat$tas[q,,],na.rm=TRUE),col=color)
+
+	#abline(v=0)
+}
+
+plot_dist_cold_warm_stupid <-function(q=52,median=FALSE){
+	dat=dat_load("../data/HadGHCND_TMean_data3D.day1-365.1950-2014.nc")
+	pdf(file=paste("../plots/zwischenzeugs/temp_pdf/temp_pdf_stupid_",q,"_",median,".pdf",sep=""),width=4,height=4)
+
+	br=seq(-30,30,1)
+
+	y=dat$tas[q,c(1:60,335:365),]
+	color="white"
+	#plot(NA,xlim=c(-20,20),ylim=c(0,600),axes=TRUE,ylab="counts",xlab="temperature anomaly",main="",frame=FALSE)
+	temp=hist(y,plot=TRUE,col=color,border=color,axes=TRUE,ylab="counts",xlab="temperature anomaly",main="")
+	color=rgb(0.5,0.5,1,0.7)
+	if (median==TRUE){temp=hist(y[y<=median(y,na.rm=TRUE)],plot=TRUE,col=color,border=color,add=TRUE)}
+	if (median==FALSE){temp=hist(y[y<=0],breaks=br,plot=TRUE,col=color,border=color,add=TRUE)}
+	color=rgb(1,0.5,0.5,0.7)
+	if (median==TRUE){temp=hist(y[y>median(y,na.rm=TRUE)],plot=TRUE,col=color,border=color,add=TRUE)}
+	if (median==FALSE){temp=hist(y[y>0],breaks=br,plot=TRUE,col=color,border=color,add=TRUE)}
+	
+	text(-15,200,"cold?")
+	text(15,200,"warm?")
+
+	#abline(h=0,col="white",cex=1.01)
+
+    par(new=TRUE,plt=c(0.67,0.98,0.6,0.98))
+    plot(worldmap,xlim=c(dat$lon[q]-20,dat$lon[q]+20),ylim=c(dat$lat[q]-20,dat$lat[q]+20))
+    points(dat$lon[q],dat$lat[q],pch=15,col="violet")
+	graphics.off()
+}
+
+library(rworldmap)
+library(fields)
+worldmap = getMap(resolution = "low")
+plot_dist_cold_warm_stupid(52)
+plot_dist_cold_warm_stupid(52,median=TRUE)
+plot_dist_cold_warm_stupid(461)
+plot_dist_cold_warm_stupid(461,median=TRUE)

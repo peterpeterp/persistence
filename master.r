@@ -151,7 +151,7 @@ master_duration_distribution <- function(yearPeriod,trendID,seasons=c("MAM","JJA
     }
 }
 
-master_regional_climatology <- function(region_name,trendID,dataset="_TX",additional_style=""){
+master_regional_climatology <- function(trendID,dataset="_TX",additional_style="",region_name="7rect",region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
     library(quantreg)
     library(moments)
     source("functions_regional.r")
@@ -162,12 +162,13 @@ master_regional_climatology <- function(region_name,trendID,dataset="_TX",additi
     for (i in 1:3){
         yearPeriod=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
         print(yearPeriod)
-        regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
-        plot_regional_fit_parameters(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
-        plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,quantile_style="quantiles")
+        regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,plot=TRUE,season_auswahl=c(6),write=FALSE,add_name="_4sea")
+        #regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        #plot_regional_fit_parameters(dat=dat,yearPeriod=yearPeriod,region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        #plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style,quantile_style="quantiles")
     }
 
-    plot_regional_boxplots_vergleich(dat=dat,yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,quantile_style="quantiles")
+    plot_regional_boxplots_vergleich(dat=dat,yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style,quantile_style="quantiles")
 }
 
 
@@ -208,7 +209,7 @@ additional_style=""
 
 #master_trend_control(trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 master_regional_climatology(region_name="7rect",trendID=trendID,dataset=dataset,additional_style=additional_style)
-master_regional_climatology(region_name="mid_lat_belt",trendID=trendID,dataset=dataset,additional_style=additional_style)
+master_regional_climatology(region_name="mid_lat_belt",region_names=c("mid-lat","polar"),trendID=trendID,dataset=dataset,additional_style=additional_style)
 
 
 

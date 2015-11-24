@@ -42,9 +42,9 @@ plot_daily_skew_cycle <- function(stations=c(488,1233),trendID="91_5",trend_styl
 
     par(mar=c(0,0,0,0))
 	pdf(file=paste("../plots/zwischenzeugs/skewness/daily_cycle",dataset,".pdf",sep=""),width=4,height=4)
-	plot(NA,NA,xlim=c(1,365),ylim=c(-0.7,0.7),xlab="day in year",ylab="",axes=FALSE,frame.plot=TRUE,main="")#,main="daily skewness cycle averaged over all years")
+	plot(NA,NA,xlim=c(1,365),ylim=c(-0.7,0.7),xlab="day in year",ylab="skewness",axes=FALSE,frame.plot=TRUE,main="")#,main="daily skewness cycle averaged over all years")
 	axis(1)
-	#mtext("skewness",side=4,col="black",line=4) 
+	mtext("skewness",side=2,col="black",line=4) 
 	axis(2)
 	color=c("red","blue")
 	x=1:365
@@ -106,9 +106,9 @@ plot_skewness <- function(grid=FALSE,ausschnitt=c(-80,80)){
 		reihen[3,]=reihen[1,]-reihen[2,]
 	}
 
-	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="0",,paper=c(6,4),cex=0.45,cex_axis=1,pointsize=0.6,
+	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="0",paper=c(6,4),cex=0.4,cex_axis=1,pointsize=0.55,
 		farb_palette="lila-gruen",highlight_points=c(488,1233),highlight_color=c("red","blue"),
-		filename_plot=paste("../plots/zwischenzeugs/skewness/skewness.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt,color_lab="skewness")
+		filename_plot=paste("../plots/zwischenzeugs/skewness/skewness.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)#,color_lab="skewness"
 }
 
 plot_seasonal_skewness <- function(dat,grid=FALSE,ausschnitt=c(-80,80)){
@@ -187,6 +187,7 @@ plot_detrended_seasonal_skewness <- function(grid=FALSE,ausschnitt=c(-80,80),tre
 		filename_plot=paste("../plots/zwischenzeugs/skewness/skewness_seasonal_detrended_",trendID,trend_style,dataset,additional_style,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
 }
 
+
 ntot=1319
 trendID="91_5"
 dataset="_TMean"
@@ -198,6 +199,6 @@ worldmap = getMap(resolution = "low")
 
 #calc_runskew(dataset="_TMean")
 plot_daily_skew_cycle(dataset="_TMean")
-plot_skewness()
+#plot_skewness()
 #plot_detrended_seasonal_skewness(grid=FALSE,ausschnitt=c(-80,80),trendID="91_5",trend_style="_mean",dataset=dataset,additional_style="")
 

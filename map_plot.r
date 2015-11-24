@@ -60,6 +60,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 	#reihen array(... dim=c(anzahl der plots, anzahl der stationen))
 	#titel liste von strings, plot-titles
 	#farb_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
+
 	if (ausschnitt[1]!=-80 & col_row[1]==1){
 		paper[2]=paper[2]*(ausschnitt[2]-ausschnitt[1])/160+1
 	}
@@ -70,7 +71,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 
 
     # create layout matrix for multiplots in style c(1,2,1,2,1,2,3,4,3,4,3,4 ..)
-	if (col_row[1]>1 | col_row[2]>1){
+	if (col_row[1]>1 & col_row[2]>1){
 		par(cex=cex)
 		pointsize=1
 		mat=c()
@@ -85,7 +86,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		layout(matrix(mat,length(mat)/2,2, byrow = TRUE))
 	}
 
-	if (col_row[1]>1 | col_row[2]==1){
+	if (col_row[1]>1 & col_row[2]==1){
 		par(cex=cex)
 		pointsize=1
 		mat=c()
@@ -97,7 +98,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 
 	if (col_row[1]==1 & dim(reihen)[1]==1){
 		par(cex=cex)
-		pointsize=1
+		pointsize=pointsize
 		layout(matrix(c(1,1,1,1,1,1,1,1,1,1,1,2,3),1,13, byrow = TRUE))
 	}
 	if (col_row[1]==1 & dim(reihen)[1]>1){
@@ -232,7 +233,6 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 
 
 		#plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])
-
 		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=pointsize)
 		points(lon,lat,pch=sig,cex=pointsize)
 		for (rad in c(1,1.5,1.9,2.3)){
