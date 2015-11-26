@@ -158,12 +158,13 @@ master_regional_climatology <- function(trendID,dataset="_TX",additional_style="
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
     points=c(1950,2014,1950,1980,1980,2014)
-    #points=c(1950,1980,1980,2014)
+    #points=c(1950,2014)
     for (i in 1:3){
         yearPeriod=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
         print(yearPeriod)
         regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,plot=TRUE,season_auswahl=c(6),write=FALSE,add_name="_4sea")
-        #regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        #regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,plot=TRUE,season_auswahl=c(2),write=FALSE,add_name="_JJA")
+        #regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,write=TRUE,plot=TRUE)
         #plot_regional_fit_parameters(dat=dat,yearPeriod=yearPeriod,region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style)
         #plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style,quantile_style="quantiles")
     }

@@ -111,17 +111,17 @@ plot_skewness <- function(grid=FALSE,ausschnitt=c(-80,80)){
 		filename_plot=paste("../plots/zwischenzeugs/skewness/skewness.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)#,color_lab="skewness"
 }
 
-plot_seasonal_skewness <- function(dat,grid=FALSE,ausschnitt=c(-80,80)){
+plot_seasonal_skewness <- function(dat,dataset="_TMean",grid=FALSE,ausschnitt=c(-80,80)){
 	# seasonal skewness
 	seasonStart=c(60,151,244,335,1)
 	seasonStop=c(151,243,334,424,365)
 	season_names=c("spring","summer","autumn","winter","year")
 
-	reihen=array(NA,dim=c(9,ntot))
-	reihen_sig=array(NA,dim=c(9,ntot))
-	titel=c()
+	reihen=array(NA,dim=c(4,ntot))
+	reihen_sig=array(NA,dim=c(4,ntot))
+	titel=c("")
 	
-	for (sea in 1:5){
+	for (sea in 1:4){
 		for (q in 1:1319){
 			if (sea==4){
 				z=c(dat$tas[q,1:(seasonStop[sea]-365),],dat$tas[q,seasonStart[sea]:365,])
@@ -133,17 +133,17 @@ plot_seasonal_skewness <- function(dat,grid=FALSE,ausschnitt=c(-80,80)){
 			y=y[nona]
 			reihen[sea,q]=skewness(y)
 		}
-		titel[sea]=paste("skewness in",season_names[sea])
+		#titel[sea]=paste("skewness in",season_names[sea])
 	}
 
-	for (sea in 1:4){
-		reihen[(5+sea),]=reihen[sea,]-reihen[5,]
-		titel[(5+sea)]=paste("skewness anomaly in",season_names[sea])
-	}
+	#for (sea in 1:4){
+	#	reihen[(5+sea),]=reihen[sea,]-reihen[5,]
+	#	titel[(5+sea)]=paste("skewness anomaly in",season_names[sea])
+	#}
 
-	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="0",
+	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="gemeinsam 0",
 		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/zwischenzeugs/skewness/skewness_seasonal.pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt)
+		filename_plot=paste("../plots/zwischenzeugs/skewness/skewness_seasonal",dataset,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt,col_row=c(5,2),cex=1,pointsize=0.52,cex_axis=1,paper=c(6.3,6),mat=c(1,1,2,2,1,1,2,2,3,3,4,4,3,3,4,4,5,5,5,5),color_lab="skewness")
 }
 
 plot_detrended_seasonal_skewness <- function(grid=FALSE,ausschnitt=c(-80,80),trendID="91_5",trend_style="_mean",dataset="_TX",additional_style=""){
@@ -197,8 +197,11 @@ library(rworldmap)
 library(fields)
 worldmap = getMap(resolution = "low")
 
+dat=dat_load("../data/HadGHCND_TMean_data3D.day1-365.1950-2014.nc")
+
 #calc_runskew(dataset="_TMean")
-plot_daily_skew_cycle(dataset="_TMean")
+#plot_daily_skew_cycle(dataset="_TMean")
+plot_seasonal_skewness(dat=dat,dataset="_TMean")
 #plot_skewness()
 #plot_detrended_seasonal_skewness(grid=FALSE,ausschnitt=c(-80,80),trendID="91_5",trend_style="_mean",dataset=dataset,additional_style="")
 

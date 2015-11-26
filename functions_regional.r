@@ -552,16 +552,18 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
     IDregions=points_to_regions(dat,c(region_name))
 
     region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
+    state_names=c("cold","warm")
     season_names=c("MAM","JJA","SON","DJF","year","4seasons")
 
     taus=c(0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1)
     quantiles=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
     quantiles_vergleich=array(NA,dim=c(length(season_names),regNumb,2,length(taus)))
+    quantile_regressions=array(NA,dim=c(length(season_names),regNumb,2,length(taus)*2))
     others=array(NA,dim=c(length(season_names),regNumb,2,4))
     fitstuff=array(NA,dim=c(length(season_names),regNumb,2,19))
 
     if (plot==TRUE){
-        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/",region_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],add_name,".pdf",sep=""),width=3,height=4)
+        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/",region_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],add_name,".pdf",sep=""),width=2.2,height=2.2)
     }
 
     for (sea in season_auswahl){   
@@ -591,6 +593,12 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
                     dists=append(dists,list(y))
                     quantiles[sea,reg,state,1:length(taus)]=quantile_pete(y,taus=taus,na.rm=TRUE)
                     quantiles_vergleich[sea,reg,state,1:length(taus)]=quantile(y,prob=taus,na.rm=TRUE)
+
+                    #for (i in 1:length(taus)){
+                    #    qu=try(summary(rq(y~x,taus[i]))$coefficients)
+                    #    if (class(qu)=="try-error"){qu=array(NA,8)}
+                    #    quantile_regressions[sea,reg,state,c(i,length(taus)+i)]=qu[c(2,8)]
+                    #}
 
                     # exponential fit + other values
                     br=seq(0,max(y,na.rm=TRUE),1)
@@ -661,6 +669,7 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
                         optifit=(a*exp(-b*X)+A*exp(-(B-X)^2/sigma^2)) 
                         optiR2=1-sum(((Y-optifit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
                     } 
+                    else {optiR2=NA}
                     fitstuff[sea,reg,state,7:12]=c(a,b,NA,A,B,sigma)
                     fitstuff[sea,reg,state,13:15]=c(expR2,combiR2,optiR2)
 
@@ -688,12 +697,17 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
                         color=c("blue","red")
                         #reference
                         par(mar=c(0, 0, 0, 0) + 0.1)
-                        plot(NA,xlim=c(0,1),ylim=c(0,1),axes=FALSE,frame.plot=FALSE)
-                        text(0.5,0.5,paste(season,region_names[reg],state))
+                        plot(NA,xlim=c(0,10),ylim=c(0,10),axes=FALSE,frame.plot=FALSE)
+                        text(5,9.4,paste(season,region_names[reg],state))
+                        order_=order(y,decreasing=TRUE)
+                        for (extreme in 1:8){
+                            text(3,extreme,round(x[order_][extreme],01))
+                            text(8,extreme,round(y[order_][extreme],01))
+                        }
 
                     #first plot page
                         par(mar=c(0, 4, 0, 4) + 0.1)
-                        layout(matrix(c(1,1,1,1,2,2,2,2,3,3,3), 11, 1, byrow = TRUE))
+                        layout(matrix(c(1,1,1,1,2,2,2,2,3,3,3,3), 12, 1, byrow = TRUE))
 
                         plot(histo$density,xlab="days",ylim=c(0,0.25),xlim=c(0,60),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state])
                         if (reg==3 & state==1){
@@ -745,57 +759,28 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
 
 
                     # second version
-                        par(mar=c(0, 4, 0, 4) + 0.1)
-                        layout(matrix(c(1,1,1,1,2,2), 6, 1, byrow = TRUE))
-                        plot(histo$density,xlab="days",ylab="density",axes=FALSE,frame.plot=TRUE,log="xy",pch=20)
-                        at_=axis(2,labels=FALSE,col="black")
-                        if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
-                        axis(2,at=at_)
-                        lines(expfit,col="red")
-                        #if (class(opti_nls)!="try-error"){lines(optifit,col="green",lty=1)}
-                        #else{lines(combifit,col="green",lty=1)}
-                        legend("topright",legend=c("a"),bty="n")
+                        par(mar=c(3, 3, 0, 0) + 0.1)
+                        par(mfrow=c(1,1))
+                        
+                        plot(histo$density,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y")
+                        if (reg==1){
+                            at_=axis(2,labels=FALSE,col="black")
+                            if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+                            axis(2,at=at_)
+                        }
+                        if (state==2){
+                            at_=axis(1,labels=FALSE,col="black")
+                            if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+                            axis(1,at=at_)
+                        }
+                        lines(expfit,col="black")
+                        legend("topright",legend=c(paste("R2=",round(expR2,03),"\n b=",round(fitstuff[sea,reg,state,2],03),sep="")),bty="n")
+                        legend("bottomleft",legend=c(region_names[reg]),bty="n")
 
-                        par(mar=c(4, 4, 0, 4) + 0.1)
-                        plot((Y-a*exp(-X*b)),axes=FALSE,frame.plot=TRUE,xlab="days",ylab="density",log="x",pch=20)
-                        lines(A*exp(-(B-X)^2/sigma^2),col="cyan",lty=1)
-                        axis(1)
-                        at_=axis(2,labels=FALSE,col="black")
-                        if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
-                        axis(2,at=at_)
-                        legend("topright",legend=c("b"),bty="n")
-
-                    #third plot
-                        par(mar=c(0, 4, 0, 4) + 0.1)
-                        layout(matrix(c(1,1,1,2,3,3), 6, 1, byrow = TRUE))
-                        plot(histo$density,xlab="days",ylab="density",axes=FALSE,frame.plot=TRUE,pch=20)
-                        at_=axis(2,labels=FALSE,col="black")
-                        if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
-                        axis(2,at=at_)
-                        lines(expfit,col="red")
-                        #if (class(opti_nls)!="try-error"){lines(optifit,col="green",lty=1)}
-                        #else{lines(combifit,col="green",lty=1)}
-                        #lines(a*exp(-X*b),col="green",lty=2)
-                        legend("topright",legend=c("a"),bty="n")
-
-                        plot(z,axes=FALSE,frame.plot=TRUE,xlab="",ylab="density",pch=20)
-                        at_=axis(2,labels=FALSE,col="black")
-                        if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
-                        axis(2,at=at_)
-                        #lines(zfit,col="orange")
-                        legend("topright",legend=c("b"),bty="n")
-
-                        par(mar=c(4, 4, 0, 4) + 0.1)
-                        plot((Y-a*exp(-X*b)-A*exp(-(X-B)^2/sigma^2)),axes=FALSE,frame.plot=TRUE,xlab="days",ylab="density",pch=20)
-                        #lines(A*exp(-(B-X)^2/sigma^2),col="cyan",lty=1)
-                        axis(1)
-                        at_=axis(2,labels=FALSE,col="black")
-                        if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
-                        axis(2,at=at_)
-                        legend("topright",legend=c("c"),bty="n")
                     }
 
                     #print(fitstuff[sea,reg,state,])
+                    print(quantile_regressions[sea,reg,state,])
                     print(paste(sea,reg,state))
 
                 }
@@ -803,7 +788,6 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
         }
     }
     graphics.off()
-    adsas
 
     if (write==TRUE){
         ncRegion <- dim.def.ncdf("region",units="region",vals=1:regNumb, unlim=FALSE)
@@ -819,15 +803,17 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
         region_coordinates <- var.def.ncdf(name="region_coordinates",units="deg",longname="1:6 lon - 7:12 lat",dim=list(ncRegion,poli_points),missval=-9999.0)
 
         ncQuantile <- var.def.ncdf(name="quantiles",units="quantile values in days evaluated by quantile_pete",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncTaus), missval=-9999.0)
+        ncQuantileReg <- var.def.ncdf(name="quantiles",units="quantile regression with slope and significance of slope",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncTaus), missval=-9999.0)
         ncQuantile_vergleich <- var.def.ncdf(name="quantiles_2",units="quantile values in days evaluated by quantile()",longname="0.05,0.25,0.5,0.75,0.95,0.91,0.98,0.1",dim=list(ncSeason,ncRegion,ncStates,ncTaus), missval=-9999.0)
         ncOthers <- var.def.ncdf(name="others",units="different analysis values",longname="mean sd sd/mean skewness",dim=list(ncSeason,ncRegion,ncStates,ncOuts), missval=-9999.0)
         ncFitstuff <- var.def.ncdf(name="fitstuff",units="different analysis values",longname="Exp: [a,b,NA] combi: [A,B,sigma] opti:[a,b,NA,A,B,sigma] R2: [exp,combi,opti] BIC: [exp,combi,opti] percent of gaussian area",dim=list(ncSeason,ncRegion,ncStates,ncFits), missval=-9999.0)
         
-        vars=list(ncQuantile,ncQuantile_vergleich,ncOthers,ncFitstuff,region_coordinates)
+        vars=list(ncQuantile,ncQuantileReg,ncQuantile_vergleich,ncOthers,ncFitstuff,region_coordinates)
        
         nc = create.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_quantiles.nc",sep=""),vars)
 
         put.var.ncdf(nc,ncQuantile,quantiles)      
+        put.var.ncdf(nc,ncQuantileReg,quantile_regressions)      
         put.var.ncdf(nc,ncQuantile_vergleich,quantiles_vergleich)      
         put.var.ncdf(nc,ncOthers,others)      
         put.var.ncdf(nc,ncFitstuff,fitstuff)      
@@ -917,9 +903,9 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
         }        
         for (oth in c(1)){
             points(at_[1:regNumb],others[sea,,1,oth],col="blue",pch=oth)
-            lines(at_[1:regNumb],others[sea,,1,oth],col="blue",lty=3)
+            #lines(at_[1:regNumb],others[sea,,1,oth],col="blue",lty=3)
             points(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",pch=oth)
-            lines(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",lty=3)
+            #lines(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",lty=3)
         }
     }
     graphics.off()

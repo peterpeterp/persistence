@@ -118,9 +118,9 @@ method_explanation <- function(yearReal=2003,todo=c(1,1,1,1),name="full"){
 
 if (1==1){
     #method_explanation(2003,c(0,2,2,2),"1")
-    #method_explanation(2003,c(1,2,2,2,2),"1")
-    #method_explanation(2003,c(1,1,2,2,2),"2")
-    #method_explanation(2003,c(1,1,1,2,2),"3")
+    method_explanation(2010,c(1,2,2,2,2),"1")
+    method_explanation(2010,c(1,1,2,2,2),"2")
+    method_explanation(2010,c(1,1,1,2,2),"3")
     method_explanation(2010,c(1,1,1,1,2),"4")
     #method_explanation(2003,c(1,1,1,1,1),"5")
 }

@@ -192,10 +192,55 @@ plot_dist_cold_warm_stupid <-function(q=52,median=FALSE){
 	graphics.off()
 }
 
+plot_dur_dist <-function(q=488,median=FALSE,season="4seasons",trendID="91_5",dataset="_TMean",additional_style=""){
+	dat=dat_load("../data/HadGHCND_TMean_data3D.day1-365.1950-2014.nc")
+
+	nc_dur=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
+    dur=get.var.ncdf(nc_dur,"dur")
+   	dur_mid=get.var.ncdf(nc_dur,"dur_mid")	
+
+   	pdf(file=paste("../plots/zwischenzeugs/temp_pdf/dur_pdf_",q,"_",season,".pdf",sep=""),width=4,height=4)
+
+	br=seq(0,100,1)
+
+	y=dur[q,2,]
+	qua=quantile_pete(y,taus=c(0.05,0.25,0.5,0.75,0.95))
+
+	color=rgb(0.5,0.5,0.8,0.5)
+	plot(NA,xlim=c(0,60),ylim=c(0,400),axes=TRUE,ylab="counts",xlab="period length [days]",main="",frame=FALSE)
+	abline(v=qua,col=rgb(0.6,0.6,0.6,0.5))
+
+	temp=hist(y,plot=TRUE,ylim=c(0,400),xlim=c(0,60),breaks=br,col=color,border=color,add=TRUE)
+	#temp=hist(y,plot=TRUE,ylim=c(0,400),xlim=c(0,60),breaks=br,col=color,border=color,axes=TRUE,ylab="counts",xlab="period length [days]",main="")
+
+	#for (qua in quants){abline(v=qua)}
+
+	#abline(v=quants)
+	mi=380
+	brei=10
+	oben=mi+brei
+	unten=mi-brei
+	polygon(x=c(qua[2],qua[2],qua[4],qua[4]),y=c(unten,oben,oben,unten),col=color,border="black")
+	lines(c(qua[1],qua[1]),c(unten,oben))
+	lines(c(qua[3],qua[3]),c(unten,oben))
+	lines(c(qua[5],qua[5]),c(unten,oben))
+	lines(c(qua[1],qua[2]),c(mi,mi))
+	lines(c(qua[4],qua[5]),c(mi,mi))
+
+    par(new=TRUE,plt=c(0.67,0.88,0.6,0.88))
+    plot(worldmap,xlim=c(dat$lon[q]-10,dat$lon[q]+10),ylim=c(dat$lat[q]-20,dat$lat[q]+20))
+    points(dat$lon[q],dat$lat[q],pch=15,col="violet")
+	graphics.off()
+}
+
+source("functions_regional.r")
 library(rworldmap)
 library(fields)
 worldmap = getMap(resolution = "low")
-plot_dist_cold_warm_stupid(52)
-plot_dist_cold_warm_stupid(52,median=TRUE)
-plot_dist_cold_warm_stupid(461)
-plot_dist_cold_warm_stupid(461,median=TRUE)
+
+plot_dur_dist(488)
+
+#plot_dist_cold_warm_stupid(52)
+#plot_dist_cold_warm_stupid(52,median=TRUE)
+#plot_dist_cold_warm_stupid(461)
+#plot_dist_cold_warm_stupid(461,median=TRUE)

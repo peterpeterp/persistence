@@ -1,15 +1,22 @@
 
-location_finder <- function(station=0,lon=0,lat=0){
-	dat=dat_load("../data/mid_lat.nc")
+location_finder <- function(dat,station=0,lon=0,lat=0){
 	library(rworldmap)
 	library(fields)
-	if (station!=0){
-		q=which(dat$ID==station)
-	}
 	worldmap = getMap(resolution = "low")
 	pdf(file="../plots/location.pdf")
-	plot(worldmap,xlim=c(dat$lon[q]-10,dat$lon[q]+10),ylim=c(dat$lat[q]-10,dat$lat[q]+10))
-	points(dat$lon[q],dat$lat[q],pch=15,col="red")
+	if (station!=0){
+		q=which(dat$ID==station)
+		plot(worldmap,xlim=c(dat$lon[q]-10,dat$lon[q]+10),ylim=c(dat$lat[q]-10,dat$lat[q]+10))
+		points(dat$lon[q],dat$lat[q],pch=15,col="red")
+	}
+	else {
+		
+		plot(worldmap,xlim=c(lon-20,lon+20),ylim=c(lat-20,lat+20))
+		points(lon,lat,pch=15,col="red")
+		for (q in 1:1319){
+			text(dat$lon[q],dat$lat[q],dat$ID[q],cex=0.7)
+		}
+	}
 }
 
 location_view <- function(station=0,lon=0,lat=0){
@@ -45,13 +52,13 @@ add_region <- function(region_name,farbe){
     for (i in 1:dim(poli)[1]){
         lon=reg_name[i,1]
         lat=reg_name[i,2]
-        text(label=reg_name[i,3],x=lon,y=lat,col=rgb(0.2,0.2,0.2,0.8))
+        text(label=reg_name[i,3],x=lon,y=lat,col=rgb(0,0,0),cex=1.5)
     }
 }
 
-map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),
+map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.10,
 	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,
-	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),
+	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=NA,
 	subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA)){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
@@ -65,13 +72,17 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		paper[2]=paper[2]*(ausschnitt[2]-ausschnitt[1])/160+1
 	}
 
+	#if (col_row[1]>1){
+	#	paper=c(12,((col_row[1]-1)*7/5+1))
+	#	cex_axis=1.5
+	#}
 	pdf(file = filename_plot,width=paper[1],height=paper[2])
     par(mar=c(1,1,2,4))
     par(cex.axis=cex_axis,cex.lab=cex_axis)
 
 
     # create layout matrix for multiplots in style c(1,2,1,2,1,2,3,4,3,4,3,4 ..)
-	if (col_row[1]>1 & col_row[2]>1){
+	if (col_row[1]>1 & col_row[2]>1 & is.na(mat)){
 		par(cex=cex)
 		pointsize=1
 		mat=c()
@@ -86,7 +97,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		layout(matrix(mat,length(mat)/2,2, byrow = TRUE))
 	}
 
-	if (col_row[1]>1 & col_row[2]==1){
+	if (col_row[1]>1 & col_row[2]==1 & is.na(mat)){
 		par(cex=cex)
 		pointsize=1
 		mat=c()
@@ -96,7 +107,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		layout(matrix(mat,col_row[1],length(mat)/col_row[1], byrow = TRUE))
 	}
 
-	if (col_row[1]==1 & dim(reihen)[1]==1){
+	if (col_row[1]==1 & dim(reihen)[1]==1 & is.na(mat)){
 		par(cex=cex)
 		pointsize=pointsize
 		layout(matrix(c(1,1,1,1,1,1,1,1,1,1,1,2,3),1,13, byrow = TRUE))
@@ -104,6 +115,15 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 	if (col_row[1]==1 & dim(reihen)[1]>1){
 		pointsize=pointsize
 		par(mfrow=c(1,1))
+	}
+
+    # use given mat
+	if (!is.na(mat)){
+		par(cex=cex)
+		par(mar=c(0,0,0,0))
+		pointsize=pointsize
+		print(length(mat))
+		layout(matrix(mat,col_row[1],col_row[2], byrow = TRUE), heights=c(2,2,2,2,1))
 	}
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
@@ -136,7 +156,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 					lon[m]=dat$lon[k]
 					lat[m]=dat$lat[k]
 					y1[m]=reihen[i,k]
-					if (reihen_sig[i,k]<0.05 & !is.na(reihen_sig[i,k])){
+					if (reihen_sig[i,k]<signi_level & !is.na(reihen_sig[i,k])){
 						sig[m]=4
 					}					
 				}
@@ -239,6 +259,8 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 			points(dat$lon[highlight_points],dat$lat[highlight_points],col=highlight_color,pch=1,cex=(pointsize*rad))
 		}
 
+		#box("figure", col="blue") 
+
 		if (average==TRUE){
 			text(-165,ausschnitt[1]+10,paste("mean:",round(mean(y,na.rm=TRUE),02)))
 			text(-165,ausschnitt[1]+5,paste("sd:",round(sd(y,na.rm=TRUE),02)))
@@ -271,7 +293,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 			legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
 			if (subCount==dim(reihen)[1]){
 				plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-				image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.2,0.1,0.90),legend.lab=color_lab)
+				image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=FALSE,fill=TRUE,smallplot=c(0.1,0.9,0.6,0.80))
 				#par(mar=c(1,0,1,0))
 				#legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
 				#plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
