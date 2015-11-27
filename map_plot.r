@@ -56,7 +56,7 @@ add_region <- function(region_name,farbe){
     }
 }
 
-map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.10,
+map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,
 	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,
 	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=NA,
 	subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA)){
@@ -120,10 +120,10 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
     # use given mat
 	if (!is.na(mat)){
 		par(cex=cex)
-		par(mar=c(0,0,0,0))
+		par(mar=c(1,1,1,1))
 		pointsize=pointsize
 		print(length(mat))
-		layout(matrix(mat,col_row[1],col_row[2], byrow = TRUE), heights=c(2,2,2,2,1))
+		layout(matrix(mat,col_row[1],col_row[2], byrow = TRUE), heights=c(2,2,2,2,1))#, heights=c(2,2,2,2,1)
 	}
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])

@@ -538,7 +538,7 @@ quantile_pete <- function(dist,taus,na.rm=TRUE,plot=FALSE){
     return(out)
 }
 
-regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additional_style,dataset,season_auswahl=c(1,2,3,4,5,6),plot=TRUE,write=TRUE,add_name=""){
+regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additional_style,dataset,season_auswahl=c(1,2,3,4,5,6),plot=TRUE,write=TRUE,add_name="",region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
     # performs the entire regional analysis of markov and duration
     # result will be written in ncdf file
 
@@ -551,7 +551,7 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
     print(regNumb)
     IDregions=points_to_regions(dat,c(region_name))
 
-    region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")
+    
     state_names=c("cold","warm")
     season_names=c("MAM","JJA","SON","DJF","year","4seasons")
 
@@ -706,63 +706,10 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
                         }
 
                     #first plot page
-                        par(mar=c(0, 4, 0, 4) + 0.1)
-                        layout(matrix(c(1,1,1,1,2,2,2,2,3,3,3,3), 12, 1, byrow = TRUE))
-
-                        plot(histo$density,xlab="days",ylim=c(0,0.25),xlim=c(0,60),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state])
-                        if (reg==3 & state==1){
-                            at_=axis(2,labels=FALSE,col="black")
-                            if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
-                            axis(2,at=at_)
-                        }
-                        lines(expfit,col="green")
-                        #if (class(opti_nls)!="try-error"){lines(optifit,col="green",lty=1)}
-                        #else{lines(combifit,col="green",lty=1)}
-                        #lines(a*exp(-X*b),col="green",lty=2)
-                        legend("topright",legend=c("a"),bty="n")
-
-                        if (reg==3 & state==1){
-                            plot(histo$density,xlab="days",xlim=c(0,60),ylim=c(0.000001,0.25),ylab="probability density",log="y",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state])
-                            at_=axis(2,labels=FALSE,col="black")
-                            if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
-                            axis(2,at=at_)
-                        }
-                        else {
-                            plot(histo$density,xlab="days",xlim=c(0,60),ylim=c(0.0001,0.25),ylab="",log="y",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state])                            
-                        }
-                        lines(expfit,col="green")
-                        #if (class(opti_nls)!="try-error"){lines(optifit,col="green",lty=1)}
-                        #else{lines(combifit,col="green",lty=1)}
-                        #lines(a*exp(-X*b),col="green",lty=2)
-                        legend("topright",legend=c("b"),bty="n")
-
-                        par(mar=c(4, 4, 0, 4) + 0.1)
-                        plot(z,axes=FALSE,frame.plot=TRUE,xlab="days",xlim=c(0,60),ylim=c(-0.005,0.005),ylab="",pch=20,col=color[state])
-                        if (reg==3 & state==1){
-                            at_=axis(2,labels=FALSE,col="black")
-                            if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
-                            axis(2,at=at_)
-                        }
-                        axis(1)
-                        #lines(zfit,col="orange")
-                        legend("topright",legend=c("c"),bty="n")
-
-                        #par(mar=c(4, 4, 0, 4) + 0.1)
-                        #plot((Y-a*exp(-X*b)),axes=FALSE,frame.plot=TRUE,xlab="days",ylab="density",pch=20)
-                        #lines(A*exp(-(B-X)^2/sigma^2),col="cyan",lty=1)
-                        #axis(1)
-                        #at_=axis(2,labels=FALSE,col="black")
-                        #if (length(at_)>3){at_=at_[2:(length(at_)-1)]}
-                        #axis(2,at=at_)
-                        #legend("topright",legend=c("c"),bty="n")
-
-
-
-                    # second version
                         par(mar=c(3, 3, 0, 0) + 0.1)
                         par(mfrow=c(1,1))
                         
-                        plot(histo$density,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y")
+                        plot(histo$density,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
                         if (reg==1){
                             at_=axis(2,labels=FALSE,col="black")
                             if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
@@ -775,7 +722,30 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
                         }
                         lines(expfit,col="black")
                         legend("topright",legend=c(paste("R2=",round(expR2,03),"\n b=",round(fitstuff[sea,reg,state,2],03),sep="")),bty="n")
-                        legend("bottomleft",legend=c(region_names[reg]),bty="n")
+                        #legend("bottomleft",legend=c(region_names[reg]),bty="n")   
+                        text(12,0.00002,region_names[reg])                 
+
+
+
+                    # second version
+                        par(mar=c(3, 3, 0, 0) + 0.1)
+                        par(mfrow=c(1,1))
+                        
+                        plot(histo$density,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
+                        if ((region_name=="7rect" & reg==4) | (region_name!="7rect" & reg==1)){
+                            at_=axis(2,labels=FALSE,col="black")
+                            if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+                            axis(2,at=at_)
+                        }
+                        if (state==2 & reg>3){
+                            at_=axis(1,labels=FALSE,col="black")
+                            if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+                            axis(1,at=at_)
+                        }
+                        lines(expfit,col="black")
+                        legend("topright",legend=c(paste("R2=",round(expR2,03),"\n b=",round(fitstuff[sea,reg,state,2],03),sep="")),bty="n")
+                        #legend("bottomleft",legend=c(region_names[reg]),bty="n")
+                        text(12,0.00002,region_names[reg])                 
 
                     }
 

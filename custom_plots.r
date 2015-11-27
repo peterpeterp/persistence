@@ -153,7 +153,7 @@ plot_seasonal_anomalie_duration <- function(trendID="91_5",dataset="_TX",additio
 		if (col_row[1]==1){titel[i]=paste(season,titel_zusatz,state_names[state],"period anomalie to annual mean")}
 	}
 	filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/",trendID,"_vergleich_",period,"_",titel_zusatz,"_kompakt.pdf",sep="")
-	map_allgemein(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=c(3.5,9.5),farb_palette="regenbogen",grid=grid,ausschnitt=ausschnitt,cex=1,pointsize=0.7,cex_axis=1,paper=c(4.5,5),mat=c(1,2,3,4,5),col_row=c(5,1),subIndex=c("a","b","c","d"))
+	map_allgemein(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=c(3.5,9),farb_palette="regenbogen",grid=grid,ausschnitt=ausschnitt,cex=1,pointsize=0.7,cex_axis=1,paper=c(4.5,5),mat=c(1,2,3,4,5),col_row=c(5,1),subIndex=c("a","b","c","d"))
 
 
 	titel=c("")

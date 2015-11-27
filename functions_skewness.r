@@ -143,7 +143,7 @@ plot_seasonal_skewness <- function(dat,dataset="_TMean",grid=FALSE,ausschnitt=c(
 
 	map_allgemein(dat=dat,reihen=reihen,titel=titel,farb_mitte="gemeinsam 0",
 		farb_palette="lila-gruen",
-		filename_plot=paste("../plots/zwischenzeugs/skewness/skewness_seasonal",dataset,".pdf",sep=""),worldmap=worldmap,ausschnitt=ausschnitt,col_row=c(5,2),cex=1,pointsize=0.52,cex_axis=1,paper=c(6.3,6),mat=c(1,1,2,2,1,1,2,2,3,3,4,4,3,3,4,4,5,5,5,5),color_lab="skewness")
+		filename_plot=paste("../plots/zwischenzeugs/skewness/skewness_seasonal",dataset,".pdf",sep=""),worldmap=worldmap,ausschnitt=c(-60,80),col_row=c(5,4),cex=1,pointsize=0.5,cex_axis=1,paper=c(6.3,4),mat=c(1,1,2,2,1,1,2,2,3,3,4,4,3,3,4,4,5,5,5,5),color_lab="")
 }
 
 plot_detrended_seasonal_skewness <- function(grid=FALSE,ausschnitt=c(-80,80),trendID="91_5",trend_style="_mean",dataset="_TX",additional_style=""){
