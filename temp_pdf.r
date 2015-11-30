@@ -233,14 +233,124 @@ plot_dur_dist <-function(q=488,median=FALSE,season="4seasons",trendID="91_5",dat
 	graphics.off()
 }
 
+plot_dist_cold_warm_stupid_eigen <-function(q=52,median=FALSE){
+	dat=dat_load("../data/HadGHCND_TMean_data3D.day1-365.1950-2014.nc")
+	pdf(file=paste("../plots/zwischenzeugs/temp_pdf/temp_pdf_stupid_",q,"_",median,".pdf",sep=""),width=3,height=3)
+
+	br=seq(-30,30,1)
+
+	y=dat$tas[q,c(1:60,335:365),]
+	#y=dat$tas[q,,]
+	color="white"
+	#plot(NA,xlim=c(-20,20),ylim=c(0,600),axes=TRUE,ylab="counts",xlab="temperature anomaly",main="",frame=FALSE)
+	temp=hist(y,plot=FALSE,breaks=br,col=color,border=color,axes=TRUE,ylab="counts",xlab="temperature anomaly",main="")
+
+	dens=temp$density
+
+	par(mar=c(4,4,0,0))
+
+
+	plot(NA,xlim=c(-20,20),ylim=c(0,0.18),ylab="probability density",xlab="temperature anomaly")
+	threshold=which.min(abs(br - 0)) 
+	for (i in 1:(threshold-1)){
+		polygon(x=c(br[i],br[i],br[i+1],br[i+1]),y=c(0,dens[i],dens[i],0),col="blue")
+	}
+	text(-15,0.1,label=paste("cold\n",round(sum(dens[1:(threshold-1)])*100,01),"%"))
+
+	for (i in (threshold):(length(br)-1)){
+		polygon(x=c(br[i],br[i],br[i+1],br[i+1]),y=c(0,dens[i],dens[i],0),col="red")
+	}
+	text(15,0.1,label=paste("warm\n",round(sum(dens[(threshold):(length(br)-1)])*100,01),"%"))
+	legend("top",legend=c("mean as threshold"),bty="n")
+
+	plot(NA,xlim=c(-20,20),ylim=c(0,0.18),ylab="probability density",xlab="temperature anomaly")
+	threshold=which.min(abs(br - median(y,na.rm=TRUE))) 
+	print(median(y))
+	print(threshold)
+	for (i in 1:(threshold-1)){
+		polygon(x=c(br[i],br[i],br[i+1],br[i+1]),y=c(0,dens[i],dens[i],0),col="blue")
+	}
+	#text(-15,0.1,label=paste("cold\n",round(sum(dens[1:(threshold-1)])*100,01),"%"))
+	text(-15,0.1,label=paste("cold\n 50%"))
+
+	for (i in (threshold):(length(br)-1)){
+		polygon(x=c(br[i],br[i],br[i+1],br[i+1]),y=c(0,dens[i],dens[i],0),col="red")
+	}
+	#text(15,0.1,label=paste("warm\n",round(sum(dens[(threshold):(length(br)-1)])*100,01),"%"))
+	text(15,0.1,label=paste("warm\n 50%"))
+	legend("top",legend=c("median as threshold"),bty="n")
+
+
+# summer winter
+	plot(NA,xlim=c(-20,20),ylim=c(0,0.18),ylab="probability density",xlab="temperature anomaly")
+	threshold=which.min(abs(br - median(y,na.rm=TRUE))) 
+	print(median(y))
+	print(threshold)
+	for (i in 1:(threshold-1)){
+		polygon(x=c(br[i],br[i],br[i+1],br[i+1]),y=c(0,dens[i],dens[i],0),col="blue")
+	}
+	#text(-15,0.1,label=paste("cold\n",round(sum(dens[1:(threshold-1)])*100,01),"%"))
+	text(-15,0.1,label=paste("cold\n"))
+
+	for (i in (threshold):(length(br)-1)){
+		polygon(x=c(br[i],br[i],br[i+1],br[i+1]),y=c(0,dens[i],dens[i],0),col="red")
+	}
+	#text(15,0.1,label=paste("warm\n",round(sum(dens[(threshold):(length(br)-1)])*100,01),"%"))
+	text(15,0.1,label=paste("warm\n"))
+
+	y=dat$tas[q,152:243,]
+	temp=hist(y,plot=FALSE,breaks=br,col=color,border=color,axes=TRUE,ylab="counts",xlab="temperature anomaly",main="")
+	dens=temp$density
+	threshold=which.min(abs(br - 0)) 
+	for (i in 1:(length(br)-1)){
+		polygon(x=c(br[i],br[i],br[i+1],br[i+1]),y=c(0,dens[i],dens[i],0),col=rgb(0.5,0.5,0.5,0.5))
+	}
+
+
+# summer winter
+	y=dat$tas[q,152:243,]
+	temp=hist(y,plot=FALSE,breaks=br,col=color,border=color,axes=TRUE,ylab="counts",xlab="temperature anomaly",main="")
+	dens=temp$density
+
+	plot(NA,xlim=c(-20,20),ylim=c(0,max(dens)),ylab="probability density",xlab="temperature anomaly")
+	threshold=which.min(abs(br - 0)) 
+	for (i in 1:(length(br)-1)){
+		polygon(x=c(br[i],br[i],br[i+1],br[i+1]),y=c(0,dens[i],dens[i],0),col=rgb(0.8,0.4,0.5,0.65))
+	}
+	y=dat$tas[q,c(1:60,335:365),]
+	temp=hist(y,plot=FALSE,breaks=br,col=color,border=color,axes=TRUE,ylab="counts",xlab="temperature anomaly",main="")
+	dens=temp$density
+	threshold=which.min(abs(br - 0)) 
+	for (i in 1:(length(br)-1)){
+		polygon(x=c(br[i],br[i],br[i+1],br[i+1]),y=c(0,dens[i],dens[i],0),col=rgb(0.5,0.8,0.5,0.5))
+	}
+
+# summer winter
+
+	plot(NA,xlim=c(-20,20),ylim=c(0,0.23),ylab="probability density",xlab="temperature anomaly")
+	y=dat$tas[q,c(1:60,335:365),]
+	temp=hist(y,plot=FALSE,breaks=br,col=color,border=color,axes=TRUE,ylab="counts",xlab="temperature anomaly",main="")
+	dens=temp$density
+	threshold=which.min(abs(br - 0)) 
+	for (i in 1:(length(br)-1)){
+		polygon(x=c(br[i],br[i],br[i+1],br[i+1]),y=c(0,dens[i],dens[i],0),col=rgb(0.5,0.8,0.5,0.5))
+	}
+	graphics.off()
+}
+
 source("functions_regional.r")
 library(rworldmap)
 library(fields)
 worldmap = getMap(resolution = "low")
 
-plot_dur_dist(488)
+#plot_dur_dist(488)
 
-#plot_dist_cold_warm_stupid(52)
-#plot_dist_cold_warm_stupid(52,median=TRUE)
-#plot_dist_cold_warm_stupid(461)
-#plot_dist_cold_warm_stupid(461,median=TRUE)
+
+date=read.table("/home/Documents/ScienceHack_vorOrdner/ScienceHack/datefile.txt")
+print(date)
+
+dasdas
+plot_dist_cold_warm_stupid_eigen(52)
+#plot_dist_cold_warm_stupid_eigen(52,median=TRUE)
+plot_dist_cold_warm_stupid_eigen(1233)
+#plot_dist_cold_warm_stupid_eigen(461,median=TRUE)

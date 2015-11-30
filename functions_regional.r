@@ -710,12 +710,12 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
                         par(mfrow=c(1,1))
                         
                         plot(histo$density,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
-                        if (reg==1){
+                        if (1==1){
                             at_=axis(2,labels=FALSE,col="black")
                             if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
                             axis(2,at=at_)
                         }
-                        if (state==2){
+                        if (1==2){
                             at_=axis(1,labels=FALSE,col="black")
                             if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
                             axis(1,at=at_)
@@ -732,18 +732,21 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
                         par(mfrow=c(1,1))
                         
                         plot(histo$density,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
-                        if ((region_name=="7rect" & reg==4) | (region_name!="7rect" & reg==1)){
+                        if ((region_name=="7rect" & 4==4) | (region_name!="7rect" & reg==1)){
                             at_=axis(2,labels=FALSE,col="black")
                             if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
                             axis(2,at=at_)
                         }
-                        if (state==2 & reg>3){
+                        if (2==2 & 4>3){
                             at_=axis(1,labels=FALSE,col="black")
                             if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
                             axis(1,at=at_)
                         }
                         lines(expfit,col="black")
-                        legend("topright",legend=c(paste("R2=",round(expR2,03),"\n b=",round(fitstuff[sea,reg,state,2],03),sep="")),bty="n")
+    
+
+                        #abline(v=11,col="gray",lty=2)
+                        legend("topright",legend=c(paste("R2=",round(expR2,03),"\n b=",round(-fitstuff[sea,reg,state,2],03),sep="")),bty="n")
                         #legend("bottomleft",legend=c(region_names[reg]),bty="n")
                         text(12,0.00002,region_names[reg])                 
 

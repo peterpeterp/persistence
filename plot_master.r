@@ -218,9 +218,12 @@ additional_style=""
 dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 #location_finder(dat=dat,lon=37,lat=55)
 
-#plot_duration_climatology(trendID,period="1950-2014",dataset=dataset,additional_style="",name_zusatz="mean_7rect",auswahl=c(8),titel_zusatz=c(""),farb_mitte="gemeinsam mean",seasons=c("4seasons"),region="7rect",grid=FALSE)
+#plot_duration_climatology(trendID,period="1950-2014",dataset=dataset,additional_style="",name_zusatz="95_7rect",auswahl=c(5),titel_zusatz=c(""),farb_mitte=c(10,24),seasons=c("JJA"),region="7rect",grid=FALSE)
+#plot_duration_climatology(trendID,period="1950-2014",dataset=dataset,additional_style="",name_zusatz="mean_7rect",auswahl=c(8),titel_zusatz=c(""),farb_mitte=c(3.6,7.3),seasons=c("JJA"),region="7rect",grid=FALSE)
+#plot_duration_climatology(trendID,period="1950-2014",dataset=dataset,additional_style="",name_zusatz="mean_norect",auswahl=c(8),titel_zusatz=c(""),farb_mitte=c(3.6,7.3),seasons=c("JJA"),grid=FALSE)
+plot_duration_vergleich(trendID,period="1950-2014",ausschnitt=c(-80,80),dataset=dataset,additional_style=additional_style,auswahl=c(5),farb_mitte=c(-0.25,0.25),name_zusatz="norect",titel_zusatz="",seasons=c("JJA"))
 
-plot_duration_vergleich(trendID,period="1950-2014",ausschnitt=c(30,80),dataset=dataset,additional_style=additional_style,auswahl=c(5),farb_mitte="gemeinsam 0",name_zusatz="_95_combi",titel_zusatz=(""),seasons=c("4seasons"),col_row=c(10,1),mat=c(1,1,1,1,2,2,2,2,3,3),paper=c(6,3),pointsize=0.8,subIndex=c("cold","warm"))
+#plot_duration_vergleich(trendID,period="1950-2014",ausschnitt=c(30,80),dataset=dataset,additional_style=additional_style,auswahl=c(5),farb_mitte="gemeinsam 0",name_zusatz="_95_combi",titel_zusatz=(""),seasons=c("4seasons"),col_row=c(10,1),mat=c(1,1,1,1,2,2,2,2,3,3),paper=c(6,3),pointsize=0.8,subIndex=c("cold","warm"))
 
 if (1==2){
 	titel=c("days","sd","relative sd","skewness","1/b","R2","A")
