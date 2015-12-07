@@ -1,166 +1,123 @@
-library(ncdf)
+library(RNetCDF)
 
-dat_write <- function(filename,data3D)
+
+trend_write <- function(filename,trend,ID_length=1319,method="2D running mean")
 {
-    day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
-    year <- dim.def.ncdf("year",units="year",vals=1950:2014, unlim=FALSE)
-    ID <- dim.def.ncdf("ID",units="ID",vals=1:length(data3D$ID), unlim=FALSE)
+    nc_out <- create.nc(filename)
 
+    dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
+    dim.def.nc(nc_out,"day",dimlength=365,unlim=FALSE)
+    dim.def.nc(nc_out,"year",dimlength=65,unlim=FALSE)
+
+    var.def.nc(nc_out,"trend","NC_DOUBLE",c(0,1,2))
+    att.put.nc(nc_out, "trend", "missing_value", "NC_DOUBLE", -99999.9)
+    att.put.nc(nc_out, "trend", "dim_explanation", "NC_CHAR", "ID-day-year")
+    att.put.nc(nc_out, "trend", "method", "NC_CHAR",method)
+
+    var.put.nc(nc_out,"trend",trend)
+
+    close.nc(nc_out)  
+}
+
+
+
+
+
+duration_write <- function(filename,dur,dur_mid,len,ID_length=1319)
+{
+    nc_out <- create.nc(filename)
     
-    reihen=list(data3D$lon,data3D$lat,data3D$tas)
-    names=c("lon","lat","tas")
+    dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
+    dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
 
-    varlon <- var.def.ncdf(name=names[1],units="bla",dim=ID, missval=-9999.0)
-    varlat <- var.def.ncdf(name=names[2],units="bla",dim=ID, missval=-9999.0)
-    vartas <- var.def.ncdf(name=names[3],units="bla",dim=list(ID,day,year), missval=-9999.0)
-    vars=list(varlon,varlat,vartas)
-   
-    nc = create.ncdf(filename,vars)
+    dim.def.nc(nc_out,"periods",dimlength=len,unlim=FALSE)
 
-    for (i in 1:3){
-        put.var.ncdf(nc,vars[[i]],reihen[[i]])
-    }
+    var.def.nc(nc_out,"dur","NC_INT",c(0,1,2))
+    att.put.nc(nc_out, "dur", "missing_value", "NC_INT", 99999)
+    att.put.nc(nc_out, "dur", "dim_explanation", "NC_CHAR", "ID-seasons-states-...")
+    att.put.nc(nc_out, "dur", "val_explanation", "NC_CHAR", "length of persistent period")
 
-    close.ncdf(nc)    
-}
+    var.def.nc(nc_out,"dur_mid","NC_DOUBLE",c(0,1,2))
+    att.put.nc(nc_out, "dur_mid", "missing_value", "NC_DOUBLE", -99999.9)
+    att.put.nc(nc_out, "dur_mid", "dim_explanation", "NC_CHAR", "ID-seasons-states-...")
+    att.put.nc(nc_out, "dur_mid", "val_explanation", "NC_CHAR", "mid-point of persistent period")
 
+    var.put.nc(nc_out,"dur",dur)              
+    var.put.nc(nc_out,"dur_mid",dur_mid)              
 
-trend_write <- function(filename,data3D,trend)
-{
-    day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
-    year <- dim.def.ncdf("year",units="year",vals=1:65, unlim=FALSE)
-    ID <- dim.def.ncdf("ID",units="ID",vals=1:length(data3D$ID), unlim=FALSE)
-
-    vartrend <- var.def.ncdf(name="trend",units="bla",dim=list(ID,day,year), missval=-9999.0)
-    nc = create.ncdf(filename,vartrend)
-    put.var.ncdf(nc,vartrend,trend)
-
-    close.ncdf(nc)  
-}
-
-markov_write <- function(filename,data3D,per,transitions,transition_names)
-{
-    ntot=length(data3D$ID)
-    day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
-    year <- dim.def.ncdf("year",units="year",vals=1:65, unlim=FALSE)
-    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    seasons <- dim.def.ncdf("seasons",units="spri,sum,aut,win,yea",vals=1:5, unlim=FALSE)
-    transition <- dim.def.ncdf("transition",units="transition",vals=1:transitions, unlim=FALSE)
-
-
-    ind <- var.def.ncdf(name="ind",units="1 or -1",dim=list(ID,day,year), missval=-9999.0)
-    markov <- var.def.ncdf(name="markov",units="0-1",longname=paste("markov transition probability"),dim=list(ID,seasons,transition,year), missval=-9999.0)
-
-    vars=list(ind,markov)
-   
-    nc = create.ncdf(filename,vars)
-
-    put.var.ncdf(nc,vars[[1]],per$ind)
-    put.var.ncdf(nc,vars[[2]],per$markov)
-
-
-    close.ncdf(nc) 
-}
-
-
-markov_analysis_write <- function(filename,analysis,season,transition_names)
-{
-    ntot=1319
-    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    transitions <- dim.def.ncdf("transitions",units=transition_names,vals=1:dim(analysis)[2],unlim=FALSE)
-
-    mean <- var.def.ncdf(name="mean",units="bla",longname=paste("mean",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
-    std <- var.def.ncdf(name="std",units="bla",longname=paste("standard deviation",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
-
-    MK <- var.def.ncdf(name="MK",units="bla",longname=paste("MK",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
-    MK_sig <- var.def.ncdf(name="MK_sig",units="bla",longname=paste("MK_sig",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
-    LR <- var.def.ncdf(name="LR",units="bla",longname=paste("LR",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
-    LR_sig <- var.def.ncdf(name="LR_sig",units="bla",longname=paste("LR_sig",season,transition_names),dim=list(ID,transitions), missval=-9999.0)
-
-    vars=list(mean,std,MK,MK_sig,LR,LR_sig)
-   
-    nc = create.ncdf(filename,vars)
-
-    for (i in 1:6){
-        put.var.ncdf(nc,vars[[i]],analysis[1:ntot,1:dim(analysis)[2],i])  
-    }
-
-    close.ncdf(nc) 
+    close.nc(nc_out) 
 }
 
 
 
-duration_write <- function(filename,dur,dur_mid,len)
-{
-    states=dim(dur)[2]
-    ntot=1319
-    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    varstates <- dim.def.ncdf("states",units="states",vals=1:(states),unlim=FALSE)
-    periods <- dim.def.ncdf("periods",units="periods",vals=1:len, unlim=FALSE)
+quantiles_write <- function(filename,ID_length,ID_name,period,taus,quantile_stuff,comment="quantile_analysis"){
 
-
-    vardur <- var.def.ncdf(name="dur",units="days",longname=paste("duration of periods of same state, states beeing:",states),dim=list(ID,varstates,periods), missval=-9999.0)
-    vardur_mid <- var.def.ncdf(name="dur_mid",units="days",longname=paste("midpoints of periods of same state, states beeing:",states),dim=list(ID,varstates,periods), missval=-9999.0)
-
-
-    vars=list(vardur,vardur_mid)
-   
-    nc = create.ncdf(filename,vars)
-    put.var.ncdf(nc,vardur,dur[1:ntot,1:states,])              
-    put.var.ncdf(nc,vardur_mid,dur_mid[1:ntot,1:states,])              
-
-    close.ncdf(nc) 
-}
-
-duration_analysis_write <- function(filename,dur,season){
-    print(filename)
-    states=dim(dur)[2]
-    ntot=1319
-    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    varstates <- dim.def.ncdf("states",units="states",vals=1:(states),unlim=FALSE)
-    quantiles <- dim.def.ncdf("quantiles",units="0.25 0.5 0.75 0.9 0.95 0.98 NA lr",vals=1:8,unlim=FALSE)
-    outs <- dim.def.ncdf("outs",units="quantile_slope quantile_slope_sig quantile_mean quantile_mean_sd quantile_intercept",vals=1:5,unlim=FALSE)
-
-    dur_ana_full <- var.def.ncdf(name="dur_ana_full",units="values",longname=paste("analysis of duration of periods in",season),dim=list(ID,varstates,quantiles,outs), missval=-9999.0)
+    nc_out <- create.nc(filename)
+    att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
+    att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
+    att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", period)
     
+    dim.def.nc(nc_out,"seasons",dimlength=6,unlim=FALSE)
+    dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
+    dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
 
-    vars=list(dur_ana_full)
-   
-    nc = create.ncdf(filename,vars)
-    put.var.ncdf(nc,vars[[1]],dur[1:ntot,1:states,1:8,1:5])      
+    dim.def.nc(nc_out,"quant_outs",dimlength=3,unlim=FALSE)
+    dim.def.nc(nc_out,"taus",dimlength=length(taus),unlim=FALSE)
+        
 
-    close.ncdf(nc) 
+    var.def.nc(nc_out,"quantile_stuff","NC_DOUBLE",c(0,1,2,3,4))
+    att.put.nc(nc_out, "quantile_stuff", "missing_value", "NC_DOUBLE", -99999.9)
+    att.put.nc(nc_out, "quantile_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-...")
+    att.put.nc(nc_out, "quantile_stuff", "explanation", "NC_CHAR", "(quantiles, slopes, slope_sigs) x (0.05,0.25,0.5,0.75,0.95,0.98,1)")
+        
+    var.put.nc(nc_out,"quantile_stuff",quantile_stuff) 
+
+    close.nc(nc_out) 
 }
 
-regional_analysis_write <- function(filename,y,y_sig,poli)
-{
-    region <- dim.def.ncdf("region",units="region",vals=1:dim(poli)[1], unlim=FALSE)
-    varstates <- dim.def.ncdf("states",units="states",vals=1:2,unlim=FALSE)
-    outs <- dim.def.ncdf("analysis",units="slope MK 0.25 0.5 0.75 0.95 0.9 0.99",vals=1:8,unlim=FALSE)
 
-    poli_points <- dim.def.ncdf("poli_points",units="id",vals=1:12,unlim=FALSE)
+other_write <- function(filename,ID_length,ID_name,period,other_stuff,comment="other_analysis"){
 
-    region_coordinates <- var.def.ncdf(name="region_coordinates",units="deg",longname="1:6 lon - 7:12 lat",dim=list(region,poli_points),missval=-9999.0)
+    nc_out <- create.nc(filename)
+    att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
+    att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
+    att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", period)
 
-    values <- var.def.ncdf(name="values",units="values",longname=paste("analysis of: LR MK 0.9 0.95 0.98 0.99"),dim=list(varstates,outs,region), missval=-9999.0)
-    values_sig <- var.def.ncdf(name="values_sig",units="values_sig",longname=paste("significance of: LR MK 0.9 0.95 0.98 0.99"),dim=list(varstates,outs,region), missval=-9999.0)
-    
-    vars=list(values,values_sig,region_coordinates)
-   
-    nc = create.ncdf(filename,vars)
-    put.var.ncdf(nc,vars[[1]],y[1:2,1:8,1:dim(poli)[1]])      
-    put.var.ncdf(nc,vars[[2]],y_sig[1:2,1:8,1:dim(poli)[1]]) 
+    dim.def.nc(nc_out,"seasons",dimlength=6,unlim=FALSE)
+    dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
+    dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
+  
+    dim.def.nc(nc_out,"outs",dimlength=12,unlim=FALSE)
 
-    pol_poi=array(NA,c(dim(poli)[1],12))
-    for (i in 1:dim(poli)[1]){
-        for (j in 1:12){
-            
-            if (is.numeric(poli[i,j])){
-                pol_poi[i,j]=poli[i,j]
-            }
-        }
-    }
-    put.var.ncdf(nc,region_coordinates,pol_poi)      
+    var.def.nc(nc_out,"other_stuff","NC_DOUBLE",c(0,1,2,3))
+    att.put.nc(nc_out, "other_stuff", "missing_value", "NC_DOUBLE", -99999.9)
+    att.put.nc(nc_out, "other_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-...")
+    att.put.nc(nc_out, "other_stuff", "explanation", "NC_CHAR", "mean,sd,summary(lm)$coef")
+        
+    var.put.nc(nc_out,"other_stuff",other_stuff)      
+ 
+    close.nc(nc_out) 
+}
 
-    close.ncdf(nc) 
+fit_write <- function(filename,ID_length,ID_name,period,fit_stuff,comment="distribution_fits"){
+
+    nc_out <- create.nc(filename)
+    att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
+    att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
+    att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", period)
+
+    dim.def.nc(nc_out,"seasons",dimlength=6,unlim=FALSE)
+    dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
+    dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
+
+    dim.def.nc(nc_out,"fit_outs",dimlength=20,unlim=FALSE)
+
+    var.def.nc(nc_out,"fit_stuff","NC_DOUBLE",c(0,1,2,3))
+    att.put.nc(nc_out, "fit_stuff", "missing_value", "NC_DOUBLE", -99999.9)
+    att.put.nc(nc_out, "fit_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-...")
+    att.put.nc(nc_out, "fit_stuff", "explanation", "NC_CHAR", "first values: parameters, 19=R^2, 20=BIC")
+        
+    var.put.nc(nc_out,"fit_stuff",fit_stuff)      
+ 
+    close.nc(nc_out) 
 }

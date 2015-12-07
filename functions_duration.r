@@ -65,16 +65,22 @@ calc_global_dur <- function(dat,ind,trash,filename,states=c(-1,1)){
 
     maxis=array(NA,ntot)
     len=array(NA,length(states)*2)
+
+    percentage=0
+    cat(paste("\n0 -> -> -> -> -> 100\n"))
     for (q in 1:ntot){
-        cat("-")
-        for (i in 1:length(states)){
-            tmp=per_duration(as.vector(ind[q,,])[trash:(length(ind[q,,])-trash)],dat$time[trash:(length(ind[q,,])-trash)],states[i])
-            dur[q,i,1:length(tmp$period)]=tmp$period
-            dur_mid[q,i,1:length(tmp$period)]=tmp$period_mid
+        if (q/1319*100 > percentage){
+            cat("-")
+            percentage=percentage+5
+        }
+        for (state in 1:length(states)){
+            tmp=per_duration(as.vector(ind[q,,])[trash:(length(ind[q,,])-trash)],dat$time[trash:(length(ind[q,,])-trash)],states[state])
+            dur[q,state,1:length(tmp$period)]=tmp$period
+            dur_mid[q,state,1:length(tmp$period)]=tmp$period_mid
         }
 
-        for (i in 1:length(states)){
-            len[i]=length(which(!is.na(dur[q,i,])))
+        for (state in 1:length(states)){
+            len[state]=length(which(!is.na(dur[q,state,])))
         }
         maxis[q]=max(len,na.rm=TRUE)
     }
@@ -84,6 +90,8 @@ calc_global_dur <- function(dat,ind,trash,filename,states=c(-1,1)){
 
 
 duration_seasons <- function(dur,dur_mid,season,filename){
+    # selects periods with midpoint in season
+    # creates new duration files
     states=dim(dur)[2]
     ntot=1319
     dur_neu=array(NA,dim=c(ntot,states,65*92))
@@ -95,149 +103,110 @@ duration_seasons <- function(dur,dur_mid,season,filename){
 
     len=array(NA,4)
     for (q in 1:ntot){
-        for (i in 1:states){
+        for (state in 1:states){
             select=c()
             for (year in 1950:2014){
-                select=c(select,which(dur_mid[q,i,]>(start+year) & dur_mid[q,i,]<(stop+year)))
+                select=c(select,which(dur_mid[q,state,]>(start+year) & dur_mid[q,state,]<(stop+year)))
             }   
             if (length(select)>0){
-                dur_neu[q,i,1:length(select)]=dur[q,i,select]
-                dur_mid_neu[q,i,1:length(select)]=dur_mid[q,i,select]
+                dur_neu[q,state,1:length(select)]=dur[q,state,select]
+                dur_mid_neu[q,state,1:length(select)]=dur_mid[q,state,select]
             }        
         }
 
-        for (i in 1:states){
-            len[i]=length(which(!is.na(dur_neu[q,i,])))
+        for (state in 1:states){
+            len[state]=length(which(!is.na(dur_neu[q,state,])))
         }
         maxis[q]=max(len,na.rm=TRUE)
     }
     duration_write(filename,dur_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],
         dur_mid_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
+    cat(paste("\ndays in year:",season[1],"-",season[2]))    
+
 }
     
-duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=seq(1,1319,1)){
-    # dur, dur_mid: from calc_global_dur
-    # calculates quantile regressions and mean quantile values in a certain period
-    # would be better if only rq slope and quantile_pete
-    # or all 8 coefficients from summary
-    # than direct netcdf with the values of summary
 
-    yearPeriod=yearPeriod
-    ntot=1319
-    states=dim(dur)[2]
-    dur_ana=array(NA,dim=c(ntot,states,8,5))
-    taus=c(0.25,0.5,0.75,0.9,0.95,0.98)
+duration_analysis <- function(dat,yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),add_name="quant_other"){
 
-    for (q in 1:ntot){
-        cat("-",q)
-        for (t in 1:states){
-            if (length(which(!is.na(dur[q,t,])))>10){
-                inYearPeriod=which(dur_mid[q,t,]>yearPeriod[1] & dur_mid[q,t,]<yearPeriod[2])
-                duration=dur[q,t,inYearPeriod]
-                mid=dur_mid[q,t,inYearPeriod]
+    ID_length=length(dat$ID)
+    
+    state_names=c("cold","warm")
+    season_names=c("MAM","JJA","SON","DJF","4seasons")
+    taus=c(0.05,0.25,0.5,0.75,0.95,0.98,1)
 
-                lr=summary(lm(duration~mid))$coefficients
+    quantile_stuff=array(NA,dim=c(length(season_names),ID_length,2,3,length(taus)))
+    fit_stuff=array(NA,dim=c(length(season_names),ID_length,2,5,20))
+    other_stuff=array(NA,dim=c(length(season_names),ID_length,2,12))
 
-                dur_ana[q,t,8,1]=lr[2]
-                dur_ana[q,t,8,2]=lr[8]
-                dur_ana[q,t,8,3]=mean(duration,na.rm=TRUE)
-                dur_ana[q,t,8,4]=sd(duration,na.rm=TRUE)
-                dur_ana[q,t,8,5]=lr[1]
+    for (sea in season_auswahl){ 
+        cat(paste("\n",state,"\n"))  
+        season=season_names[sea]
+        dists=list()
 
-                sf=try(summary(rq(duration~mid,taus),se="nid"))
-                if (class(sf)=="try-error"){
-                    for (i in 1:length(taus)){
-                        sf=try(summary(rq(duration~mid,taus[i]),se="nid"))
-                        if (class(sf)=="try-error"){
-                            dur_ana[q,t,i,1:4]=array(NA,4)
-                        }
-                        else {
-                            dur_ana[q,t,i,1]=sf$coefficients[2,1]
-                            dur_ana[q,t,i,2]=sf$coefficients[2,4]
-                            dur_ana[q,t,i,3]=sf$coefficients[1,1]+(yearPeriod[1]+yearPeriod[2])/2*sf$coefficients[2,1]
-                            dur_ana[q,t,i,4]=sf$coefficients[1,2]
-                            dur_ana[q,t,i,5]=sf$coefficients[1,1]
-
-                        }
+        nc_dur=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
+        dur=var.get.nc(nc_dur,"dur")
+        dur_mid=var.get.nc(nc_dur,"dur_mid")
         
+        for (state in 1:2){
+            cat(paste("  ",state," "))
+            for (q in 1:ID_length){
+                duration=dur[,state,]
+                duration_mid=dur_mid[,state,]
+                ord=order(duration_mid)
+                if (length(duration)>100){
+                    y=as.vector(duration[ord])
+                    x=as.vector(duration_mid[ord])
+                    inYearPeriod=which(x>yearPeriod[1] & x<yearPeriod[2])
+                    y=y[inYearPeriod]
+                    x=x[inYearPeriod]
+
+                    # other stuff
+                    if (option[1]==1){
+                        other_stuff[sea,q,state,1]=mean(y,na.rm=TRUE)
+                        other_stuff[sea,q,state,2]=sd(y,na.rm=TRUE)
+                        other_stuff[sea,q,state,12]=length(!is.na(y))
+
+                        linear=try(lm(y~x,na.rm=TRUE),silent=TRUE)
+                        if (class(linear)!="try-error"){other_stuff[sea,q,state,3:10]=summary(linear)$coef}
                     }
 
+                    # quantile values and regressions
+                    if (option[2]==1){
+                        tmp=quantile_analysis(x,y,taus)
+                        quantile_stuff[sea,q,state,1,]=tmp$quantiles
+                        quantile_stuff[sea,q,state,2,]=tmp$slopes
+                        quantile_stuff[sea,q,state,3,]=tmp$slope_sigs
+                    }
+
+                    # data to be fitted
+                    if (option[3]==1){
+                        br=seq(0,max(y,na.rm=TRUE),1)
+                        histo=hist(y,breaks=br,plot=FALSE)
+                        
+                        Y=histo$density
+                        X=histo$mids
+                    }
+
+                    # exponential fit + other values
+                    if (option[3]==1){
+                        tmp=exponential_fit(X,Y)
+                        fit_stuff[sea,q,state,1,1:2]=tmp$pars
+                        fit_stuff[sea,q,state,1,19:20]=tmp$ana
+                    }
+
+
                 }
-                else {
-                    slope=sapply(sf, function(x) c(tau=x$tau, x$coefficients[-1,]))
-                    mean=sapply(sf, function(x) c(tau=x$tau, x$coefficients[1,]))
-
-                    dur_ana[q,t,1:length(taus),1]=slope[2,1:length(taus)]
-                    dur_ana[q,t,1:length(taus),2]=slope[5,1:length(taus)]
-                    dur_ana[q,t,1:length(taus),3]=mean[2,1:length(taus)]+(yearPeriod[1]+yearPeriod[2])/2*slope[2,1:length(taus)]
-                    dur_ana[q,t,1:length(taus),4]=mean[3,1:length(taus)]
-                    dur_ana[q,t,1:length(taus),5]=mean[2,1:length(taus)]
-                }
-            }
-            else {
-                cat(q)
-            }
-        }
-    } 
-    if (filename!=FALSE){
-        duration_analysis_write(filename,dur_ana,season)
-    }
-}
-
-duration_distribution <- function(dur,dur_mid,filename,season,yearPeriod,stations=seq(1,1319,1)){
-    # this function should arrange two arrays y and x
-    # these should be handed to a specified distributuion analysis function (also used for regional stuff)
-
-
-    
-    ntot=1319
-    states=dim(dur)[2]
-    out=array(NA,dim=c(ntot,states,8))
-    
-    for (state in 1:states){
-        for (q in 1:ntot){
-            if (length(which(!is.na(dur[q,state,])))>30){
-                inside=which(dur_mid[q,state,]>yearPeriod[1] & dur_mid[q,state,]<yearPeriod[2])
-                br=seq(0,max(dur[q,state,inside],na.rm=TRUE),1)
-                histo=hist(dur[q,state,inside],breaks=br,plot=FALSE)
-                
-
-                xy=data.frame(y=histo$density,x=histo$mids)
-                fit=nls(y~(a*exp(-b*x)),data=xy,start=list(a=0.1,b=0.1),na.action=na.exclude) 
-                a=summary(fit)$parameters[1]
-                b=summary(fit)$parameters[2]
-                yfit=a*exp(-histo$mids*b)
-                R2=1-sum(((histo$density-yfit)^2),na.rm=TRUE)/sum(((histo$density-mean(histo$density,na.rm=TRUE))^2),na.rm=TRUE)
-                y=dur[q,state,inside]
-                mean=mean(y,na.rm=TRUE)
-                sd=sd(y,na.rm=TRUE)
-                skew=skewness(y,na.rm=TRUE)
-                out[q,state,1:8]=c(mean,sd,sd/mean,skew,a,b,1/b,R2)
-
-                #y=histo$density
-                #y[y==0]=NA
-                #fit=summary(lm(log(y)~histo$mids))
-                #A=exp(fit$coefficients[1])
-                #b=-fit$coefficients[2]
-                #R2=fit$r.squared
-                #mean=mean(dur[q,state,inside],na.rm=TRUE)
-                #sd=sd(dur[q,state,inside],na.rm=TRUE)
-                #skew=skewness(dur[q,state,inside],na.rm=TRUE)
-                #out[q,state,1:8]=c(mean,sd,sd/mean,skew,A,b,1/b,R2)
-                #cat(paste("-",q," "))
             }
         }
     }
-    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
-    varstates <- dim.def.ncdf("states",units="states",vals=1:(states),unlim=FALSE)
-    outs <- dim.def.ncdf("outs",units="0-1",vals=1:8,unlim=FALSE)
 
-    distr_ana <- var.def.ncdf(name="distr_ana",units="values",longname=paste("analysis of duration of distribution in",season,"histo fit Ae-bx. values are: mean, sd, relative sd, skewness, A, b, 1/b, R2"),dim=list(ID,varstates,outs), missval=-9999.0)
+    period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
+    
+    if (option[1]==1){other_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,"_",dataset,"_",period,"_others.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,other_stuff=other_stuff)}
 
-    nc=create.ncdf(filename,distr_ana)
-
-    put.var.ncdf(nc,"distr_ana",out[1:ntot,1:states,1:8])  
-
-    close.ncdf(nc)    
+    if (option[2]==1){other_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,"_",dataset,"_",period,"_quantiles.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
+    
+    if (option[3]==1){quantiles_other_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,"_",dataset,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
 
 }
+

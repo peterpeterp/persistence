@@ -17,11 +17,11 @@ master_trend_control <- function(trendID,trend_style="_mean",dataset="_TX",addit
     # trend control
     source("trend_view.r")
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-    nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_median",".nc",sep=""))
-    ind=get.var.ncdf(nc,"ind")
+    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_median",".nc",sep=""))
+    ind=var.get.nc(nc,"ind")
     trend_control_warm_days(dat,ind,filename=paste("../data/",trendID,"/",dataset,additional_style,"/sonstiges/",trendID,trend_style,dataset,"_5seasons_warme_tage_control",additional_style,"_year",".txt",sep=""))   
-    nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_seasonal_median",".nc",sep=""))
-    ind=get.var.ncdf(nc,"ind")
+    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_seasonal_median",".nc",sep=""))
+    ind=var.get.nc(nc,"ind")
     trend_control_warm_days(dat,ind,filename=paste("../data/",trendID,"/",dataset,additional_style,"/sonstiges/",trendID,trend_style,dataset,"_5seasons_warme_tage_control",additional_style,"_4seasons",".txt",sep=""))  
 }
 
@@ -61,14 +61,14 @@ master_seasonal_median_on_detrended <- function(nday,nyr,trendID,trend_style="_m
         }
     }
 
-    day <- dim.def.ncdf("day", units="d",vals=1:365, unlim=FALSE)
-    ID <- dim.def.ncdf("ID",units="ID",vals=1:ntot, unlim=FALSE)
+    day <- dim.def.nc("day", units="d",vals=1:365, unlim=FALSE)
+    ID <- dim.def.nc("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
-    seasonal_med <- var.def.ncdf(name="_seasonal_median",units="medain of season value for each day",dim=list(ID,day), missval=-9999.0)
+    seasonal_med <- var.def.nc(name="_seasonal_median",units="medain of season value for each day",dim=list(ID,day), missval=-9999.0)
     filename=paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_seasonal_median",".nc",sep="")
-    nc = create.ncdf(filename,seasonal_med)
-    put.var.ncdf(nc,seasonal_med,seasonalmedian)
-    close.ncdf(nc)
+    nc = create.nc(filename,seasonal_med)
+    put.var.nc(nc,seasonal_med,seasonalmedian)
+    close.nc(nc)
 }
 
 master_state_attribution <- function(nday,nyr,trendID,trend_style="_mean",dataset="_TX",additional_style=""){
@@ -89,8 +89,8 @@ master_state_attribution_daily_median <- function(nday,nyr,trendID,trend_style="
     # calculate persistence 2 states
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
     trend=trend_load(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""))
-    nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_seasonal_median",".nc",sep=""))
-    daily_median=get.var.ncdf(nc,"_seasonal_median")
+    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_seasonal_median",".nc",sep=""))
+    daily_median=var.get.nc(nc,"_seasonal_median")
     detrended=dat$tas-trend
     for (year in 1:65){
         detrended[,,year]=detrended[,,year]-daily_median
@@ -107,52 +107,40 @@ master_duration <- function(nday,nyr,trendID,trend_style="_mean",dataset="_TX",a
 
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
-    # calculate annual duration
-    nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_median",".nc",sep=""))        
-    ind=get.var.ncdf(nc,"ind")
-    calc_global_dur(dat=dat,ind=ind,trash=trash,filename=paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_year.nc",sep=""),states=stateIndeces)
-
     # calculate seasonal duration
-    nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_seasonal_median",".nc",sep=""))        
-    ind=get.var.ncdf(nc,"ind")
+    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_seasonal_median",".nc",sep=""))
+    ind=var.get.nc(nc,"ind")
+    cat("\nidentifying persistent periods:")
     calc_global_dur(dat=dat,ind=ind,trash=trash,filename=paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_4seasons.nc",sep=""),states=stateIndeces)
 
     # open seasonal duration and seperate into individual files
-    nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_4seasons.nc",sep=""))
-    dur=get.var.ncdf(nc,"dur")
-    dur_mid=get.var.ncdf(nc,"dur_mid")
-    
+    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_4seasons.nc",sep=""))
+    dur=var.get.nc(nc,"dur")
+    dur_mid=var.get.nc(nc,"dur_mid")
+
+    cat("\nattributing periods to seasons:")    
     duration_seasons(dur,dur_mid,season=c(60,151),filename=paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_MAM.nc",sep=""))
     duration_seasons(dur,dur_mid,season=c(152,243),filename=paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_JJA.nc",sep=""))
     duration_seasons(dur,dur_mid,season=c(244,334),filename=paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_SON.nc",sep=""))
     duration_seasons(dur,dur_mid,season=c(335,424),filename=paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_DJF.nc",sep=""))
 }
 
-master_analyse_duration <- function(yearPeriod,trendID,seasons=c("MAM","JJA","SON","DJF","year","4seasons"),dataset="_TX",additional_style=""){
+master_duration_analysis <- function(trendID,dataset="_TMean"){
     library(quantreg)
-    # analyse duration periods 2 states
-    for (season in seasons){
-        nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
-        dur=get.var.ncdf(nc,"dur")
-        dur_mid=get.var.ncdf(nc,"dur_mid")
-        duration_analysis(dur,dur_mid,filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,dataset,"_duration_analysis_",season,".nc",sep=""),season=season,yearPeriod)
+    source("analysis_tools.r")
+    dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+
+    points=c(1950,2014,1950,1980,1980,2014)
+    for (i in 1:3){
+        yearPeriod=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
+        print(yearPeriod)
+        duration_analysis(dat=dat,yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0),add_name="_testin")
+        duration_analysis(dat=dat,yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0),add_name="_testin")
+        duration_analysis(dat=dat,yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,1,0),add_name="_testin")
     }
 }
 
-master_duration_distribution <- function(yearPeriod,trendID,seasons=c("MAM","JJA","SON","DJF","year","4seasons"),dataset="_TX",additional_style=""){
-    library(moments)
-    # analyse duration periods 2 states
-    for (season in seasons){
-        print(season)
-        nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
-        dur=get.var.ncdf(nc,"dur")
-        dur_mid=get.var.ncdf(nc,"dur_mid")
-        duration_distribution(dur,dur_mid,filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,dataset,"_duration_distribution_ana_",season,".nc",sep=""),
-            season=season,yearPeriod)#,stations=seq(487,489,1))#,stations=134:136)
-    }
-}
-
-master_regional_climatology <- function(trendID,dataset="_TX",additional_style="",region_name="7rect",region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
+master_regional_climatology <- function(trendID,dataset="_TMean",additional_style="",region_name="7rect",region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
     library(quantreg)
     library(moments)
     source("functions_regional.r")
@@ -164,11 +152,9 @@ master_regional_climatology <- function(trendID,dataset="_TX",additional_style="
     for (i in 1:3){
         yearPeriod=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
         print(yearPeriod)
-        regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,plot=TRUE,season_auswahl=c(6),write=FALSE,add_name="_4sea_all",region_names=region_names)
-        #regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,plot=TRUE,season_auswahl=c(2),write=FALSE,add_name="_JJA")
-        #regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,write=TRUE,plot=TRUE)
-        #plot_regional_fit_parameters(dat=dat,yearPeriod=yearPeriod,region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style)
-        #plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style,quantile_style="quantiles")
+        regional_quantiles_fits(dat=dat,yearPeriod=yearPeriod,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,plot=TRUE,season_auswahl=c(6),write=TRUE,add_name="_4sea_all",region_names=region_names)
+        plot_regional_fit_parameters(dat=dat,yearPeriod=yearPeriod,region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style)
+        plot_regional_boxplots(dat=dat,yearPeriod=yearPeriod,region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style,quantile_style="quantiles")
     }
 
     plot_regional_boxplots_vergleich(dat=dat,yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style,quantile_style="quantiles")
@@ -224,8 +210,9 @@ additional_style=""
 
 
 #master_trend_control(trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
-master_regional_climatology(region_name="7rect",trendID=trendID,dataset=dataset,additional_style=additional_style)
+#master_regional_climatology(region_name="7rect",trendID=trendID,dataset=dataset,additional_style=additional_style)
 #master_regional_climatology(region_name="mid_lat_belt",region_names=c("mid-lat","polar"),trendID=trendID,dataset=dataset,additional_style=additional_style)
 
+master_duration_analysis(trendID=trendID)
 
-
+#master_duration(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
