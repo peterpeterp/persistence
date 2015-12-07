@@ -1,10 +1,11 @@
 #!/home/pepflei/R/bin/Rscript
-# Load useful functions 
-#dyn.load("persistence_tools.so")
-source("functions_support.r")
-source("functions_duration.r")
-source("write.r")
-source("load.r")
+
+###################################################################
+# Persistence in Temperature time series
+# Author: Peter Pfleiderer
+# Institution: Potsdam Institute for Climate Impact Research (PIK)
+# Year: 2015
+###################################################################
 
 master_nas <- function(){
     # count nas
@@ -155,6 +156,7 @@ master_regional_climatology <- function(trendID,dataset="_TX",additional_style="
     library(quantreg)
     library(moments)
     source("functions_regional.r")
+    source("analysis_tools.r")
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
     points=c(1950,2014,1950,1980,1980,2014)
@@ -187,13 +189,24 @@ full <- function(nday,nyr,trend_style="_mean",dataset="_TX",additional_style="")
     }
 }
 
-# init
+###################################################################
+# init: loading sources, setting variables ....
+###################################################################
+source("functions_support.r")
+source("functions_duration.r")
+source("write.r")
+source("load.r")
+
 nday=91
 nyr=5
 trendID=paste(nday,"_",nyr,sep="")
 dataset="_TMean"
 trend_style="_mean"
 additional_style=""
+
+###################################################################
+# use some of the functions above
+###################################################################
 
 #master_trend(nday,nyr,trendID,trend_style=trend_style,dataset=dataset)
 

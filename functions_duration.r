@@ -1,9 +1,14 @@
 #!/home/pepflei/R/bin/Rscript
-source("write.r")
-source("load.r")
+
+###################################################################
+# calculate and analyse duration time series
+# Author: Peter Pfleiderer
+# Institution: Potsdam Institute for Climate Impact Research (PIK)
+# Year: 2015
+###################################################################
 
 per_duration <- function(ind,time,state){
-    # ind is time serie of states for one grid point
+    # ind: is time serie of states for one grid point
     # finds periods of duration for given state
     act_state=ind[1]
     period=ind*NA
@@ -48,6 +53,11 @@ per_duration <- function(ind,time,state){
 
 
 calc_global_dur <- function(dat,ind,trash,filename,states=c(-1,1)){
+    # dat: is required for time and ID
+    # ind: array of states (same dimentions as temp anomalies)
+    # trash: number of days that have to be neglected (due to detrending)
+    # filename: where to store result
+    # states: label of states
     ntot=length(dat$ID)
     
     dur=array(NA,dim=c(ntot,length(states),65*365))
@@ -57,7 +67,6 @@ calc_global_dur <- function(dat,ind,trash,filename,states=c(-1,1)){
     len=array(NA,length(states)*2)
     for (q in 1:ntot){
         cat("-")
-        #per$ind[per$ind==0]=NA
         for (i in 1:length(states)){
             tmp=per_duration(as.vector(ind[q,,])[trash:(length(ind[q,,])-trash)],dat$time[trash:(length(ind[q,,])-trash)],states[i])
             dur[q,i,1:length(tmp$period)]=tmp$period
@@ -107,6 +116,12 @@ duration_seasons <- function(dur,dur_mid,season,filename){
 }
     
 duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=seq(1,1319,1)){
+    # dur, dur_mid: from calc_global_dur
+    # calculates quantile regressions and mean quantile values in a certain period
+    # would be better if only rq slope and quantile_pete
+    # or all 8 coefficients from summary
+    # than direct netcdf with the values of summary
+
     yearPeriod=yearPeriod
     ntot=1319
     states=dim(dur)[2]
@@ -170,6 +185,11 @@ duration_analysis <- function(dur,dur_mid,filename,season,yearPeriod,stations=se
 }
 
 duration_distribution <- function(dur,dur_mid,filename,season,yearPeriod,stations=seq(1,1319,1)){
+    # this function should arrange two arrays y and x
+    # these should be handed to a specified distributuion analysis function (also used for regional stuff)
+
+
+    
     ntot=1319
     states=dim(dur)[2]
     out=array(NA,dim=c(ntot,states,8))
