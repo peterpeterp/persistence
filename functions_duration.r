@@ -126,34 +126,38 @@ duration_seasons <- function(dur,dur_mid,season,filename){
 }
     
 
-duration_analysis <- function(dat,yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),add_name="quant_other"){
+duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_length=1319,add_name="quant_other"){
 
-    ID_length=length(dat$ID)
-    
+    period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
     state_names=c("cold","warm")
     season_names=c("MAM","JJA","SON","DJF","4seasons")
     taus=c(0.05,0.25,0.5,0.75,0.95,0.98,1)
 
-    quantile_stuff=array(NA,dim=c(length(season_names),ID_length,2,3,length(taus)))
-    fit_stuff=array(NA,dim=c(length(season_names),ID_length,2,5,20))
+    quantile_stuff=array(NA,dim=c(length(season_names),ID_length,2,length(taus),3))
+    fit_stuff=array(NA,dim=c(length(season_names),ID_length,2,20))
     other_stuff=array(NA,dim=c(length(season_names),ID_length,2,12))
 
     for (sea in season_auswahl){ 
-        cat(paste("\n",state,"\n"))  
         season=season_names[sea]
+        cat(paste("\n",season))  
         dists=list()
 
         nc_dur=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
         dur=var.get.nc(nc_dur,"dur")
         dur_mid=var.get.nc(nc_dur,"dur_mid")
         
-        for (state in 1:2){
-            cat(paste("  ",state," "))
-            for (q in 1:ID_length){
-                duration=dur[,state,]
-                duration_mid=dur_mid[,state,]
+        percentage=0
+        cat(paste("\n0 -> -> -> -> -> 100\n"))
+        for (q in 1:ID_length){
+            if (q/1319*100 > percentage){
+                cat("-")
+                percentage=percentage+5
+            }
+            for (state in 1:2){
+                duration=dur[q,state,]
+                duration_mid=dur_mid[q,state,]
                 ord=order(duration_mid)
-                if (length(duration)>100){
+                if (length(which(!is.na(duration)))>100){
                     y=as.vector(duration[ord])
                     x=as.vector(duration_mid[ord])
                     inYearPeriod=which(x>yearPeriod[1] & x<yearPeriod[2])
@@ -166,16 +170,16 @@ duration_analysis <- function(dat,yearPeriod,trendID,dataset="_TMean",season_aus
                         other_stuff[sea,q,state,2]=sd(y,na.rm=TRUE)
                         other_stuff[sea,q,state,12]=length(!is.na(y))
 
-                        linear=try(lm(y~x,na.rm=TRUE),silent=TRUE)
+                        linear=try(lm(y~x),silent=TRUE)
                         if (class(linear)!="try-error"){other_stuff[sea,q,state,3:10]=summary(linear)$coef}
                     }
 
                     # quantile values and regressions
                     if (option[2]==1){
                         tmp=quantile_analysis(x,y,taus)
-                        quantile_stuff[sea,q,state,1,]=tmp$quantiles
-                        quantile_stuff[sea,q,state,2,]=tmp$slopes
-                        quantile_stuff[sea,q,state,3,]=tmp$slope_sigs
+                        quantile_stuff[sea,q,state,,1]=tmp$quantiles
+                        quantile_stuff[sea,q,state,,2]=tmp$slopes
+                        quantile_stuff[sea,q,state,,3]=tmp$slope_sigs
                     }
 
                     # data to be fitted
@@ -190,23 +194,17 @@ duration_analysis <- function(dat,yearPeriod,trendID,dataset="_TMean",season_aus
                     # exponential fit + other values
                     if (option[3]==1){
                         tmp=exponential_fit(X,Y)
-                        fit_stuff[sea,q,state,1,1:2]=tmp$pars
-                        fit_stuff[sea,q,state,1,19:20]=tmp$ana
+                        fit_stuff[sea,q,state,1:2]=tmp$pars
+                        fit_stuff[sea,q,state,19:20]=tmp$ana
                     }
-
-
                 }
             }
         }
+        if (option[1]==1){other_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,"_",dataset,"_",period,"_others.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,other_stuff=other_stuff)}
+
+        if (option[2]==1){quantiles_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,"_",dataset,"_",period,"_quantiles.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
+        
+        if (option[3]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,"_",dataset,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
     }
-
-    period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
-    
-    if (option[1]==1){other_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,"_",dataset,"_",period,"_others.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,other_stuff=other_stuff)}
-
-    if (option[2]==1){other_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,"_",dataset,"_",period,"_quantiles.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
-    
-    if (option[3]==1){quantiles_other_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/duration/",period,"/",trendID,"_",dataset,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
-
 }
 

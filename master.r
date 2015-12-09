@@ -128,15 +128,17 @@ master_duration <- function(nday,nyr,trendID,trend_style="_mean",dataset="_TX",a
 master_duration_analysis <- function(trendID,dataset="_TMean"){
     library(quantreg)
     source("analysis_tools.r")
-    dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    #dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
     points=c(1950,2014,1950,1980,1980,2014)
     for (i in 1:3){
         yearPeriod=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
         print(yearPeriod)
-        duration_analysis(dat=dat,yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0),add_name="_testin")
-        duration_analysis(dat=dat,yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0),add_name="_testin")
-        duration_analysis(dat=dat,yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,1,0),add_name="_testin")
+        print("others")
+        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0),add_name="_testin")
+        print("quant")
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0),add_name="_testin")
+        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,1,0),add_name="_testin")
     }
 }
 

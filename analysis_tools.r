@@ -36,7 +36,7 @@ quantile_pete <- function(dist,taus,na.rm=TRUE,plot=FALSE){
     return(out)
 }
 
-quantile_analysis <- function(x,y,taus,noise_level=c(0.0001,0.0001)){
+quantile_analysis <- function(x,y,taus,noise_level=c(0.000001,0.0001)){
     # x=dur_mid, y=dur, taus=percentiles
 
     # noise is added to x and y to avoid crash
