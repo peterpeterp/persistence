@@ -23,9 +23,10 @@ trend_write <- function(filename,trend,ID_length=1319,method="2D running mean")
 
 
 
-duration_write <- function(filename,dur,dur_mid,len,ID_length=1319)
+duration_write <- function(filename,dur,dur_mid,len,ID_length=1319,ID_name="grid_points")
 {
     nc_out <- create.nc(filename)
+    att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
     
     dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
     dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)

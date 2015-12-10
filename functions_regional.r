@@ -133,14 +133,15 @@ duration_region <- function(regions,reg,dur,dur_mid){
         duration_mid[count:(count+values)]=dur_mid[i,1:values]
         count=count+values
     }
-    duration=duration[!is.na(duration)]
-    duration_mid=duration_mid[!is.na(duration_mid)]
+    nona=which(!is.na(duration) & !is.na(duration_mid))
+    duration=duration[nona]
+    duration_mid=duration_mid[nona]
     return(list(duration=duration,duration_mid=duration_mid))
 }
 
 
 
-regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additional_style,dataset,season_auswahl=c(1,2,3,4,5),plot=TRUE,write=TRUE,add_name=""){
+regional_distributions <- function(dat,region_name,trendID,additional_style,dataset){
     # performs the entire regional analysis of markov and duration
     # result will be written in nc file
 
@@ -152,71 +153,37 @@ regional_quantiles_fits <- function(dat,yearPeriod,region_name,trendID,additiona
     print(regNumb)
     IDregions=points_to_regions(dat,c(region_name))
 
-    
-    state_names=c("cold","warm")
-    season_names=c("MAM","JJA","SON","DJF","year","4seasons")
-    taus=c(0.05,0.25,0.5,0.75,0.95,0.98,1)
+    season_names=c("MAM","JJA","SON","DJF","4seasons")
 
-    quantile_stuff=array(NA,dim=c(length(season_names),regNumb,2,3,length(taus)))
-    fit_stuff=array(NA,dim=c(length(season_names),regNumb,2,5,20))
-    other_stuff=array(NA,dim=c(length(season_names),regNumb,2,10))
 
-    for (sea in season_auswahl){   
+    for (sea in 1:5){
         season=season_names[sea]
-        dists=list()
-
         nc_dur=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
         dur=var.get.nc(nc_dur,"dur")
-        dur_mid=var.get.nc(nc_dur,"dur_mid")
-        
+        dur_mid=var.get.nc(nc_dur,"dur_mid")   
+
+        reg_dur=array(NA,dim=c(regNumb,2,365*65*100))
+        reg_dur_mid=array(NA,dim=c(regNumb,2,365*65*100))
+        maxis=array(NA,dim=c(2*regNumb))
+
         for (state in 1:2){
             for (reg in 1:regNumb){            
                 tmp=duration_region(IDregions,reg,dur[1:ntot,state,],dur_mid[1:ntot,state,])
                 duration=tmp$duration
                 duration_mid=tmp$duration_mid
                 ord=order(duration_mid)
-                if (length(duration)>1000){
-                    y=as.vector(duration[ord])
-                    x=as.vector(duration_mid[ord])
-                    inYearPeriod=which(x>yearPeriod[1] & x<yearPeriod[2])
-                    y=y[inYearPeriod]
-                    x=x[inYearPeriod]
-
-                    # other stuff
-                    other_stuff[sea,reg,state,1]=mean(y,na.rm=TRUE)
-                    other_stuff[sea,reg,state,2]=sd(y,na.rm=TRUE)
-                    linear=try(lm(y~x,na.rm=TRUE),silent=TRUE)
-                    if (class(linear)!="try-error"){other_stuff[sea,reg,state,3:10]=summary(linear)$coef}
-
-                    # quantile values and regressions
-                    tmp=quantile_analysis(x,y,taus)
-                    quantile_stuff[sea,reg,state,1,]=tmp$quantiles
-                    quantile_stuff[sea,reg,state,2,]=tmp$slopes
-                    quantile_stuff[sea,reg,state,3,]=tmp$slope_sigs
-
-                    # exponential fit + other values
-                    br=seq(0,max(y,na.rm=TRUE),1)
-                    histo=hist(y,breaks=br,plot=FALSE)
-
-                    # data to be fitted
-                    Y=histo$density
-                    X=histo$mids
-
-                    tmp=exponential_fit(X,Y)
-                    fit_stuff[sea,reg,state,1,1:2]=tmp$pars
-                    fit_stuff[sea,reg,state,1,19:20]=tmp$ana
-
-
-                }
+                maxis[(state-1)*regNumb+reg]=length(duration)
+                reg_dur[reg,state,1:maxis[(state-1)*regNumb+reg]]=duration[ord]
+                reg_dur_mid[reg,state,1:maxis[(state-1)*regNumb+reg]]=duration_mid[ord]
             }
         }
+        len=max(maxis,na.rm=TRUE)
+        duration_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/","regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""),dur=reg_dur[,,1:len],dur_mid=reg_dur_mid[,,1:len],len=len,ID_length=regNumb,ID_name=region_name)
+
     }
 
-    period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
-    if (write==TRUE){distribution_analysis_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",region_name,"_",period,"_quantiles_fit.nc",sep=""),ID_length=7,ID_name="7rect_(as_screen)",period=period,taus=taus,other_stuff=other_stuff,quantile_stuff=quantile_stuff,fit_stuff=fit_stuff)}
 }
 
-#==========================================================================================================================
 
 # ------------------------------------------------------------------------------------------------
 plot_boxplot <- function(quans,x,width,color="white",border="black",density=NA){
@@ -235,19 +202,19 @@ plot_boxplot <- function(quans,x,width,color="white",border="black",density=NA){
 }
 
 
-plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional_style,dataset,quantile_style="quantiles",region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
+plot_regional_boxplots <- function(dat,period,region_name,trendID,additional_style,dataset,quantile_style="quantiles",region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
     # performs the entire regional analysis of markov and duration
     # result will be written in nc file
 
     # pnly for one trend and 2 states until now
     ntot=length(dat$ID)
 
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_quantiles.nc",sep=""))
-    quantiles=var.get.nc(nc,quantile_style)
-    others=var.get.nc(nc,"others")
-    fitstuff=var.get.nc(nc,"fitstuff")
-    regions=var.get.nc(nc,"region")
+    #nc_oth = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,region_name,"_",period,"_others.nc",sep=""))
+    #other_stuff=var.get.nc(nc_oth,"other_stuff")
 
+    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,region_name,"_",period,"_quantiles.nc",sep=""))
+    nc_qua = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_quantiles.nc",sep=""))
+    quantiles=var.get.nc(nc_qua,"quantile_stuff")
 
     regNumb=dim(quantiles)[2]
     seaNumb=6
@@ -260,8 +227,8 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
     height=3
 
     # regional focus
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",region_name,"_",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_",quantile_style,"_boxplots_regional.pdf",sep=""),width=width,height=height)
-    par(mfrow=c(1,1),cex.legend=2)
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",region_name,"_",trendID,"_",period,"_",quantile_style,"_boxplots_regional_new.pdf",sep=""),width=width,height=height)
+    par(mfrow=c(1,1))
     par(mar=c(1,4,2,3))   
     at_=seq(1, regNumb, 1)
     at_=c(at_-0.15,at_+0.15)
@@ -280,21 +247,21 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
 
         for (reg in 1:regNumb){
             for (state in 1:2){
-                plot_boxplot(quantiles[sea,reg,state,],reg+pos[state],0.3,color[state])
+                plot_boxplot(quantiles[sea,reg,state,,1],reg+pos[state],0.3,color[state])
                 text(reg,24,region_names[reg],col=rgb(0.5,0.5,0.5,0.5))#max(quantiles[sea,,,1:5])+drueber
             }
         }        
-        for (oth in c(1)){
-            points(at_[1:regNumb],others[sea,,1,oth],col="blue",pch=oth)
+        #for (oth in c(1)){
+        #    points(at_[1:regNumb],others[sea,,1,oth],col="blue",pch=oth)
             #lines(at_[1:regNumb],others[sea,,1,oth],col="blue",lty=3)
-            points(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",pch=oth)
+        #    points(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",pch=oth)
             #lines(at_[(regNumb+1):(regNumb*2)],others[sea,,2,oth],col="red",lty=3)
-        }
+        #}
     }
     graphics.off()
 
     # seasonal anomaly
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",region_name,"_",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_",quantile_style,"_boxplots_seasonal_anomaly.pdf",sep=""),width=width,height=height)
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",region_name,"_",trendID,"_",period,"_",quantile_style,"_boxplots_seasonal_anomaly.pdf",sep=""),width=width,height=height)
     par(mfrow=c(1,1))
     par(mar=c(1,4,2,0))   
     at_=seq(1, regNumb, 1)
@@ -339,7 +306,7 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
     # regional focus kind of seasonal anomaly
     color=c(rgb(0.5,0.5,1,0.8),rgb(1,0.5,0.5,0.8),rgb(0.5,0.5,1,0.4),rgb(1,0.5,0.5,0.4))
 
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",region_name,"_",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_",quantile_style,"_boxplots_seas_kind_anomaly.pdf",sep=""))
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",region_name,"_",trendID,"_",period,"_",quantile_style,"_boxplots_seas_kind_anomaly.pdf",sep=""))
     par(mfrow=c(1,1))
     par(mar=c(1,4,2,0))   
     at_=seq(1, regNumb, 1)
@@ -369,7 +336,7 @@ plot_regional_boxplots <- function(dat,yearPeriod,region_name,trendID,additional
     graphics.off()
 
     # regional focus plus seasonal anomaly
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",region_name,"_",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_",quantile_style,"_boxplots_seas_combi_anomaly.pdf",sep=""))
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",region_name,"_",trendID,"_",period,"_",quantile_style,"_boxplots_seas_combi_anomaly.pdf",sep=""))
     par(mfrow=c(2,1),cex=1)
     par(mar=c(1,4,2,0))   
     at_=seq(1, regNumb, 1)
@@ -519,7 +486,7 @@ plot_regional_fit_parameters <- function(dat,yearPeriod,region_name,trendID,addi
     # pnly for one trend and 2 states until now
     ntot=length(dat$ID)
 
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_quantiles.nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",region_name,"_",period,"_quantiles.nc",sep=""))
     quantiles=var.get.nc(nc,"quantiles")
     others=var.get.nc(nc,"others")
     fitstuff=var.get.nc(nc,"fitstuff")
@@ -536,7 +503,7 @@ plot_regional_fit_parameters <- function(dat,yearPeriod,region_name,trendID,addi
     height=3
 
     # regional focus
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",yearPeriod[1],"-",yearPeriod[2],"_fit_params_regional.pdf",sep=""),width=width,height=height)
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",period,"_fit_params_regional.pdf",sep=""),width=width,height=height)
     par(mfrow=c(3,1))
     par(mar=c(1,5,0,1))   
 
@@ -604,7 +571,7 @@ plot_regional_fit_parameters <- function(dat,yearPeriod,region_name,trendID,addi
 
     color=c("lightblue","lightred")
 
-    table<-file(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_seasons_latex.txt",sep=""))
+    table<-file(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_seasons_latex.txt",sep=""))
     options(scipen=100)
 
     lines=c()

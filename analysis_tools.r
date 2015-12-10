@@ -58,6 +58,67 @@ quantile_analysis <- function(x,y,taus,noise_level=c(0.000001,0.0001)){
     return(list(quantiles=quantiles,slopes=slopes,slope_sigs=slope_sigs))
 }
 
+fit_plot <- function(x,y,X,Y,fit,legend,sea,q,state,thresh=NA){
+    state_names=c("cold","warm")
+    if (1==1){
+        color=c("blue","red")
+        #reference
+        par(mar=c(0, 0, 0, 0) + 0.1)
+        plot(NA,xlim=c(0,10),ylim=c(0,10),axes=FALSE,frame.plot=FALSE)
+        text(5,9.4,paste(sea,q,state_names[state]))
+        order_=order(y,decreasing=TRUE)
+        for (extreme in 1:8){
+            text(3,extreme,round(x[order_][extreme],01))
+            text(8,extreme,round(y[order_][extreme],01))
+        }
+
+        #first plot page
+        par(mar=c(3, 3, 0, 0) + 0.1)
+        par(mfrow=c(1,1))
+                        
+        plot(X,Y,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
+
+        at_=axis(2,labels=FALSE,col="black")
+        if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+        axis(2,at=at_)
+        if (!is.na(thresh)){
+            abline(v=thresh,col="grey")
+            text(thresh,0.22,label=thresh,col="grey")
+        }
+        lines(fit,col="black")
+        legend("topright",legend=c(legend[1]),bty="n")
+        #legend("bottomleft",legend=c(region_names[q]),bty="n")   
+        text(12,0.00002,q)                 
+
+
+
+        # second version
+        par(mar=c(3, 3, 0, 0) + 0.1)
+        par(mfrow=c(1,1))
+                        
+        plot(X,Y,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
+        
+        at_=axis(2,labels=FALSE,col="black")
+        if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+        axis(2,at=at_)
+
+
+        at_=axis(1,labels=FALSE,col="black")
+        if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+        axis(1,at=at_)
+
+        lines(fit,col="black")
+        if (!is.na(thresh)){
+            abline(v=thresh,col="grey")
+            text(thresh,0.22,label=thresh,col="grey")
+        }    
+        #abline(v=11,col="gray",lty=2)
+        legend("topright",legend=c(legend[2]),bty="n")
+        #legend("bottomleft",legend=c(region_names[q]),bty="n")
+        text(12,0.00002,q)
+    }
+}
+
 exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-Inf),upper_limit=c(Inf,Inf)){
     xy=data.frame(y=Y,x=X)
     # try fit
@@ -80,25 +141,138 @@ exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-I
     }
 }
 
-two_exp_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-Inf),upper_limit=c(Inf,Inf)){
+
+combi_expo <-function(x,a1,b1,b2,thresh){
+    y=x*NA
+    y[x<=thresh]=a1*exp(-x[x<=thresh]*b1)
+    y[x>thresh]=a1*exp((b2-b1)*thresh)*exp(-(x[x>thresh])*b2)
+    return(y)
+}
+
+expo <-function(x,a,b){
+    y=x*NA
+    thresh=100
+    y[x<thresh]=a*exp(-x[x<thresh]*b)
+    y[x>=thresh]=x[x>=thresh]*0
+    return(y)
+}
+
+two_exp_fit <- function(X,Y,start_guess=c(a1=0.1,b1=0.1,a2=0.11,b2=0.4,thresh=1),lower_limit=c(0,-Inf,0,-Inf,5),upper_limit=c(Inf,Inf,Inf,Inf,Inf)){
     xy=data.frame(y=Y,x=X)
-    # try fit
-    exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=start_guess,lower=lower_limit,upper=upper_limit,na.action=na.exclude),silent=TRUE) 
     
+    thresh=3:18
+    trials=length(thresh)
+    a1=array(NA,dim=c(trials))
+    b1=array(NA,dim=c(trials))
+    a2=array(NA,dim=c(trials))
+    b2=array(NA,dim=c(trials))
+    comb_fit=array(NA,dim=c(trials,length(X)))
+    R2=array(NA,dim=c(trials))
+    BIC=array(NA,dim=c(trials))
+
+    
+    for (i in 1:trials){
+        xy=data.frame(y=Y[1:thresh[i]],x=X[1:thresh[i]])
+        exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.1),na.action=na.exclude),silent=TRUE) 
+        a1_guess=summary(exp_nls)$parameters[1]
+        b1_guess=summary(exp_nls)$parameters[2]
+        #print(exp_nls)
+
+        xy=data.frame(y=Y[thresh[i]:length(Y)],x=X[thresh[i]:length(Y)])
+        exp_nls=try(nls(y~(a1_guess*exp((b-b1_guess)*thresh[i])*exp(-b*x)),data=xy,start=c(b=0.3),na.action=na.exclude),silent=TRUE) 
+        b2_guess=summary(exp_nls)$parameters[1]        
+        a2_guess=a1_guess*exp((b2_guess-b1_guess)*thresh[i])
+        #print(exp_nls)
+
+        #par(mar=c(3, 3, 0, 0) + 0.1)
+        #par(mfrow=c(1,1))
+        #plot(X,Y,log="y")
+        #lines(X,expo(X,a1_guess,b1_guess),col="green",lty=2)
+        #lines(X,expo(X,a2_guess,b2_guess),col="violet",lty=1)
+        #abline(v=thresh[i],col="blue")
+
+        xy=data.frame(y=Y,x=X)
+        combi_nls=try(nls(y~combi_expo(x,a1,b1,b2,thresh[i]),data=xy,start=c(a1=a1_guess,b1=b1_guess,b2=b2_guess),na.action=na.exclude))
+        #print(combi_nls)
+
+        #print(thresh[i])
+        if (class(combi_nls)!="try-error"){
+            a1[i]=summary(combi_nls)$parameters[1]
+            b1[i]=summary(combi_nls)$parameters[2]
+            b2[i]=summary(combi_nls)$parameters[3] 
+            a2[i]=a1[i]*exp((b2[i]-b1[i])*thresh[i])
+            comb_fit[i,]=combi_expo(X,a1[i],b1[i],b2[i],thresh[i])
+            R2[i]=1-sum(((Y-comb_fit[i,])^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
+            BIC[i]=BIC(exp_nls)    
+        }   
+        #par(mar=c(3, 3, 0, 0) + 0.1)
+        #par(mfrow=c(1,1))
+        #plot(X,Y,log="y")
+        #lines(comb_fit[i,],col="red")
+        #lines(X,expo(X,a1[i],b1[i]),col="green",lty=2)
+        #lines(X,expo(X,a2[i],b2[i]),col="violet",lty=1)
+        #abline(v=thresh[i],col="blue")
+    }
+    if (length(which(!is.na(R2)))<3){        
+        return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA),fit=X*NA))
+    }
+    if (length(which(!is.na(R2)))>1){   
+        best=which(R2==max(R2,na.rm=TRUE))
+        return(list(pars=c(a1[best],b1[best],a2[best],b2[best],thresh[best]),ana=c(R2[best],BIC[best]),fit=comb_fit[best,]))
+    }
+}
+
+two_exp_fit2 <- function(X,Y,start_guess=c(a1=0.1,b1=0.1,a2=0.11,b2=0.4,thresh=1),lower_limit=c(0,-Inf,0,-Inf,5),upper_limit=c(Inf,Inf,Inf,Inf,Inf)){
+    xy=data.frame(y=Y,x=X)
+    
+    par(mar=c(3, 3, 0, 0) + 0.1)
+    par(mfrow=c(1,1))
+    plot(X,Y,log="y")
+    #lines(X,combi_expo(X,0.2,0.5,0.1,0.1,5.5),col="red")
+
+    xy=data.frame(y=Y,x=X)
+    exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.1),na.action=na.exclude),silent=TRUE) 
+    print(exp_nls)
+
+    xy=data.frame(y=Y[1:10],x=X[1:10])
+    exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.1),na.action=na.exclude),silent=TRUE) 
+    print(exp_nls)
+    a1=summary(exp_nls)$parameters[1]
+    b1=summary(exp_nls)$parameters[2]
+
+    xy=data.frame(y=Y[10:length(Y)],x=X[10:length(Y)])
+    exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.1),na.action=na.exclude),silent=TRUE) 
+    print(exp_nls)
+    a2=summary(exp_nls)$parameters[1]
+    b2=summary(exp_nls)$parameters[2]
+
+    xy=data.frame(y=Y,x=X)
+    print(nls(y~combi_expo(x,a1,b1,a2,b2),data=xy,start=c(a1=a1,b1=b1,a2=a2,b2=b2),na.action=na.exclude))
+
+    # try fit
+    #exp_nls=try(nls(y~a1*exp(-x*b1)+a2*exp(-x*b2)+thresh,data=xy,start=start_guess,lower=lower_limit,upper=upper_limit,na.action=na.exclude),silent=TRUE) 
+    exp_nls=try(nls(y~combi_expo2(x,a1,b1,a2,b2,thresh),data=xy,start=c(a1=a1,b1=b1,a2=a2,b2=b2,thresh=9.5),lower=lower_limit,upper=upper_limit,algorithm="port",na.action=na.exclude)) 
+    print(exp_nls)
+
     # if succes
     if (class(exp_nls)!="try-error"){
-        a=summary(exp_nls)$parameters[1]
-        b=summary(exp_nls)$parameters[2]
+        a1=summary(exp_nls)$parameters[1]
+        b1=summary(exp_nls)$parameters[2]
+        a2=summary(exp_nls)$parameters[3]
+        b2=summary(exp_nls)$parameters[4]
+        thresh=summary(exp_nls)$parameters[5]
 
-        expfit=a*exp(-X*b)
-        R2=1-sum(((Y-expfit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
+        comb_fit=combi_expo2(X,a1,b1,a2,b2,thresh)
+        R2=1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
         BIC=BIC(exp_nls)
 
-        return(list(pars=c(a,b),ana=c(R2,BIC),fit=expfit))
+        return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(R2,BIC),fit=comb_fit))
     }
     # if fail
     else{
-        return(list(pars=c(NA,NA),ana=c(NA,NA),fit=X*NA))
+        return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA),fit=X*NA))
     }
 }
+
+
 
