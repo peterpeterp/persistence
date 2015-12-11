@@ -162,24 +162,14 @@ combi_expo <-function(x,a1,b1,b2,thresh){
 }
 
 to_be_minimized <- function(data, par){
-    with(data, sum((combi_expo(x,par[1],par[2],par[3],par[4]) - y)^2))
+    if (par[3]>par[2]){return(999999)}
+    else {return(with(data, sum((combi_expo(x,par[1],par[2],par[3],par[4]) - y)^2)))}
 }
 
 log_lik <- function(data,par){
     with(data,-sum(log(combi_expo(x,par[1],par[2],par[3],par[4]))))
 }
 
-log_lik4 <- function(data,par){
-    with(data,sum(log(combi_expo(x,par[1],par[2],par[3],par[4]))))
-}
-
-log_lik2 <- function(a1,b1,b2,thresh){
-    -sum(log(combi_expo(y,a1,b1,b2,thresh)))
-}
-
-log_lik3 <- function(a1,b1,b2,thresh){
-    sum(log(combi_expo(y,a1,b1,b2,thresh)))
-}
 
 expo <-function(x,a,b){
     y=x*NA
@@ -189,7 +179,7 @@ expo <-function(x,a,b){
     return(y)
 }
 
-two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,lower_limit=c(0,0,0,0,5),upper_limit=c(Inf,Inf,Inf,Inf,20)){
+two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,lower_limit=c(0,0,0,5),upper_limit=c(Inf,Inf,Inf,20)){
     
     xy=data.frame(y=Y[1:thresh_guess],x=X[1:thresh_guess])
     exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.1),na.action=na.exclude),silent=TRUE) 
@@ -207,44 +197,15 @@ two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_gues
 
 
     xy=data.frame(y=Y,x=X)
-    #combi_nls=try(nls(y~combi_expo(x,a1,b1,b2,thresh),data=xy,start=c(a1=a1_guess,b1=b1_guess,b2=b2_guess,thresh=thresh_guess),algorithm="port",lower=lower_limit,upper=upper_limit,na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=TRUE)),silent=TRUE)#,lower=c(-Inf,b1_guess,-Inf), warnOnly=TRUE  ,silent=TRUE
     combi_opt=try(optim(par=c(a1_guess,b1_guess,b2_guess,thresh_guess),to_be_minimized,data=xy))
-    print(combi_opt)
-    assign("Y", Y, envir = .GlobalEnv)
     if (class(combi_opt)!="try-error"){
         a1=combi_opt$par[1]
         b1=combi_opt$par[2]
         b2=combi_opt$par[3]
         thresh=combi_opt$par[4]
         a2=a1*exp((b2-b1)*thresh)
-
-        comb_fit=combi_expo(X,a1,b1,b2,thresh)
-        R2=1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-        BIC=NA   
-        #print(-2*logLik(combi_nls)+5*log(length(which(!is.na(Y)))))
-        print(paste(a1,b1,b2,thresh))
-        #print(log_lik2(a1,b1,b2,thresh))
-        print(log_lik(xy,c(a1,b1,b2,thresh)))
-        print(33)
     }
-    assign("y", y, envir = .GlobalEnv)
-    print(which(is.na(y)))
-    print(log_lik2(a1,b1,b2,thresh)/length(Y))
-    print(log_lik2(a1+1,b1,b2,thresh))
-    print(log_lik2(a1,b1,b2+1,thresh))
-    #combi_opt=try(mle(minuslogl=log_lik2,start=list(a1=a1_guess,b1=b1_guess,b2=b2_guess,thresh=thresh_guess),method="Brent"))
-    #print(combi_opt)
-
-
-    combi_opt=try(optim(par=c(a1_guess,b1_guess,b2_guess,thresh_guess),log_lik4,data=xy))
-    print(combi_opt)
-    assign("Y", Y, envir = .GlobalEnv)
-    #combi_opt=try(mle(minuslogl=log_lik2,start=list(a1=a1_guess,b1=b1_guess,b2=b2_guess,thresh=thresh_guess)))
-    #print(combi_opt)
-    #adas
-    #print(combi_nls)
-    combi_nls=try(nls(y~combi_expo(x,a1,b1,b2,thresh),data=xy,start=c(a1=a1_guess,b1=b1_guess,b2=b2_guess,thresh=thresh_guess),algorithm="port",lower=lower_limit,upper=upper_limit,na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=TRUE)),silent=TRUE)#,lower=c(-Inf,b1_guess,-Inf), warnOnly=TRUE  ,silent=TRUE
-    print(logLik(combi_nls))
+    combi_nls=try(nls(y~combi_expo(x,a1,b1,b2,thresh),data=xy,start=c(a1=a1_guess,b1=b1_guess,b2=b2_guess,thresh=thresh_guess),algorithm="port",lower=c(0,b2,0,5),upper=c(Inf,Inf,b1,20),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=TRUE)),silent=TRUE)
     if (class(combi_nls)!="try-error"){
         a1=summary(combi_nls)$parameters[1]
         b1=summary(combi_nls)$parameters[2]
@@ -254,14 +215,6 @@ two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_gues
         comb_fit=combi_expo(X,a1,b1,b2,thresh)
         R2=1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
         BIC=BIC(combi_nls)    
-        print(log_lik2(a1,b1,b2,thresh))
-        print(log_lik2(a1,b1,b2,thresh)/logLik(combi_nls))
-        adas
-
-
-        #print(BIC(combi_nls))
-        #print(-2*logLik(combi_nls)+4*log(length(which(!is.na(Y)))))
-        #print(-2*logLik(combi_nls)+5*log(length(which(!is.na(Y)))))
         return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(R2,BIC),fit=comb_fit))
     }
 }
