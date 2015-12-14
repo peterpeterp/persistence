@@ -19,7 +19,7 @@ location_finder <- function(dat,station=0,lon=0,lat=0){
 	}
 }
 
-location_view <- function(station=0,lon=0,lat=0){
+location_view <- function(station=0,lon=0,lat=0,regions=NA){
 	dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
 	library(rworldmap)
 	library(fields)
@@ -32,11 +32,13 @@ location_view <- function(station=0,lon=0,lat=0){
 	for (i in 1:length(dat$ID)){
 		text(dat$lon[i],dat$lat[i],label=dat$ID[i],col="red",cex=0.125)
 	}
-	region_names=c("srex","7rect","6wave","7wave","8wave")
-	color=c("blue","green","red","orange","black")
-    for (k in 1:length(region_names)){
-    	add_region(region_names[k],color[k])
-    }
+	if (!is.na(regions)){
+		region_names=c("srex","7rect","6wave","7wave","8wave")
+		color=c("blue","green","red","orange","black")
+	    for (k in 1:length(region_names)){
+	    	add_region(region_names[k],color[k])
+	    }
+	}
 }
 
 add_region <- function(region_name,farbe){
@@ -127,11 +129,13 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 	}
 
 	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
-	if (farb_mitte=="gemeinsam 0"){
+
+	# if same color range scheme for all plots
+	if (farb_mitte[1]=="gemeinsam 0"){
 		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)),abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
 	}
 
-	if (farb_mitte=="gemeinsam mean"){	
+	if (farb_mitte[1]=="gemeinsam mean"){	
 		mi=mean(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)
 		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))-mi,mi-abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
 	}
@@ -164,7 +168,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		}
 		nas[which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2] & is.na(reihen[i,]))]=13
 
-
+		print(sig)
 		y=array(NA,(m+2))
 		notna=which(is.na(y1)==FALSE)
 		for (n in notna){
@@ -172,45 +176,18 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		}
 
 		# depending on color-cheme --------------------------------
-		if ((length(farb_mitte)>1 & farb_mitte[1]=="individual")){
-			farb_mitte_loc=farb_mitte[(i+1)]
+		if (length(farb_mitte)>=3){
+			if (is.na(farb_mitte[i+2])){farb_mitte_loc=farb_mitte[(i+1)]}
+			if (!is.na(farb_mitte[i+2])){farb_mitte_loc=farb_mitte[((i-1)*2+2):((i-1)*2+3)]}
 		}
 		else {farb_mitte_loc=farb_mitte}
 
-		if (farb_mitte_loc=="cut"){
-			mi=mean(y,na.rm=TRUE)
-			sd=sd(y,na.rm=TRUE)
-			high=mi+1*sd
-			low=mi-1*sd
-			y[y>high]=high
-			y[y<low]=low
-			y[1]=low
-			y[2]=high
-		}
-
-		if (farb_mitte_loc=="gemeinsam 0"){
-			y[1]=-aushol
-			y[2]=aushol			
-		}
-		if (farb_mitte_loc=="gemeinsam mean"){
-			y[1]=mi-aushol
-			y[2]=mi+aushol			
-		}
-		if (farb_mitte_loc=="0"){
-			aushol=max(c(abs(max(y,na.rm=TRUE)),abs(min(y,na.rm=TRUE))))
-			y[1]=-aushol
-			y[2]=aushol
-		}
-		if (farb_mitte_loc=="mean"){
-			mi=mean(y,na.rm=TRUE)
-			y[1]=mi
-			y[2]=mi
-		}	
 		if ((length(farb_mitte_loc)==2 & farb_mitte_loc[1]!=farb_mitte_loc[2])){
 			y[1]=farb_mitte_loc[1]
 			y[2]=farb_mitte_loc[2]
 			y[y>farb_mitte_loc[2]]=farb_mitte_loc[2]
 			y[y<farb_mitte_loc[1]]=farb_mitte_loc[1]
+
 		}	
 		if ((length(farb_mitte_loc)==2 & farb_mitte_loc[1]==farb_mitte_loc[2])){
 			y[1]=farb_mitte_loc[1]
@@ -218,9 +195,41 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 			y[y>farb_mitte_loc[1]]=farb_mitte_loc[1]
 			y[y<(-farb_mitte_loc[1])]=(-farb_mitte_loc[1])
 		}	
-		if (farb_mitte_loc=="nichts"){
-			y[1]=mean(y,na.rm=TRUE)
-			y[2]=mean(y,na.rm=TRUE)
+
+		if (length(farb_mitte_loc)==1){
+			if (farb_mitte_loc=="cut"){
+				mi=mean(y,na.rm=TRUE)
+				sd=sd(y,na.rm=TRUE)
+				high=mi+1*sd
+				low=mi-1*sd
+				y[y>high]=high
+				y[y<low]=low
+				y[1]=low
+				y[2]=high
+			}
+
+			if (farb_mitte_loc=="gemeinsam 0"){
+				y[1]=-aushol
+				y[2]=aushol			
+			}
+			if (farb_mitte_loc=="gemeinsam mean"){
+				y[1]=mi-aushol
+				y[2]=mi+aushol			
+			}
+			if (farb_mitte_loc=="0"){
+				aushol=max(c(abs(max(y,na.rm=TRUE)),abs(min(y,na.rm=TRUE))))
+				y[1]=-aushol
+				y[2]=aushol
+			}
+			if (farb_mitte_loc=="mean"){
+				mi=mean(y,na.rm=TRUE)
+				y[1]=mi
+				y[2]=mi
+			}	
+			if (farb_mitte_loc=="nichts"){
+				y[1]=mean(y,na.rm=TRUE)
+				y[2]=mean(y,na.rm=TRUE)
+			}
 		}
 
 		if ((length(farb_palette)>1 & farb_palette[1]=="individual")){

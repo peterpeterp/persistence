@@ -126,7 +126,7 @@ duration_seasons <- function(dur,dur_mid,season,filename){
 }
     
 
-duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:1319,write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(488,1232,52,661),ID_names=1:1319,ID_length=length(ID_select)){
+duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:1319,write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(488,1232,52,661),ID_names=1:1319,ID_length=length(ID_select),noise_level=c(0,0)){
 
     
 
@@ -183,7 +183,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
 
                     # quantile values and regressions
                     if (option[2]==1){
-                        tmp=quantile_analysis(x,y,taus)
+                        tmp=quantile_analysis(x,y,taus,noise_level=noise_level)
                         quantile_stuff[sea,q,state,,1]=tmp$quantiles
                         quantile_stuff[sea,q,state,,2]=tmp$slopes
                         quantile_stuff[sea,q,state,,3]=tmp$slope_sigs
@@ -198,38 +198,52 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                         X=histo$mids
                     }
 
+                    if (!is.na(plot_select[1])){fit_plot_reference(x=x,y=y,sea=season_names[sea],q=ID_names[q],state=state)}
+
                     # exponential fit + other values
                     if (option[3]==1){
                         tmp=exponential_fit(X,Y)
                         fit_stuff[sea,q,state,1:2]=tmp$pars
                         fit_stuff[sea,q,state,19:20]=tmp$ana
                         expifit=tmp$fit
-                        if (q %in% plot_select){fit_plot(x=x,y=y,X=X,Y=Y,fit=expifit,legend=c(paste("R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\n ",sep="")),sea=season_names[sea],q=ID_names[q],state=state)}
+                        if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=expifit,legend=c(paste("expo","\n","R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\n ",sep="")),sea=season_names[sea],q=ID_names[q],state=state)}
 
                     }
 
-                    # combination of 2 exponentials seperated by threshold
+                    # combination of 2 exponentials seperated by threshold restricted 
                     if (option[4]==1){
                         if (length(which(!is.na(Y)))>30){
-
-
-
-
-                            tmp=two_exp_fit(X,Y,y)
-                            fit_stuff[sea,q,state,1:5]=tmp$pars
-                            fit_stuff[sea,q,state,19:20]=tmp$ana
-                            fit=tmp$fit
-                            if (q %in% plot_select){fit_plot(x=x,y=y,X=X,Y=Y,fit=fit,legend=c(paste("R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
+                            tmp=try(two_exp_fit_restricted(X,Y,y),silent=TRUE)
+                            if (class(tmp)!="try-error"){
+                                fit_stuff[sea,q,state,1:5]=tmp$pars
+                                fit_stuff[sea,q,state,19:20]=tmp$ana
+                                fit=tmp$fit
+                                if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("2expo_restrict","\n","R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
+                            }
                         }
                     }
-                    # combination of 2 exponentials seperated by threshold
+
+                    # combination of 2 exponentials seperated by threshold 
                     if (option[5]==1){
+                        if (length(which(!is.na(Y)))>30){
+                            tmp=try(two_exp_fit_gepfuscht(X,Y,y),silent=TRUE)
+                            if (class(tmp)!="try-error"){
+                                fit_stuff[sea,q,state,1:5]=tmp$pars
+                                fit_stuff[sea,q,state,19:20]=tmp$ana
+                                fit=tmp$fit
+                                if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("2expo","\n","R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
+                            }
+                        }
+                    }
+
+                    # combination of 2 exponentials seperated by fixed threshold
+                    if (option[6]==1){
                         if (length(which(!is.na(Y)))>30){
                             tmp=two_exp_fit_fixed_thresh(X,Y)
                             fit_stuff[sea,q,state,1:5]=tmp$pars
                             fit_stuff[sea,q,state,19:20]=tmp$ana
                             fit=tmp$fit
-                            if (q %in% plot_select){fit_plot(x=x,y=y,X=X,Y=Y,fit=fit,legend=c(paste("R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
+                            if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("2expo_fixed","\n","R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
                         }
                     }
                 }
@@ -237,9 +251,9 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
         }
         if (option[1]==1){other_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_others.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,other_stuff=other_stuff)}
 
-        if (option[2]==1){quantiles_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
+        if (option[2]==1){quantiles_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
         
-        if (option[3]==1 | option[4]==1 | option[5]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
+        if (option[3]==1 | option[4]==1 | option[5]==1 | option[6]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
 
     }
     graphics.off()
