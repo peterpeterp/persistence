@@ -158,7 +158,8 @@ regional_distributions <- function(dat,region_name,trendID,additional_style,data
 
     for (sea in 1:5){
         season=season_names[sea]
-        nc_dur=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
+        print(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
+        nc_dur=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep=""))
         dur=var.get.nc(nc_dur,"dur")
         dur_mid=var.get.nc(nc_dur,"dur_mid")   
 
@@ -171,13 +172,16 @@ regional_distributions <- function(dat,region_name,trendID,additional_style,data
                 tmp=duration_region(IDregions,reg,dur[1:ntot,state,],dur_mid[1:ntot,state,])
                 duration=tmp$duration
                 duration_mid=tmp$duration_mid
-                ord=order(duration_mid)
-                maxis[(state-1)*regNumb+reg]=length(duration)
-                reg_dur[reg,state,1:maxis[(state-1)*regNumb+reg]]=duration[ord]
-                reg_dur_mid[reg,state,1:maxis[(state-1)*regNumb+reg]]=duration_mid[ord]
+                if (length(duration)>100){
+                    ord=order(duration_mid)
+                    maxis[(state-1)*regNumb+reg]=length(duration)
+                    reg_dur[reg,state,1:maxis[(state-1)*regNumb+reg]]=duration[ord]
+                    reg_dur_mid[reg,state,1:maxis[(state-1)*regNumb+reg]]=duration_mid[ord]
+                }
             }
         }
         len=max(maxis,na.rm=TRUE)
+        print(paste("../data/",trendID,"/",dataset,additional_style,"/","regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""))
         duration_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/","regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""),dur=reg_dur[,,1:len],dur_mid=reg_dur_mid[,,1:len],len=len,ID_length=regNumb,ID_name=region_name)
 
     }
@@ -270,7 +274,7 @@ plot_regional_boxplots_vergleich <- function(period1,period2,region_name,trendID
 
     regions=var.get.nc(nc,"region")
     regNumb=dim(quantiles1)[2]
-    seaNumb=6
+    seaNumb=5
     
     season_names=c("MAM","JJA","SON","DJF","4seasons")
 
@@ -340,7 +344,51 @@ plot_regional_boxplots_vergleich <- function(period1,period2,region_name,trendID
     graphics.off()
 }
 
+plot_regional_fit_vergleich <- function(period1,period2,region_name,trendID,additional_style,dataset,fit_style,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
+    # performs the entire regional analysis of markov and duration
+    # result will be written in nc file
 
+
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period1,"/",trendID,"_",dataset,"_",region_name,"_",period1,fit_style,".nc",sep=""))
+    fit_stuff1=var.get.nc(nc,"fit_stuff")
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period2,"/",trendID,"_",dataset,"_",region_name,"_",period2,fit_style,".nc",sep=""))
+    fit_stuff2=var.get.nc(nc,"fit_stuff")
+
+
+    regions=var.get.nc(nc,"region")
+    regNumb=dim(fit_stuff2)[2]
+    seaNumb=5
+    
+    season_names=c("MAM","JJA","SON","DJF","4seasons")
+
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/","/",region_name,"_",period1,"_diff_",period2,fit_style,".pdf",sep=""))
+    fit_stuff=fit_stuff1-fit_stuff2
+    fit_stuff[,,,2]=1/fit_stuff1[,,,2]-1/fit_stuff2[,,,2]
+    fit_stuff[,,,4]=1/fit_stuff1[,,,4]-1/fit_stuff2[,,,4]
+    for (sea in 1:seaNumb){
+        for (state in 1:2){
+            plot(NA,xlim=c(0.5,7.5),ylim=c(-2,2),xlab="",ylab="lifetime [days]",axes=FALSE,frame.plot=TRUE,cex=0.5)
+            axis(2)
+            axis(1, at=1:7, labels=region_names) 
+            abline(h=0,col="grey")
+
+            points(fit_stuff[sea,,state,2],col="red")
+            lines(fit_stuff[sea,,state,2],col="red")
+            points(fit_stuff[sea,,state,4],col="orange")
+            lines(fit_stuff[sea,,state,4],col="orange")
+            par(new=TRUE)
+            plot(NA,xlim=c(0.5,7.5),ylim=c(-8,8),axes=FALSE,frame.plot=TRUE,cex=0.5,ylab="",xlab="")
+            axis(4)
+            points(fit_stuff[sea,,state,5],col="blue")
+            lines(fit_stuff[sea,,state,5],col="blue")
+        }
+    }
+
+
+
+    graphics.off()
+
+}
 
 
 

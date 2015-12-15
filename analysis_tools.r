@@ -189,7 +189,7 @@ expo <-function(x,a,b){
     return(y)
 }
 
-two_exp_fit_restricted <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15){
+two_exp_fit_restricted <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=10){
     
     xy=data.frame(y=Y[1:thresh_guess],x=X[1:thresh_guess])
     exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.1),na.action=na.exclude),silent=TRUE) 
@@ -226,24 +226,30 @@ two_exp_fit_restricted <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,
         a2=a1*exp((b2-b1)*thresh)
         comb_fit=combi_expo(X,a1,b1,b2,thresh)
         R2=1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-        BIC=BIC(combi_nls)  
-
+        BIC=try(BIC(combi_nls),silent=TRUE)
+        if (class(BIC)=="try-error"){BIC=NA}
     }
+    if (b1>b2){return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(R2,BIC),fit=comb_fit))}
+
     if (b1<b2){
         b=mean(c(b1,b2))
         combi_nls_restricted=try(nls(y~combi_expo(x,a1,b1,b2,thresh),data=xy,start=c(a1=a1_guess,b1=b+0.01,b2=b-0.01,thresh=thresh_guess),algorithm="port",lower=c(0,b,0,thresh_down),upper=c(Inf,Inf,b,thresh_up),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=TRUE)),silent=TRUE)
         if (class(combi_nls_restricted)!="try-error"){
-            a1=summary(combi_nls_restricted)$parameters[1]
-            b1=summary(combi_nls_restricted)$parameters[2]
-            b2=summary(combi_nls_restricted)$parameters[3] 
-            thresh=summary(combi_nls_restricted)$parameters[4] 
-            a2=a1*exp((b2-b1)*thresh)
-            comb_fit=combi_expo(X,a1,b1,b2,thresh)
-            R2=1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-            BIC=BIC(combi_nls_restricted)  
+            summary=try(summary(combi_nls_restricted),silent=TRUE)
+            if (class(summary)!="try-error"){
+                a1=summary$parameters[1]
+                b1=summary$parameters[2]
+                b2=summary$parameters[3] 
+                thresh=summary$parameters[4] 
+                a2=a1*exp((b2-b1)*thresh)
+                comb_fit=combi_expo(X,a1,b1,b2,thresh)
+                R2=1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
+                BIC=BIC(combi_nls_restricted)
+                return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(R2,BIC),fit=comb_fit))
+            }
         }
     }
-    return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(R2,BIC),fit=comb_fit))
+    return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA),fit=X*NA))
 }
 
 two_exp_fit_gepfuscht <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,lower_limit=c(0,0,0,5),upper_limit=c(Inf,Inf,Inf,15)){

@@ -132,9 +132,11 @@ master_regional_climatology <- function(trendID,dataset="_TMean",additional_styl
     library(moments)
     source("functions_regional.r")
     source("analysis_tools.r")
+    
     #dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-
     #regional_distributions(dat=dat,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+    
+    ID_name=paste("_",region_name,sep="")
     points=c(1950,2014,1950,1980,1980,2014)
     #points=c(1950,2014)
     for (i in 1:3){
@@ -142,18 +144,19 @@ master_regional_climatology <- function(trendID,dataset="_TMean",additional_styl
         period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
         print(yearPeriod)
         
-        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0),add_name="_testin",folder="/regional/",ID_name="_7rect",ID_select=1:7,plot_select=1:7)
-        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0),add_name="_testin",folder="/regional/",ID_name="_7rect",ID_length=7)
-        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,1,0,0,0,0),add_name="_expo",folder="/regional/",ID_name="_7rect",ID_select=1:7,plot_select=1:7,ID_names=region_names,ID_length=7)
+        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0),add_name="_testin",folder="/regional/",ID_name=ID_name,ID_select=1:26,plot_select=1:26)
+        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0),add_name="_testin",folder="/regional/",ID_name=ID_name,ID_length=7,noise_level=c(0,0001,0.001))
+        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,1,0,0,0,0),add_name="_expo",folder="/regional/",ID_name=ID_name,ID_select=1:26,plot_select=1:26,ID_names=region_names,ID_length=26)
         #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0),add_name="combi_expo",folder="/regional/",ID_name="_7rect",ID_select=1:7,plot_select=1:7,ID_names=region_names,ID_length=7)
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0),add_name="2expo_b1>b2_5-10",folder="/regional/",ID_name="_7rect",ID_select=1:7,plot_select=1:7,ID_names=region_names,ID_length=7)
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0),add_name="2expo_b1>b2_5-10",folder="/regional/",ID_name=ID_name,ID_select=1:26,plot_select=1:26,ID_names=region_names,ID_length=26)
         #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,1,0,0,1),add_name="_expo_fixed_2expo",folder="/regional/",ID_name="_7rect",ID_select=1:7,plot_select=1:7,ID_names=region_names,ID_length=7)
         
 
         #plot_regional_boxplots(period=paste(yearPeriod[1],"-",yearPeriod[2],sep=""),region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style)
-        #plot_regional_fit_parameters(period=period,trendID=trendID,additional_style=additional_style,dataset=dataset,fit_style="_fit_2expo_b1>b2_5-10")
+        #plot_regional_fit_parameters(period=period,trendID=trendID,additional_style=additional_style,dataset=dataset,region_name=region_name,fit_style="_fit_2expo_b1>b2_5-10")
     }
     #plot_regional_boxplots_vergleich(period1="1950-1980",period2="1980-2014",region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
+    #plot_regional_fit_vergleich(period1="1950-1980",period2="1980-2014",fit_style="_fit_2expo_b1>b2_5-10",region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
 }
 
 
@@ -210,7 +213,7 @@ additional_style=""
 #master_regional_climatology(region_name="7rect",trendID=trendID,dataset=dataset,additional_style=additional_style)
 #master_regional_climatology(region_name="mid_lat_belt",region_names=c("mid-lat","polar"),trendID=trendID,dataset=dataset,additional_style=additional_style)
 
-master_regional_climatology(trendID=trendID)
+master_regional_climatology(trendID=trendID,region_name="srex",region_names=1:26)
 
 #duration_analysis(yearPeriod=c(1980,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,1,0),add_name="_testin2",ID_select=c(460,466,554),plot_select=c(460,466,554),ID_length=1319,write=FALSE)
 #duration_analysis(yearPeriod=c(1950,1980),trendID=trendID,dataset=dataset,option=c(0,0,1,1,1,0),add_name="_testin2",ID_select=c(460,466,554),plot_select=c(460,466,554),ID_length=1319,write=FALSE)
