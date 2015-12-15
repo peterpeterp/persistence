@@ -17,6 +17,7 @@ plot_maps <- function(trendID="91_5",dataset="_TMean",additional_style="",period
 	}
 	reihen=array(NA,dim=c(length(season_auswahl)*length(value_auswahl)*length(sub_auswahl)*states,ntot))
 	reihen_sig=array(NA,dim=c(length(season_auswahl)*length(value_auswahl)*length(sub_auswahl)*states,ntot))
+	if (length(farb_mitte)>1){farb_mitte_end=c(999)}
 	titel=c("")	
 	index=0
 	for (sea in season_auswahl){
@@ -29,6 +30,8 @@ plot_maps <- function(trendID="91_5",dataset="_TMean",additional_style="",period
 				    if (!is.na(sig_style[1])){reihen_sig[index,]=values[sea,,state,20]-values2[sea,,state,20]}
 				    if (!is.na(sig_auswahl[val])){reihen_sig[index,]=values[sea,,state,sig_auswahl[val]]}
 				    if (value_zusatz[1]!=""){titel[index]=paste(value_zusatz[val],"of",state_names[state],"period duration in",season,"in",period)}
+					if (length(farb_mitte)>1){farb_mitte_end[(2+2*(index-1)):(3+2*(index-1))]=farb_mitte[((val-1)*2+1):((val-1)*2+2)]}
+
 				}
 			}
 		}
@@ -46,7 +49,8 @@ plot_maps <- function(trendID="91_5",dataset="_TMean",additional_style="",period
 			}
 		}
 	}
-	map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/duration/",period,"/","duration_trend_",trendID,"_",season,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte,farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt,region=region,col_row=col_row,mat=mat,paper=paper,pointsize=pointsize,subIndex=subIndex,signi_level=signi_level)
+	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
+	map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/duration/",period,"/","duration_trend_",trendID,"_",season,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt,region=region,col_row=col_row,mat=mat,paper=paper,pointsize=pointsize,subIndex=subIndex,signi_level=signi_level)
 }
 
 plot_diff_maps <- function(trendID="91_5",dataset="_TMean",additional_style="",period="1950-2014",file="_fit_2expo",var="fit_stuff",
@@ -126,13 +130,13 @@ additional_style=""
 dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 #plot_maps()
 #plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th","100th"),name_zusatz="quantile",farb_mitte="mean",farb_palette="regenbogen")
-plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("gr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte="0")
+#plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("gr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte="0")
 #plot_maps(file="_fit__testin",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(1,2,19,20),sig_auswahl=c(NA,NA,NA,NA),value_zusatz=c("A","b","R2","BIC"),sub_zusatz=c(NA),name_zusatz="expo")
 
 period=c("1950-2014","1950-1980","1980-2014")
 for (i in c(1,2,3)){
 	print(period[i])
-	#plot_maps(file="_fit_2expo_restrict",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(2,4,5),sig_auswahl=c(NA,NA,NA),value_zusatz=c("b1","b2","threshold"),sub_zusatz=c(NA),name_zusatz="2expo_restrict_BIC-sig",period=period[i],sig_style=c("BIC-diff","_fit_expo",20),signi_level=-2)
+	plot_maps(file="_fit_2expo_restrict",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(2,4,5),sig_auswahl=c(NA,NA,NA),value_zusatz=c("b1","b2","threshold"),sub_zusatz=c(NA),name_zusatz="2expo_restrict_BIC-sig",period=period[i],sig_style=c("BIC-diff","_fit_expo",20),signi_level=-5,farb_mitte=c(0,0.5,0,0.25,4,15))
 
 	#plot_diff_maps(farb_mitte=c(0,0.4),file="_fit_2expo_restrict",period=period[i],name_zusatz="2expo_restrict_diffB")
 	#plot_fit_diff_maps(period=period[i],farb_mitte="0",farb_palette="regenbogen",file1="_fit_expo",file2="_fit_2expo_restrict",value_auswahl=c(2,4,5))

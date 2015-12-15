@@ -168,7 +168,6 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		}
 		nas[which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2] & is.na(reihen[i,]))]=13
 
-		print(sig)
 		y=array(NA,(m+2))
 		notna=which(is.na(y1)==FALSE)
 		for (n in notna){

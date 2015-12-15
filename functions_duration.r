@@ -135,7 +135,11 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
     taus=c(0.05,0.25,0.5,0.75,0.95,0.98,1)
 
     if (!is.na(plot_select[1])){
+        #pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],"_",add_name,".pdf",sep=""),width=8,height=6)
+        #par(mfrow=c(4,5))
+
         pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],"_",add_name,".pdf",sep=""),width=2.2,height=2.2)
+        par(mfrow=c(1,1))
         fit_plot_empty()
     }
 
@@ -161,6 +165,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                 percentage=percentage+5
             }
             for (state in 1:2){
+                #cat(q)
                 duration=dur[q,state,]
                 duration_mid=dur_mid[q,state,]
                 ord=order(duration_mid)
@@ -207,32 +212,27 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                         fit_stuff[sea,q,state,19:20]=tmp$ana
                         expifit=tmp$fit
                         if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=expifit,legend=c(paste("expo","\n","R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\n ",sep="")),sea=season_names[sea],q=ID_names[q],state=state)}
-
                     }
 
                     # combination of 2 exponentials seperated by threshold restricted 
                     if (option[4]==1){
                         if (length(which(!is.na(Y)))>30){
-                            tmp=try(two_exp_fit_restricted(X,Y,y),silent=TRUE)
-                            if (class(tmp)!="try-error"){
-                                fit_stuff[sea,q,state,1:5]=tmp$pars
-                                fit_stuff[sea,q,state,19:20]=tmp$ana
-                                fit=tmp$fit
-                                if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("2expo_restrict","\n","R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
-                            }
+                            tmp=two_exp_fit_restricted(X,Y,y)
+                            fit_stuff[sea,q,state,1:5]=tmp$pars
+                            fit_stuff[sea,q,state,19:20]=tmp$ana
+                            fit=tmp$fit
+                            if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("2expo_restrict","\n","R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
                         }
                     }
 
                     # combination of 2 exponentials seperated by threshold 
                     if (option[5]==1){
                         if (length(which(!is.na(Y)))>30){
-                            tmp=try(two_exp_fit_gepfuscht(X,Y,y),silent=TRUE)
-                            if (class(tmp)!="try-error"){
-                                fit_stuff[sea,q,state,1:5]=tmp$pars
-                                fit_stuff[sea,q,state,19:20]=tmp$ana
-                                fit=tmp$fit
-                                if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("2expo","\n","R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
-                            }
+                            tmp=two_exp_fit_gepfuscht(X,Y,y)
+                            fit_stuff[sea,q,state,1:5]=tmp$pars
+                            fit_stuff[sea,q,state,19:20]=tmp$ana
+                            fit=tmp$fit
+                            if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("2expo","\n","R2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),sep=""),paste("b1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
                         }
                     }
 
