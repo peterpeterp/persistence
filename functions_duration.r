@@ -169,12 +169,6 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                 duration=dur[q,state,]
                 duration_mid=dur_mid[q,state,]
                 ord=order(duration_mid)
-                if (length(which(!is.na(duration)))<=100){
-                    if (q %in% plot_select){
-                        fit_plot_reference(x=x,y=y,sea=season_names[sea],q=ID_names[q],state=state)
-                        fit_plot(X=(1:10)*NA,Y=(1:10)*NA,fit=(1:10)*NA,legend=c(NA),sea=season_names[sea],q=ID_names[q],state=state,thresh=NA)
-                    }
-                }
                 if (length(which(!is.na(duration)))>100){
                     y=as.vector(duration[ord])
                     x=as.vector(duration_mid[ord])
@@ -193,17 +187,12 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                     }
 
                     # quantile values and regressions
-                    #print("\n___________________________________________")
-                    #print(q)
-                    #print(proc.time())
                     if (option[2]==1){
                         tmp=quantile_analysis(x,y,taus,noise_level=noise_level)
                         quantile_stuff[sea,q,state,,1]=tmp$quantiles
                         quantile_stuff[sea,q,state,,2]=tmp$slopes
                         quantile_stuff[sea,q,state,,3]=tmp$slope_sigs
                     }
-                    #print(proc.time())
-
 
                     # data to be fitted
                     br=seq(0,max(y,na.rm=TRUE),1)
@@ -212,67 +201,69 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                     Y=histo$density
                     X=histo$mids
 
-                    fit_stuff[sea,q,state,18]=length(which(histo$counts>0))
+
+
+                    fit_stuff[sea,q,state,14]=length(which(histo$counts>0))
             
-                    if (q %in% plot_select){
-                        fit_plot_reference(x=x,y=y,sea=season_names[sea],q=ID_names[q],state=state)
-                        if (length(which(!is.na(Y)))<=20){fit_plot_reference(x=x,y=y,sea=season_names[sea],q=ID_names[q],state=state)}
-                    }
-                    if (length(which(!is.na(Y)))>20){ 
-                        # exponential fit + other values
-
-                        print("\n___________________________________________")
-                        print(proc.time())
-
-                        if (option[3]==1){
-                            tmp=exponential_fit(X,Y)
-                            fit_stuff[sea,q,state,1:2]=tmp$pars
-                            fit_stuff[sea,q,state,19:20]=tmp$ana
-                            expifit=tmp$fit
-                            if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=expifit,legend=c(paste("ID=",ID_names[q],"\n","\nR2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),"\n\nb1=",round(fit_stuff[sea,q,state,2],03),sep=""),paste("P1=",round(exp(-fit_stuff[sea,q,state,2])*100,01),"\n ",sep="")),sea=season_names[sea],q=ID_names[q],state=state)}
-                        }
-                        print(proc.time())
-
+                    if (length(which(!is.na(Y)))>15){ 
+                        # exponential fit as starting point
+                        
+                        tmp_exp=exponential_fit(X,Y)
+                        fit_stuff[sea,q,state,1:2]=tmp_exp$pars
+                        fit_stuff[sea,q,state,15:16]=tmp_exp$ana
+                        expfit=tmp_exp$fit
 
                         # combination of 2 exponentials seperated by threshold (restricted threshold range)
                         if (option[4]==1){
                             tmp=two_exp_fit(X,Y,y)
-                            fit_stuff[sea,q,state,1:5]=tmp$pars
+                            fit_stuff[sea,q,state,5:9]=tmp$pars
                             fit_stuff[sea,q,state,19:20]=tmp$ana
                             fit=tmp$fit
-                            if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("ID= ",ID_names[q],"\n","\nR2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),"\n\nb1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep=""),paste("P1=",round(exp(-fit_stuff[sea,q,state,2])*100,01),"\nP2=",round(exp(-fit_stuff[sea,q,state,4])*100,01),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
                         }
 
                         # combination of 2 exponentials seperated by fixed threshold (restricted threshold range)
                         if (option[5]==1){
                             tmp=two_exp_fit_fixed_thresh(X,Y)
-                            fit_stuff[sea,q,state,1:5]=tmp$pars
+                            fit_stuff[sea,q,state,5:9]=tmp$pars
                             fit_stuff[sea,q,state,19:20]=tmp$ana
                             fit=tmp$fit
-                            if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("ID= ",ID_names[q],"\n","\nR2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),"\n\nb1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep=""),paste("P1=",round(exp(-fit_stuff[sea,q,state,2])*100,01),"\nP2=",round(exp(-fit_stuff[sea,q,state,4])*100,01),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
                         }
 
                         # combination of 2 exponentials seperated by threshold (restricted threshold range) - additional restriction b1>b2
                         if (option[6]==1){
                             tmp=two_exp_fit_restricted(X,Y,y)
-                            fit_stuff[sea,q,state,1:5]=tmp$pars
+                            fit_stuff[sea,q,state,5:9]=tmp$pars
                             fit_stuff[sea,q,state,19:20]=tmp$ana
                             fit=tmp$fit
-                            if (q %in% plot_select){fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("ID= ",ID_names[q],"\n","\nR2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),"\n\nb1=",round(fit_stuff[sea,q,state,2],03),"\nb2=",round(fit_stuff[sea,q,state,4],03),sep=""),paste("P1=",round(exp(-fit_stuff[sea,q,state,2])*100,01),"\nP2=",round(exp(-fit_stuff[sea,q,state,4])*100,01),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,5])}
                         }
-                        print(proc.time())
 
+                        fit_stuff[sea,q,state,17]=fit_stuff[sea,q,state,20]-fit_stuff[sea,q,state,16]
                     }
+                }
+                if (length(which(!is.na(duration)))<=100){
+                    x=(1:10)*NA
+                    y=(1:10)*NA
+                    X=(1:10)*NA
+                    Y=(1:10)*NA
+                }
+                if (q %in% plot_select){
+                    if (is.na(fit_stuff[sea,q,state,1])){
+                        expfit=X*NA
+                        fit=X*NA
+                    }
+                    fit_plot_reference(x=x,y=y,sea=season_names[sea],q=ID_names[q],state=state)
+                    #fit_plot(X=X,Y=Y,fit=expifit,legend=c(paste("ID= ",ID_names[q],"\n","\nR2=",round(fit_stuff[sea,q,state,15],03),"\nBIC=",round(fit_stuff[sea,q,state,16],01),"\n\nb=",round(fit_stuff[sea,q,state,2],03),sep=""),paste("P=",round(exp(-fit_stuff[sea,q,state,2])*100,01),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=NA)
+                    #fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("dBIC= ",round(fit_stuff[sea,q,state,17],01),"\n","\nR2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),"\n\nb1=",round(fit_stuff[sea,q,state,6],03),"\nb2=",round(fit_stuff[sea,q,state,8],03),sep=""),paste("P1=",round(exp(-fit_stuff[sea,q,state,6])*100,01),"\nP2=",round(exp(-fit_stuff[sea,q,state,8])*100,01),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,9])
+                    fit_plot_combi(X=X,Y=Y,expfit=expfit,fit=fit,fitstuff=fit_stuff[sea,q,state,],sea=season_names[sea],q=ID_names[q],state=state)
                 }
             }
         }
-        if (option[1]==1){other_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_others.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,other_stuff=other_stuff)}
-
-        if (option[2]==1){quantiles_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
-        
-        if (option[3]==1 | option[4]==1 | option[5]==1 | option[6]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
-
     }
+    if (option[1]==1){other_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_others.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,other_stuff=other_stuff)}
+
+    if (option[2]==1){quantiles_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
+        
+    if (option[3]==1 | option[4]==1 | option[5]==1 | option[6]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
     graphics.off()
 }
 

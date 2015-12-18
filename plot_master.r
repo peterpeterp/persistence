@@ -130,8 +130,8 @@ additional_style=""
 dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 #plot_maps()
 #plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th","100th"),name_zusatz="quantile",farb_mitte="mean",farb_palette="regenbogen")
-#plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("gr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte="0")
-plot_maps(file="_fit_2expo_thresh_5-15",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(2,4,5,18,19,20),sig_auswahl=c(NA,NA,NA,NA,NA),value_zusatz=c("b1","b2","thresh","distr_size","R2","BIC"),sub_zusatz=c(NA),name_zusatz="expo")
+plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("gr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte="0")
+#plot_maps(file="_fit_2expo_thresh_5-15",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(2,4,5,18,19,20),sig_auswahl=c(NA,NA,NA,NA,NA),value_zusatz=c("b1","b2","thresh","distr_size","R2","BIC"),sub_zusatz=c(NA),name_zusatz="expo")
 
 period=c("1950-2014","1950-1980","1980-2014")
 for (i in c(1,2,3)){

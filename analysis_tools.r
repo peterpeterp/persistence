@@ -63,16 +63,28 @@ fit_plot_empty <- function(){
     # creates empty plots with x-axis and y-axis
     par(mar=c(3, 3, 3, 3) + 0.1)
     # x
-    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,log="y",cex=0.5)
+    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
     at_=axis(1,labels=FALSE,col="black")
     if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
     axis(1,at=at_)
 
     # x
-    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,log="y",cex=0.5)
+    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
     at_=axis(3,labels=FALSE,col="black")
     if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
     axis(3,at=at_)
+
+    # y
+    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
+    at_=axis(2,labels=FALSE,col="black")
+    if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+    axis(2,at=at_)
+
+    # y
+    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
+    at_=axis(4,labels=FALSE,col="black")
+    if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+    axis(4,at=at_)
 
     # y
     plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,log="y",cex=0.5)
@@ -104,6 +116,40 @@ fit_plot_reference <- function(x,y,sea,q,state){
     }
 }
 
+fit_plot_combi <- function(X,Y,expfit,fit,fitstuff,fit_style,sea,q,state){
+    state_names=c("cold","warm")
+    color=c("blue","red",rgb(0.5,0.1,0.5),rgb(0.1,0.7,0.1),rgb(0,0,0))
+
+    #first plot page
+    par(mar=c(3, 3, 3, 3) + 0.1)                
+    plot(X,Y,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
+    if (!is.na(fitstuff[9])){
+        abline(v=fitstuff[9],col="grey")
+        #text(thresh,0.22,label=round(thresh,02),col="grey")
+    }
+    lines(expfit,col=color[3],lty=2)
+    lines(fit,col=color[4],lty=1)
+    text(59,0.265,paste("ID = ",q," "),pos=1) 
+    text(50,0.225,paste("dBIC=",round(fitstuff[17],01)),pos=1,col=color[5])                 
+ 
+    text(50,0.18,paste("BIC=",round(fitstuff[16],01)),pos=1,col=color[3])                 
+    text(50,0.155,paste("BIC=",round(fitstuff[20],01)),pos=1,col=color[4])      
+
+    text(50,0.11,paste("R2=",round(fitstuff[15],03)),pos=1,col=color[3])                 
+    text(50,0.085,paste("R2=",round(fitstuff[19],03)),pos=1,col=color[4])            
+
+    # second version
+    plot(X,Y,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
+    if (!is.na(fitstuff[9])){
+        abline(v=fitstuff[9],col="grey")
+        text(fitstuff[9],0.00002,label=round(fitstuff[9],02),col=rgb(0,0,0))
+    }    
+    lines(expfit,col=color[3],lty=2)
+    lines(fit,col=color[4],lty=1)
+    text(50,0.22,paste("P=",round(exp(-fitstuff[2])*100,01)),pos=1,col=color[3])                 
+    text(50,0.05,paste("P1=",round(exp(-fitstuff[6])*100,01)),pos=1,col=color[4])                 
+    text(50,0.02,paste("P2=",round(exp(-fitstuff[8])*100,01)),pos=1,col=color[4])                 
+}
 
 fit_plot <- function(X,Y,fit,legend,fit_style,sea,q,state,thresh=NA){
     state_names=c("cold","warm")
