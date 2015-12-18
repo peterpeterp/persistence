@@ -367,9 +367,9 @@ plot_regional_fit_vergleich <- function(period1,period2,region_name,trendID,addi
     fit_stuff[,,,4]=1/fit_stuff1[,,,4]-1/fit_stuff2[,,,4]
     for (sea in 1:seaNumb){
         for (state in 1:2){
-            plot(NA,xlim=c(0.5,7.5),ylim=c(-2,2),xlab="",ylab="lifetime [days]",axes=FALSE,frame.plot=TRUE,cex=0.5)
+            plot(NA,xlim=c(0.5,regNumb+0.5),ylim=c(-2,2),xlab="",ylab="lifetime [days]",axes=FALSE,frame.plot=TRUE,cex=0.5)
             axis(2)
-            axis(1, at=1:7, labels=region_names) 
+            axis(1, at=1:regNumb, labels=region_names) 
             abline(h=0,col="grey")
 
             points(fit_stuff[sea,,state,2],col="red")
@@ -377,7 +377,7 @@ plot_regional_fit_vergleich <- function(period1,period2,region_name,trendID,addi
             points(fit_stuff[sea,,state,4],col="orange")
             lines(fit_stuff[sea,,state,4],col="orange")
             par(new=TRUE)
-            plot(NA,xlim=c(0.5,7.5),ylim=c(-8,8),axes=FALSE,frame.plot=TRUE,cex=0.5,ylab="",xlab="")
+            plot(NA,xlim=c(0.5,regNumb+0.5),ylim=c(-8,8),axes=FALSE,frame.plot=TRUE,cex=0.5,ylab="",xlab="")
             axis(4)
             points(fit_stuff[sea,,state,5],col="blue")
             lines(fit_stuff[sea,,state,5],col="blue")
@@ -420,7 +420,7 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
 
     for (sea in 1:seaNumb){
         for (state in 1:2){
-            plot(NA,xlim=c(0.5,7.5),ylim=c(2,15),frame.plot=TRUE,axes=FALSE,ylab="lifetime [days]",xlab="")
+            plot(NA,xlim=c(0.5,regNumb+0.5),ylim=c(2,15),frame.plot=TRUE,axes=FALSE,ylab="lifetime [days]",xlab="")
             axis(1, at=1:7, labels=region_names) 
             axis(2)
             lines(1:7,1/fit_stuff[sea,,state,2],col=color[1])

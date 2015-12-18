@@ -131,12 +131,12 @@ dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",se
 #plot_maps()
 #plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th","100th"),name_zusatz="quantile",farb_mitte="mean",farb_palette="regenbogen")
 #plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("gr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte="0")
-#plot_maps(file="_fit__testin",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(1,2,19,20),sig_auswahl=c(NA,NA,NA,NA),value_zusatz=c("A","b","R2","BIC"),sub_zusatz=c(NA),name_zusatz="expo")
+plot_maps(file="_fit_2expo_thresh_5-15",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(2,4,5,18,19,20),sig_auswahl=c(NA,NA,NA,NA,NA),value_zusatz=c("b1","b2","thresh","distr_size","R2","BIC"),sub_zusatz=c(NA),name_zusatz="expo")
 
 period=c("1950-2014","1950-1980","1980-2014")
 for (i in c(1,2,3)){
 	print(period[i])
-	plot_maps(file="_fit_2expo_restrict",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(2,4,5),sig_auswahl=c(NA,NA,NA),value_zusatz=c("b1","b2","threshold"),sub_zusatz=c(NA),name_zusatz="2expo_restrict_BIC-sig",period=period[i],sig_style=c("BIC-diff","_fit_expo",20),signi_level=-5,farb_mitte=c(0,0.5,0,0.25,4,15))
+	plot_maps(file="_fit_2expo_thresh_5-15",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(2,4,5,18),sig_auswahl=c(NA,NA,NA,NA),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="2expo_thresh_5-15_BIC-sig",period=period[i],sig_style=c("BIC-diff","_fit_expo",20),signi_level=-5,farb_mitte=c(0,0.25,0,0.25,4,15,0,50))
 
 	#plot_diff_maps(farb_mitte=c(0,0.4),file="_fit_2expo_restrict",period=period[i],name_zusatz="2expo_restrict_diffB")
 	#plot_fit_diff_maps(period=period[i],farb_mitte="0",farb_palette="regenbogen",file1="_fit_expo",file2="_fit_2expo_restrict",value_auswahl=c(2,4,5))
@@ -145,4 +145,4 @@ for (i in c(1,2,3)){
 #plot_fit_diff_maps(farb_palette="lila-gruen",period1="1950-1980",period2="1980-2014",file1="_fit_2expo_restrict",file2="_fit_2expo_restrict",value_auswahl=c(5,2,4,19),value_zusatz=c("shift in threshold","shift in b1","shift in b2","shift in BIC"),name_zusatz="shifts_restricted")
 
 
-#location_view()
+#location_view(regions=TRUE)

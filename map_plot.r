@@ -27,15 +27,19 @@ location_view <- function(station=0,lon=0,lat=0,regions=NA){
 		q=which(dat$ID==station)
 	}
 	worldmap = getMap(resolution = "low")
-	pdf(file="../plots/ID_region_map.pdf")
+	pdf(file="../plots/ID_region_map.pdf",width=12,height=8)
 	plot(worldmap)#,xlim=c(-180,-5),ylim=c(35,60), asp = 3.5)
 	for (i in 1:length(dat$ID)){
 		text(dat$lon[i],dat$lat[i],label=dat$ID[i],col="red",cex=0.125)
 	}
 	if (!is.na(regions)){
-		region_names=c("srex","7rect","6wave","7wave","8wave")
+		region_names=c("srex","7rect")#,"6wave","7wave","8wave")
 		color=c("blue","green","red","orange","black")
 	    for (k in 1:length(region_names)){
+	    	plot(worldmap)
+	    	for (i in 1:length(dat$ID)){
+				text(dat$lon[i],dat$lat[i],label=dat$ID[i],col="red",cex=0.125)
+			}
 	    	add_region(region_names[k],color[k])
 	    }
 	}
@@ -54,7 +58,7 @@ add_region <- function(region_name,farbe){
     for (i in 1:dim(poli)[1]){
         lon=reg_name[i,1]
         lat=reg_name[i,2]
-        text(label=reg_name[i,3],x=lon,y=lat,col=rgb(0,0,0),cex=1.5)
+        text(label=reg_name[i,3],x=lon,y=lat,col=farbe,cex=1.5)
     }
 }
 
