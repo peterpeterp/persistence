@@ -108,7 +108,7 @@ regions_color <- function(reihen,reihen_sig,worldmap,titles,poli,filename_plot){
             lat=poli[index[i],7:12]
             lon=lon[!is.na(lon)]
             lat=lat[!is.na(lat)]
-             polygon(x=lon,y=lat,col=color[facetcol[i]],border="green")
+            polygon(x=lon,y=lat,col=color[facetcol[i]],border="green")
             text(mean(lon),mean(lat),label=signi[i],cex=0.7,col="black")
         }
         image.plot(legend.only=T, zlim=range(y), col=color)
@@ -435,57 +435,76 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
 write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fit_style1,fit_style2,region_names,ID_select){
     regNumb=length(ID_select)
 
-    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
     fit_stuff1=var.get.nc(nc,"fit_stuff")
-    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
     fit_stuff2=var.get.nc(nc,"fit_stuff")
 
 
-    color=c("lightblue","lightred")
+    season_names=c("MAM","JJA","SON","DJF","4seasons")
+    state_names=c("cold","warm")
 
     table<-file(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_seasons_latex.tex",sep=""))
     options(scipen=100)
 
+    colors=c("white","groegree","zehngree","funfziggree","hundertgree")
     lines=c()
     index=0
 
     lines[index+1]="\\documentclass[a3paper,12pt,landscape]{article}"
     lines[index+2]="\\usepackage{xcolor,colortbl,pgf}"
-    lines[index+3]="\\definecolor{lightblue}{rgb}{0.75,0.75,1}"
-    lines[index+4]="\\definecolor{lightred}{rgb}{1,0.75,0.75}"
-    lines[index+5]="\\begin{document}"
-    index=index+5
+    lines[index+3]="\\definecolor{white}{rgb}{1,1,1}"
+    lines[index+4]="\\definecolor{groegree}{rgb}{0.85,1,0.85}"
+    lines[index+5]="\\definecolor{zehngree}{rgb}{0.75,1,0.75}"
+    lines[index+6]="\\definecolor{funfziggree}{rgb}{0.5,1,0.5}"
+    lines[index+7]="\\definecolor{hundertgree}{rgb}{0.3,1,0.3}"
+    lines[index+8]="\\begin{document}"
+    index=index+8
 
     for (sea in 1:5){
         for (state in 1:2){
 
             lines[index+1]=paste("\\begin{table}[!h]")
-            lines[index+2]=paste("\\begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|cc|c|c|c|c|c|c|c|c|c|c|c|c|c}")
-            lines[index+3]=paste("\\ reg & R2 & BIC & b & R2 & BIC & b1 & b2 & thresh & R2 & BIC & a1 & b1 & a2 & {b2}","\\","\\",sep="")
-            index=index+3
+            lines[index+2]=paste("\\vspace{-2cm}")
+            lines[index+3]=paste("\\hspace{-3.5cm}")
+            lines[index+4]=paste("\\begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|cc|c|c|c|c|c|c|c|c|c|c|c|c|c}")
+
+            lines[index+5]=paste("\\multicolumn{15}{1}{",season_names[sea]," ",state_names[state]," ",period,"}\\","\\",sep="")
+            lines[index+6]=paste("\\ reg & R2 & BIC & P & R2 & BIC & thresh & P1 & P2 & R2 & BIC & a1 & a2 & P1 & P2","\\","\\",sep="")
+            index=index+6
             for (reg in ID_select){
-                index=index+1
+                background=c(colors[1],colors[1],colors[1])
                 BICs=c(fit_stuff1[sea,reg,state,c(16,20)],fit_stuff2[sea,reg,state,20])
-                if (length(which(!is.na(BICs)))>0){best=which(BICs==min(BICs,na.rm=TRUE))}
-                else{best=0}
+                if (length(which(!is.na(BICs)))>0){
+                    worst=BICs[which(BICs==max(BICs,na.rm=TRUE))]
+                    for (i in 1:3){
+                        if (!is.na(BICs[i])){
+                            if (BICs[i]<worst){background[i]=colors[2]}
+                            if ((BICs[i]+10)<worst){background[i]=colors[3]}
+                            if ((BICs[i]+50)<worst){background[i]=colors[4]}
+                            if ((BICs[i]+100)<worst){background[i]=colors[5]}
+                        }
+                    }
+                }
                 newline=paste("\\ ",region_names[reg],sep="")
-                for (i in c(15,16,2)){
-                    if (best==1){newline=paste(newline," &{\\cellcolor{",color[state],"}}",round(fit_stuff1[sea,reg,state,i],02),"",sep="")}
-                    else{newline=paste(newline," &{",round(fit_stuff1[sea,reg,state,i],02),"}",sep="")}                }
-                for (i in c(19,20,6,8,9)){
-                    if (best==2){newline=paste(newline," &{\\cellcolor{",color[state],"}}",round(fit_stuff1[sea,reg,state,i],02),"",sep="")}
-                    else{newline=paste(newline," &{",round(fit_stuff1[sea,reg,state,i],02),"}",sep="")}                }
-                for (i in c(19,20,5,6,7,8)){
-                    if (best==3){newline=paste(newline," &{\\cellcolor{",color[state],"}}",round(fit_stuff2[sea,reg,state,i],02),"",sep="")}
-                    else{newline=paste(newline," &{",round(fit_stuff2[sea,reg,state,i],02),"}",sep="")}
-                }   
+                for (i in c(15,16)){
+                    newline=paste(newline," &{\\cellcolor{",background[1],"}}",round(fit_stuff1[sea,reg,state,i],02),"",sep="")}
+                newline=paste(newline," &{\\cellcolor{",background[1],"}}",round(exp(-fit_stuff1[sea,reg,state,2])*100,01),sep="")
+                for (i in c(19,20,9)){
+                    newline=paste(newline," &{\\cellcolor{",background[2],"}}",round(fit_stuff1[sea,reg,state,i],02),"",sep="")}
+                newline=paste(newline," &{\\cellcolor{",background[2],"}}",round(exp(-fit_stuff1[sea,reg,state,6])*100,01),sep="")
+                newline=paste(newline," &{\\cellcolor{",background[2],"}}",round(exp(-fit_stuff1[sea,reg,state,8])*100,01),sep="")
+                for (i in c(19,20,5,7)){
+                    newline=paste(newline," &{\\cellcolor{",background[3],"}}",round(fit_stuff2[sea,reg,state,i],02),"",sep="")}
+                newline=paste(newline," &{\\cellcolor{",background[3],"}}",round(exp(-fit_stuff2[sea,reg,state,6])*100,01),sep="")
+                newline=paste(newline," &{\\cellcolor{",background[3],"}}",round(exp(-fit_stuff2[sea,reg,state,8])*100,01),sep="")
+                
                 newline=paste(newline,paste("\\","\\",sep=""))
-                lines[index]=newline
+                lines[index+1]=newline
+                index=index+1
             }
             lines[index+1]=paste("\\end{tabular}")
-            lines[index+2]=paste("\\end{table}")
+            lines[index+2]=paste("\\end{table} \\newpage")
             index=index+2
 
         }
@@ -493,72 +512,64 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
     }
     lines[index+1]="\\end{document}"
     writeLines(lines, table)
-    asdas
-
-
-
-    y=fit_stuff[sea,,,18]-fit_stuff[sea,,,16]
-    y2=fit_stuff[sea,,,17]-fit_stuff[sea,,,16]
-    y[is.na(fit_stuff[sea,,,18])]=y2[is.na(fit_stuff[sea,,,18])]    
-
-    for (state in 1:2){
-        if (state==1){newline=paste("\\","multirow{2}{*}{$\\Delta$BIC}",sep="")}
-        else{newline=""}
-        for (reg in 1:regNumb){
-            newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
-            if (y[reg,state]<0){newline=paste(newline,"\\textit{\\textbf{",round(y[reg,state]),"}}")}
-            else{newline=paste(newline,round(y[reg,state]))}
-        }
-        newline=paste(newline,paste("\\","\\",sep=""))
-        if (state==2){newline=paste(newline,"\n\\hline")}
-        lines[(state+2)]=newline
-    } 
-
-    y=1/fit_stuff[sea,,,8]
-    y2=1/fit_stuff[sea,,,2]
-    y[is.na(fit_stuff[sea,,,8])]=y2[is.na(fit_stuff[sea,,,8])]    
-
-    for (state in 1:2){
-        if (state==1){newline=paste("\\","multirow{2}{*}{1/b}",sep="")}
-        else{newline=""}
-        for (reg in 1:regNumb){
-            newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
-            newline=paste(newline,round(y[reg,state],02))
-        }
-        newline=paste(newline,paste("\\","\\",sep=""))
-        if (state==2){newline=paste(newline,"\n\\hline")}
-        lines[(state+4)]=newline
-    } 
-
-    y=fit_stuff[sea,,,10]
-
-    for (state in 1:2){
-        if (state==1){newline=paste("\\","multirow{2}{*}{A}",sep="")}
-        else{newline=""}
-        for (reg in 1:regNumb){
-            newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
-            newline=paste(newline,round(y[reg,state],03))
-        }
-        newline=paste(newline,paste("\\","\\",sep=""))
-        if (state==2){newline=paste(newline,"\n\\hline")}
-        lines[(state+6)]=newline
-    } 
-    y=fit_stuff[sea,,,13]
-
-    for (state in 1:2){
-        if (state==1){newline=paste("\\","multirow{2}{*}{R2(exp)}",sep="")}
-        else{newline=""}
-        for (reg in 1:regNumb){
-            newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
-            newline=paste(newline,round(y[reg,state],03))
-        }
-        newline=paste(newline,paste("\\","\\",sep=""))
-        if (state==2){newline=paste(newline,"\n\\hline")}
-        lines[(state+8)]=newline
-    } 
-    
-    writeLines(lines, table)
-
     close(table)
 }
 
+fit_info_to_map <- function(trendID="91_5",region_name="srex",period,fit_style1,fit_style2,region_names,ID_select){
+    # plots worldmap and colored regions on it
+    library(rworldmap)
+    library(fields)
+    worldmap = getMap(resolution = "low")
+
+    poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
+
+
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
+    fit_stuff1=var.get.nc(nc,"fit_stuff")
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
+    fit_stuff2=var.get.nc(nc,"fit_stuff")
+
+
+    season_names=c("MAM","JJA","SON","DJF","4seasons")
+    state_names=c("cold","warm")
+
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_seasons.pdf",sep=""))
+
+    for (sea in 1:5){
+        for (state in 1:2){
+            plot(worldmap,main=paste(season_names[sea],state_names[state]))
+
+            for (reg in ID_select){
+                farb=0.5
+                BICs=c(fit_stuff1[sea,reg,state,c(16,20)],fit_stuff2[sea,reg,state,20])
+                if (length(which(!is.na(BICs)))>0){
+                    worst=BICs[which(BICs==max(BICs,na.rm=TRUE))]
+                    best=BICs[which(BICs==min(BICs,na.rm=TRUE))]
+                    order=order(BICs)
+                    farb=(BICs[order[2]]-BICs[order[1]])/100
+                    if (farb>1){farb=1}
+                    
+                }
+                print(BICs)
+                print(BICs[order])
+                print(farb*100)
+                print(farb)
+                BICs[is.na(BICs)]=0
+
+                lon=poli[reg,1:6]
+                lat=poli[reg,7:12]
+                lon=lon[!is.na(lon)]
+                lat=lat[!is.na(lat)]
+                #polygon(x=lon,y=lat,col=rgb(farb,1,farb),border="green")
+                polygon(x=lon,y=lat,col=rgb(BICs[1]/best,BICs[2]/best,BICs[3]/best),border="white")
+                #text(mean(lon),mean(lat),label=signi[i],cex=0.7,col="black")
+
+                
+            }
+            #image.plot(legend.only=T, zlim=range(y), col=color)
+        }
+    }
+
+    graphics.off()
+    return()
+}
