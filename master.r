@@ -151,12 +151,15 @@ master_regional_climatology <- function(trendID,ID_select=1:7,plot_select=1:7,da
         #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,1,0,0,0,0),add_name="_expo",folder="/regional/",ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=26)
         #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0),add_name="combi_expo",folder="/regional/",ID_name="_7rect",ID_select=1:7,plot_select=1:7,ID_names=region_names,ID_length=7)
         #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0),add_name="2expo_b1>b2_5-10",folder="/regional/",ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=26)
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0),add_name="2expo_b1>b2_5-15",folder="/regional/",ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=26)
+        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,0,0,0,1),add_name="2expo_overlap",folder="/regional/",ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=26)
         #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,1,0,0,1),add_name="_expo_fixed_2expo",folder="/regional/",ID_name="_7rect",ID_select=1:7,plot_select=1:7,ID_names=region_names,ID_length=7)
         
 
         #plot_regional_boxplots(period=paste(yearPeriod[1],"-",yearPeriod[2],sep=""),region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style)
         #plot_regional_fit_parameters(period=period,trendID=trendID,additional_style=additional_style,dataset=dataset,region_name=region_name,fit_style="_fit_2expo_b1>b2_5-10")
+
+        write_regional_fit_table(trendID=trendID,region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style1="2expo_b1>b2_5-15",fit_style2="2expo_overlap",period=period)
+
     }
     #plot_regional_boxplots_vergleich(period1="1950-1980",period2="1980-2014",region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
     #plot_regional_fit_vergleich(period1="1950-1980",period2="1980-2014",fit_style="_fit_2expo_b1>b2_5-15",region_name=region_name,region_names=region_names,trendID=trendID,additional_style=additional_style,dataset=dataset)

@@ -237,6 +237,14 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                             fit=tmp$fit
                         }
 
+                        # overlap of 2 exponentials
+                        if (option[7]==1){
+                            tmp=overlap_two_exp_fit(X,Y)
+                            fit_stuff[sea,q,state,5:9]=tmp$pars
+                            fit_stuff[sea,q,state,19:20]=tmp$ana
+                            fit=tmp$fit
+                        }
+
                         fit_stuff[sea,q,state,17]=fit_stuff[sea,q,state,20]-fit_stuff[sea,q,state,16]
                     }
                 }
@@ -263,7 +271,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
 
     if (option[2]==1){quantiles_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
         
-    if (option[3]==1 | option[4]==1 | option[5]==1 | option[6]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
+    if (option[3]==1 | option[4]==1 | option[5]==1 | option[6]==1 | option[7]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
     graphics.off()
 }
 

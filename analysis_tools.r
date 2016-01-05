@@ -198,6 +198,9 @@ exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-I
     }
 }
 
+overlap_expo <-function(x,a1,b1,a2,b2){
+    a1*exp(-b1*x)+a2*exp(-b2*x)
+}
 
 combi_expo <-function(x,a1,b1,b2,thresh){
     y=x*NA
@@ -235,6 +238,42 @@ expo <-function(x,a,b){
     return(y)
 }
 
+overlap_two_exp_fit <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15){
+    xy=data.frame(y=Y[thresh_guess:length(Y)],x=X[thresh_guess:length(Y)])
+    exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.3),na.action=na.exclude),silent=TRUE) 
+    if (class(exp_nls)!="try-error"){
+        a2_guess=summary(exp_nls)$parameters[1]        
+        b2_guess=summary(exp_nls)$parameters[2]        
+        Y_substracted=Y-a2_guess*exp(-b2_guess*X)
+    }
+
+    xy=data.frame(y=Y_substracted[1:thresh_guess],x=X[1:thresh_guess])
+    exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.1),na.action=na.exclude),silent=TRUE) 
+    if (class(exp_nls)!="try-error"){
+        a1_guess=summary(exp_nls)$parameters[1]
+        b1_guess=summary(exp_nls)$parameters[2]
+    }
+
+    xy=data.frame(y=Y,x=X)
+    combi_nls=try(nls(y~overlap_expo(x,a1,b1,a2,b2),data=xy,start=c(a1=a1_guess,b1=b1_guess,a2=a2_guess,b2=b2_guess),algorithm="port",lower=c(0,0,0,0),upper=c(Inf,Inf,Inf,Inf),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=TRUE)),silent=TRUE)
+    if (class(combi_nls)!="try-error"){
+        test=try(summary(combi_nls))
+        if (class(test)!="try-error"){
+        
+            a1=summary(combi_nls)$parameters[1]
+            b1=summary(combi_nls)$parameters[2]
+            a2=summary(combi_nls)$parameters[3] 
+            b2=summary(combi_nls)$parameters[4] 
+            comb_fit=overlap_expo(X,a1,b1,a2,b2)
+            R2=1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
+            BIC=try(BIC(combi_nls),silent=TRUE)
+            if (class(BIC)=="try-error"){BIC=NA}
+            return(list(pars=c(a1,b1,a2,b2,NA),ana=c(R2,BIC),fit=comb_fit))
+        }
+    }
+    return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA),fit=X*NA))
+}
+
 two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15){
     
     xy=data.frame(y=Y[1:thresh_guess],x=X[1:thresh_guess])
@@ -252,15 +291,15 @@ two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_gues
     }
 
     xy=data.frame(y=Y,x=X)
-    combi_opt=try(optim(par=c(a1_guess,b1_guess,b2_guess,thresh_guess),to_be_minimized,data=xy))
-    if (class(combi_opt)!="try-error"){
-        a1=combi_opt$par[1]
-        b1=combi_opt$par[2]
-        b2=combi_opt$par[3]
-        thresh=combi_opt$par[4]
-        a2=a1*exp((b2-b1)*thresh)
-        comb_fit=combi_expo(X,a1,b1,b2,thresh)
-    }
+    #combi_opt=try(optim(par=c(a1_guess,b1_guess,b2_guess,thresh_guess),to_be_minimized,data=xy))
+    #if (class(combi_opt)!="try-error"){
+    #    a1=combi_opt$par[1]
+    #    b1=combi_opt$par[2]
+    #    b2=combi_opt$par[3]
+    #    thresh=combi_opt$par[4]
+    #    a2=a1*exp((b2-b1)*thresh)
+    #    comb_fit=combi_expo(X,a1,b1,b2,thresh)
+    #}
     combi_nls=try(nls(y~combi_expo(x,a1,b1,b2,thresh),data=xy,start=c(a1=a1_guess,b1=b1_guess,b2=b2_guess,thresh=thresh_guess),algorithm="port",lower=c(0,0,0,thresh_down),upper=c(Inf,Inf,Inf,thresh_up),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=TRUE)),silent=TRUE)
     if (class(combi_nls)!="try-error"){
         a1=summary(combi_nls)$parameters[1]

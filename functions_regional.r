@@ -430,37 +430,72 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
     }
 
     graphics.off()
-    adas
+}
 
+write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fit_style1,fit_style2,region_names,ID_select){
+    regNumb=length(ID_select)
 
-    # write column for latex
-    bicdiff=fit_stuff[,,,18]-fit_stuff[,,,16]
-    y2=fit_stuff[,,,17]-fit_stuff[,,,16]
-    bicdiff[is.na(fit_stuff[,,,18])]=y2[is.na(fit_stuff[,,,18])]
+    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
+    fit_stuff1=var.get.nc(nc,"fit_stuff")
+    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
+    fit_stuff2=var.get.nc(nc,"fit_stuff")
 
 
     color=c("lightblue","lightred")
 
-    table<-file(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_seasons_latex.txt",sep=""))
+    table<-file(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_seasons_latex.tex",sep=""))
     options(scipen=100)
 
     lines=c()
-    y=fit_stuff[sea,,,15]-fit_stuff[sea,,,13]
-    y2=fit_stuff[sea,,,14]-fit_stuff[sea,,,13]
-    y[is.na(fit_stuff[sea,,,15])]=y2[is.na(fit_stuff[sea,,,15])]
+    index=0
 
-    for (state in 1:2){
-        if (state==1){newline=paste("\\","multirow{2}{*}{$\\Delta R^2$}",sep="")}
-        else{newline=" "}
-        for (reg in 1:regNumb){
-            newline=paste(newline," &{\\cellcolor{",color[state],"}}",sep="")
-            newline=paste(newline,round(y[reg,state],04))
-            #}
+    lines[index+1]="\\documentclass[a3paper,12pt,landscape]{article}"
+    lines[index+2]="\\usepackage{xcolor,colortbl,pgf}"
+    lines[index+3]="\\definecolor{lightblue}{rgb}{0.75,0.75,1}"
+    lines[index+4]="\\definecolor{lightred}{rgb}{1,0.75,0.75}"
+    lines[index+5]="\\begin{document}"
+    index=index+5
+
+    for (sea in 1:5){
+        for (state in 1:2){
+
+            lines[index+1]=paste("\\begin{table}[!h]")
+            lines[index+2]=paste("\\begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|cc|c|c|c|c|c|c|c|c|c|c|c|c|c}")
+            lines[index+3]=paste("\\ reg & R2 & BIC & b & R2 & BIC & b1 & b2 & thresh & R2 & BIC & a1 & b1 & a2 & {b2}","\\","\\",sep="")
+            index=index+3
+            for (reg in ID_select){
+                index=index+1
+                BICs=c(fit_stuff1[sea,reg,state,c(16,20)],fit_stuff2[sea,reg,state,20])
+                if (length(which(!is.na(BICs)))>0){best=which(BICs==min(BICs,na.rm=TRUE))}
+                else{best=0}
+                newline=paste("\\ ",region_names[reg],sep="")
+                for (i in c(15,16,2)){
+                    if (best==1){newline=paste(newline," &{\\cellcolor{",color[state],"}}",round(fit_stuff1[sea,reg,state,i],02),"",sep="")}
+                    else{newline=paste(newline," &{",round(fit_stuff1[sea,reg,state,i],02),"}",sep="")}                }
+                for (i in c(19,20,6,8,9)){
+                    if (best==2){newline=paste(newline," &{\\cellcolor{",color[state],"}}",round(fit_stuff1[sea,reg,state,i],02),"",sep="")}
+                    else{newline=paste(newline," &{",round(fit_stuff1[sea,reg,state,i],02),"}",sep="")}                }
+                for (i in c(19,20,5,6,7,8)){
+                    if (best==3){newline=paste(newline," &{\\cellcolor{",color[state],"}}",round(fit_stuff2[sea,reg,state,i],02),"",sep="")}
+                    else{newline=paste(newline," &{",round(fit_stuff2[sea,reg,state,i],02),"}",sep="")}
+                }   
+                newline=paste(newline,paste("\\","\\",sep=""))
+                lines[index]=newline
+            }
+            lines[index+1]=paste("\\end{tabular}")
+            lines[index+2]=paste("\\end{table}")
+            index=index+2
+
         }
-        newline=paste(newline,paste("\\","\\",sep=""))
-        if (state==2){newline=paste(newline,"\n\\hline")}
-        lines[state]=newline
+        
     }
+    lines[index+1]="\\end{document}"
+    writeLines(lines, table)
+    asdas
+
+
 
     y=fit_stuff[sea,,,18]-fit_stuff[sea,,,16]
     y2=fit_stuff[sea,,,17]-fit_stuff[sea,,,16]
