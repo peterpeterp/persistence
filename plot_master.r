@@ -134,15 +134,16 @@ dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",se
 #plot_maps(file="_fit_2expo_thresh_5-15",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(2,4,5,18,19,20),sig_auswahl=c(NA,NA,NA,NA,NA),value_zusatz=c("b1","b2","thresh","distr_size","R2","BIC"),sub_zusatz=c(NA),name_zusatz="expo")
 
 period=c("1950-2014","1950-1980","1980-2014")
-for (i in c(1,2,3)){
+for (i in c(1)){
 	print(period[i])
-	#plot_maps(file="_fit_2expo_thresh_5-15",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(2,4,5,18),sig_auswahl=c(NA,NA,NA,NA),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="2expo_thresh_5-15_BIC-sig",period=period[i],sig_style=c("BIC-diff","_fit_expo",20),signi_level=-5,farb_mitte=c(0,0.25,0,0.25,4,15,0,50))
+	plot_maps(file="_fit_2expo_thresh_5-15",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="2expo_thresh_5-15_BIC-sig",period=period[i],signi_level=0,farb_mitte=c(0,0.25,0,0.25,5,15,20,50))
+	#plot_maps(file="_fit_2expo_overlap",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,5,7,14),sig_auswahl=c(17,17,17,17,17),value_zusatz=c("b1","b2","a1","a2","distr_size"),sub_zusatz=c(NA),name_zusatz="2expo_overlap_BIC-sig",period=period[i],signi_level=0,farb_mitte=c(0,0.35,0,0.35,0,0.2,0,0.2,20,50))
 
-	#plot_diff_maps(farb_mitte=c(0,0.4),file="_fit_2expo_restrict",period=period[i],name_zusatz="2expo_restrict_diffB")
+	#plot_diff_maps(farb_mitte=c(-0.3,0.3),file="_fit_2expo_thresh_5-15",period=period[i],name_zusatz="2_fit_2expo_thresh_5-15_diffB")
 	#plot_fit_diff_maps(period=period[i],farb_mitte="0",farb_palette="regenbogen",file1="_fit_expo",file2="_fit_2expo_restrict",value_auswahl=c(2,4,5))
 	
 }
 #plot_fit_diff_maps(farb_palette="lila-gruen",period1="1950-1980",period2="1980-2014",file1="_fit_2expo_restrict",file2="_fit_2expo_restrict",value_auswahl=c(5,2,4,19),value_zusatz=c("shift in threshold","shift in b1","shift in b2","shift in BIC"),name_zusatz="shifts_restricted")
 
 
-location_view(regions=TRUE)
+#location_view(regions=TRUE)

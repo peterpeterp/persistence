@@ -116,13 +116,19 @@ fit_plot_reference <- function(x,y,sea,q,state){
     }
 }
 
-fit_plot_combi <- function(X,Y,expfit,fit,fitstuff,fit_style,sea,q,state){
+fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state){
     state_names=c("cold","warm")
     color=c("blue","red",rgb(0.5,0.1,0.5),rgb(0.1,0.7,0.1),rgb(0,0,0))
 
     #first plot page
+    par(mar=c(3, 3, 3, 3) + 0.1)  
+    nonull=which(counts>0)              
+    plot(X[nonull],counts[nonull],xlab="days",xlim=c(0,70),ylab="counts",axes=TRUE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
+    text(45,max(counts),paste("ID = ",q," \nPoints =",length(counts)),pos=1) 
+
+    # second plot page
     par(mar=c(3, 3, 3, 3) + 0.1)                
-    plot(X,Y,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
+    plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
     if (!is.na(fitstuff[9])){
         abline(v=fitstuff[9],col="grey")
         #text(thresh,0.22,label=round(thresh,02),col="grey")
@@ -138,8 +144,8 @@ fit_plot_combi <- function(X,Y,expfit,fit,fitstuff,fit_style,sea,q,state){
     text(50,0.11,paste("R2=",round(fitstuff[15],03)),pos=1,col=color[3])                 
     text(50,0.085,paste("R2=",round(fitstuff[19],03)),pos=1,col=color[4])            
 
-    # second version
-    plot(X,Y,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
+    # third version
+    plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
     if (!is.na(fitstuff[9])){
         abline(v=fitstuff[9],col="grey")
         text(fitstuff[9],0.00002,label=round(fitstuff[9],02),col=rgb(0,0,0))
@@ -231,11 +237,7 @@ log_lik <- function(data,par){
 
 
 expo <-function(x,a,b){
-    y=x*NA
-    thresh=100
-    y[x<thresh]=a*exp(-x[x<thresh]*b)
-    y[x>=thresh]=x[x>=thresh]*0
-    return(y)
+    return(a*exp(-x*b))
 }
 
 overlap_two_exp_fit <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15){
@@ -436,3 +438,239 @@ two_exp_fit_fixed_thresh <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,
     }
 }
 
+
+
+plot_fits_for_region <- function(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",reg=13,model="combi_expo",region_name="srex",ID_select=1:1319){
+
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+    fit_stuff_reg=var.get.nc(nc,"fit_stuff")
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_fit_",fit_style,".nc",sep=""))
+    fit_stuff_individual=var.get.nc(nc,"fit_stuff")
+    distr_stuff_individual=var.get.nc(nc,"distr_stuff")
+
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_region_",reg,".pdf",sep=""))
+    
+    color=c(rgb(0.5,1,0.8),rgb(0.3,0.9,0.8),rgb(0.9,0.6,0.8),rgb(0.8,0.2,0.6),rgb(0.5,0.5,0.5,0.2))
+
+    X=(0:30)+0.5
+    for (sea in 1:5){
+        for (state in 1:2){
+            plot(NA,ylim=c(0,10),xlim=c(0,10),axes=FALSE,frame.plot=FALSE)
+            text(5,5,paste(sea,state,reg))
+            plot(NA,xlab="days",ylab="counts",ylim=c(0,150),xlim=c(0,30),axes=TRUE,frame.plot=TRUE)
+            for (q in ID_select){
+                points(distr_stuff_individual[sea,q,state,1,],distr_stuff_individual[sea,q,state,3,],pch=16,col=color[5],cex=1.5)
+            }
+
+            plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE)
+            for (q in ID_select){points(distr_stuff_individual[sea,q,state,1,],distr_stuff_individual[sea,q,state,2,],pch=16,col=color[5],cex=1.5)}
+            for (q in ID_select){
+                abline(v=fit_stuff_individual[sea,q,state,9],col=color[5],lty=2,lwd=0.3)
+                lines(X,combi_expo(X,fit_stuff_individual[sea,q,state,5],fit_stuff_individual[sea,q,state,6],fit_stuff_individual[sea,q,state,8],fit_stuff_individual[sea,q,state,9]),col=color[1],lwd=0.3)
+                lines(X,expo(X,fit_stuff_individual[sea,q,state,1],fit_stuff_individual[sea,q,state,2]),col=color[3],lwd=0.3,lty=2)
+            }
+            abline(v=fit_stuff_reg[sea,reg,state,9],col=color[5],lty=2,lwd=2)
+            lines(X,combi_expo(X,fit_stuff_reg[sea,reg,state,5],fit_stuff_reg[sea,reg,state,6],fit_stuff_reg[sea,reg,state,8],fit_stuff_reg[sea,reg,state,9]),col=color[2],lwd=2,lty=1)
+            lines(X,expo(X,fit_stuff_reg[sea,reg,state,1],fit_stuff_reg[sea,reg,state,2]),col=color[4],lty=1,lwd=2)
+            
+
+            plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
+            for (q in ID_select){points(distr_stuff_individual[sea,q,state,1,],distr_stuff_individual[sea,q,state,2,],pch=16,col=color[5],cex=1.5)}
+            for (q in ID_select){
+                abline(v=fit_stuff_individual[sea,q,state,9],col=color[5],lty=2,lwd=0.3)
+                lines(X,combi_expo(X,fit_stuff_individual[sea,q,state,5],fit_stuff_individual[sea,q,state,6],fit_stuff_individual[sea,q,state,8],fit_stuff_individual[sea,q,state,9]),col=color[1],lwd=0.3)
+                lines(X,expo(X,fit_stuff_individual[sea,q,state,1],fit_stuff_individual[sea,q,state,2]),col=color[3],lwd=0.3,lty=2)
+            }
+            abline(v=fit_stuff_reg[sea,reg,state,9],col=color[5],lty=2,lwd=2)
+            lines(X,combi_expo(X,fit_stuff_reg[sea,reg,state,5],fit_stuff_reg[sea,reg,state,6],fit_stuff_reg[sea,reg,state,8],fit_stuff_reg[sea,reg,state,9]),col=color[2],lwd=2,lty=1)
+            lines(X,expo(X,fit_stuff_reg[sea,reg,state,1],fit_stuff_reg[sea,reg,state,2]),col=color[4],lty=1,lwd=2)
+
+        }
+    }
+    
+    
+}
+
+distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",reg=13,model="combi_expo",region_name="srex",ID_select=1:1319){
+
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+    fit_stuff_reg=var.get.nc(nc,"fit_stuff")
+    distr_stuff_reg=var.get.nc(nc,"distr_stuff")
+
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_fit_",fit_style,".nc",sep=""))
+    fit_stuff_individual=var.get.nc(nc,"fit_stuff")
+    distr_stuff_individual=var.get.nc(nc,"distr_stuff")
+
+    
+    X=distr_stuff_reg[4,1,1,1,]
+    X=(1:100)
+
+    sea=4
+    state=1
+
+    start=distr_stuff_reg[sea,c(6,18,11,22),state,2,]
+    start=distr_stuff_individual[sea,c(511,294,473,871,661,173,415,821),state,2,]
+    start=distr_stuff_individual[sea,c(294,511,661,871,415,173),state,2,]
+    start=distr_stuff_individual[sea,c(415,871,511,294,173,889,661,52,420),state,2,]
+    #start=distr_stuff_individual[sea,c(1,100,200,300,400,500,600,700),state,2,]
+
+    #start[1,]=combi_expo(X,0.23,0.3,0.28,5)
+    #start[2,]=combi_expo(X,0.2,0.2,0.1,8)
+    #start[3,]=combi_expo(X,0.19,0.22,0.2,6)
+    #start[4,]=combi_expo(X,0.2,0.2,0.15,10)
+    #start[5,]=combi_expo(X,0.2,0.15,0.15,4)
+    #start[6,]=X*0
+
+
+    toOrder=distr_stuff_individual[sea,,state,2,]
+
+    version=1
+
+
+
+    start[is.na(start)]=0
+    toOrder[is.na(toOrder)]=0
+
+
+    #start[start==0]=NA
+    #toOrder[start==0]=NA
+    print(start)
+
+    nGroup=dim(start)[1]
+    ntot=dim(toOrder)[1]
+
+    print(dim(start))
+    print(dim(toOrder))
+
+    color=c("red","blue","green","violet","black","orange","lightblue","grey")
+
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours",version,".pdf",sep=""))
+
+    attribution_old=array(1:10,ntot)
+    attribution=array(NA,ntot)
+    for (i in 1:30){
+        print(i)
+        for (q in 1:ntot){
+            score=array(NA,nGroup)
+            #print(q)
+            for (p in 1:nGroup){
+                #print(proc.time())
+                #score[p]=sum((start[p,]-toOrder[q,])^2)
+                score[p]=sum(X*as.vector((start[p,]-toOrder[q,])^2))
+                #score[p]=sum(abs((start[p,]-toOrder[q,])*(0.25-start[p,])^2))
+
+
+
+                #print(proc.time())
+
+                #greaterZero=which(start[p,]>0 & toOrder[q,]>0)
+                #score[p]=sum((log(start[p,greaterZero])-log(toOrder[q,greaterZero]))^2)
+
+                #print(start[p,])
+                #print(toOrder[q,])
+                #print(greaterZero)
+                #print(score[p])
+
+                #print(proc.time())
+                #score[p]=0
+                #for (j in 1:100){
+                 #   if (!is.na(start[p,j]) & !is.na(toOrder[q,j])){score[p]=score[p]+(X[j]^(0.5))*(start[p,j]-toOrder[q,j])^2}
+                    #print(score[p])
+                    #if (start[p,j]>0 & toOrder[q,j]>0){score[p]=score[p]+(log(start[p,j])-log(toOrder[q,j]))^2}
+                #}
+                #print(proc.time())
+                #print(score)
+
+            }
+            attribution[q]=which.min(score)
+            #print(attribution[q])
+            #print
+            (start[attribution[q],1:20])
+            #print(score)
+            #print(q)
+        }
+        #print(attribution)
+        for (p in 1:nGroup){
+            #if (length(which(attribution==p))==0){start[p,]=colMeans(start,na.rm=TRUE)}
+            if (length(which(attribution==p))==0){print("no match")}
+            if (length(which(attribution==p))==1){start[p,]=toOrder[which(attribution==p),]}
+            if (length(which(attribution==p))>1){start[p,]=colMeans(toOrder[which(attribution==p),],na.rm=TRUE)}
+
+        }
+        if (sum(attribution_old-attribution,na.rm=TRUE)==0){break}
+        else {attribution_old<-attribution}
+        plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE)
+        for (p in 1:nGroup){
+            lines(X,start[p,],col=color[p])
+        }
+        plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
+        for (p in 1:nGroup){
+            lines(X,start[p,],col=color[p])
+        }
+    }
+    for (p in 1:nGroup){
+        plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE) 
+        for (q in which(attribution==p)){
+            points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
+        }
+        lines(X,start[p,],col=color[p])
+    }
+    for (p in 1:nGroup){
+        plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE,log="y") 
+        for (q in which(attribution==p)){
+            points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
+        }
+        lines(X,start[p,],col=color[p])
+    }
+
+    graphics.off()
+
+    score=array(999,c(nGroup,nGroup))
+    for (p in 1:nGroup){
+        for (p2 in 1:nGroup){
+            if (p!=p2){
+                #score[p]=sum((start[p,]-toOrder[q,])^2)
+                score[p,p2]=sum(X*as.vector((start[p,]-start[p2,])^2))
+            }
+        }
+    }
+    score_vec=colMeans(score,na.rm=TRUE)
+    for (i in 1:3){
+        similar1=which.min(score_vec)
+        similar2=which.min(score[similar1])
+        start[similar1,]=colMeans(start[c(similar1,similar2),])
+        start[similar2,]=array(999,100)
+        attribution[attribution=similar2]=similar1
+        print(similar1)
+        print(similar2)
+    }
+    print(score)
+    print(score_vec)
+    print(which.min(score_vec))
+
+    library(SDMTools)
+    source("map_plot.r")
+    library(rworldmap)
+    library(fields)
+    worldmap = getMap(resolution = "low")
+    dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+
+    reihen=array(NA,dim=c(1,ntot))
+    attribution[attribution==nGroup]=NA
+    order=order(start[,1])
+    attri_order=attribution*NA
+    for (i in 1:length(order)){
+        attri_order[attribution==i]=order[i]
+    }
+    reihen[1,]=attri_order
+
+
+
+    reihen[1,]=attribution
+
+
+    map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",version,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="mixed")
+
+    
+    
+}

@@ -526,9 +526,6 @@ fit_info_to_map <- function(trendID="91_5",region_name="srex",period,fit_style1,
 
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
     fit_stuff1=var.get.nc(nc,"fit_stuff")
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
-    fit_stuff2=var.get.nc(nc,"fit_stuff")
-
 
     season_names=c("MAM","JJA","SON","DJF","4seasons")
     state_names=c("cold","warm")
@@ -540,29 +537,45 @@ fit_info_to_map <- function(trendID="91_5",region_name="srex",period,fit_style1,
             plot(worldmap,main=paste(season_names[sea],state_names[state]))
 
             for (reg in ID_select){
-                farb=0.5
-                BICs=c(fit_stuff1[sea,reg,state,c(16,20)],fit_stuff2[sea,reg,state,20])
-                if (length(which(!is.na(BICs)))>0){
-                    worst=BICs[which(BICs==max(BICs,na.rm=TRUE))]
-                    best=BICs[which(BICs==min(BICs,na.rm=TRUE))]
-                    order=order(BICs)
-                    farb=(BICs[order[2]]-BICs[order[1]])/100
-                    if (farb>1){farb=1}
-                    
+                BICs=c(fit_stuff1[sea,reg,state,c(16,20)])
+                if (is.na(BICs[1])){
+                    fit=1
+                    farbe="white"#rgb(1,0,1,0.3)
                 }
-                print(BICs)
-                print(BICs[order])
-                print(farb*100)
-                print(farb)
-                BICs[is.na(BICs)]=0
+                if (is.na(BICs[2])){
+                    fit=2
+                    farbe="white"#rgb(0,1,0,0.3)
+                }
+                if (is.na(BICs[2]) & is.na(BICs[1])){
+                    fit=0
+                    farbe="white"
+                    text=""
+                }
+                if (length(which(!is.na(BICs)))==2){
+                    opacity=abs((BICs[2]-BICs[1])/100)
+                    if (opacity>1){opacity=1}
+                    if (BICs[1]<BICs[2]){
+                        fit=1
+                        farbe=rgb(0.9,0.5,0.9,opacity)}
+                    if (BICs[1]>BICs[2]){
+                        fit=2
+                        farbe=rgb(0.5,0.9,0.5,opacity)}
+                }
+                if (fit==1){
+                    text=paste("P=",round(exp(-fit_stuff1[sea,reg,state,2])*100,01))
+                }                
+                if (fit==2){
+                    text=paste("P1=",round(exp(-fit_stuff1[sea,reg,state,6])*100,01),"P2=",round(exp(-fit_stuff1[sea,reg,state,8])*100,01),"\n thresh=",round(fit_stuff1[sea,reg,state,9]))
+                }
 
                 lon=poli[reg,1:6]
                 lat=poli[reg,7:12]
                 lon=lon[!is.na(lon)]
                 lat=lat[!is.na(lat)]
                 #polygon(x=lon,y=lat,col=rgb(farb,1,farb),border="green")
-                polygon(x=lon,y=lat,col=rgb(BICs[1]/best,BICs[2]/best,BICs[3]/best),border="white")
-                #text(mean(lon),mean(lat),label=signi[i],cex=0.7,col="black")
+                polygon(x=lon,y=lat,col="white",border="white")
+                polygon(x=lon,y=lat,col=farbe,border="white")
+                text(mean(lon),mean(lat),label=text,cex=0.3,col="black")
 
                 
             }
@@ -573,3 +586,4 @@ fit_info_to_map <- function(trendID="91_5",region_name="srex",period,fit_style1,
     graphics.off()
     return()
 }
+

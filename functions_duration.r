@@ -143,10 +143,11 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
         fit_plot_empty()
     }
 
-
+    print(ID_length)
     quantile_stuff=array(NA,dim=c(length(season_names),ID_length,2,length(taus),3))
     fit_stuff=array(NA,dim=c(length(season_names),ID_length,2,20))
     other_stuff=array(NA,dim=c(length(season_names),ID_length,2,12))
+    distr_stuff=array(NA,dim=c(length(season_names),ID_length,2,5,100))
 
     for (sea in season_auswahl){ 
         season=season_names[sea]
@@ -198,8 +199,16 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                     br=seq(0,max(y,na.rm=TRUE),1)
                     histo=hist(y,breaks=br,plot=FALSE)
                         
+                    counts=histo$counts
                     Y=histo$density
                     X=histo$mids
+
+                    if (length(X)>100){stop=100}
+                    else {stop=length(X)}
+
+                    distr_stuff[sea,q,state,1,1:stop]=X[1:stop]
+                    distr_stuff[sea,q,state,2,1:stop]=Y[1:stop]
+                    distr_stuff[sea,q,state,3,1:stop]=counts[1:stop]
 
 
 
@@ -212,6 +221,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                         fit_stuff[sea,q,state,1:2]=tmp_exp$pars
                         fit_stuff[sea,q,state,15:16]=tmp_exp$ana
                         expfit=tmp_exp$fit
+                        distr_stuff[sea,q,state,4,1:stop]=expfit[1:stop]
 
                         # combination of 2 exponentials seperated by threshold (restricted threshold range)
                         if (option[4]==1){
@@ -219,6 +229,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                             fit_stuff[sea,q,state,5:9]=tmp$pars
                             fit_stuff[sea,q,state,19:20]=tmp$ana
                             fit=tmp$fit
+                            distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
                         }
 
                         # combination of 2 exponentials seperated by fixed threshold (restricted threshold range)
@@ -227,6 +238,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                             fit_stuff[sea,q,state,5:9]=tmp$pars
                             fit_stuff[sea,q,state,19:20]=tmp$ana
                             fit=tmp$fit
+                            distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
                         }
 
                         # combination of 2 exponentials seperated by threshold (restricted threshold range) - additional restriction b1>b2
@@ -235,6 +247,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                             fit_stuff[sea,q,state,5:9]=tmp$pars
                             fit_stuff[sea,q,state,19:20]=tmp$ana
                             fit=tmp$fit
+                            distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
                         }
 
                         # overlap of 2 exponentials
@@ -243,10 +256,13 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                             fit_stuff[sea,q,state,5:9]=tmp$pars
                             fit_stuff[sea,q,state,19:20]=tmp$ana
                             fit=tmp$fit
+                            distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
                         }
 
                         fit_stuff[sea,q,state,17]=fit_stuff[sea,q,state,20]-fit_stuff[sea,q,state,16]
                     }
+
+
                 }
                 if (length(which(!is.na(duration)))<=100){
                     x=(1:10)*NA
@@ -262,7 +278,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                     fit_plot_reference(x=x,y=y,sea=season_names[sea],q=ID_names[q],state=state)
                     #fit_plot(X=X,Y=Y,fit=expifit,legend=c(paste("ID= ",ID_names[q],"\n","\nR2=",round(fit_stuff[sea,q,state,15],03),"\nBIC=",round(fit_stuff[sea,q,state,16],01),"\n\nb=",round(fit_stuff[sea,q,state,2],03),sep=""),paste("P=",round(exp(-fit_stuff[sea,q,state,2])*100,01),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=NA)
                     #fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("dBIC= ",round(fit_stuff[sea,q,state,17],01),"\n","\nR2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),"\n\nb1=",round(fit_stuff[sea,q,state,6],03),"\nb2=",round(fit_stuff[sea,q,state,8],03),sep=""),paste("P1=",round(exp(-fit_stuff[sea,q,state,6])*100,01),"\nP2=",round(exp(-fit_stuff[sea,q,state,8])*100,01),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,9])
-                    fit_plot_combi(X=X,Y=Y,expfit=expfit,fit=fit,fitstuff=fit_stuff[sea,q,state,],sea=season_names[sea],q=ID_names[q],state=state)
+                    fit_plot_combi(X=X,Y=Y,counts=counts,expfit=expfit,fit=fit,fitstuff=fit_stuff[sea,q,state,],sea=season_names[sea],q=ID_names[q],state=state)
                 }
             }
         }
@@ -271,7 +287,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
 
     if (option[2]==1){quantiles_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
         
-    if (option[3]==1 | option[4]==1 | option[5]==1 | option[6]==1 | option[7]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
+    if (option[3]==1 | option[4]==1 | option[5]==1 | option[6]==1 | option[7]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff,distr_stuff=distr_stuff)}
     graphics.off()
 }
 
