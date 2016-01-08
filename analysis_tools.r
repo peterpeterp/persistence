@@ -491,6 +491,18 @@ plot_fits_for_region <- function(period="1950-2014",trendID="91_5",dataset="_TMe
     
 }
 
+
+plot_aktuelles_muster <- function(X,start,nGroup,color,main=""){
+    plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,main=main)
+    for (p in 1:nGroup){
+        lines(X,start[p,],col=color[p])
+    }
+    plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y",main=main)
+    for (p in 1:nGroup){
+        lines(X,start[p,],col=color[p])
+    }
+}
+
 distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",reg=13,model="combi_expo",region_name="srex",ID_select=1:1319){
 
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
@@ -511,7 +523,7 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
     start=distr_stuff_reg[sea,c(6,18,11,22),state,2,]
     start=distr_stuff_individual[sea,c(511,294,473,871,661,173,415,821),state,2,]
     start=distr_stuff_individual[sea,c(294,511,661,871,415,173),state,2,]
-    start=distr_stuff_individual[sea,c(415,871,511,294,173,889,661,52,420),state,2,]
+    start=distr_stuff_individual[sea,c(415,871,511,294,173,889,661,4,6,8,10,420),state,2,]
     #start=distr_stuff_individual[sea,c(1,100,200,300,400,500,600,700),state,2,]
 
     #start[1,]=combi_expo(X,0.23,0.3,0.28,5)
@@ -523,6 +535,8 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
 
 
     toOrder=distr_stuff_individual[sea,,state,2,]
+
+    reduce=6
 
     version=1
 
@@ -542,7 +556,7 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
     print(dim(start))
     print(dim(toOrder))
 
-    color=c("red","blue","green","violet","black","orange","lightblue","grey")
+    color=c("red","blue","green","violet","black","orange","lightblue","grey",rgb(1,0.5,0.6),rgb(0.5,0.7,0.9),rgb(0.5,0.2,0.8),rgb(0.2,0.5,0.6))
 
     pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours",version,".pdf",sep=""))
 
@@ -599,54 +613,56 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
         }
         if (sum(attribution_old-attribution,na.rm=TRUE)==0){break}
         else {attribution_old<-attribution}
-        plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE)
+        plot_aktuelles_muster(X,start,nGroup,color)
+    }
+
+
+    
+    score=array(999,c(nGroup,nGroup))
+
+    for (m in 1:reduce){
+        #score=array(999,c(nGroup-m+1,nGroup-m+1))
         for (p in 1:nGroup){
+            for (p2 in 1:nGroup){
+                if (p!=p2){
+                    #score[p]=sum((start[p,]-toOrder[q,])^2)
+                    score[p,p2]=sum(X*as.vector((start[p,]-start[p2,])^2))
+                }
+            }
+        }
+        print(score)
+
+        similar=which(score==score[which.min(score)],arr.ind=TRUE)
+        print(similar)
+        start[similar[1],]=colMeans(start[similar[1:2],],na.rm=TRUE)
+        start[similar[2],]=NA
+        plot_aktuelles_muster(X,start,nGroup,color,main=paste(similar[c(1,3)],length(which(attribution==similar[1])),length(which(attribution==similar[3]))))
+        attribution[which(attribution==similar[2])]=similar[1]
+
+    }
+
+
+
+    for (p in 1:nGroup){
+        if (!is.na(start[p,1])){
+            plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE,main=length(which(attribution==p))) 
+            for (q in which(attribution==p)){
+                #print("missing points")
+                points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
+            }
+            lines(X,start[p,],col=color[p])
+
+            plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE,log="y",main=length(which(attribution==p))) 
+            for (q in which(attribution==p)){
+                #print("missing points")
+                points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
+            }
             lines(X,start[p,],col=color[p])
         }
-        plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
-        for (p in 1:nGroup){
-            lines(X,start[p,],col=color[p])
-        }
-    }
-    for (p in 1:nGroup){
-        plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE) 
-        for (q in which(attribution==p)){
-            points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
-        }
-        lines(X,start[p,],col=color[p])
-    }
-    for (p in 1:nGroup){
-        plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE,log="y") 
-        for (q in which(attribution==p)){
-            points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
-        }
-        lines(X,start[p,],col=color[p])
     }
 
     graphics.off()
 
-    score=array(999,c(nGroup,nGroup))
-    for (p in 1:nGroup){
-        for (p2 in 1:nGroup){
-            if (p!=p2){
-                #score[p]=sum((start[p,]-toOrder[q,])^2)
-                score[p,p2]=sum(X*as.vector((start[p,]-start[p2,])^2))
-            }
-        }
-    }
-    score_vec=colMeans(score,na.rm=TRUE)
-    for (i in 1:3){
-        similar1=which.min(score_vec)
-        similar2=which.min(score[similar1])
-        start[similar1,]=colMeans(start[c(similar1,similar2),])
-        start[similar2,]=array(999,100)
-        attribution[attribution=similar2]=similar1
-        print(similar1)
-        print(similar2)
-    }
-    print(score)
-    print(score_vec)
-    print(which.min(score_vec))
 
     library(SDMTools)
     source("map_plot.r")
