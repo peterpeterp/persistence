@@ -520,173 +520,160 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
     sea=4
     state=1
 
-    start=distr_stuff_reg[sea,c(6,18,11,22),state,2,]
-    start=distr_stuff_individual[sea,c(511,294,473,871,661,173,415,821),state,2,]
-    start=distr_stuff_individual[sea,c(294,511,661,871,415,173),state,2,]
-    start=distr_stuff_individual[sea,c(415,871,511,294,173,889,661,4,6,8,10,420),state,2,]
-    #start=distr_stuff_individual[sea,c(1,100,200,300,400,500,600,700),state,2,]
-
-    #start[1,]=combi_expo(X,0.23,0.3,0.28,5)
-    #start[2,]=combi_expo(X,0.2,0.2,0.1,8)
-    #start[3,]=combi_expo(X,0.19,0.22,0.2,6)
-    #start[4,]=combi_expo(X,0.2,0.2,0.15,10)
-    #start[5,]=combi_expo(X,0.2,0.15,0.15,4)
-    #start[6,]=X*0
-
-
-    toOrder=distr_stuff_individual[sea,,state,2,]
-
-    reduce=6
-
-    version=1
-
-
-
-    start[is.na(start)]=0
-    toOrder[is.na(toOrder)]=0
-
-
-    #start[start==0]=NA
-    #toOrder[start==0]=NA
-    print(start)
-
-    nGroup=dim(start)[1]
-    ntot=dim(toOrder)[1]
-
-    print(dim(start))
-    print(dim(toOrder))
-
-    color=c("red","blue","green","violet","black","orange","lightblue","grey",rgb(1,0.5,0.6),rgb(0.5,0.7,0.9),rgb(0.5,0.2,0.8),rgb(0.2,0.5,0.6))
-
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours",version,".pdf",sep=""))
-
-    attribution_old=array(1:10,ntot)
-    attribution=array(NA,ntot)
-    for (i in 1:30){
-        print(i)
-        for (q in 1:ntot){
-            score=array(NA,nGroup)
-            #print(q)
-            for (p in 1:nGroup){
-                #print(proc.time())
-                #score[p]=sum((start[p,]-toOrder[q,])^2)
-                score[p]=sum(X*as.vector((start[p,]-toOrder[q,])^2))
-                #score[p]=sum(abs((start[p,]-toOrder[q,])*(0.25-start[p,])^2))
-
-
-
-                #print(proc.time())
-
-                #greaterZero=which(start[p,]>0 & toOrder[q,]>0)
-                #score[p]=sum((log(start[p,greaterZero])-log(toOrder[q,greaterZero]))^2)
-
-                #print(start[p,])
-                #print(toOrder[q,])
-                #print(greaterZero)
-                #print(score[p])
-
-                #print(proc.time())
-                #score[p]=0
-                #for (j in 1:100){
-                 #   if (!is.na(start[p,j]) & !is.na(toOrder[q,j])){score[p]=score[p]+(X[j]^(0.5))*(start[p,j]-toOrder[q,j])^2}
-                    #print(score[p])
-                    #if (start[p,j]>0 & toOrder[q,j]>0){score[p]=score[p]+(log(start[p,j])-log(toOrder[q,j]))^2}
-                #}
-                #print(proc.time())
-                #print(score)
-
-            }
-            attribution[q]=which.min(score)
-            #print(attribution[q])
-            #print
-            (start[attribution[q],1:20])
-            #print(score)
-            #print(q)
-        }
-        #print(attribution)
-        for (p in 1:nGroup){
-            #if (length(which(attribution==p))==0){start[p,]=colMeans(start,na.rm=TRUE)}
-            if (length(which(attribution==p))==0){print("no match")}
-            if (length(which(attribution==p))==1){start[p,]=toOrder[which(attribution==p),]}
-            if (length(which(attribution==p))>1){start[p,]=colMeans(toOrder[which(attribution==p),],na.rm=TRUE)}
-
-        }
-        if (sum(attribution_old-attribution,na.rm=TRUE)==0){break}
-        else {attribution_old<-attribution}
-        plot_aktuelles_muster(X,start,nGroup,color)
-    }
-
-
-    
-    score=array(999,c(nGroup,nGroup))
-
-    for (m in 1:reduce){
-        #score=array(999,c(nGroup-m+1,nGroup-m+1))
-        for (p in 1:nGroup){
-            for (p2 in 1:nGroup){
-                if (p!=p2){
-                    #score[p]=sum((start[p,]-toOrder[q,])^2)
-                    score[p,p2]=sum(X*as.vector((start[p,]-start[p2,])^2))
-                }
-            }
-        }
-        print(score)
-
-        similar=which(score==score[which.min(score)],arr.ind=TRUE)
-        print(similar)
-        start[similar[1],]=colMeans(start[similar[1:2],],na.rm=TRUE)
-        start[similar[2],]=NA
-        plot_aktuelles_muster(X,start,nGroup,color,main=paste(similar[c(1,3)],length(which(attribution==similar[1])),length(which(attribution==similar[3]))))
-        attribution[which(attribution==similar[2])]=similar[1]
-
-    }
-
-
-
-    for (p in 1:nGroup){
-        if (!is.na(start[p,1])){
-            plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE,main=length(which(attribution==p))) 
-            for (q in which(attribution==p)){
-                #print("missing points")
-                points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
-            }
-            lines(X,start[p,],col=color[p])
-
-            plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE,log="y",main=length(which(attribution==p))) 
-            for (q in which(attribution==p)){
-                #print("missing points")
-                points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
-            }
-            lines(X,start[p,],col=color[p])
-        }
-    }
-
-    graphics.off()
-
-
     library(SDMTools)
     source("map_plot.r")
     library(rworldmap)
     library(fields)
     worldmap = getMap(resolution = "low")
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-
-    reihen=array(NA,dim=c(1,ntot))
-    attribution[attribution==nGroup]=NA
-    order=order(start[,1])
-    attri_order=attribution*NA
-    for (i in 1:length(order)){
-        attri_order[attribution==i]=order[i]
-    }
-    reihen[1,]=attri_order
-
-
-
-    reihen[1,]=attribution
-
-
-    map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",version,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="mixed")
-
     
+
+    start=distr_stuff_individual[sea,c(415,871,511,294,173,889,661,4,6,8,10,420),state,2,]
+
+
+    toOrder=distr_stuff_individual[sea,,state,2,]
+
+    reduce=3
+
+    name_zusatz="wenig_reduzierung"
+
+    start[is.na(start)]=0
+    toOrder[is.na(toOrder)]=0
+
+    noEmpty=which(distr_stuff_individual[sea,,state,2,1]>0)
+
+    nGroup=dim(start)[1]
+    nGroup=9
+    versions=10
+    runs=30
+
+    ntot=dim(toOrder)[1]
+
+
+    color=c("red","blue","green","violet","black","orange","lightblue","grey",rgb(1,0.5,0.6),rgb(0.5,0.7,0.9),rgb(0.5,0.2,0.8),rgb(0.2,0.5,0.6))
+
+    jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
+    nbcol <- nGroup
+    color <- jet.colors(nbcol)  
+
+    reihen=array(NA,dim=c(versions,ntot))
+
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours",name_zusatz,".pdf",sep=""))
+
+    attribution_speicher=array(NA,c(versions,ntot))
+    start_speicher=array(NA,c(versions,nGroup,dim(toOrder)[2]))
+
+    for (version in 1:versions){
+        cat(paste("\n version:",version,"\n"))
+        start=distr_stuff_individual[sea,c(sample(noEmpty,nGroup)),state,2,]
+        start[is.na(start)]=0
+
+
+
+
+        attribution_old=array(1:10,ntot)
+        attribution=array(NA,ntot)
+        for (i in 1:runs){
+            cat(paste(i," "))
+            for (q in 1:ntot){
+                score=array(NA,nGroup)
+                for (p in 1:nGroup){
+                    #score[p]=sum((start[p,]-toOrder[q,])^2)
+                    score[p]=sum(X*as.vector((start[p,]-toOrder[q,])^2))
+                    #score[p]=sum(abs((start[p,]-toOrder[q,])*(0.25-start[p,])^2))
+
+                }
+
+                attribution[q]=which.min(score)
+            }
+            for (p in 1:nGroup){
+                if (length(which(attribution==p))==0){print("no match")}
+                if (length(which(attribution==p))==1){start[p,]=toOrder[which(attribution==p),]}
+                if (length(which(attribution==p))>1){start[p,]=colMeans(toOrder[which(attribution==p),],na.rm=TRUE)}
+
+            }
+            if (sum(attribution_old-attribution,na.rm=TRUE)==0){break}
+            else {attribution_old<-attribution}
+            #plot_aktuelles_muster(X,start,nGroup,color)
+        }
+
+
+        
+        score=array(999,c(nGroup,nGroup))
+
+        for (m in 1:reduce){
+            for (p in 1:nGroup){
+                for (p2 in 1:nGroup){
+                    if (p!=p2){
+                        #score[p]=sum((start[p,]-toOrder[q,])^2)
+                        if (length(which(attribution==p))+length(which(attribution==p2))<500){score[p,p2]=sum(X*as.vector((start[p,]-start[p2,])^2))}
+                        else {score[p,p2]=999}
+
+                    }
+                }
+            }
+            similar=which(score==score[which.min(score)],arr.ind=TRUE)
+
+            #print(score)
+            #print(similar)
+
+            start[similar[1],]=colMeans(start[similar[1:2],],na.rm=TRUE)
+            start[similar[2],]=NA
+            plot_aktuelles_muster(X,start,nGroup,color,main=paste(version,"  ",similar[1],length(which(attribution==similar[1])),similar[3],length(which(attribution==similar[3]))))
+            attribution[which(attribution==similar[2])]=similar[1]
+
+        }
+
+
+        if (1==2){
+            for (p in 1:nGroup){
+                if (!is.na(start[p,1])){
+                    plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE,main=length(which(attribution==p))) 
+                    for (q in which(attribution==p)){
+                        #print("missing points")
+                        points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
+                    }
+                    lines(X,start[p,],col=color[p])
+
+                    plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE,log="y",main=length(which(attribution==p))) 
+                    for (q in which(attribution==p)){
+                        #print("missing points")
+                        points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
+                    }
+                    lines(X,start[p,],col=color[p])
+                }
+            }
+        }
+
+
+
+
+
+        #attribution[attribution==nGroup]=NA
+
+        
+        laggedDiffs=c()
+        for (p in 1:nGroup){
+            laggedDiffs[p]=sum(diff(start[p,3:10]))
+        }
+        print(laggedDiffs)
+        order=order(laggedDiffs)
+        print(order)
+        
+        order=order(start[,1])
+
+        attri_order=attribution*NA
+        for (i in 1:length(order)){
+            attri_order[attribution==i]=order[i]
+        }
+        reihen[version,]=attri_order
+        reihen[1,]=attribution
+
+        attribution_speicher[version,]=attribution
+        start_speicher[version,]=start
+
+    }
+    map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="regenbogen")
+
     
 }
