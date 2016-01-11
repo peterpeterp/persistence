@@ -196,7 +196,8 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                     }
 
                     # data to be fitted
-                    br=seq(0,max(y,na.rm=TRUE),1)
+                    # wie sollte breaks definiert sein ....
+                    br=seq(0.5,max(y,na.rm=TRUE)+0.5,1)
                     histo=hist(y,breaks=br,plot=FALSE)
                         
                     counts=histo$counts
@@ -259,9 +260,17 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                             distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
                         }
 
+                        # gev
+                        if (option[8]==1){
+                            tmp=general_extreme_values_fit(X,Y)
+                            fit_stuff[sea,q,state,5:7]=tmp$pars
+                            fit_stuff[sea,q,state,19:20]=tmp$ana
+                            fit=tmp$fit
+                            distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
+                        }
+
                         fit_stuff[sea,q,state,17]=fit_stuff[sea,q,state,20]-fit_stuff[sea,q,state,16]
                     }
-                    print(fit_stuff[sea,q,state,])
 
 
                 }
@@ -277,10 +286,9 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                         fit=X*NA
                     }
                     fit_plot_reference(x=x,y=y,sea=season_names[sea],q=ID_names[q],state=state)
-                    #fit_plot(X=X,Y=Y,fit=expifit,legend=c(paste("ID= ",ID_names[q],"\n","\nR2=",round(fit_stuff[sea,q,state,15],03),"\nBIC=",round(fit_stuff[sea,q,state,16],01),"\n\nb=",round(fit_stuff[sea,q,state,2],03),sep=""),paste("P=",round(exp(-fit_stuff[sea,q,state,2])*100,01),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=NA)
-                    #fit_plot(X=X,Y=Y,fit=fit,legend=c(paste("dBIC= ",round(fit_stuff[sea,q,state,17],01),"\n","\nR2=",round(fit_stuff[sea,q,state,19],03),"\nBIC=",round(fit_stuff[sea,q,state,20],01),"\n\nb1=",round(fit_stuff[sea,q,state,6],03),"\nb2=",round(fit_stuff[sea,q,state,8],03),sep=""),paste("P1=",round(exp(-fit_stuff[sea,q,state,6])*100,01),"\nP2=",round(exp(-fit_stuff[sea,q,state,8])*100,01),sep="")),sea=season_names[sea],q=ID_names[q],state=state,thresh=fit_stuff[sea,q,state,9])
                     fit_plot_combi(X=X,Y=Y,counts=counts,expfit=expfit,fit=fit,fitstuff=fit_stuff[sea,q,state,],sea=season_names[sea],q=ID_names[q],state=state)
                 }
+                adas
             }
         }
     }

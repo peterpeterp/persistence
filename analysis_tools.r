@@ -122,37 +122,29 @@ fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state)
 
     par(mar=c(3, 3, 3, 3) + 0.1)  
 
-    #first plot page
-    plot(NA,xlab="",xlim=c(0,10),ylim=c(0,10),ylab="",axes=FALSE,frame.plot=FALSE)
-    text(0,9,paste("ID=",q,sep=""),pos=4) 
-    text(5,9,paste("dBIC=",round(fitstuff[17]),sep=""),pos=4,col=color[5])                 
- 
-    text(0,7,paste("BIC=",round(fitstuff[16]),sep=""),pos=4,col=color[3])               
-    text(5,7,paste("BIC=",round(fitstuff[20]),sep=""),pos=4,col=color[4])      
-
-    text(0,5,paste("R2=",round(fitstuff[15],03),sep=""),pos=4,col=color[3])                 
-    text(5,5,paste("R2=",round(fitstuff[19],03),sep=""),pos=4,col=color[4]) 
-
-    text(0,3,paste("P=",round(exp(-fitstuff[2])*100,01),sep=""),pos=4,col=color[3])                 
-    text(5,3,paste("P1=",round(exp(-fitstuff[6])*100,01),sep=""),pos=4,col=color[4])                 
-    text(5,2,paste("P2=",round(exp(-fitstuff[8])*100,01),sep=""),pos=4,col=color[4])  
-
     # second plot page
     nonull=which(counts>0)              
     plot(X[nonull],counts[nonull],xlab="days",xlim=c(0,70),ylab="counts",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
-    axis(4)
+    axis(2)
+    legend("topright",legend=c(paste("     ID=",q,sep=""),paste("dBIC=",round(fitstuff[17],01),sep="")),bty="n")
 
-    # third plot page
+    # second plot page
+    par(mar=c(3, 3, 3, 3) + 0.1)                
     plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
     if (!is.na(fitstuff[9])){
         abline(v=fitstuff[9],col="grey")
-        text(fitstuff[9],0.235,label=round(fitstuff[9],02),col=rgb(0,0,0))
+        #text(thresh,0.22,label=round(thresh,02),col="grey")
     }
     lines(expfit,col=color[3],lty=2)
-    lines(fit,col=color[4],lty=1)
-           
+    lines(fit,col=color[4],lty=1)               
+ 
+    text(50,0.18+0.06,paste("BIC=",round(fitstuff[16],01)),pos=1,col=color[3])                 
+    text(50,0.155+0.06,paste("BIC=",round(fitstuff[20],01)),pos=1,col=color[4])      
 
-    # fourth version
+    text(50,0.11+0.06,paste("R2=",round(fitstuff[15],03)),pos=1,col=color[3])                 
+    text(50,0.085+0.06,paste("R2=",round(fitstuff[19],03)),pos=1,col=color[4])            
+
+    # third version
     plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
     if (!is.na(fitstuff[9])){
         abline(v=fitstuff[9],col="grey")
@@ -160,6 +152,9 @@ fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state)
     }    
     lines(expfit,col=color[3],lty=2)
     lines(fit,col=color[4],lty=1)
+    text(50,0.22,paste("P=",round(exp(-fitstuff[2])*100,01)),pos=1,col=color[3])                 
+    text(50,0.05,paste("P1=",round(exp(-fitstuff[6])*100,01)),pos=1,col=color[4])                 
+    text(50,0.02,paste("P2=",round(exp(-fitstuff[8])*100,01)),pos=1,col=color[4])  
                
 }
 
@@ -444,6 +439,44 @@ two_exp_fit_fixed_thresh <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,
     }
 }
 
+general_extreme_values_fit <- function(X,Y,start_guess=c(xi=0.3,mu=1,beta=2),lower_limit=c(-Inf,-Inf,-Inf),upper_limit=c(Inf,Inf,Inf)){
+
+
+    
+    #really bad!!!!!!
+
+
+
+    xy=data.frame(y=Y,x=X)
+    # try fit
+    gev_nls=try(nls(y~dgev(x=x,xi=xi,mu=mu,beta=beta),data=xy,algorithm="plinear",start=start_guess,lower=lower_limit,upper=upper_limit,na.action=na.exclude)) 
+ 
+    print(gev_nls)
+    print(X)
+
+    x<<-X
+    y<<-Y
+
+    # if succes
+    if (class(gev_nls)!="try-error"){
+        xi=summary(gev_nls)$parameters[1]
+        mu=summary(gev_nls)$parameters[2]
+        beta=summary(gev_nls)$parameters[3]
+
+        gevfit=dgev(x=X,xi=xi,mu=mu,beta=beta)
+        R2=1-sum(((Y-gevfit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
+        BIC=BIC(gev_nls)
+
+        return(list(pars=c(xi,mu,beta),ana=c(R2,BIC),fit=gevfit))
+    }
+    # if fail
+
+
+
+    else{
+        return(list(pars=start_guess,ana=c(NA,NA),fit=dgev(x=X,xi=start_guess[1],mu=start_guess[2],beta=start_guess[3])))
+    }
+}
 
 
 plot_fits_for_region <- function(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",reg=13,model="combi_expo",region_name="srex",ID_select=1:1319){
