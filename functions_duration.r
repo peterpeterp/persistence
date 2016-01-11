@@ -261,6 +261,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
 
                         fit_stuff[sea,q,state,17]=fit_stuff[sea,q,state,20]-fit_stuff[sea,q,state,16]
                     }
+                    print(fit_stuff[sea,q,state,])
 
 
                 }

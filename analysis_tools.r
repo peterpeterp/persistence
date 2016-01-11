@@ -120,31 +120,39 @@ fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state)
     state_names=c("cold","warm")
     color=c("blue","red",rgb(0.5,0.1,0.5),rgb(0.1,0.7,0.1),rgb(0,0,0))
 
-    #first plot page
     par(mar=c(3, 3, 3, 3) + 0.1)  
-    nonull=which(counts>0)              
-    plot(X[nonull],counts[nonull],xlab="days",xlim=c(0,70),ylab="counts",axes=TRUE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
-    text(45,max(counts),paste("ID = ",q," \nPoints =",length(counts)),pos=1) 
+
+    #first plot page
+    plot(NA,xlab="",xlim=c(0,10),ylim=c(0,10),ylab="",axes=FALSE,frame.plot=FALSE)
+    text(0,9,paste("ID=",q,sep=""),pos=4) 
+    text(5,9,paste("dBIC=",round(fitstuff[17]),sep=""),pos=4,col=color[5])                 
+ 
+    text(0,7,paste("BIC=",round(fitstuff[16]),sep=""),pos=4,col=color[3])               
+    text(5,7,paste("BIC=",round(fitstuff[20]),sep=""),pos=4,col=color[4])      
+
+    text(0,5,paste("R2=",round(fitstuff[15],03),sep=""),pos=4,col=color[3])                 
+    text(5,5,paste("R2=",round(fitstuff[19],03),sep=""),pos=4,col=color[4]) 
+
+    text(0,3,paste("P=",round(exp(-fitstuff[2])*100,01),sep=""),pos=4,col=color[3])                 
+    text(5,3,paste("P1=",round(exp(-fitstuff[6])*100,01),sep=""),pos=4,col=color[4])                 
+    text(5,2,paste("P2=",round(exp(-fitstuff[8])*100,01),sep=""),pos=4,col=color[4])  
 
     # second plot page
-    par(mar=c(3, 3, 3, 3) + 0.1)                
+    nonull=which(counts>0)              
+    plot(X[nonull],counts[nonull],xlab="days",xlim=c(0,70),ylab="counts",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
+    axis(4)
+
+    # third plot page
     plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
     if (!is.na(fitstuff[9])){
         abline(v=fitstuff[9],col="grey")
-        #text(thresh,0.22,label=round(thresh,02),col="grey")
+        text(fitstuff[9],0.235,label=round(fitstuff[9],02),col=rgb(0,0,0))
     }
     lines(expfit,col=color[3],lty=2)
     lines(fit,col=color[4],lty=1)
-    text(59,0.265,paste("ID = ",q," "),pos=1) 
-    text(50,0.225,paste("dBIC=",round(fitstuff[17],01)),pos=1,col=color[5])                 
- 
-    text(50,0.18,paste("BIC=",round(fitstuff[16],01)),pos=1,col=color[3])                 
-    text(50,0.155,paste("BIC=",round(fitstuff[20],01)),pos=1,col=color[4])      
+           
 
-    text(50,0.11,paste("R2=",round(fitstuff[15],03)),pos=1,col=color[3])                 
-    text(50,0.085,paste("R2=",round(fitstuff[19],03)),pos=1,col=color[4])            
-
-    # third version
+    # fourth version
     plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
     if (!is.na(fitstuff[9])){
         abline(v=fitstuff[9],col="grey")
@@ -152,9 +160,7 @@ fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state)
     }    
     lines(expfit,col=color[3],lty=2)
     lines(fit,col=color[4],lty=1)
-    text(50,0.22,paste("P=",round(exp(-fitstuff[2])*100,01)),pos=1,col=color[3])                 
-    text(50,0.05,paste("P1=",round(exp(-fitstuff[6])*100,01)),pos=1,col=color[4])                 
-    text(50,0.02,paste("P2=",round(exp(-fitstuff[8])*100,01)),pos=1,col=color[4])                 
+               
 }
 
 fit_plot <- function(X,Y,fit,legend,fit_style,sea,q,state,thresh=NA){
@@ -185,7 +191,7 @@ fit_plot <- function(X,Y,fit,legend,fit_style,sea,q,state,thresh=NA){
 exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-Inf),upper_limit=c(Inf,Inf)){
     xy=data.frame(y=Y,x=X)
     # try fit
-    exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=start_guess,lower=lower_limit,upper=upper_limit,na.action=na.exclude),silent=TRUE) 
+    exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,algorithm="port",start=start_guess,lower=lower_limit,upper=upper_limit,na.action=na.exclude),silent=TRUE) 
     
     # if succes
     if (class(exp_nls)!="try-error"){
@@ -491,8 +497,34 @@ plot_fits_for_region <- function(period="1950-2014",trendID="91_5",dataset="_TMe
     
 }
 
+group_reduction <- function(X,attribution,start,nGroup,reduce,main_add=""){
 
-plot_aktuelles_muster <- function(X,start,nGroup,color,main=""){
+    score=array(999,c(nGroup,nGroup))
+    for (m in 1:reduce){
+        for (p in 1:nGroup){
+            for (p2 in 1:nGroup){
+                if (p!=p2){
+                    #score[p]=sum((start[p,]-toOrder[q,])^2)
+                    if (length(which(attribution==p))+length(which(attribution==p2))<500){score[p,p2]=sum(X*as.vector((start[p,]-start[p2,])^2))}
+                    else {score[p,p2]=999}
+                }
+            }
+        }
+        similar=which(score==score[which.min(score)],arr.ind=TRUE)
+
+        #print(score)
+        #print(similar)
+
+        start[similar[1],]=colMeans(start[similar[1:2],],na.rm=TRUE)
+        start[similar[2],]=NA
+        plot_aktuelles_muster(X,start,nGroup,main=paste(main_add,"  ",similar[1],length(which(attribution==similar[1])),similar[3],length(which(attribution==similar[3]))))
+        attribution[which(attribution==similar[2])]=similar[1]
+    }
+    return(list(attribution=attribution,start=start))
+}
+
+
+plot_aktuelles_muster <- function(X,start,nGroup,main=""){
     plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,main=main)
     for (p in 1:nGroup){
         lines(X,start[p,],col=color[p])
@@ -530,12 +562,8 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
 
     start=distr_stuff_individual[sea,c(415,871,511,294,173,889,661,4,6,8,10,420),state,2,]
 
-
     toOrder=distr_stuff_individual[sea,,state,2,]
-
-    reduce=3
-
-    name_zusatz="wenig_reduzierung"
+    name_zusatz="_testMasse_"
 
     start[is.na(start)]=0
     toOrder[is.na(toOrder)]=0
@@ -543,25 +571,27 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
     noEmpty=which(distr_stuff_individual[sea,,state,2,1]>0)
 
     nGroup=dim(start)[1]
-    nGroup=9
-    versions=10
+    nGroup=7
+    versions=30
     runs=30
+    reduce=0
 
     ntot=dim(toOrder)[1]
+    distrSize=dim(toOrder)[2]
 
 
     color=c("red","blue","green","violet","black","orange","lightblue","grey",rgb(1,0.5,0.6),rgb(0.5,0.7,0.9),rgb(0.5,0.2,0.8),rgb(0.2,0.5,0.6))
 
     jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
     nbcol <- nGroup
-    color <- jet.colors(nbcol)  
+    color <<- jet.colors(nbcol)  
 
     reihen=array(NA,dim=c(versions,ntot))
 
     pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours",name_zusatz,".pdf",sep=""))
 
     attribution_speicher=array(NA,c(versions,ntot))
-    start_speicher=array(NA,c(versions,nGroup,dim(toOrder)[2]))
+    start_speicher=array(NA,c(versions,nGroup,distrSize))
 
     for (version in 1:versions){
         cat(paste("\n version:",version,"\n"))
@@ -597,33 +627,11 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
             #plot_aktuelles_muster(X,start,nGroup,color)
         }
 
-
-        
-        score=array(999,c(nGroup,nGroup))
-
-        for (m in 1:reduce){
-            for (p in 1:nGroup){
-                for (p2 in 1:nGroup){
-                    if (p!=p2){
-                        #score[p]=sum((start[p,]-toOrder[q,])^2)
-                        if (length(which(attribution==p))+length(which(attribution==p2))<500){score[p,p2]=sum(X*as.vector((start[p,]-start[p2,])^2))}
-                        else {score[p,p2]=999}
-
-                    }
-                }
-            }
-            similar=which(score==score[which.min(score)],arr.ind=TRUE)
-
-            #print(score)
-            #print(similar)
-
-            start[similar[1],]=colMeans(start[similar[1:2],],na.rm=TRUE)
-            start[similar[2],]=NA
-            plot_aktuelles_muster(X,start,nGroup,color,main=paste(version,"  ",similar[1],length(which(attribution==similar[1])),similar[3],length(which(attribution==similar[3]))))
-            attribution[which(attribution==similar[2])]=similar[1]
-
+        if (reduce>0){
+            tmp=group_reduction(X=X,attribution=attribution,start=start,nGroup=nGroup,reduce=reduce,main_add=version)
+            attribution=tmp$attribution
+            start=tmp$start
         }
-
 
         if (1==2){
             for (p in 1:nGroup){
@@ -670,10 +678,50 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
         reihen[1,]=attribution
 
         attribution_speicher[version,]=attribution
-        start_speicher[version,]=start
+        start_speicher[version,,]=start
 
     }
+
+
+
+
     map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="regenbogen")
+    
+
+    nc_out <- create.nc(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,"result.nc",sep=""))
+    att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", "bla")
+
+    dim.def.nc(nc_out,"seasons",dimlength=6,unlim=FALSE)
+    dim.def.nc(nc_out,"ID",dimlength=ntot, unlim=FALSE)
+    dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
+
+    dim.def.nc(nc_out,"versions",dimlength=versions,unlim=FALSE)
+    dim.def.nc(nc_out,"nGroup",dimlength=nGroup,unlim=FALSE)
+    dim.def.nc(nc_out,"distrSize",dimlength=distrSize,unlim=FALSE)
+
+
+    var.def.nc(nc_out,"attribution","NC_DOUBLE",c(3,1))
+    att.put.nc(nc_out, "attribution", "missing_value", "NC_DOUBLE", -99999.9)
+    att.put.nc(nc_out, "attribution", "dim_explanation", "NC_CHAR", "version-ID")
+    att.put.nc(nc_out, "attribution", "explanation", "NC_CHAR", "group numbers of differnt versions")
+
+    var.def.nc(nc_out,"groups","NC_DOUBLE",c(3,4,5))
+    att.put.nc(nc_out, "groups", "missing_value", "NC_DOUBLE", -99999.9)
+    att.put.nc(nc_out, "groups", "dim_explanation", "NC_CHAR", "version-nGroup-distrSize")
+    att.put.nc(nc_out, "groups", "explanation", "NC_CHAR", "end distributions of groups")
+        
+    var.put.nc(nc_out,"attribution",attribution_speicher)      
+    var.put.nc(nc_out,"groups",start_speicher)      
+ 
+    close.nc(nc_out) 
 
     
+}
+
+nearest_neighbours_post_opti <- function(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",region_name="srex",name_zusatz="wenig_reduzierung"){
+    nc=open.nc(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,"result.nc",sep=""))
+    groups=var.get.nc(nc,"groups")
+    attribution=var.get.nc(nc,"attribution")
+
+    print(groups[2,1:5,1:30])
 }
