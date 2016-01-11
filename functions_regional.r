@@ -435,10 +435,49 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
 write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fit_style1,fit_style2,region_names,ID_select){
     regNumb=length(ID_select)
 
+    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
     fit_stuff1=var.get.nc(nc,"fit_stuff")
+    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
     fit_stuff2=var.get.nc(nc,"fit_stuff")
+
+
+    if (1==2){
+
+        print(fit_stuff1[1:4,,,17])
+        print(length(which(fit_stuff1[1:4,,,17]< 0)))
+
+        print(length(fit_stuff1[1:4,,,17]))
+        print(length(which(fit_stuff1[1:4,,,17]>5)))
+        print(length(which(fit_stuff1[1:4,,,17]< -5)))
+        print(length(which(fit_stuff1[1:4,,,17]> -5 & fit_stuff1[1:4,,,17]<5)))
+
+        print(999)
+        print(length(which(fit_stuff1[1:4,,,6]<fit_stuff1[1:4,,,8])))
+        print(which(fit_stuff1[1:4,,,6]<fit_stuff1[1:4,,,8]))
+        print(as.vector(fit_stuff1[1:4,,,17])[which(fit_stuff1[1:4,,,6]<fit_stuff1[1:4,,,8])])
+
+        print(999)
+        print(which(fit_stuff1[1,,,6]<fit_stuff1[1,,,8] & fit_stuff1[1,,,17]< 0))
+        print(which(fit_stuff1[2,,,6]<fit_stuff1[2,,,8] & fit_stuff1[2,,,17]< 0))
+        print(which(fit_stuff1[3,,,6]<fit_stuff1[3,,,8] & fit_stuff1[3,,,17]< 0))
+        print(which(fit_stuff1[4,,,6]<fit_stuff1[4,,,8] & fit_stuff1[4,,,17]< 0))
+
+        print(999)
+        print(which(fit_stuff1[1,,,6]<fit_stuff1[1,,,8] & fit_stuff1[1,,,17]< 999))
+        print(which(fit_stuff1[2,,,6]<fit_stuff1[2,,,8] & fit_stuff1[2,,,17]< 999))
+        print(which(fit_stuff1[3,,,6]<fit_stuff1[3,,,8] & fit_stuff1[3,,,17]< 999))
+        print(which(fit_stuff1[4,,,6]<fit_stuff1[4,,,8] & fit_stuff1[4,,,17]< 999))
+
+        print(999)
+        print(which(fit_stuff1[1,,,6]>fit_stuff1[1,,,8] & fit_stuff1[1,,,17]< 999))
+        print(which(fit_stuff1[2,,,6]>fit_stuff1[2,,,8] & fit_stuff1[2,,,17]< 999))
+        print(which(fit_stuff1[3,,,6]>fit_stuff1[3,,,8] & fit_stuff1[3,,,17]< 999))
+        print(which(fit_stuff1[4,,,6]>fit_stuff1[4,,,8] & fit_stuff1[4,,,17]< 999))
+
+        adasd
+    }
 
 
     season_names=c("MAM","JJA","SON","DJF","4seasons")
@@ -475,6 +514,8 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
             for (reg in ID_select){
                 background=c(colors[1],colors[1],colors[1])
                 BICs=c(fit_stuff1[sea,reg,state,c(16,20)],fit_stuff2[sea,reg,state,20])
+                # whithout overlap
+                #BICs=c(fit_stuff1[sea,reg,state,c(16,20)])
                 if (length(which(!is.na(BICs)))>0){
                     worst=BICs[which(BICs==max(BICs,na.rm=TRUE))]
                     for (i in 1:3){

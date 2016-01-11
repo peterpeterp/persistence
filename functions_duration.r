@@ -288,7 +288,6 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                     fit_plot_reference(x=x,y=y,sea=season_names[sea],q=ID_names[q],state=state)
                     fit_plot_combi(X=X,Y=Y,counts=counts,expfit=expfit,fit=fit,fitstuff=fit_stuff[sea,q,state,],sea=season_names[sea],q=ID_names[q],state=state)
                 }
-                adas
             }
         }
     }
