@@ -152,7 +152,7 @@ master_regional_climatology <- function(trendID,ID_select=1:7,plot_select=1:7,ID
         #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0),add_name="combi_expo",folder="/regional/",ID_name="_7rect",ID_select=1:7,plot_select=1:7,ID_names=region_names,ID_length=7)
         #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0),add_name="2expo_thresh_5-15",folder="/regional/",ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length)
         #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,0,0,0,0,1),add_name="gev",folder="/regional/",ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length)
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,0,0,0,1,0),add_name="2expo_overlap",folder="/regional/",ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length)
+        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,0,0,0,1,0),add_name="2expo_overlap",folder="/regional/",ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length)
         #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,1,0,0,1),add_name="_expo_fixed_2expo",folder="/regional/",ID_name="_7rect",ID_select=1:7,plot_select=1:7,ID_names=region_names,ID_length=7)
         
 
@@ -235,7 +235,7 @@ ID_select=c(1,2,3,4,5,6,9,10,11,12,13,14,16,17,18,19,20,21,22,23,24,25,26)
 #master_duration(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 
 if (1==1){
-    reg=13
+    reg=4
 
     library(SDMTools)
     source("map_plot.r")
@@ -246,13 +246,13 @@ if (1==1){
     dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
     #dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-    #IDregions=points_to_regions(dat,"srex")
-    #ID_select=which(IDregions==reg)
-    #print(ID_select)
+    IDregions=points_to_regions(dat,"7rect")
+    ID_select=which(IDregions==reg)
+    print(ID_select)
     #print(length(ID_select))
 
     #duration_analysis(yearPeriod=c(1950,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0),add_name="2expo_thresh_5-15_reg_13",ID_select=ID_select,plot_select=ID_select,ID_length=1319)
-    #plot_fits_for_region(period="1950-2014",trendID=trendID,dataset=dataset,fit_style="2expo_thresh_5-15",reg=reg,region_name="srex",ID_select=ID_select)
+    #plot_fits_for_region(period="1950-2014",trendID=trendID,dataset=dataset,fit_style="2expo_thresh_5-15",reg=reg,region_name="7rect",ID_select=ID_select)
     
 
     #distr_nearest_neighbours(period="1950-2014",trendID=trendID,dataset=dataset,fit_style="2expo_thresh_5-15",reg=reg,region_name="srex",ID_select=ID_select)

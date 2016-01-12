@@ -501,7 +501,7 @@ plot_fits_for_region <- function(period="1950-2014",trendID="91_5",dataset="_TMe
                 points(distr_stuff_individual[sea,q,state,1,],distr_stuff_individual[sea,q,state,3,],pch=16,col=color[5],cex=1.5)
             }
 
-            plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE)
+            plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE)
             for (q in ID_select){points(distr_stuff_individual[sea,q,state,1,],distr_stuff_individual[sea,q,state,2,],pch=16,col=color[5],cex=1.5)}
             for (q in ID_select){
                 abline(v=fit_stuff_individual[sea,q,state,9],col=color[5],lty=2,lwd=0.3)
@@ -513,7 +513,7 @@ plot_fits_for_region <- function(period="1950-2014",trendID="91_5",dataset="_TMe
             lines(X,expo(X,fit_stuff_reg[sea,reg,state,1],fit_stuff_reg[sea,reg,state,2]),col=color[4],lty=1,lwd=2)
             
 
-            plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
+            plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
             for (q in ID_select){points(distr_stuff_individual[sea,q,state,1,],distr_stuff_individual[sea,q,state,2,],pch=16,col=color[5],cex=1.5)}
             for (q in ID_select){
                 abline(v=fit_stuff_individual[sea,q,state,9],col=color[5],lty=2,lwd=0.3)

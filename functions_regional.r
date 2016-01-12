@@ -483,33 +483,42 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
     season_names=c("MAM","JJA","SON","DJF","4seasons")
     state_names=c("cold","warm")
 
-    table<-file(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_seasons_latex.tex",sep=""))
+    table<-file(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_all_latex.tex",sep=""))
     options(scipen=100)
 
-    colors=c("white","groegree","zehngree","funfziggree","hundertgree")
+    colors=c("white","groegree","zehngree","funfziggree","hundertgree","turkis","violet")
     lines=c()
     index=0
 
-    lines[index+1]="\\documentclass[a3paper,12pt,landscape]{article}"
+    lines[index+1]="\\documentclass[a4paper,12pt]{article}"
     lines[index+2]="\\usepackage{xcolor,colortbl,pgf}"
     lines[index+3]="\\definecolor{white}{rgb}{1,1,1}"
     lines[index+4]="\\definecolor{groegree}{rgb}{0.85,1,0.85}"
     lines[index+5]="\\definecolor{zehngree}{rgb}{0.75,1,0.75}"
     lines[index+6]="\\definecolor{funfziggree}{rgb}{0.5,1,0.5}"
     lines[index+7]="\\definecolor{hundertgree}{rgb}{0.3,1,0.3}"
-    lines[index+8]="\\begin{document}"
-    index=index+8
+    lines[index+8]="\\definecolor{turkis}{rgb}{0.5,1,1}"
+    lines[index+9]="\\definecolor{violet}{rgb}{1,0.5,1}"
+    lines[index+10]="\\begin{document}\\vspace{-2cm}"
+    lines[index+11]="\\fcolorbox{groegree}{groegree}{dBIC$<$0}\\"
+    lines[index+12]="\\fcolorbox{zehngree}{zehngree}{dBIC$<$-10}\\"
+    lines[index+13]="\\fcolorbox{funfziggree}{funfziggree}{dBIC$<$-50}\\"
+    lines[index+14]="\\fcolorbox{hundertgree}{hundertgree}{dBIC$<$-100}\\"
+    lines[index+15]="\\fcolorbox{turkis}{turkis}{P2$>$P1}\\"
+    lines[index+16]="\\fcolorbox{violet}{violet}{P2$<$P1}\\"
+    index=index+16
 
     for (sea in 1:5){
         for (state in 1:2){
 
             lines[index+1]=paste("\\begin{table}[!h]")
-            lines[index+2]=paste("\\vspace{-2cm}")
-            lines[index+3]=paste("\\hspace{-3.5cm}")
+            lines[index+2]=paste("\\vspace{0cm}")
+            lines[index+3]=paste("\\hspace{0cm}")
             lines[index+4]=paste("\\begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|cc|c|c|c|c|c|c|c|c|c|c|c|c|c}")
 
             lines[index+5]=paste("\\multicolumn{15}{1}{",season_names[sea]," ",state_names[state]," ",period,"}\\","\\",sep="")
-            lines[index+6]=paste("\\ reg & R2 & BIC & P & R2 & BIC & thresh & P1 & P2 & R2 & BIC & a1 & a2 & P1 & P2","\\","\\",sep="")
+            lines[index+6]=paste("\\ reg & R2 & BIC & P & R2 & BIC & thresh & P1 & P2 & P2-P1 & R2 & BIC & a1 & a2 & P1 & P2","\\","\\",sep="")
+            #lines[index+6]=paste("\\ reg & R2 & BIC & P & R2 & BIC & thresh & P1 & P2 & P2-P1","\\","\\",sep="")
             index=index+6
             for (reg in ID_select){
                 background=c(colors[1],colors[1],colors[1])
@@ -535,6 +544,11 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
                     newline=paste(newline," &{\\cellcolor{",background[2],"}}",round(fit_stuff1[sea,reg,state,i],02),"",sep="")}
                 newline=paste(newline," &{\\cellcolor{",background[2],"}}",round(exp(-fit_stuff1[sea,reg,state,6])*100,01),sep="")
                 newline=paste(newline," &{\\cellcolor{",background[2],"}}",round(exp(-fit_stuff1[sea,reg,state,8])*100,01),sep="")
+                diffP=round(exp(-fit_stuff1[sea,reg,state,8])*100,03)-round(exp(-fit_stuff1[sea,reg,state,6])*100,03)
+                if (diffP>0){farbe=colors[6]}
+                else {farbe=colors[7]}
+                newline=paste(newline," &{\\cellcolor{",farbe,"}}",round(diffP,01),sep="")
+
                 for (i in c(19,20,5,7)){
                     newline=paste(newline," &{\\cellcolor{",background[3],"}}",round(fit_stuff2[sea,reg,state,i],02),"",sep="")}
                 newline=paste(newline," &{\\cellcolor{",background[3],"}}",round(exp(-fit_stuff2[sea,reg,state,6])*100,01),sep="")
@@ -545,8 +559,10 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
                 index=index+1
             }
             lines[index+1]=paste("\\end{tabular}")
-            lines[index+2]=paste("\\end{table} \\newpage")
-            index=index+2
+            #lines[index+2]=paste("\\end{table} \\newpage")
+            lines[index+2]=paste("\\end{table}")
+            lines[index+3]=paste("\\vspace{0cm}")
+            index=index+3
 
         }
         

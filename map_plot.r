@@ -254,6 +254,9 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		if (farb_palette_loc=="regenbogen"){
 			jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
 		}
+		if (farb_palette_loc=="spacy"){
+			jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), "yellow",rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
+		}
 		if (farb_palette_loc=="mixed"){
 			jet.colors <- colorRampPalette( c("blue","lightblue","green","violet","black","orange","lightblue","grey","red") )
 		}

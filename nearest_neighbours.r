@@ -197,27 +197,173 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
 nearest_neighbours_post_opti <- function(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",region_name="srex",name_zusatz="_testMasse_"){
     
     print(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,"result.nc",sep=""))
-    nc=open.nc(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,"result.nc",sep=""))
+    nc=open.nc(paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,"result.nc",sep=""))
     groups=var.get.nc(nc,"groups")
     attribution=var.get.nc(nc,"attribution")
 
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_fit_",fit_style,".nc",sep=""))
+    fit_stuff_individual=var.get.nc(nc,"fit_stuff")
+    distr_stuff_individual=var.get.nc(nc,"distr_stuff")
+
+    X=(1:100)
+
+    toOrder=distr_stuff_individual[sea,,state,2,]
+    
+    toOrder[is.na(toOrder)]=0
+
     print(dim(groups))
     nGroup=dim(groups)[2]*dim(groups)[1]
+    nStart=7
+    versions=dim(groups)[1]
+    ntot=1319
 
-    if (1==1){
-        color=c("red","blue","green","violet","black","orange","lightblue","grey",rgb(1,0.5,0.6),rgb(0.5,0.7,0.9),rgb(0.5,0.2,0.8),rgb(0.2,0.5,0.6))
-        jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
-        nbcol <- nGroup
-        color <<- jet.colors(nbcol)  
-        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours",name_zusatz,".pdf",sep=""))
+    matches=array(NA,dim=c(dim(groups)[1],dim(groups)[2],1319))
+    matches=array(NA,dim=c(nGroup,ntot))
+    index=0
+    for (ver in 1:dim(groups)[1]){
+        for (p in 1:dim(groups)[2]){
+            index=index+1
+            match=which(attribution[ver,]==p)
+            matches[index,1:length(match)]=match
+        }
+
     }
+    overlap=array(0,dim=c(nGroup,nGroup))
+    for (i in 1:nGroup){
+        for (j in 1:nGroup){
+            match_i=as.vector(matches[i,])[!is.na(matches[i,])]
+            match_j=as.vector(matches[j,])[!is.na(matches[j,])]
+            overlap[i,j]=length(match_i[match_i %in% match_j])
+            #print(match_i)
+            #print(match_j)
+            #print(overlap[i,j])
+            #adsas
+            #for (nona in which(!is.na(matches[i,]))){
+            #    if (matches[i,nona] %in% matches[j,]){overlap[i,j]=overlap[i,j]+1}
+            #}
+        }
+    }
+    print(overlap[1:30,1:12])
 
-    print(groups[2,1:7,1:30])
-    X=1:100
-    tmp=group_reduction(X=X,attribution=attribution,start=groups[1:30,1:7,],nGroup=180,reduce=174,main_add="bla")
+    same=array(NA,c(nGroup,versions))
+    for (i in 1:nGroup){
+        a=which(overlap[,i]>(2/3*overlap[i,i]))
+        same[i,1:length(a)]=a
+    }
+    contained_in_versions=array(NA,nGroup)
+    for (i in 1:nGroup){
+        contained_in_versions[i]=length(which(!is.na(same[i,])))
+    }    
 
-    start=tmp$start
-    print(start)
+
+    start=array(0,c(nStart,100))
+    for (i in 1:nStart){
+        target=which.max(contained_in_versions)
+
+        for (p in same[target,!is.na(same[target,])]){
+            vers=1
+            print("-----")
+            print(p)
+            for (k in 1:29){
+                if (p > 7){
+                    p=p-7
+                    vers=vers + 1
+                }
+            }
+            print(vers)
+            print(p)
+            start[i,]=start[i,]+groups[ver,p,]
+            print(which(attribution[vers,]==p))
+            reihen=array(NA,c(1,ntot))
+            reihen[1,1]=8
+            reihen[1,which(attribution[vers,]==p)]=1
+            reihen[1,1]=3
+
+            map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map_ookokokok",name_zusatz,vers,"_",p,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="regenbogen")
+
+            plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
+            lines(1:100,toOrder[4,,])
+        }
+        start[i,]=colMeans(toOrder[which(attribution==p),],na.rm=TRUE)
+        contained_in_versions[same[target,!is.na(same[target,])]]=0
+        print(contained_in_versions[1:10])
+        print(same[target,!is.na(same[target,])][1:10])
+        print(target)
+        adasd
+        lines(1:100,start[i,])
+    }
+    start2 <<-start
+
+
+
+    same<<-same
+
+    #print(same[1:30,1:13])
+    #print(start)
+    asdasd
+
+    if (1==2){
+        reihen=array(NA,c(30,ntot))
+
+        for (i in 1:30){
+            a=same[i,!is.na(same[i,])]
+            similar=c(a)
+            for (j in 1:nGroup){
+                print(j)
+                b=same[j,!is.na(same[j,])]
+                if (length(a[a %in% b])>(2/3*length(a))){
+                    similar=c(similar,b)
+                }
+                print(length(similar))
+
+            }
+
+            print(similar)
+
+            similar_uni=unique(similar)
+            gridmass=c()
+            
+            for (grou in similar_uni){
+                vers=1
+                for (umwandel in 1:29){
+                    if (grou>7){
+                        grou=grou-7
+                        vers=vers+1
+                    }
+                    else{break}
+                }
+                print(grou)
+                print(vers)
+                gridmass=c(gridmass,which(attribution[vers,]==grou))
+                
+                print(attribution[vers,1:20])
+                print(which(attribution[vers,]==grou))
+            }
+            gridpoints=unique(gridmass)
+            end=unique(gridmass)
+            numb=unique(gridmass)
+            for (grid in 1:length(gridpoints)){
+                numb[grid]=length(which(gridmass==gridpoints[grid]))
+
+                if (length(which(gridmass==gridpoints[grid]))<10){end[grid]=NA}
+                if (length(which(gridmass==gridpoints[grid]))>=10){reihen[i,gridpoints[grid]]=1}
+            }
+            print(gridpoints)
+            print(end)
+            print(numb)
+            print(length(gridmass))
+            print(length(gridpoints))
+            gro<<-gridmass
+            klei<<-gridpoints
+            similar<<-similar
+            same<<-same
+            adasd
+            reihen[i,5]=3
+        }
+
+
+    }
+    map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map_ookokokok",name_zusatz,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="regenbogen")
 
 
     distr_nearest_neighbours(period=period,trendID=trendID,dataset=dataset,fit_style=fit_style,region_name=region_name,state=1,sea=4,nGroup=7,versions=1,runs=40,reduce=0,name_zusatz="_end_",plot=c(1,1,1),write=FALSE,start_mod=start)
