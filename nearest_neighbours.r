@@ -48,8 +48,6 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
     fit_stuff_individual=var.get.nc(nc,"fit_stuff")
     distr_stuff_individual=var.get.nc(nc,"distr_stuff")
 
-    
-    X=distr_stuff_reg[4,1,1,1,]
     X=(1:100)
 
     toOrder=distr_stuff_individual[sea,,state,2,]
@@ -68,7 +66,7 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
         nbcol <- nGroup
         color <<- jet.colors(nbcol)  
         reihen=array(NA,dim=c(versions,ntot))
-        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours",name_zusatz,".pdf",sep=""))
+        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours",name_zusatz,".pdf",sep=""))
     }
 
     if (versions!=1){
@@ -161,7 +159,7 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
         }
     }
 
-    if (plot[3]==1){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="regenbogen")}
+    if (plot[3]==1){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="regenbogen")}
     
     if (write==TRUE){
         nc_out <- create.nc(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,"result.nc",sep=""))
@@ -201,17 +199,7 @@ nearest_neighbours_post_opti <- function(period="1950-2014",trendID="91_5",datas
     groups=var.get.nc(nc,"groups")
     attribution=var.get.nc(nc,"attribution")
 
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_fit_",fit_style,".nc",sep=""))
-    fit_stuff_individual=var.get.nc(nc,"fit_stuff")
-    distr_stuff_individual=var.get.nc(nc,"distr_stuff")
 
-    X=(1:100)
-
-    toOrder=distr_stuff_individual[sea,,state,2,]
-    
-    toOrder[is.na(toOrder)]=0
-
-    print(dim(groups))
     nGroup=dim(groups)[2]*dim(groups)[1]
     nStart=7
     versions=dim(groups)[1]
@@ -234,16 +222,8 @@ nearest_neighbours_post_opti <- function(period="1950-2014",trendID="91_5",datas
             match_i=as.vector(matches[i,])[!is.na(matches[i,])]
             match_j=as.vector(matches[j,])[!is.na(matches[j,])]
             overlap[i,j]=length(match_i[match_i %in% match_j])
-            #print(match_i)
-            #print(match_j)
-            #print(overlap[i,j])
-            #adsas
-            #for (nona in which(!is.na(matches[i,]))){
-            #    if (matches[i,nona] %in% matches[j,]){overlap[i,j]=overlap[i,j]+1}
-            #}
         }
     }
-    print(overlap[1:30,1:12])
 
     same=array(NA,c(nGroup,versions))
     for (i in 1:nGroup){
@@ -255,11 +235,12 @@ nearest_neighbours_post_opti <- function(period="1950-2014",trendID="91_5",datas
         contained_in_versions[i]=length(which(!is.na(same[i,])))
     }    
 
-
+    plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
     start=array(0,c(nStart,100))
     for (i in 1:nStart){
         target=which.max(contained_in_versions)
 
+        gridmass=c()
         for (p in same[target,!is.na(same[target,])]){
             vers=1
             print("-----")
@@ -272,98 +253,28 @@ nearest_neighbours_post_opti <- function(period="1950-2014",trendID="91_5",datas
             }
             print(vers)
             print(p)
-            start[i,]=start[i,]+groups[ver,p,]
-            print(which(attribution[vers,]==p))
-            reihen=array(NA,c(1,ntot))
-            reihen[1,1]=8
-            reihen[1,which(attribution[vers,]==p)]=1
-            reihen[1,1]=3
+            #print(which(attribution[vers,]==p))
+            #reihen=array(NA,c(1,ntot))
+            #reihen[1,1]=8
+            #reihen[1,which(attribution[vers,]==p)]=1
+            #reihen[1,1]=3
 
-            map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map_ookokokok",name_zusatz,vers,"_",p,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="regenbogen")
+            #map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map_ookokokok",name_zusatz,vers,"_",p,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="regenbogen")
 
-            plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
-            lines(1:100,toOrder[4,,])
+            start[i,]=start[i,]+groups[vers,p,]
+
+            #plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
+            #lines(1:100,groups[vers,p,])
         }
-        start[i,]=colMeans(toOrder[which(attribution==p),],na.rm=TRUE)
+        start[i,]=start[i,]/contained_in_versions[target]
         contained_in_versions[same[target,!is.na(same[target,])]]=0
         print(contained_in_versions[1:10])
         print(same[target,!is.na(same[target,])][1:10])
         print(target)
-        adasd
+        print(contained_in_versions[target])
         lines(1:100,start[i,])
     }
-    start2 <<-start
 
-
-
-    same<<-same
-
-    #print(same[1:30,1:13])
-    #print(start)
-    asdasd
-
-    if (1==2){
-        reihen=array(NA,c(30,ntot))
-
-        for (i in 1:30){
-            a=same[i,!is.na(same[i,])]
-            similar=c(a)
-            for (j in 1:nGroup){
-                print(j)
-                b=same[j,!is.na(same[j,])]
-                if (length(a[a %in% b])>(2/3*length(a))){
-                    similar=c(similar,b)
-                }
-                print(length(similar))
-
-            }
-
-            print(similar)
-
-            similar_uni=unique(similar)
-            gridmass=c()
-            
-            for (grou in similar_uni){
-                vers=1
-                for (umwandel in 1:29){
-                    if (grou>7){
-                        grou=grou-7
-                        vers=vers+1
-                    }
-                    else{break}
-                }
-                print(grou)
-                print(vers)
-                gridmass=c(gridmass,which(attribution[vers,]==grou))
-                
-                print(attribution[vers,1:20])
-                print(which(attribution[vers,]==grou))
-            }
-            gridpoints=unique(gridmass)
-            end=unique(gridmass)
-            numb=unique(gridmass)
-            for (grid in 1:length(gridpoints)){
-                numb[grid]=length(which(gridmass==gridpoints[grid]))
-
-                if (length(which(gridmass==gridpoints[grid]))<10){end[grid]=NA}
-                if (length(which(gridmass==gridpoints[grid]))>=10){reihen[i,gridpoints[grid]]=1}
-            }
-            print(gridpoints)
-            print(end)
-            print(numb)
-            print(length(gridmass))
-            print(length(gridpoints))
-            gro<<-gridmass
-            klei<<-gridpoints
-            similar<<-similar
-            same<<-same
-            adasd
-            reihen[i,5]=3
-        }
-
-
-    }
-    map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map_ookokokok",name_zusatz,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="regenbogen")
 
 
     distr_nearest_neighbours(period=period,trendID=trendID,dataset=dataset,fit_style=fit_style,region_name=region_name,state=1,sea=4,nGroup=7,versions=1,runs=40,reduce=0,name_zusatz="_end_",plot=c(1,1,1),write=FALSE,start_mod=start)
