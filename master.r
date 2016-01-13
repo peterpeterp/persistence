@@ -257,7 +257,7 @@ if (1==1){
 
     #distr_nearest_neighbours(period="1950-2014",trendID=trendID,dataset=dataset,fit_style="2expo_thresh_5-15",reg=reg,region_name="srex",ID_select=ID_select)
 
-    nearest_neighbours_post_opti(period="1950-2014",trendID=trendID,dataset=dataset,fit_style="2expo_thresh_5-15",region_name="srex")
+    nearest_neighbours(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",add_name="_WeightedX_",seasons=4,states=1,nGroup=7,versions=30,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"))
 
 }
 

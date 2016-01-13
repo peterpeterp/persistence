@@ -117,3 +117,103 @@ pdf(file=paste(dir,"/","box.and.wisker.3regions.in.perdecade.pdf",sep=""),height
 
 
 
+
+
+
+
+
+#---------------------------nearest neighbours
+
+if (1==2){
+    if (plot[1]==1){
+        color=c("red","blue","green","violet","black","orange","lightblue","grey",rgb(1,0.5,0.6),rgb(0.5,0.7,0.9),rgb(0.5,0.2,0.8),rgb(0.2,0.5,0.6))
+        jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
+        nbcol <- nGroup
+        color <<- jet.colors(nbcol)  
+        reihen=array(NA,dim=c(versions,ntot))
+        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours",name_zusatz,".pdf",sep=""))
+    }
+
+
+        if (reduce>0){
+            tmp=group_reduction(X=X,attribution=attribution,start=start,nGroup=nGroup,reduce=reduce,main_add=version)
+            attribution=tmp$attribution
+            start=tmp$start
+        }
+
+        if (plot[2]==1){
+            for (p in 1:nGroup){
+                if (!is.na(start[p,1])){
+                    plot(NA,xlab="days",ylab="probability density",ylim=c(0.00001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE,main=length(which(attribution==p))) 
+                    for (q in which(attribution==p)){
+                        #print("missing points")
+                        points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
+                    }
+                    lines(X,start[p,],col=color[p])
+
+                    plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,50),axes=TRUE,frame.plot=TRUE,log="y",main=length(which(attribution==p))) 
+                    for (q in which(attribution==p)){
+                        #print("missing points")
+                        points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.2),cex=1.5)
+                    }
+                    lines(X,start[p,],col=color[p])
+                }
+            }
+        }
+
+    if (plot[3]==1){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="regenbogen")}
+    
+    if (write==TRUE){
+        nc_out <- create.nc(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map",name_zusatz,"result.nc",sep=""))
+        att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", "bla")
+
+        dim.def.nc(nc_out,"seasons",dimlength=6,unlim=FALSE)
+        dim.def.nc(nc_out,"ID",dimlength=ntot, unlim=FALSE)
+        dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
+
+        dim.def.nc(nc_out,"versions",dimlength=versions,unlim=FALSE)
+        dim.def.nc(nc_out,"nGroup",dimlength=nGroup,unlim=FALSE)
+        dim.def.nc(nc_out,"distrSize",dimlength=distrSize,unlim=FALSE)
+
+
+        var.def.nc(nc_out,"attribution","NC_DOUBLE",c(3,1))
+        att.put.nc(nc_out, "attribution", "missing_value", "NC_DOUBLE", -99999.9)
+        att.put.nc(nc_out, "attribution", "dim_explanation", "NC_CHAR", "version-ID")
+        att.put.nc(nc_out, "attribution", "explanation", "NC_CHAR", "group numbers of differnt versions")
+
+        var.def.nc(nc_out,"groups","NC_DOUBLE",c(3,4,5))
+        att.put.nc(nc_out, "groups", "missing_value", "NC_DOUBLE", -99999.9)
+        att.put.nc(nc_out, "groups", "dim_explanation", "NC_CHAR", "version-nGroup-distrSize")
+        att.put.nc(nc_out, "groups", "explanation", "NC_CHAR", "end distributions of groups")
+            
+        var.put.nc(nc_out,"attribution",attribution_speicher)      
+        var.put.nc(nc_out,"groups",start_speicher)      
+     
+        close.nc(nc_out) 
+    }
+
+        if (FALSE==TRUE){
+            laggedDiffs=c()
+            for (p in 1:nGroup){
+                laggedDiffs[p]=sum(diff(start[p,3:10]))
+            }
+            print(laggedDiffs)
+            order=order(laggedDiffs)
+            print(order)
+            
+            order=order(start[,1])
+
+            attri_order=attribution*NA
+            for (i in 1:length(order)){
+                attri_order[attribution==i]=order[i]
+            }
+            reihen[version,]=attri_order
+        }
+
+        if (plot[3]==1){reihen[1,]=attribution}
+
+        if (versions!=1){
+            attribution_speicher[version,]=attribution
+            start_speicher[version,,]=start
+        }
+}
