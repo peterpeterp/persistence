@@ -189,6 +189,8 @@ distr_nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="
      
         close.nc(nc_out) 
     }
+
+    return(list(attribution))
     
 }
 
@@ -214,8 +216,8 @@ nearest_neighbours_post_opti <- function(period="1950-2014",trendID="91_5",datas
             match=which(attribution[ver,]==p)
             matches[index,1:length(match)]=match
         }
-
     }
+    
     overlap=array(0,dim=c(nGroup,nGroup))
     for (i in 1:nGroup){
         for (j in 1:nGroup){
@@ -230,49 +232,27 @@ nearest_neighbours_post_opti <- function(period="1950-2014",trendID="91_5",datas
         a=which(overlap[,i]>(2/3*overlap[i,i]))
         same[i,1:length(a)]=a
     }
+
     contained_in_versions=array(NA,nGroup)
     for (i in 1:nGroup){
         contained_in_versions[i]=length(which(!is.na(same[i,])))
     }    
 
-    plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
     start=array(0,c(nStart,100))
     for (i in 1:nStart){
         target=which.max(contained_in_versions)
-
-        gridmass=c()
         for (p in same[target,!is.na(same[target,])]){
             vers=1
-            print("-----")
-            print(p)
             for (k in 1:29){
                 if (p > 7){
                     p=p-7
                     vers=vers + 1
                 }
-            }
-            print(vers)
-            print(p)
-            #print(which(attribution[vers,]==p))
-            #reihen=array(NA,c(1,ntot))
-            #reihen[1,1]=8
-            #reihen[1,which(attribution[vers,]==p)]=1
-            #reihen[1,1]=3
-
-            #map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",region_name,"_",period,"nearest_neighbours_map_ookokokok",name_zusatz,vers,"_",p,".pdf",sep=""),worldmap=worldmap,reihen=reihen,pointsize=1.5,farb_palette="regenbogen")
 
             start[i,]=start[i,]+groups[vers,p,]
-
-            #plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
-            #lines(1:100,groups[vers,p,])
         }
         start[i,]=start[i,]/contained_in_versions[target]
         contained_in_versions[same[target,!is.na(same[target,])]]=0
-        print(contained_in_versions[1:10])
-        print(same[target,!is.na(same[target,])][1:10])
-        print(target)
-        print(contained_in_versions[target])
-        lines(1:100,start[i,])
     }
 
 
