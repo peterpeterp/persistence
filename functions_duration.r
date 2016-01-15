@@ -128,7 +128,7 @@ duration_seasons <- function(dur,dur_mid,season,filename){
 
 duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:1319,write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(488,1232,52,661),ID_names=1:1319,ID_length=length(ID_select),noise_level=c(0,0)){
 
-    
+        
 
     period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
     season_names=c("MAM","JJA","SON","DJF","4seasons")

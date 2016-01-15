@@ -126,48 +126,7 @@ c_calc_runmean_2D <- function(y2D,nday,nyr){
     cat("-")
     return(trend)
 }
-
-seasonal_matrix_out <- function(input,model=markov_2states,states=2,seasons=array(c(151,242,334,425),dim=c(2,2)),interval=365,shift=0){
-    #input array is tas over whole time period
-    #this cals the function given in "model" and hands to the function an array containing the
-    #input of one season. the step is repeated until the end of the time-line
-    #output is stored in out where the first dimension is the season
-
-    #since for winter the end-day-index is lower than the begin-day-index (new year), all the 
-    #day-indeces are shifted until winter index ends with day-index=365
-    #therefore the starting point i is equal to the shift
-    #example: winter season start-day: 334 end-day:425
-    #shift=425-365=60  -> start-day:274 end-day=365
-    #whole time series ist shifted by 60 days
-    if (seasons[length(seasons)]>365){
-        shift=seasons[length(seasons)]-365
-        seasons[,]=seasons[,]-shift
-    }
-    size=length(input)
-    x=seq(1, size, 1)
-    i=shift
-    j=1
-    transitions=states*states
-    out=array(NA,dim=c(dim(seasons)[2],transitions,65))
-    out_conf=array(NA,dim=c(dim(seasons)[2],65))
-
-    while ((i+interval)<size){
-        #goes through the time series until the end is reached
-        if ((is.na(input[i+1])==FALSE) & (is.na(input[i+interval])==FALSE)){
-            for (sea in 1:length(seasons[1,])){
-                #goes through the seasons, selects parts of input and calculates something
-                x=input[(seasons[1,sea]+i):(seasons[2,sea]+i)]
-                tmp=model(x)
-
-                out[sea,1:transitions,j]=tmp$transMat
-                out_conf[sea,j]=tmp$confidence
-            }
-        }
-        j=j+1
-        i=i+interval
-    }
-    return(list(out=out,out_conf=out_conf))
-}   
+ 
 
 calc_trend <- function(dat,filename,nday,nyr,procedure){
     # calculates running mean for each grid point
