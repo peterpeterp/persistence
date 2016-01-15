@@ -65,7 +65,7 @@ master_seasonal_median_on_detrended <- function(nday,nyr,trendID,trend_style="_m
     ID <- dim.def.nc("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
     seasonal_med <- var.def.nc(name="_seasonal_median",units="medain of season value for each day",dim=list(ID,day), missval=-9999.0)
-    filename=paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_seasonal_median",".nc",sep="")
+    filename=paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind_seasonal_median",".nc",sep="")
     nc = create.nc(filename,seasonal_med)
     put.var.nc(nc,seasonal_med,seasonalmedian)
     close.nc(nc)
