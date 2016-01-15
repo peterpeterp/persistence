@@ -1,6 +1,7 @@
 library(RNetCDF)
+library(gtools)
 
-markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style="_mean",additional_style="",yearPeriod=c(1950,2014),ID_select=c(488),seasons=1:5,orderTot=3){
+markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style="_mean",additional_style="",yearPeriod=c(1950,2014),ID_select=c(488),ID_length=1319,seasons=1:5,orderTot=3){
 
     print(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind_seasonal_median",".nc",sep=""))
     nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind_seasonal_median",".nc",sep=""))
@@ -21,37 +22,62 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
         # take chosen years
         indSea=indSea[,,(yearPeriod[1]-1949):(yearPeriod[2]-1949)]
 
-        markov=array(NA,c(length(ID_select),orderTot*orderTot))
+        combinations=2^orderTot
+        eventCounts=array(NA,c(ID_length,orderTot,combinations))
+        memory=array(NA,c(orderTot,combinations,orderTot))
+        for (order in 1:orderTot){memory[order,1:2^order,1:order]=permutations(n=2,r=order,v=c(-1,1),repeats.allowed=TRUE)}
+
+
+
         for (q in ID_select){
             indLoc=as.vector(indSea[q,,])
-            print(length(indLoc))
+            #print(length(indLoc))
 
-
-            for (state in c(-1,1)){
-                len=length(indLoc)
-                for (order in 1:orderTot){
+            len=length(indLoc)
+            for (order in 1:orderTot){
+                for (combi in 1:combinations){
                     resultCond=array(TRUE,len-order)
-                    print("------------")
-                    print(order)
-                    for (o in 2:order){
-                        memoryCond=(diff(indLoc,o)==0)[(order-o+1):(len-o)]
+                    #print(memory[order,combi,])
+                    for (o in 1:order){
+                        #memoryCond=(diff(indLoc,o)==0)[(order-o+1):(len-o)]
+                        #print(paste(order,combi,o))
+                        
+                        memoryCond=(indLoc==memory[order,combi,o])[(order-o+1):(len-o)]
+                        #print(paste(memory[order,combi,o]))
+                        #print(length(which(memoryCond)))
                         resultCond=(resultCond==TRUE & memoryCond==TRUE)
+                        #print(length(which(resultCond)))
                     }
-                    outcomeCond=(indLoc==state)[(order+1):len]
-                    resultCond=(resultCond==TRUE & outcomeCond==TRUE)
+                    #outcomeCond=(indLoc==state)[(order+1):len]
+                    #stayProb=length(which(resultCond==TRUE & outcomeCond==TRUE))
 
-                    stayCond=(diff(indLoc,1)==0)[(order-1+1):(len-1)]
-                    stayCond=(resultCond==TRUE & stayCond==TRUE)
+                    #resultProb=length(which(resultCond))
 
-                    changeCond=(resultCond==TRUE & stayCond!=TRUE)
+                    #outcomeCond=(indLoc!=state)[(order+1):len]
+                    #changeProb=length(which(resultCond==TRUE & outcomeCond==TRUE))
 
-                    print(length(which(resultCond)))
-
-                    stays=length(which(stayCond))
-                    changes=length(which(changeCond))
-                    print(paste(stays,changes))
-                    print(stays/(stays+changes))
+                    #print(resultProb)
+                    #print(paste(stayProb,changeProb))
+                    #print(stayProb/resultProb)
+                    
+                    #print(length(which(resultCond)))
+                    eventCounts[q,order,combi]=length(which(resultCond))
                 }
+                
+            }
+            for (order in 1:orderTot){
+                print(memory[order,1:(2^order),1:order])
+                print(eventCounts[q,order,1:(2^order)])
+
+                print(0:(2^(order-1)-1)*2)
+
+                print(markov[q,order,(0:(2^(order-1)-1)*2+1)])
+                print(markov[q,order,(0:(2^(order-1)-1)*2+2)])
+                
+
+                eventCounts[order,]=eventCounts[q,order,(0:(2^(order-1)-1)*2+1)]/(eventCounts[q,order,(0:(2^(order-1)-1)*2+1)]+eventCounts[q,order,(0:(2^(order-1)-1)*2+2)])
+
+                print(sum(markov[q,order,1:(2^order)]))
             }
 
         }
@@ -60,4 +86,6 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
 
 }
 
-markov_chain_estimation(seasons=5,orderTot=6)
+
+
+markov_chain_estimation(seasons=2,orderTot=4)
