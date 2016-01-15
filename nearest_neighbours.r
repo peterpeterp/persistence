@@ -51,6 +51,7 @@ plot_aktuelles_muster <- function(attribution,start,nGroup,main="",points=FALSE)
 
 k_nearest_neighbours <- function(versions=30,nGroup=7,start_mod="random",runs=30){
     noEmpty=which(toOrder[,1]>0)
+    noEmpty=which(!is.na(toOrder[,1]))
 
     attribution=array(NA,c(versions,ntot))
     groups=array(NA,c(versions,nGroup,dimensionality))
@@ -60,48 +61,37 @@ k_nearest_neighbours <- function(versions=30,nGroup=7,start_mod="random",runs=30
         if (start_mod[1]=="random"){start=toOrder[c(sample(noEmpty,nGroup)),]}
         if (start_mod[1]!="random"){start=start_mod}
 
-        start[is.na(start)]=0.0001
-
         attribution_old=array(1:10,ntot)
         for (i in 1:runs){
             cat(paste(i," "))
             for (q in 1:ntot){
-                #print(q)
-                score=array(NA,nGroup)
-                for (p in 1:nGroup){
-                    # distance definitions here
-                    #score[p]=sum((start[p,]-toOrder[q,])^2)
-                    score[p]=sum(start[p,]*toOrder[q,])
-                    if (score[p]==1928319743234){
-                        print(start[p,])
-                        print(toOrder[q,])
-                        score[p]=999
-                        print(score[p])
-                        print(score)
-                        print(q)
-                        khh
+                if (!is.na(toOrder[q,1])){
+                    #print(q)
+                    score=array(NA,nGroup)
+                    for (p in 1:nGroup){
+                        # distance definitions here
+                        score[p]=sum((start[p,]-toOrder[q,])^2)
+                        #score[p]=sum(start[p,]*toOrder[q,])
+                        
+
+
+                        #score[p]=sum(X*as.vector((start[p,]-toOrder[q,])^2))
+                        #score[p]=sum((X^0.5)*as.vector((start[p,]-toOrder[q,])^2))
+                        #score[p]=sum(abs((start[p,]-toOrder[q,])*(0.25-start[p,])^2))
+
+                        #wheight=(start[p,]+toOrder[q,])/2
+                        #noZero=which(wheight>0)
+                        #score[p]=sum(as.vector((start[p,noZero]-toOrder[q,noZero])^2)/wheight[noZero])
+                       
+
                     }
-                    #score[p]=sum(X*as.vector((start[p,]-toOrder[q,])^2))
-                    #score[p]=sum((X^0.5)*as.vector((start[p,]-toOrder[q,])^2))
-                    #score[p]=sum(abs((start[p,]-toOrder[q,])*(0.25-start[p,])^2))
-
-                    #wheight=(start[p,]+toOrder[q,])/2
-                    #noZero=which(wheight>0)
-                    #score[p]=sum(as.vector((start[p,noZero]-toOrder[q,noZero])^2)/wheight[noZero])
-                   
-
+                    
+                    attribution[version,q]=which.min(score)
                 }
-                attribution[version,q]=which.max(score)
+
             }
             for (p in 1:nGroup){
-                if (length(which(attribution[version,]==p))==0){
-                    print("no match")
-                    print(score)
-                    print(start[p,])
-                    print(start[p,])
-                    print(p)   
-                    SDASDAS 
-                }
+                if (length(which(attribution[version,]==p))==0){print("no match")}
                 if (length(which(attribution[version,]==p))==1){start[p,]=toOrder[which(attribution[version,]==p),]}
                 if (length(which(attribution[version,]==p))>1){start[p,]=colMeans(toOrder[which(attribution[version,]==p),],na.rm=TRUE)}
 
@@ -140,23 +130,18 @@ nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="_TMean
         for (state in states){
             if (!is.na(fit_style)){
                 toOrder=characteristics[sea,,state,2,]
-                toOrder[is.na(toOrder)]=0
-                toOrder<<-toOrder
+
             }
             if (!is.na(markov_style) & state==1){
-                toOrder=characteristics[sea,,3,]
-                #toOrder[is.na(toOrder)]=0.0001
-                #print(which(!is.na(toOrder[,1])))
-                #toOrder<<-toOrder[which(!is.na(toOrder[,1])),]
-                toOrder[is.na(toOrder)]=-999
-                toOrder<<-toOrder
+                toOrder=characteristics[sea,,1,]
             }
             if (!is.na(markov_style) & state==2){break}
+        
+            #toOrder[is.na(toOrder)]=0
+            toOrder<<-toOrder
 
             ntot<<-dim(toOrder)[1]
             dimensionality<<-dim(toOrder)[2]
-            print(ntot)
-            print(dim(toOrder))
             
             X<<-1:dimensionality
 
@@ -270,6 +255,6 @@ if (1==1){
     #distr_nearest_neighbours(period="1950-2014",trendID=trendID,dataset=dataset,fit_style="2expo_thresh_5-15",reg=reg,region_name="srex",ID_select=ID_select)
 
     #nearest_neighbours(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",add_name="_WeightedNot_",seasons=2,states=2,nGroup=12,nReduce=6,versions=10,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"))
-    nearest_neighbours(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style=NA,markov_style=4,add_name="_MarkovMulti_",seasons=4,states=1,nGroup=12,nReduce=6,versions=2,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"))
+    nearest_neighbours(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style=NA,markov_style=4,add_name="_MarkovMulti_",seasons=2,states=1,nGroup=12,nReduce=6,versions=10,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"))
 
 }

@@ -60,6 +60,7 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
             eventResult[sea,q,2,firstOutcome]=eventResult[sea,q,1,firstOutcome]+eventResult[sea,q,1,secondOutcome]
             eventResult[sea,q,2,secondOutcome]=eventResult[sea,q,1,firstOutcome]+eventResult[sea,q,1,secondOutcome]
             eventResult[sea,q,3,]=eventResult[sea,q,1,]/eventResult[sea,q,2,]
+            eventResult[sea,q,4,]=eventResult[sea,q,1,]/sum(eventResult[sea,q,1,])
 
             #print(eventResult[sea,q,2,])
             #print(eventResult[sea,q,3,])
