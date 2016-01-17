@@ -61,6 +61,8 @@ k_nearest_neighbours <- function(versions=30,nGroup=7,start_mod="random",runs=30
         if (start_mod[1]=="random"){start=toOrder[c(sample(noEmpty,nGroup)),]}
         if (start_mod[1]!="random"){start=start_mod}
 
+
+
         attribution_old=array(1:10,ntot)
         for (i in 1:runs){
             cat(paste(i," "))
@@ -119,8 +121,8 @@ nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="_TMean
     if (!is.na(markov_style)){
         nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/markov/",period,"/",trendID,dataset,"_",period,"_markov_order",markov_style,".nc",sep=""))
         characteristics=var.get.nc(nc,"eventResult")
-        xAxLim<<-c(0,17)
-        yAxLim<<-c(0,1)
+        xAxLim<<-c(0,33)
+        yAxLim<<-c(0,0.33)
         yAxes<<-c("")
     }
     jet.colors <- colorRampPalette(c("black",rgb(0.5,1,1),"red", "yellow","green",rgb(1,0.5,1),"orange"))
@@ -133,7 +135,7 @@ nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="_TMean
 
             }
             if (!is.na(markov_style) & state==1){
-                toOrder=characteristics[sea,,1,]
+                toOrder=characteristics[sea,,4,]
             }
             if (!is.na(markov_style) & state==2){break}
         
@@ -255,6 +257,6 @@ if (1==1){
     #distr_nearest_neighbours(period="1950-2014",trendID=trendID,dataset=dataset,fit_style="2expo_thresh_5-15",reg=reg,region_name="srex",ID_select=ID_select)
 
     #nearest_neighbours(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",add_name="_WeightedNot_",seasons=2,states=2,nGroup=12,nReduce=6,versions=10,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"))
-    nearest_neighbours(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style=NA,markov_style=4,add_name="_MarkovMulti_",seasons=2,states=1,nGroup=12,nReduce=6,versions=10,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"))
+    nearest_neighbours(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style=NA,markov_style=5,add_name="_MarkovMulti_",seasons=4,states=1,nGroup=12,nReduce=6,versions=10,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"))
 
 }

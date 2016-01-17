@@ -38,6 +38,8 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
         }
         # take chosen years
         indSea=indSea[,,(yearPeriod[1]-1949):(yearPeriod[2]-1949)]
+        len=length(as.vector(indSea[1,,]))
+        len2=round(len/order)
 
         percentage=0
         cat(paste("\n",season_names[sea],"\n0 -> -> -> -> -> 100\n"))
@@ -47,18 +49,41 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
                 percentage=percentage+5
             }
             indLoc=as.vector(indSea[q,,])
-            len=length(indLoc)
+            indLoc=sample(c(-1,1),len,replace=TRUE)
+            indLoc[200:600]=1
+            
 
             for (combi in 1:combinations){
+                print(proc.time())
                 resultCond=array(TRUE,len-order)
                 for (o in 1:order){
-                    memoryCond=(indLoc==eventPossibilities[combi,o])[(order-o+1):(len-o)]
+                    memoryCond=(indLoc==eventPossibilities[combi,(order-o+1)])[(order-o+1):(len-o)]
                     resultCond=(resultCond==TRUE & memoryCond==TRUE)
                 }
 
                 eventResult[sea,q,1,combi]=length(which(resultCond))
+                print(proc.time())
+
+                eventResult[sea,q,4,combi]=0
+                for(o in 1:order){
+                    a=array(indLoc[o:len],c(order,len2))
+                    a[(len-order+1):len]=NA
+                    b=sweep(a,1,eventPossibilities[combi,],"*")
+                    c=colSums(b)
+                    eventResult[sea,q,4,combi]=eventResult[sea,q,4,combi]+length(which(c==order))
+                }
+                print(proc.time())
+
 
             }
+            print(eventResult[sea,q,1,])
+            print(eventResult[sea,q,4,])
+            print(sum(eventResult[sea,q,1,]))
+            print(sum(eventResult[sea,q,4,]))
+            print(len)
+
+            asdas
+
             eventResult[sea,q,2,firstOutcome]=eventResult[sea,q,1,firstOutcome]+eventResult[sea,q,1,secondOutcome]
             eventResult[sea,q,2,secondOutcome]=eventResult[sea,q,1,firstOutcome]+eventResult[sea,q,1,secondOutcome]
             eventResult[sea,q,3,]=eventResult[sea,q,1,]/eventResult[sea,q,2,]
