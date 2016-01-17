@@ -17,6 +17,8 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
     secondOutcome=(0:(2^(order-1)-1)*2+2)
     combinations=2^order
 
+    print(eventPossibilities)
+
     # array for end results
     eventResult=array(NA,c(length(season_names),ID_length,4,combinations))
     
@@ -39,7 +41,7 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
 
         percentage=0
         cat(paste("\n",season_names[sea],"\n0 -> -> -> -> -> 100\n"))
-        for (q in ID_select){
+        for (q in ID_select){   
             if (q/ID_length*100 > percentage){
                 cat("-")
                 percentage=percentage+5
@@ -62,7 +64,8 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
             eventResult[sea,q,3,]=eventResult[sea,q,1,]/eventResult[sea,q,2,]
             eventResult[sea,q,4,]=eventResult[sea,q,1,]/sum(eventResult[sea,q,1,])
 
-            #print(eventResult[sea,q,2,])
+            #print(eventResult[sea,q,1,])
+            #print(eventResult[sea,q,4,])
             #print(eventResult[sea,q,3,])
 
         }
@@ -103,4 +106,4 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
 }
 
 
-markov_chain_estimation(order=4)
+markov_chain_estimation(order=5)
