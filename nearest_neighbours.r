@@ -8,7 +8,7 @@ group_reduction <- function(attribution,start,nGroup,reduce,main_add=""){
             for (p2 in 1:nGroup){
                 if (p!=p2){
                     #score[p]=sum((start[p,]-toOrder[q,])^2)
-                    if (length(which(attribution==p))+length(which(attribution==p2))<1000){score[p,p2]=sum(X*as.vector((start[p,]-start[p2,])^2))}
+                    if (length(which(attribution==p))+length(which(attribution==p2))<1000){score[p,p2]=score[p]=sum(abs(start[p,]-toOrder[q,]),na.rm=TRUE)}
                     else {score[p,p2]=999}
                 }
             }
@@ -26,21 +26,40 @@ group_reduction <- function(attribution,start,nGroup,reduce,main_add=""){
 
 
 plot_aktuelles_muster <- function(attribution,start,nGroup,main="",points=FALSE){
-    for (logAx in yAxes){
-        plot(NA,xlab="days",ylab="probability density",ylim=yAxLim,xlim=xAxLim,axes=TRUE,frame.plot=TRUE,log=logAx,main=main)
-        for (p in 1:nGroup){
-            lines(X,start[p,],col=color[p])
+    for (state in 1:2){
+        for (logAx in c("","y")){
+            plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log=logAx,main=main)
+            for (p in 1:nGroup){
+                lines(1:dimDistr,start[p,startDistr[state]:stopDistr[state]],col=color[p])
+            }
         }
     }
+    plot(NA,xlab="days",ylab="probability density",ylim=c(0,1),xlim=c(0,dimMarkov+1),axes=TRUE,frame.plot=TRUE,log=logAx,main=main)
+    for (p in 1:nGroup){
+        lines(1:dimMarkov,start[p,1:dimMarkov],col=color[p])
+    }
     if (points==TRUE){
+        for (state in 1:2){
+            for (p in 1:nGroup){
+                if (!is.na(start[p,1])){
+                    for (logAx in c("","y")){
+                        plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log=logAx,main=length(which(attribution==p))) 
+                        for (q in which(attribution==p)){
+                            points(1:dimDistr,toOrder[q,startDistr[state]:stopDistr[state]],pch=16,col=rgb(0.5,0.5,0.5,0.05),cex=1.5)
+                        }
+                        lines(1:dimDistr,start[p,startDistr[state]:stopDistr[state]],col=color[p])
+                    }
+                }
+            }
+        }
         for (p in 1:nGroup){
             if (!is.na(start[p,1])){
-                for (logAx in yAxes){
-                    plot(NA,xlab="days",ylab="probability density",ylim=yAxLim,xlim=xAxLim,axes=TRUE,frame.plot=TRUE,log=logAx,main=length(which(attribution==p))) 
+                for (logAx in c("","y")){
+                    plot(NA,xlab="days",ylab="probability density",ylim=c(0,1),xlim=c(0,dimMarkov+1),axes=TRUE,frame.plot=TRUE,log=logAx,main=paste("MarkovChain","group:",p,"members:",length(which(attribution==p)))) 
                     for (q in which(attribution==p)){
-                        points(X,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.05),cex=1.5)
+                        points(1:dimMarkov,toOrder[q,1:dimMarkov],pch=16,col=rgb(0.5,0.5,0.5,0.05),cex=1.5)
                     }
-                    lines(X,start[p,],col=color[p])
+                    lines(1:dimMarkov,start[p,1:dimMarkov],col=color[p])
                 }
             }
         }
@@ -75,7 +94,7 @@ k_nearest_neighbours <- function(versions=30,nGroup=7,start_mod="random",runs=30
                         #score[p]=sum((start[p,]-toOrder[q,])^2)
                         #score[p]=sum(start[p,]*toOrder[q,])
 
-                        score[p]=sum(abs(start[p,]-toOrder[q,]))
+                        score[p]=sum(abs(start[p,]-toOrder[q,]),na.rm=TRUE)
                         
 
 
@@ -89,13 +108,15 @@ k_nearest_neighbours <- function(versions=30,nGroup=7,start_mod="random",runs=30
                        
 
                     }
-                    
                     attribution[version,q]=which.min(score)
                 }
 
             }
             for (p in 1:nGroup){
-                if (length(which(attribution[version,]==p))==0){print("no match")}
+                if (length(which(attribution[version,]==p))==0){
+                    print("no match")
+                    start[p,]=toOrder[sample(noEmpty,1),]
+                }
                 if (length(which(attribution[version,]==p))==1){start[p,]=toOrder[which(attribution[version,]==p),]}
                 if (length(which(attribution[version,]==p))>1){start[p,]=colMeans(toOrder[which(attribution[version,]==p),],na.rm=TRUE)}
 
@@ -113,117 +134,117 @@ k_nearest_neighbours <- function(versions=30,nGroup=7,start_mod="random",runs=30
 
 nearest_neighbours <- function(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",markov_style=NA,add_name="_forReal_",seasons=1:5,states=1:2,nGroup=7,nReduce=0,versions=30,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"),season_names=c("MAM","JJA","SON","DJF","4seasons"),state_names=c("cold","warm")){
 
-    if (!is.na(fit_style)){
-        nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_fit_",fit_style,".nc",sep=""))
-        characteristics=var.get.nc(nc,"distr_stuff")
-        xAxLim<<-c(0,30)
-        yAxLim<<-c(0.001,0.25)
-        yAxes<<-c("","y")
-    }
-    if (!is.na(markov_style)){
-        nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/markov/",period,"/",trendID,dataset,"_",period,"_markov_order",markov_style,".nc",sep=""))
-        characteristics=var.get.nc(nc,"eventResult")
-        xAxLim<<-c(0,33)
-        yAxLim<<-c(0,0.33)
-        yAxes<<-c("")
-    }
+
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_distributions.nc",sep=""))
+    distr_stuff=var.get.nc(nc,"distr_stuff")
+
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/markov/",period,"/",trendID,dataset,"_",period,"_markov_order",markov_style,".nc",sep=""))
+    eventResult=var.get.nc(nc,"eventResult")
+
     jet.colors <- colorRampPalette(c("black",rgb(0.5,1,1),"red", "yellow","green",rgb(1,0.5,1),"orange"))
     color <<- jet.colors(nGroup) 
 
     for (sea in seasons){
-        for (state in states){
-            if (!is.na(fit_style)){
-                toOrder=characteristics[sea,,state,2,]
 
-            }
-            if (!is.na(markov_style) & state==1){
-                toOrder=characteristics[sea,,4,]
-            }
-            if (!is.na(markov_style) & state==2){break}
+        ntot<<-dim(distr_stuff)[2]
+        dimMarkov<<-dim(eventResult)[4]
+        dimDistr<<-dim(distr_stuff)[5]
+        dimensionality<<-dimMarkov+2*dimDistr
+
+        startDistr<<-c(dimMarkov+1,dimMarkov+dimDistr+1)
+        stopDistr<<-c(dimMarkov+dimDistr,dimMarkov+dimDistr+dimDistr)
+
+
+        toOrder=array(NA,dim=c(ntot,dimensionality))
+
+        print(startDistr)
+        print(stopDistr)
+        print(dim(distr_stuff[sea,,1,2,]))
+        print(dim(toOrder[,startDistr[1]:stopDistr[1]]))
+        print(dim(distr_stuff[sea,,2,2,]))
+        print(dim(toOrder[,startDistr[2]:stopDistr[2]]))
+
+        toOrder[,1:dimMarkov]=eventResult[sea,,4,]
+        toOrder[,startDistr[1]:stopDistr[1]]=distr_stuff[sea,,1,2,]
+        toOrder[,startDistr[2]:stopDistr[2]]=distr_stuff[sea,,2,2,]
+
+        #print(toOrder[488,])
         
-            #toOrder[is.na(toOrder)]=0
-            toOrder<<-toOrder
+        toOrder[is.na(toOrder)]=0
+        toOrder<<-toOrder
 
-            ntot<<-dim(toOrder)[1]
-            dimensionality<<-dim(toOrder)[2]
-            
-            X<<-1:dimensionality
+        tmp=k_nearest_neighbours(versions=versions,nGroup=nGroup,start_mod="random",runs=runs)
+        attribution=tmp$attribution
+        groups=tmp$groups
+        if ("testMasseMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups_map",add_name,"testMasse",".pdf",sep=""),worldmap=worldmap,reihen=attribution,pointsize=1.5,farb_palette=c("mixed",nGroup,"groups"))}
 
-            tmp=k_nearest_neighbours(versions=versions,nGroup=nGroup,start_mod="random",runs=runs)
+        nMass=versions*nGroup
+
+        matches=array(NA,dim=c(nMass,ntot))
+        index=0
+        for (ver in 1:versions){
+            for (p in 1:dim(groups)[2]){
+                index=index+1
+                match=which(attribution[ver,]==p)
+                matches[index,1:length(match)]=match
+            }
+        }
+
+        overlap=array(0,dim=c(nMass,nMass))
+        for (i in 1:nMass){
+            for (j in 1:nMass){
+                match_i=as.vector(matches[i,])[!is.na(matches[i,])]
+                match_j=as.vector(matches[j,])[!is.na(matches[j,])]
+                overlap[i,j]=length(match_i[match_i %in% match_j])
+            }
+        }
+
+        same=array(NA,c(nMass,versions))
+        for (i in 1:nMass){
+            a=which(overlap[,i]>(2/3*overlap[i,i]))
+            same[i,1:length(a)]=a
+        }
+
+        contained_in_versions=array(NA,nMass)
+        for (i in 1:nMass){
+            contained_in_versions[i]=length(which(!is.na(same[i,])))
+        }    
+
+        start=array(0,c(nGroup,dimensionality))
+        for (i in 1:nGroup){
+            target=which.max(contained_in_versions)
+            for (p in same[target,!is.na(same[target,])]){
+                vers=1
+                for (k in 1:29){
+                    if (p > nGroup){
+                        p=p-nGroup
+                        vers=vers + 1
+                    }
+                }
+                start[i,]=start[i,]+groups[vers,p,]
+
+            }
+            start[i,]=start[i,]/contained_in_versions[target]
+            contained_in_versions[same[target,!is.na(same[target,])]]=0
+        }
+        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",period,"_",season_names[sea],"_reduction",add_name,".pdf",sep="")) 
+        for (r in 0:nReduce){
+            tmp=k_nearest_neighbours(nGroup=nGroup-r,versions=1,runs=40,start_mod=start)
             attribution=tmp$attribution
             groups=tmp$groups
-            if ("testMasseMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",period,"_",season_names[sea],"_",state_names[state],"_groups_map",add_name,"testMasse",".pdf",sep=""),worldmap=worldmap,reihen=attribution,pointsize=1.5,farb_palette=c("mixed",nGroup,"groups"))}
-
-            nMass=versions*nGroup
-
-            matches=array(NA,dim=c(nMass,ntot))
-            index=0
-            for (ver in 1:versions){
-                for (p in 1:dim(groups)[2]){
-                    index=index+1
-                    match=which(attribution[ver,]==p)
-                    matches[index,1:length(match)]=match
-                }
-            }
-
-            overlap=array(0,dim=c(nMass,nMass))
-            for (i in 1:nMass){
-                for (j in 1:nMass){
-                    match_i=as.vector(matches[i,])[!is.na(matches[i,])]
-                    match_j=as.vector(matches[j,])[!is.na(matches[j,])]
-                    overlap[i,j]=length(match_i[match_i %in% match_j])
-                }
-            }
-
-            same=array(NA,c(nMass,versions))
-            for (i in 1:nMass){
-                a=which(overlap[,i]>(2/3*overlap[i,i]))
-                same[i,1:length(a)]=a
-            }
-
-            contained_in_versions=array(NA,nMass)
-            for (i in 1:nMass){
-                contained_in_versions[i]=length(which(!is.na(same[i,])))
-            }    
-
-            start=array(0,c(nGroup,dimensionality))
-            for (i in 1:nGroup){
-                target=which.max(contained_in_versions)
-                for (p in same[target,!is.na(same[target,])]){
-                    vers=1
-                    for (k in 1:29){
-                        if (p > nGroup){
-                            p=p-nGroup
-                            vers=vers + 1
-                        }
-                    }
-                    start[i,]=start[i,]+groups[vers,p,]
-
-                }
-                start[i,]=start[i,]/contained_in_versions[target]
-                contained_in_versions[same[target,!is.na(same[target,])]]=0
-            }
-            pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",period,"_",season_names[sea],"_",state_names[state],"_reduction",add_name,".pdf",sep=""))
-            jet.colors <- colorRampPalette(c("black",rgb(0.5,1,1),"red", "yellow","green",rgb(1,0.5,1),"orange"))
-            color <<- jet.colors(nGroup)  
-            for (r in 0:nReduce){
-                tmp=k_nearest_neighbours(nGroup=nGroup-r,versions=1,runs=40,start_mod=start)
+            if (r < nReduce){
+                tmp=group_reduction(attribution=attribution,start=groups[1,,],nGroup=nGroup-r,reduce=1)
                 attribution=tmp$attribution
-                groups=tmp$groups
-                if (r < nReduce){
-                    tmp=group_reduction(attribution=attribution,start=groups[1,,],nGroup=nGroup-r,reduce=1)
-                    attribution=tmp$attribution
-                    start=tmp$start
-                }
+                start=tmp$start
             }
-            nGroup=nGroup-nReduce
-            if ("endMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",period,"_",season_names[sea],"_",state_names[state],"_groups_map",add_name,".pdf",sep=""),worldmap=worldmap,reihen=attribution,pointsize=1.5,farb_palette=c("mixed",nGroup,"groups"))}
-            if ("endGroups" %in% plot){
-                pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",period,"_",season_names[sea],"_",state_names[state],"_groups",add_name,".pdf",sep=""))
+        }
+        nGroup=nGroup-nReduce
+        if ("endMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups_map",add_name,".pdf",sep=""),worldmap=worldmap,reihen=attribution,pointsize=1.5,farb_palette=c("mixed",nGroup,"groups"))}
+        if ("endGroups" %in% plot){
+                pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbours/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups",add_name,".pdf",sep=""))
                 jet.colors <- colorRampPalette(c("black",rgb(0.5,1,1),"red", "yellow","green",rgb(1,0.5,1),"orange"))
                 color <<- jet.colors(nGroup)  
                 plot_aktuelles_muster(attribution=attribution,start=groups[1,,],nGroup=nGroup,points=TRUE)
-            }
 
         }
     }
@@ -259,6 +280,6 @@ if (1==1){
     #distr_nearest_neighbours(period="1950-2014",trendID=trendID,dataset=dataset,fit_style="2expo_thresh_5-15",reg=reg,region_name="srex",ID_select=ID_select)
 
     #nearest_neighbours(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",add_name="_WeightedNot_",seasons=2,states=2,nGroup=12,nReduce=6,versions=10,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"))
-    nearest_neighbours(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style=NA,markov_style=5,add_name="_MarkovMulti_",seasons=4,states=1,nGroup=12,nReduce=6,versions=10,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"))
+    nearest_neighbours(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style=NA,markov_style=5,add_name="_MarkovMulti_",seasons=4,states=1,nGroup=12,nReduce=6,versions=2,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"))
 
 }
