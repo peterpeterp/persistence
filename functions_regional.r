@@ -141,7 +141,7 @@ duration_region <- function(regions,reg,dur,dur_mid){
 
 
 
-regional_distributions <- function(dat,region_name,trendID,additional_style,dataset){
+regional_attribution <- function(dat,region_name,trendID,additional_style="",dataset="_TMean",IDregions=c("from polygons")){
     # performs the entire regional analysis of markov and duration
     # result will be written in nc file
 
@@ -151,7 +151,13 @@ regional_distributions <- function(dat,region_name,trendID,additional_style,data
     poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
     regNumb=dim(poli)[1]
     print(regNumb)
-    IDregions=points_to_regions(dat,c(region_name))
+    if (IDregions[1]=="from polygons"){
+        IDregions_tmp=points_to_regions(dat,c(region_name))
+        IDregions=array(NA,c(ntot,5))
+        for (i in 1:5){
+            IDregions[,i]=IDregions_tmp
+        }
+    }
 
     season_names=c("MAM","JJA","SON","DJF","4seasons")
 
@@ -169,7 +175,7 @@ regional_distributions <- function(dat,region_name,trendID,additional_style,data
 
         for (state in 1:2){
             for (reg in 1:regNumb){            
-                tmp=duration_region(IDregions,reg,dur[1:ntot,state,],dur_mid[1:ntot,state,])
+                tmp=duration_region(IDregions[,sea],reg,dur[1:ntot,state,],dur_mid[1:ntot,state,])
                 duration=tmp$duration
                 duration_mid=tmp$duration_mid
                 if (length(duration)>100){
@@ -383,9 +389,6 @@ plot_regional_fit_vergleich <- function(period1,period2,region_name,trendID,addi
             lines(fit_stuff[sea,,state,5],col="blue")
         }
     }
-
-
-
     graphics.off()
 
 }
@@ -432,6 +435,7 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
     graphics.off()
 }
 
+
 write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fit_style1,fit_style2,region_names,ID_select){
     regNumb=length(ID_select)
 
@@ -441,44 +445,6 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
     print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
     fit_stuff2=var.get.nc(nc,"fit_stuff")
-
-
-    if (1==2){
-
-        print(fit_stuff1[1:4,,,17])
-        print(length(which(fit_stuff1[1:4,,,17]< 0)))
-
-        print(length(fit_stuff1[1:4,,,17]))
-        print(length(which(fit_stuff1[1:4,,,17]>5)))
-        print(length(which(fit_stuff1[1:4,,,17]< -5)))
-        print(length(which(fit_stuff1[1:4,,,17]> -5 & fit_stuff1[1:4,,,17]<5)))
-
-        print(999)
-        print(length(which(fit_stuff1[1:4,,,6]<fit_stuff1[1:4,,,8])))
-        print(which(fit_stuff1[1:4,,,6]<fit_stuff1[1:4,,,8]))
-        print(as.vector(fit_stuff1[1:4,,,17])[which(fit_stuff1[1:4,,,6]<fit_stuff1[1:4,,,8])])
-
-        print(999)
-        print(which(fit_stuff1[1,,,6]<fit_stuff1[1,,,8] & fit_stuff1[1,,,17]< 0))
-        print(which(fit_stuff1[2,,,6]<fit_stuff1[2,,,8] & fit_stuff1[2,,,17]< 0))
-        print(which(fit_stuff1[3,,,6]<fit_stuff1[3,,,8] & fit_stuff1[3,,,17]< 0))
-        print(which(fit_stuff1[4,,,6]<fit_stuff1[4,,,8] & fit_stuff1[4,,,17]< 0))
-
-        print(999)
-        print(which(fit_stuff1[1,,,6]<fit_stuff1[1,,,8] & fit_stuff1[1,,,17]< 999))
-        print(which(fit_stuff1[2,,,6]<fit_stuff1[2,,,8] & fit_stuff1[2,,,17]< 999))
-        print(which(fit_stuff1[3,,,6]<fit_stuff1[3,,,8] & fit_stuff1[3,,,17]< 999))
-        print(which(fit_stuff1[4,,,6]<fit_stuff1[4,,,8] & fit_stuff1[4,,,17]< 999))
-
-        print(999)
-        print(which(fit_stuff1[1,,,6]>fit_stuff1[1,,,8] & fit_stuff1[1,,,17]< 999))
-        print(which(fit_stuff1[2,,,6]>fit_stuff1[2,,,8] & fit_stuff1[2,,,17]< 999))
-        print(which(fit_stuff1[3,,,6]>fit_stuff1[3,,,8] & fit_stuff1[3,,,17]< 999))
-        print(which(fit_stuff1[4,,,6]>fit_stuff1[4,,,8] & fit_stuff1[4,,,17]< 999))
-
-        adasd
-    }
-
 
     season_names=c("MAM","JJA","SON","DJF","4seasons")
     state_names=c("cold","warm")
@@ -643,4 +609,60 @@ fit_info_to_map <- function(trendID="91_5",region_name="srex",period,fit_style1,
     graphics.off()
     return()
 }
+
+
+plot_fits_for_region <- function(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",reg=13,model="combi_expo",region_name="srex"){
+    dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    IDregions=points_to_regions(dat,"7rect")
+    ID_select=which(IDregions==reg)
+
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+    fit_stuff_reg=var.get.nc(nc,"fit_stuff")
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_fit_",fit_style,".nc",sep=""))
+    fit_stuff_individual=var.get.nc(nc,"fit_stuff")
+    distr_stuff_individual=var.get.nc(nc,"distr_stuff")
+
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_region_",reg,".pdf",sep=""))
+    
+    color=c(rgb(0.5,1,0.8),rgb(0.3,0.9,0.8),rgb(0.9,0.6,0.8),rgb(0.8,0.2,0.6),rgb(0.5,0.5,0.5,0.2))
+
+    X=(0:30)+0.5
+    for (sea in 1:5){
+        for (state in 1:2){
+            plot(NA,ylim=c(0,10),xlim=c(0,10),axes=FALSE,frame.plot=FALSE)
+            text(5,5,paste(sea,state,reg))
+            plot(NA,xlab="days",ylab="counts",ylim=c(0,150),xlim=c(0,30),axes=TRUE,frame.plot=TRUE)
+            for (q in ID_select){
+                points(distr_stuff_individual[sea,q,state,1,],distr_stuff_individual[sea,q,state,3,],pch=16,col=color[5],cex=1.5)
+            }
+
+            plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE)
+            for (q in ID_select){points(distr_stuff_individual[sea,q,state,1,],distr_stuff_individual[sea,q,state,2,],pch=16,col=color[5],cex=1.5)}
+            for (q in ID_select){
+                abline(v=fit_stuff_individual[sea,q,state,9],col=color[5],lty=2,lwd=0.3)
+                lines(X,combi_expo(X,fit_stuff_individual[sea,q,state,5],fit_stuff_individual[sea,q,state,6],fit_stuff_individual[sea,q,state,8],fit_stuff_individual[sea,q,state,9]),col=color[1],lwd=0.3)
+                lines(X,expo(X,fit_stuff_individual[sea,q,state,1],fit_stuff_individual[sea,q,state,2]),col=color[3],lwd=0.3,lty=2)
+            }
+            abline(v=fit_stuff_reg[sea,reg,state,9],col=color[5],lty=2,lwd=2)
+            lines(X,combi_expo(X,fit_stuff_reg[sea,reg,state,5],fit_stuff_reg[sea,reg,state,6],fit_stuff_reg[sea,reg,state,8],fit_stuff_reg[sea,reg,state,9]),col=color[2],lwd=2,lty=1)
+            lines(X,expo(X,fit_stuff_reg[sea,reg,state,1],fit_stuff_reg[sea,reg,state,2]),col=color[4],lty=1,lwd=2)
+            
+
+            plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log="y")
+            for (q in ID_select){points(distr_stuff_individual[sea,q,state,1,],distr_stuff_individual[sea,q,state,2,],pch=16,col=color[5],cex=1.5)}
+            for (q in ID_select){
+                abline(v=fit_stuff_individual[sea,q,state,9],col=color[5],lty=2,lwd=0.3)
+                lines(X,combi_expo(X,fit_stuff_individual[sea,q,state,5],fit_stuff_individual[sea,q,state,6],fit_stuff_individual[sea,q,state,8],fit_stuff_individual[sea,q,state,9]),col=color[1],lwd=0.3)
+                lines(X,expo(X,fit_stuff_individual[sea,q,state,1],fit_stuff_individual[sea,q,state,2]),col=color[3],lwd=0.3,lty=2)
+            }
+            abline(v=fit_stuff_reg[sea,reg,state,9],col=color[5],lty=2,lwd=2)
+            lines(X,combi_expo(X,fit_stuff_reg[sea,reg,state,5],fit_stuff_reg[sea,reg,state,6],fit_stuff_reg[sea,reg,state,8],fit_stuff_reg[sea,reg,state,9]),col=color[2],lwd=2,lty=1)
+            lines(X,expo(X,fit_stuff_reg[sea,reg,state,1],fit_stuff_reg[sea,reg,state,2]),col=color[4],lty=1,lwd=2)
+
+        }
+    }
+    
+    
+}
+
 

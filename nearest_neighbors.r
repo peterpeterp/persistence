@@ -17,7 +17,7 @@ group_reduction <- function(attribution,start,nGroup,reduce,main_add=""){
 
         start[similar[1],]=colMeans(start[similar[1:2],],na.rm=TRUE)
         start[similar[2],]=NA
-        plot_aktuelles_muster(attribution,start,nGroup)
+        #plot_aktuelles_muster(attribution,start,nGroup)
         attribution[which(attribution==similar[2])]=similar[1]
         start=start[which((1:nGroup)!=similar[2]),]
     }
@@ -66,77 +66,54 @@ plot_aktuelles_muster <- function(attribution,start,nGroup,points=FALSE){
 }
 
 
-k_nearest_neighbors <- function(versions=30,nGroup=7,start_mod="random",runs=30){
+k_nearest_neighbors <- function(nGroup=7,start_mod="random",runs=30){
     noEmpty=which(toOrder[,1]>0)
     noEmpty=which(!is.na(toOrder[,1]))
 
-    attribution=array(NA,c(versions,ntot))
-    groups=array(NA,c(versions,nGroup,dimensionality))
+    attribution=array(NA,c(ntot))
 
-    for (version in 1:versions){
-        cat(paste("\n version:",version,"\n"))
-        if (start_mod[1]=="random"){start=toOrder[c(sample(noEmpty,nGroup)),]}
-        if (start_mod[1]!="random"){start=start_mod}
+    if (start_mod[1]=="random"){start=toOrder[c(sample(noEmpty,nGroup)),]}
+    if (start_mod[1]!="random"){start=start_mod}
 
-
-
-        attribution_old=array(1:10,ntot)
-        for (i in 1:runs){
-            cat(paste(i," "))
-            for (q in 1:ntot){
-                if (!is.na(toOrder[q,1])){
-                    #print(q)
-                    score=array(NA,nGroup)
-                    for (p in 1:nGroup){
-                        # distance definitions here
-                        #score[p]=sum((start[p,]-toOrder[q,])^2)
-                        #score[p]=sum(start[p,]*toOrder[q,])
-
-                        score[p]=sum(abs(start[p,]-toOrder[q,]),na.rm=TRUE)
-                        
-
-
-                        #score[p]=sum(X*as.vector((start[p,]-toOrder[q,])^2))
-                        #score[p]=sum((X^0.5)*as.vector((start[p,]-toOrder[q,])^2))
-                        #score[p]=sum(abs((start[p,]-toOrder[q,])*(0.25-start[p,])^2))
-
-                        #wheight=(start[p,]+toOrder[q,])/2
-                        #noZero=which(wheight>0)
-                        #score[p]=sum(as.vector((start[p,noZero]-toOrder[q,noZero])^2)/wheight[noZero])
-                       
-
-                    }
-                    attribution[version,q]=which.min(score)
+    attribution_old=array(1:10,ntot)
+    for (i in 1:runs){
+        cat(paste(i," "))
+        for (q in 1:ntot){
+            if (!is.na(toOrder[q,1])){
+                score=array(NA,nGroup)
+                for (p in 1:nGroup){
+                    # distance definitions here
+                    score[p]=sum(abs(start[p,]-toOrder[q,]),na.rm=TRUE)
                 }
-
+                attribution[q]=which.min(score)
             }
-            for (p in 1:nGroup){
-                if (length(which(attribution[version,]==p))==0){
-                    print("no match")
-                    start[p,]=toOrder[sample(noEmpty,1),]
-                }
-                if (length(which(attribution[version,]==p))==1){start[p,]=toOrder[which(attribution[version,]==p),]}
-                if (length(which(attribution[version,]==p))>1){start[p,]=colMeans(toOrder[which(attribution[version,]==p),],na.rm=TRUE)}
 
-            }
-            if (sum(attribution_old-attribution[version,],na.rm=TRUE)==0){break}
-            else {attribution_old<-attribution[version,]}
         }
-        groups[version,,]=start
+        for (p in 1:nGroup){
+            if (length(which(attribution==p))==0){
+                print("no match")
+                start[p,]=toOrder[sample(noEmpty,1),]
+            }
+            if (length(which(attribution==p))==1){start[p,]=toOrder[which(attribution==p),]}
+            if (length(which(attribution==p))>1){start[p,]=colMeans(toOrder[which(attribution==p),],na.rm=TRUE)}
+
+        }
+        if (sum(attribution_old-attribution,na.rm=TRUE)==0){break}
+        else {attribution_old<-attribution}
     }
 
-    return(list(attribution=attribution,groups=groups))    
+    return(list(attribution=attribution,groups=start))    
 }
 
 
 
-nearest_neighbors <- function(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",markov_style=NA,add_name="_forReal_",seasons=1:5,states=1:2,nGroup=7,nReduce=0,versions=30,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps")){
+nearest_neighbors <- function(period="1950-2014",trendID="91_5",dataset="_TMean",markov_style=NA,add_name="_forReal_",seasons=1:5,states=1:2,nGroupStart=12,nGroupEnd=7,versions=30,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps")){
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     state_names<<-c("cold","warm")
 
-    jet.colors <- colorRampPalette(c("black",rgb(0.5,1,1),"red", "yellow","green",rgb(1,0.5,1),"purple"))
-    color <<- jet.colors(nGroup) 
+    jet.colors <- colorRampPalette(c( "black","blue","green","yellow","orange","red","violet"))
+    color <<- jet.colors(nGroupEnd) 
 
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_distributions.nc",sep=""))
     distr_stuff=var.get.nc(nc,"distr_stuff")
@@ -154,8 +131,8 @@ nearest_neighbors <- function(period="1950-2014",trendID="91_5",dataset="_TMean"
 
     regionAttribution=array(NA,dim=c(ntot,6))
     regionAttribution[,6]=1:ntot
-    GroupMarkovChain=array(NA,dim=c(6,nGroup-nReduce,dimMarkov))
-    GroupDistributions=array(NA,dim=c(6,2,nGroup-nReduce,dimDistr))
+    GroupMarkovChain=array(NA,dim=c(6,nGroupEnd,dimMarkov))
+    GroupDistributions=array(NA,dim=c(6,2,nGroupEnd,dimDistr))
 
     for (sea in seasons){
 
@@ -167,19 +144,39 @@ nearest_neighbors <- function(period="1950-2014",trendID="91_5",dataset="_TMean"
         #toOrder[is.na(toOrder)]=0
         toOrder<<-toOrder
 
-        tmp=k_nearest_neighbors(versions=versions,nGroup=nGroup,start_mod="random",runs=runs)
-        attribution=tmp$attribution
-        groups=tmp$groups
-        if ("testMasseMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups_map",nGroup,"_",nReduce,add_name,"testMasse",".pdf",sep=""),worldmap=worldmap,reihen=attribution,pointsize=1.5,farb_palette=c("mixed",nGroup,"groups"))}
+        # create a set of groups from random start positions
+        attributionMasse=array(NA,dim=c(versions,ntot))
+        groupsMasse=array(NA,dim=c(versions,nGroupEnd,dimensionality))
+        for (version in 1:versions){
+            cat(paste("\n version:",version,"\n"))
+            tmp=k_nearest_neighbors(nGroup=nGroupStart,start_mod="random",runs=runs)
+            attribution=tmp$attribution
+            groups=tmp$groups
+            for (r in 1:(nGroupStart-nGroupEnd)){
+                cat(paste("\n        reduction:",r,"\n             "))
+                tmp=group_reduction(attribution=attribution,start=groups,nGroup=nGroupStart-r+1,reduce=1)
+                attribution=tmp$attribution
+                start=tmp$start
 
-        nMass=versions*nGroup
+                tmp=k_nearest_neighbors(nGroup=nGroupEnd,runs=runs,start_mod=start)
+                attribution=tmp$attribution
+                groups=tmp$groups
+            }
+            attributionMasse[version,]=attribution
+            groupsMasse[version,,]=groups
+        }
+
+        if ("testMasseMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups_map",nGroupEnd,"_",add_name,"testMasse",".pdf",sep=""),worldmap=worldmap,reihen=attributionMasse,pointsize=1.5,farb_palette=c("mixed",nGroupEnd,"groups"))}
+
+        # search for robust groups
+        nMass=versions*nGroupEnd
 
         matches=array(NA,dim=c(nMass,ntot))
         index=0
         for (ver in 1:versions){
-            for (p in 1:dim(groups)[2]){
+            for (p in 1:nGroupEnd){
                 index=index+1
-                match=which(attribution[ver,]==p)
+                match=which(attributionMasse[ver,]==p)
                 matches[index,1:length(match)]=match
             }
         }
@@ -204,48 +201,58 @@ nearest_neighbors <- function(period="1950-2014",trendID="91_5",dataset="_TMean"
             contained_in_versions[i]=length(which(!is.na(same[i,])))
         }    
 
-        start=array(0,c(nGroup,dimensionality))
-        for (i in 1:nGroup){
+        start=array(0,c(nGroupEnd,dimensionality))
+        for (i in 1:nGroupEnd){
             target=which.max(contained_in_versions)
             for (p in same[target,!is.na(same[target,])]){
                 vers=1
                 for (k in 1:29){
-                    if (p > nGroup){
-                        p=p-nGroup
+                    if (p > nGroupEnd){
+                        p=p-nGroupEnd
                         vers=vers + 1
                     }
                 }
-                start[i,]=start[i,]+groups[vers,p,]
+                start[i,]=start[i,]+groupsMasse[vers,p,]
 
             }
             start[i,]=start[i,]/contained_in_versions[target]
             contained_in_versions[same[target,!is.na(same[target,])]]=0
         }
-        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",season_names[sea],"_reduction",nGroup,"_",nReduce,add_name,".pdf",sep="")) 
-        for (r in 0:nReduce){
-            tmp=k_nearest_neighbors(nGroup=nGroup-r,versions=1,runs=40,start_mod=start)
-            attribution=tmp$attribution
-            groups=tmp$groups
-            if (r < nReduce){
-                tmp=group_reduction(attribution=attribution,start=groups[1,,],nGroup=nGroup-r,reduce=1)
-                attribution=tmp$attribution
-                start=tmp$start
-            }
+
+        # create final version
+        tmp=k_nearest_neighbors(nGroup=nGroupEnd,runs=50,start_mod=start)
+        attribution_Unsorted=tmp$attribution
+        groups_Unsorted=tmp$groups
+
+        # sort attribution for color
+        attribution=attribution_Unsorted*NA
+        groups=groups_Unsorted*NA
+
+        attr1<<-attribution_Unsorted
+        grou1<<-groups_Unsorted
+
+        attr2<<-attribution
+        grou2<<-groups
+
+        for (p in 1: nGroupEnd){
+            momMin=which.min(groups_Unsorted[,1])
+            attribution[which(attribution_Unsorted==momMin)]=p
+            groups[p,]=groups_Unsorted[momMin,]
+            groups_Unsorted[momMin,]=999
         }
-        nGroupEnd=nGroup-nReduce
-        if ("endMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups-",nGroupEnd,"_map",add_name,".pdf",sep=""),worldmap=worldmap,reihen=attribution,pointsize=1.5,farb_palette=c("mixed",nGroupEnd,"groups"))}
+
+
+        if ("endMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups-",nGroupEnd,"_map",add_name,".pdf",sep=""),worldmap=worldmap,reihen=array(attribution,dim=c(1,ntot)),pointsize=1.5,farb_palette=c("mixed",nGroupEnd,"groups"))}
         if ("endGroups" %in% plot){
-                pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups-",nGroupEnd,add_name,".pdf",sep=""))
-                jet.colors <- colorRampPalette(c("black",rgb(0.5,1,1),"red", "yellow","green",rgb(1,0.5,1),"orange"))
-                color <<- jet.colors(nGroupEnd)  
-                plot_aktuelles_muster(attribution=attribution,start=groups[1,,],nGroup=nGroupEnd,points=TRUE)
+            pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups-",nGroupEnd,add_name,".pdf",sep=""))
+            plot_aktuelles_muster(attribution=attribution,start=groups,nGroup=nGroupEnd,points=TRUE)
 
         }
 
         regionAttribution[,sea]=attribution
-        GroupMarkovChain[sea,,]=groups[1,,1:dimMarkov]
-        GroupDistributions[sea,1,,]=groups[1,,startDistr[1]:stopDistr[1]]
-        GroupDistributions[sea,2,,]=groups[1,,startDistr[2]:stopDistr[2]]
+        GroupMarkovChain[sea,,]=groups[,1:dimMarkov]
+        GroupDistributions[sea,1,,]=groups[,startDistr[1]:stopDistr[1]]
+        GroupDistributions[sea,2,,]=groups[,startDistr[2]:stopDistr[2]]
     }
 
     nc_out<-create.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_groups-",nGroupEnd,add_name,".nc",sep=""))
@@ -283,11 +290,16 @@ nearest_neighbors <- function(period="1950-2014",trendID="91_5",dataset="_TMean"
     close.nc(nc_out) 
 }
 
+create_regional_distr_out_of_kmeans <- function(dataset="_TMean",trendID="91_5",additional_style="",markov_style=5,nGroupEnd=6,add_name="_MarkovDistrCombi_test_",period="1950-2014"){
+    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_groups-",nGroupEnd,add_name,".nc",sep=""))
+    IDregions=var.get.nc(nc,"attribution")
+    regional_attribution(dat=dat,region_name="kmeans",trendID=trendID,dataset=dataset,additional_style=additional_style,IDregions=IDregions)
+}
 
-if (1==1){
+
+kmeans_master <- function(){
     source("write.r")
     source("load.r")
-
     nday=91
     nyr=5
     trendID=paste(nday,"_",nyr,sep="")
@@ -297,22 +309,12 @@ if (1==1){
     source("map_plot.r")
     library(rworldmap)
     library(fields)
-    worldmap = getMap(resolution = "low")
-    dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    worldmap<<-getMap(resolution = "low")
+    dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
-    #dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-    #IDregions=points_to_regions(dat,"7rect")
-    #ID_select=which(IDregions==reg)
-    #print(ID_select)
-    #print(length(ID_select))
 
-    #duration_analysis(yearPeriod=c(1950,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0),add_name="2expo_thresh_5-15_reg_13",ID_select=ID_select,plot_select=ID_select,ID_length=1319)
-    #plot_fits_for_region(period="1950-2014",trendID=trendID,dataset=dataset,fit_style="2expo_thresh_5-15",reg=reg,region_name="7rect",ID_select=ID_select)
-    
-
-    #distr_nearest_neighbors(period="1950-2014",trendID=trendID,dataset=dataset,fit_style="2expo_thresh_5-15",reg=reg,region_name="srex",ID_select=ID_select)
-
-    #nearest_neighbors(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",add_name="_WeightedNot_",seasons=2,states=2,nGroup=12,nReduce=6,versions=10,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps"))
-    nearest_neighbors(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style=NA,markov_style=5,add_name="_MarkovDistrCombi_",seasons=1:5,states=1,nGroup=12,nReduce=5,versions=20,runs=30,plot=c("endGroups","endMaps"))
+    nearest_neighbors(period="1950-2014",trendID="91_5",dataset="_TMean",markov_style=5,add_name="_MarkovDistrCombi_test_",seasons=1:5,states=1,nGroupStart=12,nGroupEnd=6,versions=20,runs=30,plot=c("endGroups","endMaps"))
 
 }
+
+kmeans_master()

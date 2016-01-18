@@ -122,7 +122,6 @@ duration_seasons <- function(dur,dur_mid,season,filename){
     duration_write(filename,dur_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],
         dur_mid_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
     cat(paste("\ndays in year:",season[1],"-",season[2]))    
-
 }
     
 
