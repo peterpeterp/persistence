@@ -266,7 +266,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 			jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), "yellow",rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
 		}
 		if (farb_palette_loc=="groups"){
-			jet.colors <- colorRampPalette( c("black",rgb(0.5,1,1),"red", "yellow","green",rgb(1,0.5,1),"orange"))
+			jet.colors <- colorRampPalette( c("black",rgb(0.5,1,1),"red", "yellow","green",rgb(1,0.5,1),"purple"))
 		}
 
 		color <- jet.colors(nbcol)	
