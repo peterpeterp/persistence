@@ -54,7 +54,6 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
             
 
             for (combi in 1:combinations){
-                print(proc.time())
                 resultCond=array(TRUE,len-order)
                 for (o in 1:order){
                     memoryCond=(indLoc==eventPossibilities[combi,(order-o+1)])[(order-o+1):(len-o)]
@@ -62,27 +61,20 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
                 }
 
                 eventResult[sea,q,1,combi]=length(which(resultCond))
-                print(proc.time())
 
-                eventResult[sea,q,4,combi]=0
-                for(o in 1:order){
-                    a=array(indLoc[o:len],c(order,len2))
-                    a[(len-order+1):len]=NA
-                    b=sweep(a,1,eventPossibilities[combi,],"*")
-                    c=colSums(b)
-                    eventResult[sea,q,4,combi]=eventResult[sea,q,4,combi]+length(which(c==order))
+                if (1==2){
+                    eventResult[sea,q,4,combi]=0
+                    for(o in 1:order){
+                        a=array(indLoc[o:len],c(order,len2))
+                        a[(len-order+1):len]=NA
+                        b=sweep(a,1,eventPossibilities[combi,],"*")
+                        c=colSums(b)
+                        eventResult[sea,q,4,combi]=eventResult[sea,q,4,combi]+length(which(c==order))
+                    }
                 }
-                print(proc.time())
 
 
             }
-            print(eventResult[sea,q,1,])
-            print(eventResult[sea,q,4,])
-            print(sum(eventResult[sea,q,1,]))
-            print(sum(eventResult[sea,q,4,]))
-            print(len)
-
-            asdas
 
             eventResult[sea,q,2,firstOutcome]=eventResult[sea,q,1,firstOutcome]+eventResult[sea,q,1,secondOutcome]
             eventResult[sea,q,2,secondOutcome]=eventResult[sea,q,1,firstOutcome]+eventResult[sea,q,1,secondOutcome]

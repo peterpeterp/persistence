@@ -295,7 +295,8 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
 
     if (option[2]==1){quantiles_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
         
-    if (option[3]==1 | option[4]==1 | option[5]==1 | option[6]==1 | option[7]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff,distr_stuff=distr_stuff)}
+    if (option[3]==1 | option[4]==1 | option[5]==1 | option[6]==1 | option[7]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
+    distr_write(distr_stuff=distr_stuff,filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_distributions.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period)
     graphics.off()
 }
 

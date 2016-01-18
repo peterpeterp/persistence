@@ -72,8 +72,10 @@ k_nearest_neighbours <- function(versions=30,nGroup=7,start_mod="random",runs=30
                     score=array(NA,nGroup)
                     for (p in 1:nGroup){
                         # distance definitions here
-                        score[p]=sum((start[p,]-toOrder[q,])^2)
+                        #score[p]=sum((start[p,]-toOrder[q,])^2)
                         #score[p]=sum(start[p,]*toOrder[q,])
+
+                        score[p]=sum(abs(start[p,]-toOrder[q,]))
                         
 
 

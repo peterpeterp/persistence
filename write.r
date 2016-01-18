@@ -100,7 +100,7 @@ other_write <- function(filename,ID_length,ID_name,period,other_stuff,comment="o
     close.nc(nc_out) 
 }
 
-fit_write <- function(filename,ID_length,ID_name,period,fit_stuff,distr_stuff,comment="distribution_fits"){
+fit_write <- function(filename,ID_length,ID_name,period,fit_stuff,comment="distribution_fits"){
 
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
@@ -113,20 +113,35 @@ fit_write <- function(filename,ID_length,ID_name,period,fit_stuff,distr_stuff,co
 
     dim.def.nc(nc_out,"fit_outs",dimlength=20,unlim=FALSE)
 
-    dim.def.nc(nc_out,"distr_outs",dimlength=5,unlim=FALSE)
-    dim.def.nc(nc_out,"distr_length",dimlength=100,unlim=FALSE)
-
     var.def.nc(nc_out,"fit_stuff","NC_DOUBLE",c(0,1,2,3))
     att.put.nc(nc_out, "fit_stuff", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "fit_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-...")
     att.put.nc(nc_out, "fit_stuff", "explanation", "NC_CHAR", "expo: 1-a, 2-b, 15-R2, 16-BIC special fit: 5-a1, 6-b1, 7-a2, 8-b2, 9-thresh 19=R^2, 20=BIC  special: 14-distr_length, 17-BIc_diff")
+        
+    var.put.nc(nc_out,"fit_stuff",fit_stuff)      
+ 
+    close.nc(nc_out) 
+}
 
-    var.def.nc(nc_out,"distr_stuff","NC_DOUBLE",c(0,1,2,4,5))
+distr_write <- function(distr_stuff,filename,ID_length,ID_name,period,comment="distribution_fits"){
+
+    nc_out <- create.nc(filename)
+    att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
+    att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
+    att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", period)
+
+    dim.def.nc(nc_out,"seasons",dimlength=6,unlim=FALSE)
+    dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
+    dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
+
+    dim.def.nc(nc_out,"distr_outs",dimlength=5,unlim=FALSE)
+    dim.def.nc(nc_out,"distr_length",dimlength=100,unlim=FALSE)
+
+    var.def.nc(nc_out,"distr_stuff","NC_DOUBLE",c(0,1,2,3,4))
     att.put.nc(nc_out, "distr_stuff", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "distr_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-(X,Y,counts,expifit,specialfit)-...")
     att.put.nc(nc_out, "distr_stuff", "explanation", "NC_CHAR", "distribution values: X, Y, counts, exponential fit, special fit")
         
-    var.put.nc(nc_out,"fit_stuff",fit_stuff)      
     var.put.nc(nc_out,"distr_stuff",distr_stuff)      
  
     close.nc(nc_out) 

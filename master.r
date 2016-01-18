@@ -230,7 +230,7 @@ ID_select=c(1,2,3,4,5,6,9,10,11,12,13,14,16,17,18,19,20,21,22,23,24,25,26)
 #duration_analysis(yearPeriod=c(1950,1980),trendID=trendID,dataset=dataset,option=c(0,0,1,1,1,0),add_name="_testin2",ID_select=c(460,466,554),plot_select=c(460,466,554),ID_length=1319,write=FALSE)
 #duration_analysis(yearPeriod=c(1950,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0),add_name="_testin3",ID_select=c(2,4,30,52,374,506,31),plot_select=c(2,4,30,52,374,506,31),ID_length=1319,write=FALSE)
 
-#master_duration_analysis(trendID=trendID)
+master_duration_analysis(trendID=trendID)
 
 #master_duration(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
 
