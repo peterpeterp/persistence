@@ -141,17 +141,17 @@ duration_region <- function(regions,reg,dur,dur_mid){
 
 
 
-regional_attribution <- function(dat,region_name,trendID,additional_style="",dataset="_TMean",IDregions=c("from polygons")){
+regional_attribution <- function(dat,region_name,trendID,additional_style="",dataset="_TMean",IDregions=c("from polygons"),regNumb=7){
     # performs the entire regional analysis of markov and duration
     # result will be written in nc file
 
     # pnly for one trend and 2 states until now
     ntot=length(dat$ID)
 
-    poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
-    regNumb=dim(poli)[1]
-    print(regNumb)
+
     if (IDregions[1]=="from polygons"){
+        poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
+        regNumb=dim(poli)[1]
         IDregions_tmp=points_to_regions(dat,c(region_name))
         IDregions=array(NA,c(ntot,5))
         for (i in 1:5){
@@ -611,15 +611,27 @@ fit_info_to_map <- function(trendID="91_5",region_name="srex",period,fit_style1,
 }
 
 
-plot_fits_for_region <- function(period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",reg=13,model="combi_expo",region_name="srex"){
-    dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-    IDregions=points_to_regions(dat,"7rect")
-    ID_select=which(IDregions==reg)
+plot_fits_for_region <- function(reg,IDregions=c("from polygons"),period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",region_name="srex"){
 
+    if (IDregions[1]=="from polygons"){
+        poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
+        regNumb=dim(poli)[1]
+        IDregions_tmp=points_to_regions(dat,c(region_name))
+        IDregions=array(NA,c(ntot,5))
+        for (i in 1:5){
+            IDregions[,i]=IDregions_tmp
+        }
+    }
+
+
+    #print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
     fit_stuff_reg=var.get.nc(nc,"fit_stuff")
+    #print(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_fit_",fit_style,".nc",sep=""))
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_fit_",fit_style,".nc",sep=""))
     fit_stuff_individual=var.get.nc(nc,"fit_stuff")
+    #print(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_distributions.nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_distributions.nc",sep=""))
     distr_stuff_individual=var.get.nc(nc,"distr_stuff")
 
     pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_region_",reg,".pdf",sep=""))
@@ -628,9 +640,13 @@ plot_fits_for_region <- function(period="1950-2014",trendID="91_5",dataset="_TMe
 
     X=(0:30)+0.5
     for (sea in 1:5){
+
+        ID_select=which(IDregions[,sea]==reg)
+        print(ID_select)
+
         for (state in 1:2){
             plot(NA,ylim=c(0,10),xlim=c(0,10),axes=FALSE,frame.plot=FALSE)
-            text(5,5,paste(sea,state,reg))
+            text(5,5,paste("reg:",reg,"\nseason:",sea,"state:",state,"\npoints:",length(ID_select)))
             plot(NA,xlab="days",ylab="counts",ylim=c(0,150),xlim=c(0,30),axes=TRUE,frame.plot=TRUE)
             for (q in ID_select){
                 points(distr_stuff_individual[sea,q,state,1,],distr_stuff_individual[sea,q,state,3,],pch=16,col=color[5],cex=1.5)

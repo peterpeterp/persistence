@@ -107,7 +107,7 @@ k_nearest_neighbors <- function(nGroup=7,start_mod="random",runs=30){
 
 
 
-nearest_neighbors <- function(period="1950-2014",trendID="91_5",dataset="_TMean",markov_style=NA,add_name="_forReal_",seasons=1:5,states=1:2,nGroupStart=12,nGroupEnd=7,versions=30,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps")){
+nearest_neighbors <- function(markov_style=NA,add_name="_forReal_",seasons=1:5,states=1:2,nGroupStart=12,nGroupEnd=7,versions=30,runs=30,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps")){
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     state_names<<-c("cold","warm")
@@ -241,12 +241,9 @@ nearest_neighbors <- function(period="1950-2014",trendID="91_5",dataset="_TMean"
             groups_Unsorted[momMin,]=999
         }
 
-
-        if ("endMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups-",nGroupEnd,"_map",add_name,".pdf",sep=""),worldmap=worldmap,reihen=array(attribution,dim=c(1,ntot)),pointsize=1.5,farb_palette=c("mixed",nGroupEnd,"groups"))}
         if ("endGroups" %in% plot){
             pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups-",nGroupEnd,add_name,".pdf",sep=""))
             plot_aktuelles_muster(attribution=attribution,start=groups,nGroup=nGroupEnd,points=TRUE)
-
         }
 
         regionAttribution[,sea]=attribution
@@ -254,6 +251,8 @@ nearest_neighbors <- function(period="1950-2014",trendID="91_5",dataset="_TMean"
         GroupDistributions[sea,1,,]=groups[,startDistr[1]:stopDistr[1]]
         GroupDistributions[sea,2,,]=groups[,startDistr[2]:stopDistr[2]]
     }
+    if ("endMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",season_names[sea],"_groups-",nGroupEnd,"_map",add_name,".pdf",sep=""),worldmap=worldmap,reihen=t(matrix(regionAttribution,c(ntot,6))),pointsize=1.5,farb_palette=c("mixed",nGroupEnd,"groups"))}
+
 
     nc_out<-create.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_groups-",nGroupEnd,add_name,".nc",sep=""))
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", "gridpoints")
@@ -290,31 +289,32 @@ nearest_neighbors <- function(period="1950-2014",trendID="91_5",dataset="_TMean"
     close.nc(nc_out) 
 }
 
-create_regional_distr_out_of_kmeans <- function(dataset="_TMean",trendID="91_5",additional_style="",markov_style=5,nGroupEnd=6,add_name="_MarkovDistrCombi_test_",period="1950-2014"){
+create_regional_distr_out_of_kmeans <- function(dataset="_TMean",trendID="91_5",additional_style="",markov_style=5,nGroupEnd=6,add_name="_MarkovDistr",period="1950-2014",region_name="_kmeans"){
     nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_groups-",nGroupEnd,add_name,".nc",sep=""))
     IDregions=var.get.nc(nc,"attribution")
-    regional_attribution(dat=dat,region_name="kmeans",trendID=trendID,dataset=dataset,additional_style=additional_style,IDregions=IDregions)
+    regional_attribution(dat=dat,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,IDregions=IDregions,regNumb=nGroupEnd)
 }
 
 
 kmeans_master <- function(){
     source("write.r")
     source("load.r")
-    nday=91
-    nyr=5
-    trendID=paste(nday,"_",nyr,sep="")
-    dataset="_TMean"
-    trend_style="_mean"
-    additional_style=""
+
+    trendID<<-"91_5"
+    dataset<<-"_TMean"
+    additional_style<<-""
+    period<<-"1950-2014"
+
     source("map_plot.r")
+    source("functions_regional.r")
     library(rworldmap)
     library(fields)
     worldmap<<-getMap(resolution = "low")
     dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
 
-    nearest_neighbors(period="1950-2014",trendID="91_5",dataset="_TMean",markov_style=5,add_name="_MarkovDistrCombi_test_",seasons=1:5,states=1,nGroupStart=12,nGroupEnd=6,versions=20,runs=30,plot=c("endGroups","endMaps"))
-
+    nearest_neighbors(markov_style=5,add_name="_Distr_",seasons=1:5,states=1,nGroupStart=12,nGroupEnd=6,versions=20,runs=30,plot=c("endGroups","endMaps"))
+    create_regional_distr_out_of_kmeans(add_name="_Distr_",region_name="_kmeans_distr_grou6")
 }
 
 kmeans_master()

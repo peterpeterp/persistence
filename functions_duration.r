@@ -136,7 +136,6 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
     if (!is.na(plot_select[1])){
         #pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],"_",add_name,".pdf",sep=""),width=8,height=6)
         #par(mfrow=c(4,5))
-
         pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],"_",add_name,".pdf",sep=""),width=3,height=3)
         par(mfrow=c(1,1))
         fit_plot_empty()
@@ -153,6 +152,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
         cat(paste("\n",season))  
         dists=list()
 
+        print(paste("../data/",trendID,"/",dataset,additional_style,folder,trendID,dataset,ID_name,"_duration_",season,".nc",sep=""))
         nc_dur=open.nc(paste("../data/",trendID,"/",dataset,additional_style,folder,trendID,dataset,ID_name,"_duration_",season,".nc",sep=""))
         dur=var.get.nc(nc_dur,"dur")
         dur_mid=var.get.nc(nc_dur,"dur_mid")
