@@ -240,18 +240,20 @@ additional_style=""
 #ID_select=which(IDregions==reg)
 
 period="1950-2014"
-nGroupEnd=8
-add_name="_MarkovDistr_test"
-region_name="kmeans_robgrou8"
+nGroup=6
+add_name="KarlPerason_AmpMark"
+region_name=paste(add_name,"_",nGroup,sep="")
 
-#duration_analysis(yearPeriod=c(1950,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_thresh_5-15",folder="/regional/",ID_name=paste("_",region_name,sep=""),ID_select=1:8,plot_select=1:8,ID_names=1:8,ID_length=8)
+duration_analysis(yearPeriod=c(1950,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_thresh_5-15",folder="/regional/",ID_name=paste("_",region_name,sep=""),ID_select=1:nGroup,plot_select=1:nGroup,ID_names=1:nGroup,ID_length=nGroup)
 
 
 
-print(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_groups-",nGroupEnd,add_name,".nc",sep=""))
-nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_groups-",nGroupEnd,add_name,".nc",sep=""))
+nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",region_name,".nc",sep=""))
 IDregions=var.get.nc(nc,"attribution")
 
-plot_fits_for_region(reg=6,IDregions=IDregions,region_name=region_name)
+for (reg in 1:nGroup){
+    plot_fits_for_region(reg=reg,IDregions=IDregions,region_name=region_name)
+}
+
 
 
