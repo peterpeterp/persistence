@@ -1,14 +1,13 @@
 
 
 group_reduction <- function(attribution,start,nGroup,reduce,main_add=""){
-
     score=array(999,c(nGroup,nGroup))
     for (m in 1:reduce){
         for (p in 1:nGroup){
             for (p2 in 1:nGroup){
                 if (p!=p2){
                     #score[p]=sum((start[p,]-toOrder[q,])^2)
-                    if (length(which(attribution==p))+length(which(attribution==p2))<1000){score[p,p2]=score[p]=sum(abs(start[p,]-start[p2,]),na.rm=TRUE)}
+                    if (length(which(attribution==p))+length(which(attribution==p2))<1000){score[p,p2]=sum(abs(start[p,]-start[p2,]),na.rm=TRUE)}
                     else {score[p,p2]=999}
                 }
             }
@@ -90,7 +89,8 @@ k_nearest_neighbors <- function(nGroup=7,start_mod="random",runs=30){
                 score=array(NA,nGroup)
                 for (G in 1:nGroup){
                     # distance definitions here
-                    score[G]=sum(abs(start[G,]-toOrder[q,]),na.rm=TRUE)
+                    #score[G]=sum(abs(start[G,]-toOrder[q,]),na.rm=TRUE)
+                    score[G]=sum((weight*(start[G,]-toOrder[q,])^2),na.rm=TRUE)
                 }
                 G=which.min(score)
                 G_old=attribution[q]
@@ -160,6 +160,14 @@ nearest_neighbors <- function(markov_style=NA,add_name="_forReal_",seasons=1:5,n
         
         #toOrder[is.na(toOrder)]=0
         toOrder<<-toOrder
+
+        # create weighting vector
+        weight=array(NA,dimensionality)
+        for (k in dimensionality){
+            weight[k]=sd(toOrder[,k],na.rm=TRUE)
+        }
+        weight<<-weight
+        print(weight)
 
         # create a set of groups from random start positions
         attributionMasse=array(NA,dim=c(versions,ntot))
@@ -261,10 +269,10 @@ nearest_neighbors <- function(markov_style=NA,add_name="_forReal_",seasons=1:5,n
         groups=groups_Unsorted*NA
 
 
-        for (p in 1: nGroupEnd){
+        for (G in 1: nGroupEnd){
             momMin=which.min(groups_Unsorted[,1])
-            attribution[which(attribution_Unsorted==momMin)]=p
-            groups[p,]=groups_Unsorted[momMin,]
+            attribution[which(attribution_Unsorted==momMin)]=G
+            groups[G,]=groups_Unsorted[momMin,]
             groups_Unsorted[momMin,]=999
         }
 
@@ -345,9 +353,9 @@ init <- function(){
     dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 }
 
-kmeans_master <- function(nGroupStart=7,nGroupEnd=5){
-    nearest_neighbors(markov_style=5,add_name="_MarkovDistr",seasons=1:5,nGroupStart=nGroupStart,nGroupEnd=nGroupEnd,versions=10,runs=30,plot=c("endGroups","endMaps","robustMaps"))
-    create_regional_distr_out_of_kmeans(add_name="_MarkovDistr",region_name=paste("kmeans_robgrou",nGroupEnd,sep=""),nGroup=nGroupEnd)
+kmeans_master <- function(nGroupStart=7,nGroupEnd=5,add_name="_KarlPerason"){
+    nearest_neighbors(markov_style=5,add_name=add_name,seasons=1:5,nGroupStart=nGroupStart,nGroupEnd=nGroupEnd,versions=10,runs=30,plot=c("endGroups","endMaps","robustMaps"))
+    create_regional_distr_out_of_kmeans(add_name=add_name,region_name=paste("kmeans_robgrou",nGroupEnd,sep=""),nGroup=nGroupEnd)
 }
 
 init()
