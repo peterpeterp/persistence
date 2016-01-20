@@ -98,8 +98,8 @@ k_nearest_neighbors <- function(nGroup=7,start_mod="random",runs=30){
                     attribution[q]=G
                     if (length(which(attribution==G))>1){start[G,]=colMeans(toOrder[which(attribution==G),],na.rm=TRUE)}
                     if (length(which(attribution==G))==1){start[G,]=toOrder[which(attribution==G),]}
-                    if (length(which(attribution==G_old))>1){start[G,]=colMeans(toOrder[which(attribution==G_old),],na.rm=TRUE)}
-                    if (length(which(attribution==G_old))==1){start[G,]=toOrder[which(attribution==G_old),]}
+                    if (length(which(attribution==G_old))>1){start[G_old,]=colMeans(toOrder[which(attribution==G_old),],na.rm=TRUE)}
+                    if (length(which(attribution==G_old))==1){start[G_old,]=toOrder[which(attribution==G_old),]}
                     abbruchCond=1
                 }  
             }
