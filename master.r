@@ -234,18 +234,24 @@ additional_style=""
 #regional_quantiles_fits(dat=dat,yearPeriod=c(1950.2014),region_name="mid_lat_belt",trendID=trendID,dataset=dataset,additional_style=additional_style,plot=TRUE,season_auswahl=c(2),write=FALSE,add_name="_4sea",region_names=c("661","488"),q=c(661,488))
 
 #master_regional_climatology(region_name="kmeans_ma5_grou6",trendID=trendID,dataset=dataset,additional_style=additional_style)
-#duration_analysis(yearPeriod=c(1950,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_thresh_5-15",folder="/regional/",ID_name="_kmeans_ma5_grou6",ID_select=1:6,plot_select=1:6,ID_names=1:6,ID_length=6)
 
 #dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 #IDregions=points_to_regions(dat,region_name)
 #ID_select=which(IDregions==reg)
 
 period="1950-2014"
-nGroupEnd=6
-add_name="_MarkovDistr"
+nGroupEnd=8
+add_name="_MarkovDistr_test"
+region_name="kmeans_robgrou8"
+
+#duration_analysis(yearPeriod=c(1950,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_thresh_5-15",folder="/regional/",ID_name=paste("_",region_name,sep=""),ID_select=1:8,plot_select=1:8,ID_names=1:8,ID_length=8)
+
+
+
 print(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_groups-",nGroupEnd,add_name,".nc",sep=""))
 nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_groups-",nGroupEnd,add_name,".nc",sep=""))
 IDregions=var.get.nc(nc,"attribution")
 
+plot_fits_for_region(reg=6,IDregions=IDregions,region_name=region_name)
 
-plot_fits_for_region(reg=4,IDregions=IDregions,region_name="kmeans_ma5_grou6")
+
