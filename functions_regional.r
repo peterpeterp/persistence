@@ -614,6 +614,7 @@ fit_info_to_map <- function(trendID="91_5",region_name="srex",period,fit_style1,
 plot_fits_for_region <- function(reg,IDregions=c("from polygons"),period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",region_name="srex"){
 
     if (IDregions[1]=="from polygons"){
+        ntot=1319
         poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
         regNumb=dim(poli)[1]
         IDregions_tmp=points_to_regions(dat,c(region_name))
@@ -677,6 +678,7 @@ plot_fits_for_region <- function(reg,IDregions=c("from polygons"),period="1950-2
 
         }
     }
+    graphics.off()
     
     
 }

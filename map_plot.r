@@ -64,7 +64,7 @@ add_region <- function(region_name,farbe){
 
 map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,
 	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,
-	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=NA,
+	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),
 	subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA)){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
@@ -88,7 +88,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 
 
     # create layout matrix for multiplots in style c(1,2,1,2,1,2,3,4,3,4,3,4 ..)
-	if (col_row[1]>1 & col_row[2]>1 & is.na(mat)){
+	if (col_row[1]>1 & col_row[2]>1 & is.na(mat[1])){
 		par(cex=cex)
 		pointsize=1
 		mat=c()
@@ -103,7 +103,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		layout(matrix(mat,length(mat)/2,2, byrow = TRUE))
 	}
 
-	if (col_row[1]>1 & col_row[2]==1 & is.na(mat)){
+	if (col_row[1]>1 & col_row[2]==1 & is.na(mat[1])){
 		par(cex=cex)
 		pointsize=1
 		mat=c()
@@ -113,7 +113,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		layout(matrix(mat,col_row[1],length(mat)/col_row[1], byrow = TRUE))
 	}
 
-	if (col_row[1]==1 & dim(reihen)[1]==1 & is.na(mat)){
+	if (col_row[1]==1 & dim(reihen)[1]==1 & is.na(mat[1])){
 		par(cex=cex)
 		pointsize=pointsize
 		layout(matrix(c(1,1,1,1,1,1,1,1,1,1,1,2,3),1,13, byrow = TRUE))
@@ -124,7 +124,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 	}
 
     # use given mat
-	if (!is.na(mat)){
+	if (!is.na(mat[1])){
 		par(cex=cex)
 		par(mar=c(1,1,1,1))
 		pointsize=pointsize
@@ -266,7 +266,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 			jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), "yellow",rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
 		}
 		if (farb_palette_loc=="groups"){
-			jet.colors <- colorRampPalette( c("black","blue","green","yellow","orange","red","violet"))
+			jet.colors <- colorRampPalette( c("black","blue","green","yellow","orange","red",rgb(0.5,0.5,0.5,0.5)))
 		}
 
 		color <- jet.colors(nbcol)	

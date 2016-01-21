@@ -240,19 +240,25 @@ additional_style=""
 #ID_select=which(IDregions==reg)
 
 period="1950-2014"
-nGroup=6
-add_name="KarlPerason_AmpMark"
+nGroup=7
+add_name="2Distr_3Red"
 region_name=paste(add_name,"_",nGroup,sep="")
+region_name="7rect"
 
-duration_analysis(yearPeriod=c(1950,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_thresh_5-15",folder="/regional/",ID_name=paste("_",region_name,sep=""),ID_select=1:nGroup,plot_select=1:nGroup,ID_names=1:nGroup,ID_length=nGroup)
+#duration_analysis(yearPeriod=c(1950,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_thresh_5-15",folder="/regional/",ID_name=paste("_",region_name,sep=""),ID_select=1:nGroup,plot_select=1:nGroup,ID_names=1:nGroup,ID_length=nGroup)
 
 
 
-nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",region_name,".nc",sep=""))
-IDregions=var.get.nc(nc,"attribution")
+#nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",region_name,".nc",sep=""))
+#IDregions=var.get.nc(nc,"attribution")
 
-for (reg in 1:nGroup){
-    plot_fits_for_region(reg=reg,IDregions=IDregions,region_name=region_name)
+dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+IDregions=points_to_regions(dat,region_name)
+#ID_select=which(IDregions==reg)
+
+
+for (reg in 1:7){
+    plot_fits_for_region(reg=reg,IDregions=c("from polygons"),region_name=region_name)
 }
 
 

@@ -123,4 +123,4 @@ markov_chain_estimation <- function(dataset="_TMean",trendID="91_5",trend_style=
 }
 
 
-markov_chain_estimation(order=5)
+markov_chain_estimation(order=10)
