@@ -48,3 +48,15 @@ if (1==1){
 		land_percentage_bigger_than(y[1:ntot,state,8,3],threshold=0.0,lat_ausschnitt=c(20,90))#,lon_ausschnitt=c(0,60))
 	}
 }
+
+
+missing_period_view <- function(){
+    pdf(file="../plots/missing_periods.pdf")
+    plot(NA,xlim=c(1,15000),ylim=c(1,1319))
+    dat_linear<<-array(dat$tas,c(1319,365*65))
+    for (q in 1:1319){
+        nas=which(is.na(dat_linear[q,]))
+        points(nas,array(q,length(nas)),pch=15,cex=0.1)
+    }
+    graphics.off()
+}

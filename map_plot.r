@@ -62,10 +62,140 @@ add_region <- function(region_name,farbe){
     }
 }
 
+put_points <- function(points,points_sig=points*NA,ausschnitt=c(-90,90),pointsize=1,farb_mitte="mean",farb_palette="regenbogen",signi_level=0,i=1){
+	size=length(ID_select)
+	regio=array(NA,size)
+	lon=array(NA,size)
+	lat=array(NA,size)
+	y1=array(NA,size)
+	sig=array(NA,size)
+	nas=array(NA,size)
+	m=0
+
+	for (k in 1:length(dat$ID)){
+		if (k %in% ID_select){
+			if (is.na(points[k])==FALSE){
+				m<-m+1
+				lon[m]=dat$lon[k]
+				lat[m]=dat$lat[k]
+				y1[m]=points[k]
+				if (points_sig[k]<signi_level & !is.na(points_sig[k])){
+					sig[m]=4
+				}					
+			}
+		}
+	}
+	nas[which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2] & is.na(points))]=13
+
+	y=array(NA,(m+2))
+	notna=which(is.na(y1)==FALSE)
+	for (n in notna){
+		y[n+2]=y1[n]
+	}
+
+	# depending on color-cheme --------------------------------
+	if (length(farb_mitte)>=3){
+		if (is.na(farb_mitte[i+2])){farb_mitte_loc=farb_mitte[(i+1)]}
+		if (!is.na(farb_mitte[i+2])){farb_mitte_loc=farb_mitte[((i-1)*2+2):((i-1)*2+3)]}
+	}
+	else {farb_mitte_loc=farb_mitte}
+
+	if ((length(farb_mitte_loc)==2 & farb_mitte_loc[1]!=farb_mitte_loc[2])){
+		y[1]=farb_mitte_loc[1]
+		y[2]=farb_mitte_loc[2]
+		y[y>farb_mitte_loc[2]]=farb_mitte_loc[2]
+		y[y<farb_mitte_loc[1]]=farb_mitte_loc[1]
+	}	
+	if ((length(farb_mitte_loc)==2 & farb_mitte_loc[1]==farb_mitte_loc[2])){
+		y[1]=farb_mitte_loc[1]
+		y[2]=farb_mitte_loc[1]
+		y[y>farb_mitte_loc[1]]=farb_mitte_loc[1]
+		y[y<(-farb_mitte_loc[1])]=(-farb_mitte_loc[1])
+	}	
+
+	if (length(farb_mitte_loc)==1){
+		if (farb_mitte_loc=="cut"){
+			mi=mean(y,na.rm=TRUE)
+			sd=sd(y,na.rm=TRUE)
+			high=mi+1*sd
+			low=mi-1*sd
+			y[y>high]=high
+			y[y<low]=low
+			y[1]=low
+			y[2]=high
+		}
+
+		if (farb_mitte_loc=="gemeinsam 0"){
+			y[1]=-aushol
+			y[2]=aushol			
+		}
+		if (farb_mitte_loc=="gemeinsam mean"){
+			y[1]=mi-aushol
+			y[2]=mi+aushol			
+		}
+		if (farb_mitte_loc=="0"){
+			aushol=max(c(abs(max(y,na.rm=TRUE)),abs(min(y,na.rm=TRUE))))
+			y[1]=-aushol
+			y[2]=aushol
+		}
+		if (farb_mitte_loc=="mean"){
+			mi=mean(y,na.rm=TRUE)
+			y[1]=mi
+			y[2]=mi
+		}	
+		if (farb_mitte_loc=="nichts"){
+			y[1]=mean(y,na.rm=TRUE)
+			y[2]=mean(y,na.rm=TRUE)
+		}
+	}
+
+	nbcol <- 101
+
+	if ((length(farb_palette)>1 & farb_palette[1]=="mixed")){
+		farb_palette_loc=farb_palette[3]
+		nbcol=strtoi(farb_palette[2])
+	}
+
+	if ((length(farb_palette)>1 & farb_palette[1]=="individual")){
+		farb_palette_loc=farb_palette[(i+1)]
+	}
+	if (length(farb_palette)==1){farb_palette_loc=farb_palette}	
+
+
+	if (farb_palette_loc=="gold-blau"){
+		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.6),rgb(0.5,1,1), rgb(0.98,0.98,0.98) ,rgb(1,1,0),rgb(0.6,0.6,0)))
+	}		
+	if (farb_palette_loc=="blau-rot"){
+		jet.colors <- colorRampPalette( c("blue","white","red"))
+	}
+	if (farb_palette_loc=="lila-gruen"){
+		jet.colors <- colorRampPalette( c(rgb(0.5,1,0.5),rgb(0.2,0.6,0.2), rgb(0.0,0.0,0.0),rgb(0.6,0.2,0.6),rgb(1,0.5,1)))
+		jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(0.0,0.0,0.0),rgb(1,0.5,1),rgb(1,0.7,0.7)))
+		jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(1,1,1),rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
+	}
+	if (farb_palette_loc=="regenbogen"){
+		jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
+	}
+	if (farb_palette_loc=="spacy"){
+		jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), "yellow",rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
+	}
+	if (farb_palette_loc=="groups"){
+		palette=array(c("black","blue","green","yellow","orange","red",rgb(0.5,0.5,0.5,0.5)),nbcol)
+		jet.colors <- colorRampPalette( palette)
+	}
+
+	color <- jet.colors(nbcol)	
+
+	facetcol <- cut(y,nbcol)
+
+	points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=pointsize)
+	points(lon,lat,pch=sig,cex=pointsize)
+
+	return(list(y=y,color=color))
+}
+
 map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,
-	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,
-	grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),
-	subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA)){
+	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA),topo=FALSE){
 	#dat data form data_load()
 	#filename_plot str - where to save plot
 	#worldmap background of lon lat plot
@@ -78,16 +208,16 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		paper[2]=paper[2]*(ausschnitt[2]-ausschnitt[1])/160+1
 	}
 
-	#if (col_row[1]>1){
-	#	paper=c(12,((col_row[1]-1)*7/5+1))
-	#	cex_axis=1.5
-	#}
+		#if (col_row[1]>1){
+		#	paper=c(12,((col_row[1]-1)*7/5+1))
+		#	cex_axis=1.5
+		#}
 	pdf(file = filename_plot,width=paper[1],height=paper[2])
-    par(mar=c(1,1,2,4))
-    par(cex.axis=cex_axis,cex.lab=cex_axis)
+	par(mar=c(1,1,2,4))
+	par(cex.axis=cex_axis,cex.lab=cex_axis)
 
 
-    # create layout matrix for multiplots in style c(1,2,1,2,1,2,3,4,3,4,3,4 ..)
+	# create layout matrix for multiplots in style c(1,2,1,2,1,2,3,4,3,4,3,4 ..)
 	if (col_row[1]>1 & col_row[2]>1 & is.na(mat[1])){
 		par(cex=cex)
 		pointsize=1
@@ -113,7 +243,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		layout(matrix(mat,col_row[1],length(mat)/col_row[1], byrow = TRUE))
 	}
 
-	if (col_row[1]==1 & dim(reihen)[1]==1 & is.na(mat[1])){
+	if (col_row[1]==1 & dim(reihen)[1]==1 & is.na(mat[1]) & !topo){
 		par(cex=cex)
 		pointsize=pointsize
 		layout(matrix(c(1,1,1,1,1,1,1,1,1,1,1,2,3),1,13, byrow = TRUE))
@@ -123,7 +253,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		par(mfrow=c(1,1))
 	}
 
-    # use given mat
+	   # use given mat
 	if (!is.na(mat[1])){
 		par(cex=cex)
 		par(mar=c(1,1,1,1))
@@ -132,159 +262,37 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		layout(matrix(mat,col_row[1],col_row[2], byrow = TRUE), heights=c(2,2,2,2,1))#, heights=c(2,2,2,2,1)
 	}
 
-	mid_lat = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
+	ID_select = which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
 
 	# if same color range scheme for all plots
 	if (farb_mitte[1]=="gemeinsam 0"){
-		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)),abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
+		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],ID_select],na.rm=TRUE)),abs(min(reihen[1:dim(reihen)[1],ID_select],na.rm=TRUE))))
 	}
 
 	if (farb_mitte[1]=="gemeinsam mean"){	
-		mi=mean(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE)
-		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))-mi,mi-abs(min(reihen[1:dim(reihen)[1],mid_lat],na.rm=TRUE))))
+		mi=mean(reihen[1:dim(reihen)[1],ID_select],na.rm=TRUE)
+		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],ID_select],na.rm=TRUE))-mi,mi-abs(min(reihen[1:dim(reihen)[1],ID_select],na.rm=TRUE))))
 	}
 
 	subCount=0
 	for (i in 1:dim(reihen)[1]){
 		subCount=subCount+1
 		if (titel[1]!=""){print(titel[i])}
-		size=length(mid_lat)
-		regio=array(NA,size)
-		lon=array(NA,size)
-		lat=array(NA,size)
-		y1=array(NA,size)
-		sig=array(NA,size)
-		nas=array(NA,size)
-		m=0
-
-		for (k in 1:length(dat$ID)){
-			if (k %in% mid_lat){
-				if (is.na(reihen[i,k])==FALSE){
-					m<-m+1
-					lon[m]=dat$lon[k]
-					lat[m]=dat$lat[k]
-					y1[m]=reihen[i,k]
-					if (reihen_sig[i,k]<signi_level & !is.na(reihen_sig[i,k])){
-						sig[m]=4
-					}					
-				}
-			}
+		if (!topo){
+			if (titel[1]==""){plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5)}
+			else{plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])}
 		}
-		nas[which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2] & is.na(reihen[i,]))]=13
-
-		y=array(NA,(m+2))
-		notna=which(is.na(y1)==FALSE)
-		for (n in notna){
-			y[n+2]=y1[n]
+		if (topo){
+			if (titel[1]==""){plot(topoWorld,location="none",ylim=c(ausschnitt[1],ausschnitt[2]),xlim=c(0,360),col.land="white",col.water="white",frame.plot=FALSE)}
+			else{plot(topoWorld,location="none",ylim=c(ausschnitt[1],ausschnitt[2]),xlim=c(-180,180),col.land="white",main=titel[i])}
 		}
+		tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,farb_mitte=farb_mitte,farb_palette=farb_palette,signi_level=signi_level,i=i)
+		color=tmp$color
+		y=tmp$y
 
-		# depending on color-cheme --------------------------------
-		if (length(farb_mitte)>=3){
-			if (is.na(farb_mitte[i+2])){farb_mitte_loc=farb_mitte[(i+1)]}
-			if (!is.na(farb_mitte[i+2])){farb_mitte_loc=farb_mitte[((i-1)*2+2):((i-1)*2+3)]}
-		}
-		else {farb_mitte_loc=farb_mitte}
-
-		if ((length(farb_mitte_loc)==2 & farb_mitte_loc[1]!=farb_mitte_loc[2])){
-			y[1]=farb_mitte_loc[1]
-			y[2]=farb_mitte_loc[2]
-			y[y>farb_mitte_loc[2]]=farb_mitte_loc[2]
-			y[y<farb_mitte_loc[1]]=farb_mitte_loc[1]
-
-		}	
-		if ((length(farb_mitte_loc)==2 & farb_mitte_loc[1]==farb_mitte_loc[2])){
-			y[1]=farb_mitte_loc[1]
-			y[2]=farb_mitte_loc[1]
-			y[y>farb_mitte_loc[1]]=farb_mitte_loc[1]
-			y[y<(-farb_mitte_loc[1])]=(-farb_mitte_loc[1])
-		}	
-
-		if (length(farb_mitte_loc)==1){
-			if (farb_mitte_loc=="cut"){
-				mi=mean(y,na.rm=TRUE)
-				sd=sd(y,na.rm=TRUE)
-				high=mi+1*sd
-				low=mi-1*sd
-				y[y>high]=high
-				y[y<low]=low
-				y[1]=low
-				y[2]=high
-			}
-
-			if (farb_mitte_loc=="gemeinsam 0"){
-				y[1]=-aushol
-				y[2]=aushol			
-			}
-			if (farb_mitte_loc=="gemeinsam mean"){
-				y[1]=mi-aushol
-				y[2]=mi+aushol			
-			}
-			if (farb_mitte_loc=="0"){
-				aushol=max(c(abs(max(y,na.rm=TRUE)),abs(min(y,na.rm=TRUE))))
-				y[1]=-aushol
-				y[2]=aushol
-			}
-			if (farb_mitte_loc=="mean"){
-				mi=mean(y,na.rm=TRUE)
-				y[1]=mi
-				y[2]=mi
-			}	
-			if (farb_mitte_loc=="nichts"){
-				y[1]=mean(y,na.rm=TRUE)
-				y[2]=mean(y,na.rm=TRUE)
-			}
-		}
-
-		nbcol <- 101
-
-		if ((length(farb_palette)>1 & farb_palette[1]=="mixed")){
-			farb_palette_loc=farb_palette[3]
-			nbcol=strtoi(farb_palette[2])
-		}
-
-		if ((length(farb_palette)>1 & farb_palette[1]=="individual")){
-			farb_palette_loc=farb_palette[(i+1)]
-		}
-		if (length(farb_palette)==1){farb_palette_loc=farb_palette}	
-
-
-		if (farb_palette_loc=="gold-blau"){
-			jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.6),rgb(0.5,1,1), rgb(0.98,0.98,0.98) ,rgb(1,1,0),rgb(0.6,0.6,0)))
-		}		
-		if (farb_palette_loc=="blau-rot"){
-			jet.colors <- colorRampPalette( c("blue","white","red"))
-		}
-		if (farb_palette_loc=="lila-gruen"){
-			jet.colors <- colorRampPalette( c(rgb(0.5,1,0.5),rgb(0.2,0.6,0.2), rgb(0.0,0.0,0.0),rgb(0.6,0.2,0.6),rgb(1,0.5,1)))
-			jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(0.0,0.0,0.0),rgb(1,0.5,1),rgb(1,0.7,0.7)))
-			jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(1,1,1),rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
-		}
-		if (farb_palette_loc=="regenbogen"){
-			jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
-		}
-		if (farb_palette_loc=="spacy"){
-			jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), "yellow",rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
-		}
-		if (farb_palette_loc=="groups"){
-			jet.colors <- colorRampPalette( c("black","blue","green","yellow","orange","red",rgb(0.5,0.5,0.5,0.5)))
-		}
-
-		color <- jet.colors(nbcol)	
-
-
-		# -----------------------------------------------------------------
-		facetcol <- cut(y,nbcol)
-		if (titel[1]==""){plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5)}
-		else{plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])}
-
-
-		#plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])
-		points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=pointsize)
-		points(lon,lat,pch=sig,cex=pointsize)
-		for (rad in c(1,1.5,1.9,2.3)){
+		for (rad in c(1,1.5)){
 			points(dat$lon[highlight_points],dat$lat[highlight_points],col=highlight_color,pch=1,cex=(pointsize*rad))
 		}
-
 		#box("figure", col="blue") 
 
 		if (average==TRUE){
@@ -308,6 +316,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 			add_region(region,regionColor)
 		}
 		#print(y)
+
 		if (col_row[1]>1 & col_row[2]>1){
 			legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
 			if (subCount==dim(reihen)[1]){
@@ -320,13 +329,6 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 			if (subCount==dim(reihen)[1]){
 				plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 				image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=FALSE,fill=TRUE,smallplot=c(0.1,0.9,0.6,0.80))
-				#par(mar=c(1,0,1,0))
-				#legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
-				#plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-				#image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.2,0.1,0.90))
-				#plot(NA,xlim=c(0,1),ylim=c(0,1),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-				#text(0.3,0.5,label=color_lab,cex=1,srt=90)
-				#box("figure", col="blue") 
 			}
 		}
 		if (col_row[1]==1 & dim(reihen)[1]==1){
@@ -345,3 +347,18 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
     graphics.off()
 }
 
+topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,grid=FALSE,ausschnitt=c(-90,90),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA)){
+	
+	pdf(file=filename_plot,width=paper[1],height=paper[2])
+	for (i in 1:dim(reihen)[1]){
+		if (titel[1]!=""){print(titel[i])}
+	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,location="none",col.land="white",col.water="white")
+	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette)
+		color=tmp$color
+		y=tmp$y
+	    par(new=TRUE)
+	    plot(topoWorld,xlim=c(-180,180),ausschnitt,location="none")
+	    image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,legend.lab=color_lab)
+	    graphics.off()
+	}
+}

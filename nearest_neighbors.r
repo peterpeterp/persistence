@@ -90,7 +90,7 @@ k_nearest_neighbors <- function(nGroup=7,start_mod="random",runs=30){
         start[G,]=colMeans(toOrder[which(attribution==G),],na.rm=TRUE)
     }
     for (i in 1:runs){
-        #cat(paste(i," "))
+        cat(paste(i," "))
         abbruchCond=0
         for (q in 1:ntot){
             if (!is.na(toOrder[q,1])){
@@ -303,6 +303,16 @@ kmeans_raw <- function(add_name="_forReal_",seasons=1:4,nGroup=7,starts=10,runsM
         partOfYear<<-which(tempSea[1,,4]!=-999)
         condensated<<-tempSea[,partOfYear,]
         condensated<<-array(condensated,c(ntot,length(partOfYear)*length(year_select)))
+        print(dim(condensated))
+        condensated<<-matrix(condensated,nrow=ntot)
+        print(dim(condensated))
+
+        condensated[is.na(condensated)]=0
+
+        tmp<<-dist(condensated)
+        adasd
+
+
 
         toOrder=array(NA,c(ntot,length(partOfYear)*length(year_select)))
         freqs=array(NA,c(ntot,length(partOfYear)*length(year_select)))
@@ -314,7 +324,19 @@ kmeans_raw <- function(add_name="_forReal_",seasons=1:4,nGroup=7,starts=10,runsM
             }
         }
         toOrder<<-toOrder
+        toOrder<<-condensated
         toOrder[is.na(toOrder)]=0
+
+
+        print(proc.time())
+        tmp<<-kmeans(x=toOrder,centers=nGroup,iter.max=30,nstart=2)
+        print(proc.time())
+        for (i in 1:2){tmp2<<-k_nearest_neighbors(nGroup=nGroup,runs=30)}
+        
+        print(proc.time())
+        asfdasfd
+
+
 
         plot(NA,xlim=c(0.0001,0.5),ylim=c(0,500),log="x")
         lines(freqs[295,],toOrder[295,],col="red")
@@ -362,6 +384,84 @@ kmeans_raw <- function(add_name="_forReal_",seasons=1:4,nGroup=7,starts=10,runsM
 }
 
 
+distance_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,add_name="hclust"){
+    #prepare data
+    X=array(dat$tas,c(1319,365*65))
+    # range in which data coverage is best
+    X=X[ID_select,timeRange]
+    # remove nas problematic
+    X[is.na(X)]=0
+
+    IDlength=length(ID_select)
+    xLen=length(timeRange)
+
+    print(proc.time())
+    distMat=rdist(X)/xLen
+    choiceMat=distMat*0
+    print(proc.time())
+
+    for (q in 1:1319){
+        if (lag>0){
+            for (lagged in 1:lagMax){
+                lagged_dist<-rdist(array(X[q,(lagged+1):xLen],c(1,xLen-lagged)),X[1:1319,1:(xLen-lagged)])/(xLen-lagged)
+                betterLagged<-which(distMat[1:1319,q]-lagged_dist>0)
+                distMat[betterLagged,q]=lagged_dist[betterLagged]
+                choiceMat[betterLagged,q]=-lagged
+
+                lagged_dist<-rdist(array(X[q,1:(xLen-lagged)],c(1,xLen-lagged)),X[1:1319,(lagged+1):xLen])/(xLen-lagged)
+                betterLagged<-which(distMat[1:1319,q]-lagged_dist>0)
+                distMat[betterLagged,q]=lagged_dist[betterLagged]
+                choiceMat[betterLagged,q]=lagged
+            }
+        }
+    }
+    print(proc.time())
+
+    nc_out<-create.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",add_name,"_",lag,".nc",sep=""))
+    att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", "gridpoints")
+    att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", period)
+    att.put.nc(nc_out, "NC_GLOBAL", "explanation", "NC_CHAR", "distance matrix for time series")
+    att.put.nc(nc_out, "NC_GLOBAL", "max lags in both directions", "NC_CHAR", "3")
+    
+    dim.def.nc(nc_out,"ID",dimlength=1319, unlim=FALSE)   
+    dim.def.nc(nc_out,"ID2",dimlength=1319, unlim=FALSE)   
+
+    var.def.nc(nc_out,"distanceMat","NC_DOUBLE",c(0,1))
+    att.put.nc(nc_out, "distanceMat", "missing_value", "NC_DOUBLE", -99999.9)
+    att.put.nc(nc_out, "distanceMat", "dim_explanation", "NC_CHAR", "ID-ID")
+    att.put.nc(nc_out, "distanceMat", "explanation", "NC_CHAR", "distences between IDs 1 time lag allowed")
+
+    var.def.nc(nc_out,"choiceMat","NC_DOUBLE",c(0,1))
+    att.put.nc(nc_out, "choiceMat", "missing_value", "NC_DOUBLE", -99999.9)
+    att.put.nc(nc_out, "choiceMat", "dim_explanation", "NC_CHAR", "ID-ID")
+    att.put.nc(nc_out, "choiceMat", "explanation", "NC_CHAR", "which lag is closest")
+
+    var.put.nc(nc_out,"distanceMat",distMat)      
+    var.put.nc(nc_out,"choiceMat",choiceMat)      
+ 
+    close.nc(nc_out)     
+}
+
+hcluster_view <- function(lagMax=16,nGroup=12,add_name="hclust"){
+    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",add_name,"_",lagMax,".nc",sep=""))
+    distMat<<-var.get.nc(nc,"distanceMat")
+    choiceMat<<-var.get.nc(nc,"choiceMat")
+    tmp<<-hclust(as.dist(distMat),method="ward.D")
+    print(proc.time())
+    
+    q=511
+    reihen=array(choiceMat[,q],c(1,1319))
+    map_allgemein(dat=dat,filename_plot=paste("../plots/lag_map",".pdf",sep=""),worldmap=worldmap,reihen=reihen,farb_mitte=0,farb_palette="lila-gruen",paper=c(5,4),highlight_points=c(q),highlight_color=c("orange"))
+    reihen=array(distMat[,q],c(1,1319))
+    map_allgemein(dat=dat,filename_plot=paste("../plots/dist_map",".pdf",sep=""),worldmap=worldmap,reihen=reihen,farb_mitte="mean",farb_palette="lila-gruen",paper=c(5,4),highlight_points=c(q),highlight_color=c("orange"))
+    #adads
+
+    reihen=array(cutree(tmp,nGroup),c(1,1319))
+
+    topo_map_plot(filename_plot="../plots/hcluster_map.pdf",reihen=reihen)
+
+}
+
 init <- function(){
     source("write.r")
     source("load.r")
@@ -375,6 +475,8 @@ init <- function(){
     source("functions_regional.r")
     library(rworldmap)
     library(fields)
+    library(oce)
+    data(topoWorld)
     worldmap<<-getMap(resolution = "low")
     dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 }
@@ -391,10 +493,11 @@ init()
 ID_select=which(dat$lat>0 & dat$lat<100)
 #ID_select=1:1319
 
-for (tries in 1:3){
-    kmeans_master(nGroup=5,add_name=paste("distr20",tries,sep=""))
-    #kmeans_raw(nGroup=7,add_name=paste("raw___",tries,sep=""),starts=10,runsMax=100,ID_select=ID_select,seasons=c(5))
-}
+#kmeans_master(nGroup=5,add_name=paste("distr20",tries,sep=""))
+#kmeans_raw(nGroup=7,add_name=paste("raw___",tries,sep=""),starts=10,runsMax=100,ID_select=ID_select,seasons=c(5))
+
+#distance_matrix(lagMax=0)
+hcluster_view(lagMax=17)
 
 
 
