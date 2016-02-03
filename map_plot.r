@@ -63,36 +63,11 @@ add_region <- function(region_name,farbe){
 }
 
 put_points <- function(points,points_sig=points*NA,ausschnitt=c(-90,90),pointsize=1,farb_mitte="mean",farb_palette="regenbogen",signi_level=0,i=1){
-	size=length(ID_select)
-	regio=array(NA,size)
-	lon=array(NA,size)
-	lat=array(NA,size)
-	y1=array(NA,size)
-	sig=array(NA,size)
-	nas=array(NA,size)
-	m=0
+	y1=points[ID_select]
+	sig=points_sig[ID_select]
+	sig[(!is.na(sig) & sig<signi_level)]=4
 
-	for (k in 1:length(dat$ID)){
-		if (k %in% ID_select){
-			if (is.na(points[k])==FALSE){
-				m<-m+1
-				lon[m]=dat$lon[k]
-				lat[m]=dat$lat[k]
-				y1[m]=points[k]
-				if (points_sig[k]<signi_level & !is.na(points_sig[k])){
-					sig[m]=4
-				}					
-			}
-		}
-	}
-	nas[which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2] & is.na(points))]=13
-
-	y=array(NA,(m+2))
-	notna=which(is.na(y1)==FALSE)
-	for (n in notna){
-		y[n+2]=y1[n]
-	}
-
+	y=c(0,1,y1[!is.na(y1)])
 	# depending on color-cheme --------------------------------
 	if (length(farb_mitte)>=3){
 		if (is.na(farb_mitte[i+2])){farb_mitte_loc=farb_mitte[(i+1)]}
@@ -177,7 +152,8 @@ put_points <- function(points,points_sig=points*NA,ausschnitt=c(-90,90),pointsiz
 		jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
 	}
 	if (farb_palette_loc=="spacy"){
-		jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), "yellow",rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
+		#jet.colors <- colorRampPalette(c("blue",rgb(0.1,0.2,0.4),"green",rgb(0.5,1,1),rgb(0.5,1,0.5), "yellow",rgb(1,0.7,0.7),rgb(1,0.5,1),"orange",rgb(0.4,0.1,0.4),"red"))
+		jet.colors <- colorRampPalette(c("blue","red","green","yellow","blue","green","orange","violet","red"))
 	}
 	if (farb_palette_loc=="groups"){
 		palette=array(c("black","blue","green","yellow","orange","red",rgb(0.5,0.5,0.5,0.5)),nbcol)
@@ -188,7 +164,9 @@ put_points <- function(points,points_sig=points*NA,ausschnitt=c(-90,90),pointsiz
 
 	facetcol <- cut(y,nbcol)
 
-	points(lon,lat,pch=15,col=color[facetcol[3:(size+2)]],cex=pointsize)
+	lon=dat$lon[ID_select]
+	lat=dat$lat[ID_select]
+	points(lon,lat,pch=15,col=color[facetcol[3:(length(ID_select)+2)]],cex=pointsize)
 	points(lon,lat,pch=sig,cex=pointsize)
 
 	return(list(y=y,color=color))
@@ -291,7 +269,7 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
 		y=tmp$y
 
 		for (rad in c(1,1.5)){
-			points(dat$lon[highlight_points],dat$lat[highlight_points],col=highlight_color,pch=1,cex=(pointsize*rad))
+			points(dat$lon[highlight_points[i]],dat$lat[highlight_points[i]],col=highlight_color,pch=1,cex=(pointsize*rad))
 		}
 		#box("figure", col="blue") 
 
@@ -347,18 +325,18 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
     graphics.off()
 }
 
-topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,grid=FALSE,ausschnitt=c(-90,90),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA)){
+topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,grid=FALSE,ausschnitt=c(-100,100),paper=c(8,4),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA)){
 	
 	pdf(file=filename_plot,width=paper[1],height=paper[2])
 	for (i in 1:dim(reihen)[1]){
 		if (titel[1]!=""){print(titel[i])}
-	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,location="none",col.land="white",col.water="white")
+	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,location="none",col.land="white",col.water="white",mar=c(2,1,0,5))
 	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette)
 		color=tmp$color
 		y=tmp$y
 	    par(new=TRUE)
-	    plot(topoWorld,xlim=c(-180,180),ausschnitt,location="none")
-	    image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,legend.lab=color_lab)
-	    graphics.off()
+	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,location="none",col.land="black",col.water="lightblue",mar=c(2,1,0,5))
+	    image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=FALSE,legend.lab=color_lab)
 	}
+	graphics.off()
 }

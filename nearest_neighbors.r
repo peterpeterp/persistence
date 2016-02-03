@@ -383,6 +383,11 @@ kmeans_raw <- function(add_name="_forReal_",seasons=1:4,nGroup=7,starts=10,runsM
     close.nc(nc_out) 
 }
 
+crossCor <- function(x,y,lagMax){
+    tmp<-ccf(x,y,lag.max=lagMax,plot=FALSE,na.action=na.pass)
+    return(c(max(tmp$acf),tmp$lag(which.max(tmp$acf))))
+}
+
 
 distance_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,add_name="hclust"){
     #prepare data
@@ -390,41 +395,71 @@ distance_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,add_n
     # range in which data coverage is best
     X=X[ID_select,timeRange]
     # remove nas problematic
-    X[is.na(X)]=0
 
-    IDlength=length(ID_select)
+    IDlength=dim(X)[1]
     xLen=length(timeRange)
-
+    # "normailze" using quantiles
     print(proc.time())
-    distMat=rdist(X)/xLen
-    choiceMat=distMat*0
-    print(proc.time())
-
-    for (q in 1:1319){
-        if (lag>0){
-            for (lagged in 1:lagMax){
-                lagged_dist<-rdist(array(X[q,(lagged+1):xLen],c(1,xLen-lagged)),X[1:1319,1:(xLen-lagged)])/(xLen-lagged)
-                betterLagged<-which(distMat[1:1319,q]-lagged_dist>0)
-                distMat[betterLagged,q]=lagged_dist[betterLagged]
-                choiceMat[betterLagged,q]=-lagged
-
-                lagged_dist<-rdist(array(X[q,1:(xLen-lagged)],c(1,xLen-lagged)),X[1:1319,(lagged+1):xLen])/(xLen-lagged)
-                betterLagged<-which(distMat[1:1319,q]-lagged_dist>0)
-                distMat[betterLagged,q]=lagged_dist[betterLagged]
-                choiceMat[betterLagged,q]=lagged
-            }
+    for (q in ID_select){
+        if (length(which(!is.na(X[q,])))>xLen/2){
+            X[q,]=X[q,]/(quantile(x=X[q,],probs=0.95,na.rm=TRUE)-quantile(x=X[q,],probs=0.05,na.rm=TRUE))
         }
+        else{X[q,]=NA}
     }
     print(proc.time())
 
-    nc_out<-create.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",add_name,"_",lag,".nc",sep=""))
+    # to many nas -> flat 
+    X[is.na(X)]=0
+
+    # distance as sum of squares
+    if (1==2){
+        distMat=rdist(X)/xLen
+        choiceMat=distMat*0
+        print(proc.time())
+
+        if (lagMax>0){
+            for (q in 1:IDlength){
+                for (lagged in 1:lagMax){
+                    lagged_dist<-rdist(array(X[q,(lagged+1):xLen],c(1,xLen-lagged)),X[1:IDlength,1:(xLen-lagged)])/(xLen-lagged)
+                    betterLagged<-which(distMat[1:IDlength,q]-lagged_dist>0)
+                    distMat[betterLagged,q]=lagged_dist[betterLagged]
+                    choiceMat[betterLagged,q]=-lagged
+
+                    lagged_dist<-rdist(array(X[q,1:(xLen-lagged)],c(1,xLen-lagged)),X[1:IDlength,(lagged+1):xLen])/(xLen-lagged)
+                    betterLagged<-which(distMat[1:IDlength,q]-lagged_dist>0)
+                    distMat[betterLagged,q]=lagged_dist[betterLagged]
+                    choiceMat[betterLagged,q]=lagged
+                }
+            }
+        }
+        print(proc.time())
+    }
+
+    # cross correlation
+    distanceMat=array(NA,c(IDlength,IDlength))
+    choiceMat=array(NA,c(IDlength,IDlength))
+    for (i in 1:IDlength){
+        print(i)
+        for (j in 1:IDlength){
+            if (length(which(!is.na(X[i,])))>1000 & length(which(!is.na(X[i,])))>1000){
+                print(X[i,1:100])
+                print(X[j,1:100])
+                
+                tmp=crossCor(X[i,],X[j,],lagMax=lagMax)
+                distanceMat[i,j]=tmp[1]
+                choiceMat[i,j]=tmp[2]
+            }
+        }
+    }
+
+    nc_out<-create.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_distance_",lagMax,add_name,".nc",sep=""))
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", "gridpoints")
     att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", period)
     att.put.nc(nc_out, "NC_GLOBAL", "explanation", "NC_CHAR", "distance matrix for time series")
     att.put.nc(nc_out, "NC_GLOBAL", "max lags in both directions", "NC_CHAR", "3")
     
-    dim.def.nc(nc_out,"ID",dimlength=1319, unlim=FALSE)   
-    dim.def.nc(nc_out,"ID2",dimlength=1319, unlim=FALSE)   
+    dim.def.nc(nc_out,"ID",dimlength=IDlength, unlim=FALSE)   
+    dim.def.nc(nc_out,"ID2",dimlength=IDlength, unlim=FALSE)   
 
     var.def.nc(nc_out,"distanceMat","NC_DOUBLE",c(0,1))
     att.put.nc(nc_out, "distanceMat", "missing_value", "NC_DOUBLE", -99999.9)
@@ -443,22 +478,22 @@ distance_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,add_n
 }
 
 hcluster_view <- function(lagMax=16,nGroup=12,add_name="hclust"){
-    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",add_name,"_",lagMax,".nc",sep=""))
+    print(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_distance_",lagMax,add_name,".nc",sep=""))
+    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_distance_",lagMax,add_name,".nc",sep=""))
     distMat<<-var.get.nc(nc,"distanceMat")
     choiceMat<<-var.get.nc(nc,"choiceMat")
     tmp<<-hclust(as.dist(distMat),method="ward.D")
     print(proc.time())
     
-    q=511
-    reihen=array(choiceMat[,q],c(1,1319))
-    map_allgemein(dat=dat,filename_plot=paste("../plots/lag_map",".pdf",sep=""),worldmap=worldmap,reihen=reihen,farb_mitte=0,farb_palette="lila-gruen",paper=c(5,4),highlight_points=c(q),highlight_color=c("orange"))
-    reihen=array(distMat[,q],c(1,1319))
-    map_allgemein(dat=dat,filename_plot=paste("../plots/dist_map",".pdf",sep=""),worldmap=worldmap,reihen=reihen,farb_mitte="mean",farb_palette="lila-gruen",paper=c(5,4),highlight_points=c(q),highlight_color=c("orange"))
-    #adads
+    auswahl=c(553,890,132,604,1008)
+    reihen=choiceMat[auswahl,]
+    #print(dim(reihen))
+    map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,"_best_laf.pdf",sep=""),worldmap=worldmap,reihen=reihen,farb_mitte=0,farb_palette="lila-gruen",paper=c(8,6),highlight_points=auswahl,highlight_color="orange")
+    reihen=distMat[auswahl,]
+    topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,"_distance.pdf",sep=""),reihen=reihen,farb_mitte=c(0,0.006))
 
-    reihen=array(cutree(tmp,nGroup),c(1,1319))
-
-    topo_map_plot(filename_plot="../plots/hcluster_map.pdf",reihen=reihen)
+    reihen=array(cutree(tmp,15),c(1,1319))
+    topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,"_groups_",nGroup,"_hcluster_map.pdf",sep=""),reihen=reihen,farb_palette="spacy")
 
 }
 
@@ -477,6 +512,8 @@ init <- function(){
     library(fields)
     library(oce)
     data(topoWorld)
+    library(quantreg)
+
     worldmap<<-getMap(resolution = "low")
     dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 }
@@ -486,18 +523,25 @@ kmeans_master <- function(nGroup=5,add_name="default"){
     #create_regional_distr_out_of_kmeans(add_name=add_name,region_name=paste(add_name,"_",nGroup,sep=""),nGroup=nGroup)
 }
 
-init()
+#init()
 
 #create_kompakt_map_plot_of_kmeans(nGroup=7,add_name="KarlPerason_AmpMark")
 
-ID_select=which(dat$lat>0 & dat$lat<100)
+ID_select=which(dat$lat>0 & dat$lat<100 )
 #ID_select=1:1319
 
 #kmeans_master(nGroup=5,add_name=paste("distr20",tries,sep=""))
 #kmeans_raw(nGroup=7,add_name=paste("raw___",tries,sep=""),starts=10,runsMax=100,ID_select=ID_select,seasons=c(5))
 
-#distance_matrix(lagMax=0)
-hcluster_view(lagMax=17)
+
+distance_matrix(lagMax=10,add_name="_Cor")
+
+hcluster_view(lagMax=10,add_name="_Cor")
+hcluster_view(lagMax=3,add_name="_quNorm")
+hcluster_view(lagMax=2,add_name="_quNorm")
+hcluster_view(lagMax=1,add_name="_quNorm")
+hcluster_view(lagMax=0,add_name="_quNorm")
+
 
 
 
