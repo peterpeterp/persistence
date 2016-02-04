@@ -436,7 +436,7 @@ distance_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,add_n
     }
 
     # cross correlation
-    distanceMat=array(NA,c(IDlength,IDlength))
+    distMat=array(NA,c(IDlength,IDlength))
     choiceMat=array(NA,c(IDlength,IDlength))
     for (i in 1:IDlength){
         print(i)
@@ -444,7 +444,7 @@ distance_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,add_n
         for (j in 1:IDlength){
             if (length(which(!is.na(X[i,])))>1000 & length(which(!is.na(X[i,])))>1000){
                 tmp=crossCor(X[i,],X[j,],lagMax=lagMax)
-                distanceMat[i,j]=tmp[1]
+                distMat[i,j]=tmp[1]
                 choiceMat[i,j]=tmp[2]
             }
         }
@@ -532,7 +532,7 @@ ID_select=which(dat$lat>0 & dat$lat<100 )
 #kmeans_raw(nGroup=7,add_name=paste("raw___",tries,sep=""),starts=10,runsMax=100,ID_select=ID_select,seasons=c(5))
 
 
-distance_matrix(lagMax=5,add_name="_Cor")
+distance_matrix(lagMax=10,add_name="_Cor")
 
 hcluster_view(lagMax=10,add_name="_Cor")
 hcluster_view(lagMax=3,add_name="_quNorm")
