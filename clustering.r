@@ -29,55 +29,6 @@ group_reduction <- function(attribution,start,nGroup,reduce,main_add=""){
     return(list(attribution=attribution,start=start))
 }
 
-
-plot_aktuelles_muster <- function(attribution,start,nGroup,points=FALSE,main_zusatz=""){
-    if (dimDistr>1){
-        for (state in 1:2){
-            for (logAx in c("","y")){
-                plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log=logAx,main=paste(main_zusatz,"Distribution of",state_names[state],"periods"))
-                for (p in 1:nGroup){
-                    lines(1:dimDistr,start[p,startDistr[state]:stopDistr[state]],col=color[p])
-                }
-            }
-        }
-    }
-    if (dimMarkov>1){
-        plot(NA,xlab="days",ylab="probability density",ylim=c(0,1),xlim=c(0,dimMarkov+1),axes=TRUE,frame.plot=TRUE,log="",main=paste(main_zusatz,"MarkovChain"))
-        for (p in 1:nGroup){
-            lines(1:dimMarkov,start[p,1:dimMarkov],col=color[p])
-        }
-    }
-    if (points==TRUE){
-        if (dimDistr>1){
-            for (state in 1:2){
-                for (p in 1:nGroup){
-                    if (!is.na(start[p,1])){
-                        for (logAx in c("","y")){
-                            plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log=logAx,main=paste(main_zusatz,"Distribution of",state_names[state],"periods","group:",p,"members:",length(which(attribution==p)))) 
-                            for (q in which(attribution==p)){
-                                points(1:dimDistr,toOrder[q,startDistr[state]:stopDistr[state]],pch=16,col=rgb(0.5,0.5,0.5,0.05),cex=1.5)
-                            }
-                            lines(1:dimDistr,start[p,startDistr[state]:stopDistr[state]],col=color[p])
-                        }
-                    }
-                }
-            }
-        }
-        if (dimMarkov>1){
-            for (p in 1:nGroup){
-                if (!is.na(start[p,1])){
-                    plot(NA,xlab="days",ylab="probability density",ylim=c(0,1),xlim=c(0,dimMarkov+1),axes=TRUE,frame.plot=TRUE,log="",main=paste(main_zusatz,"MarkovChain","group:",p,"members:",length(which(attribution==p)))) 
-                    for (q in which(attribution==p)){
-                        points(1:dimMarkov,toOrder[q,1:dimMarkov],pch=16,col=rgb(0.5,0.5,0.5,0.05),cex=1.5)
-                    }
-                    lines(1:dimMarkov,start[p,1:dimMarkov],col=color[p])
-                }
-            }
-        }
-    }
-
-}
-
 k_clustering <- function(nGroup=7,start_mod="random",runs=30){
     Empty=which(is.na(toOrder[,1]))
 
@@ -131,7 +82,34 @@ group_structure_evaluation <- function(attribution,groups,nGroup){
     return(score)
 }
 
-clustering <- function(markov_style=NA,add_name="_forReal_",seasons=1:5,nGroup=7,versions=30,runsMax=100,ID_select=1:1319,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps")){
+plot_aktuelles_muster <- function(attribution,start,nGroup,points=FALSE,main_zusatz=""){
+    if (dimDistr>1){
+        for (logAx in c("","y")){
+            plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log=logAx,main=paste(main_zusatz,"Distribution of",state_names[state],"periods"))
+            for (p in 1:nGroup){
+                lines(1:dimDistr,start[p,],col=color[p])
+            }
+        }
+    }
+
+    if (points==TRUE){
+        for (p in 1:nGroup){
+            if (!is.na(start[p,1])){
+                for (logAx in c("","y")){
+                    plot(NA,xlab="days",ylab="probability density",ylim=c(0.001,0.25),xlim=c(0,30),axes=TRUE,frame.plot=TRUE,log=logAx,main=paste(main_zusatz,"Distribution of",state_names[state],"periods","group:",p,"members:",length(which(attribution==p)))) 
+                    for (q in which(attribution==p)){
+                         points(1:dimDistr,toOrder[q,],pch=16,col=rgb(0.5,0.5,0.5,0.05),cex=1.5)
+                    }
+                    lines(1:dimDistr,start[p,],col=color[p])
+                }
+            }
+        }
+    }
+}
+
+
+
+clustering <- function(add_name="_forReal_",seasons=1:5,nGroup=7,versions=30,runsMax=100,ID_select=1:1319,distr_select=1:40,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps")){
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     state_names<<-c("cold","warm")
@@ -142,69 +120,61 @@ clustering <- function(markov_style=NA,add_name="_forReal_",seasons=1:5,nGroup=7
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_distributions.nc",sep=""))
     distr_stuff=var.get.nc(nc,"distr_stuff")
 
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/markov/",period,"/",trendID,dataset,"_",period,"_markov_order",markov_style,".nc",sep=""))
-    eventResult=var.get.nc(nc,"eventResult")
 
-    ntot<<-dim(eventResult)[2]
-    dimMarkov<<-dim(eventResult)[4]
-    dimMarkov<<-0
-    dimDistr<<-dim(distr_stuff)[5]
-    distr_select=3:50
+    ntot<<-length(ID_select)
     dimDistr<<-length(distr_select)
-    #dimDistr<<-0
-    dimensionality<<-dimMarkov+2*dimDistr
 
-    startDistr<<-c(dimMarkov+1,dimMarkov+dimDistr+1)
-    stopDistr<<-c(dimMarkov+dimDistr,dimMarkov+dimDistr+dimDistr)
-
-    regionAttribution=array(NA,dim=c(ntot,6))
-    regionAttribution[,6]=1:ntot
-    GroupMarkovChain=array(NA,dim=c(6,nGroup,dimMarkov))
+    regionAttribution=array(NA,dim=c(6,2,ntot))
+    regionAttribution[6,1,]=1:ntot
+    regionAttribution[6,2,]=1:ntot
     GroupDistributions=array(NA,dim=c(6,2,nGroup,dimDistr))
 
     for (sea in seasons){
-        print(season_names[sea])
+        for (state in 1:2){
+            state<<-state
+            print(paste(season_names[sea],state_names[state]))
 
-        toOrder=array(NA,dim=c(ntot,dimensionality))
-        #toOrder[ID_select,1:dimMarkov]=eventResult[sea,ID_select,3,]
-        toOrder[ID_select,startDistr[1]:stopDistr[1]]=distr_stuff[sea,ID_select,1,2,distr_select]
-        toOrder[ID_select,startDistr[2]:stopDistr[2]]=distr_stuff[sea,ID_select,2,2,distr_select]
-        
-        toOrder[is.na(toOrder)]=0
-        toOrder<<-toOrder
+            toOrder=distr_stuff[sea,ID_select,state,2,distr_select]
 
-        print(proc.time())
-        tmp<<-kmeans(x=toOrder,centers=nGroup,iter.max=30,nstart=2)
-        print(proc.time())
-        for (i in 1:2){tmp2<<-k_clustering(nGroup=nGroup,runs=30)}
-        
-        print(proc.time())
-        asfdasfd
+            toOrder[is.na(toOrder)]=0
+            toOrder<<-toOrder
 
-        attribution_unordered=tmp$cluster
-        groups_unordered=tmp$centers
+            tmp<<-kmeans(x=toOrder,centers=nGroup,iter.max=100,nstart=20)
 
-        attribution=attribution_unordered*NA
-        groups=groups_unordered*NA
-        for (G in 1:nGroup){
-            Gmax=which.max(groups_unordered[,1])
-            attribution[attribution_unordered==Gmax]=G
-            groups[G,]=groups_unordered[Gmax,]
-            groups_unordered[Gmax,]=-999
+            attribution_unordered=tmp$cluster
+            groups_unordered=tmp$centers
+
+            attribution=attribution_unordered*NA
+            groups=groups_unordered*NA
+            for (G in 1:nGroup){
+                Gmax=which.max(groups_unordered[,21])
+                attribution[attribution_unordered==Gmax]=G
+                groups[G,]=groups_unordered[Gmax,]
+                groups_unordered[Gmax,]=-999
+            }
+
+            if ("endGroups" %in% plot){
+                pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",season_names[sea],"_",add_name,"_",nGroup,".pdf",sep=""))
+                plot_aktuelles_muster(attribution=attribution,start=groups,nGroup=nGroup,points=TRUE)
+            graphics.off()
+            }
+
+            regionAttribution[sea,state,]=attribution
+            GroupDistributions[sea,state,,]=groups
         }
-
-        if ("endGroups" %in% plot){
-            pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",season_names[sea],"_",add_name,"_",nGroup,".pdf",sep=""))
-            plot_aktuelles_muster(attribution=attribution,start=groups,nGroup=nGroup,points=TRUE)
-        graphics.off()
-        }
-
-        regionAttribution[,sea]=attribution
-        #GroupMarkovChain[sea,,]=groups[,1:dimMarkov]
-        GroupDistributions[sea,1,,]=groups[,startDistr[1]:stopDistr[1]]
-        GroupDistributions[sea,2,,]=groups[,startDistr[2]:stopDistr[2]]
     }
-    if ("endMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",add_name,"_",nGroup,"_map",".pdf",sep=""),worldmap=worldmap,reihen=t(matrix(regionAttribution,c(ntot,6))),pointsize=1.5,farb_palette=c("mixed",nGroup,"groups"),region="srex")}
+    if ("endMaps" %in% plot){
+        reihen=array(NA,c(length(seasons)*2,ntot))
+        titel=c()
+        for (sea in seasons){
+            for (state in 1:2){
+                index<-((sea-1)*2+state)
+                titel[index]=paste(season_names[sea],state_names[state])
+                reihen[index,]=regionAttribution[sea,state,]
+            }
+        }
+        topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",add_name,"_",nGroup,"_map",".pdf",sep=""),reihen=reihen,titel=titel,farb_palette="spacy")
+    }
 
 
     nc_out<-create.nc(paste("../data/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",add_name,"_",nGroup,".nc",sep=""))
@@ -218,18 +188,12 @@ clustering <- function(markov_style=NA,add_name="_forReal_",seasons=1:5,nGroup=7
     
     dim.def.nc(nc_out,"nGroup",dimlength=nGroup,unlim=FALSE)
 
-    dim.def.nc(nc_out,"dimMarkov",dimlength=dimMarkov,unlim=FALSE)
     dim.def.nc(nc_out,"dimDistr",dimlength=dimDistr,unlim=FALSE)
 
-    var.def.nc(nc_out,"attribution","NC_DOUBLE",c(0,1))
+    var.def.nc(nc_out,"attribution","NC_DOUBLE",c(1,2,0))
     att.put.nc(nc_out, "attribution", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "attribution", "dim_explanation", "NC_CHAR", "ID-season")
     att.put.nc(nc_out, "attribution", "explanation", "NC_CHAR", "group attribution for eachs season")
-
-    var.def.nc(nc_out,"MarkovChain","NC_DOUBLE",c(1,3,4))
-    att.put.nc(nc_out, "MarkovChain", "missing_value", "NC_DOUBLE", -99999.9)
-    att.put.nc(nc_out, "MarkovChain", "dim_explanation", "NC_CHAR", "season,groups,chainparameters")
-    att.put.nc(nc_out, "MarkovChain", "explanation", "NC_CHAR", "group characteristics MarkovChain")
 
     var.def.nc(nc_out,"Distribution","NC_DOUBLE",c(1,2,3,5))
     att.put.nc(nc_out, "Distribution", "missing_value", "NC_DOUBLE", -99999.9)
@@ -237,7 +201,6 @@ clustering <- function(markov_style=NA,add_name="_forReal_",seasons=1:5,nGroup=7
     att.put.nc(nc_out, "Distribution", "explanation", "NC_CHAR", "group characteristics Distribution")
        
     var.put.nc(nc_out,"attribution",regionAttribution)      
-    var.put.nc(nc_out,"MarkovChain",GroupMarkovChain)      
     var.put.nc(nc_out,"Distribution",GroupDistributions)      
  
     close.nc(nc_out) 
@@ -258,129 +221,6 @@ create_kompakt_map_plot_of_kmeans <- function(dataset="_TMean",trendID="91_5",ad
     IDregions=var.get.nc(nc,"attribution")[,1:4]
     #IDregions[2:1000,c(1,2,3,4)]=NA
     map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",add_name,"_",nGroup,"_map_kompakt",".pdf",sep=""),worldmap=worldmap,reihen=t(matrix(IDregions,c(1319,4))),farb_palette=c("mixed",nGroup,"groups"),col_row=c(5,4),cex=1,pointsize=0.5,cex_axis=1,paper=c(6.3,4),mat=c(1,1,2,2,1,1,2,2,3,3,4,4,3,3,4,4,5,5,5,5),color_lab="")
-
-}
-
-
-
-kmeans_raw <- function(add_name="_forReal_",seasons=1:4,nGroup=7,starts=10,runsMax=100,ID_select=1:1319,plot=c("endMaps")){
-
-    season_names<<-c("MAM","JJA","SON","DJF","4seasons")
-    seasonStart=c(60,152,244,335,1)
-    seasonStop=c(151,243,334,424,365)
-    state_names<<-c("cold","warm")
-
-    jet.colors <- colorRampPalette(c("black","blue","green","yellow","orange","red",rgb(0.5,0.5,0.5,0.5)))
-    color <<- jet.colors(nGroup) 
-
-    ntot<<-length(ID_select)
-    year_select<<-10:50
-
-    dimensionality<<-length(year_select)*365*5
-    regionAttribution=array(NA,dim=c(1319,length(seasons)))
-
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",add_name,"_",nGroup,"_spectra",".pdf",sep=""))
-
-    for (sea in seasons){
-        print(season_names[sea])
-        print(proc.time())
-
-        # take days in one season
-        if (sea<4){
-            tempSea=dat$tas[ID_select,,year_select]
-            tempSea[,1:(seasonStart[sea]-1),]=-999
-            tempSea[,(seasonStop[sea]+1):365,]=-999
-        }
-        if (sea==4){
-            tempSea=dat$tas[ID_select,,year_select]
-            tempSea[,(seasonStop[sea]-365+1):(seasonStart[sea]-1),]=-999
-        }
-        if (sea==5){
-            tempSea=dat$tas[ID_select,,year_select]
-        }
-
-        tempSea<<-tempSea
-        partOfYear<<-which(tempSea[1,,4]!=-999)
-        condensated<<-tempSea[,partOfYear,]
-        condensated<<-array(condensated,c(ntot,length(partOfYear)*length(year_select)))
-        print(dim(condensated))
-        condensated<<-matrix(condensated,nrow=ntot)
-        print(dim(condensated))
-
-        condensated[is.na(condensated)]=0
-
-        tmp<<-dist(condensated)
-        adasd
-
-
-
-        toOrder=array(NA,c(ntot,length(partOfYear)*length(year_select)))
-        freqs=array(NA,c(ntot,length(partOfYear)*length(year_select)))
-        for (q in 1:ntot){
-            if (length(which(!is.na(condensated[q,])))>900){
-                tmp=spectrum(condensated[q,],na.action=na.exclude,plot=FALSE)
-                toOrder[q,1:length(tmp$spec)]=tmp$spec 
-                freqs[q,1:length(tmp$freq)]=tmp$freq
-            }
-        }
-        toOrder<<-toOrder
-        toOrder<<-condensated
-        toOrder[is.na(toOrder)]=0
-
-
-        print(proc.time())
-        tmp<<-kmeans(x=toOrder,centers=nGroup,iter.max=30,nstart=2)
-        print(proc.time())
-        for (i in 1:2){tmp2<<-k_clustering(nGroup=nGroup,runs=30)}
-        
-        print(proc.time())
-        asfdasfd
-
-
-
-        plot(NA,xlim=c(0.0001,0.5),ylim=c(0,500),log="x")
-        lines(freqs[295,],toOrder[295,],col="red")
-        lines(freqs[488,],toOrder[488,],col="blue")
-        lines(freqs[489,],toOrder[489,],col="lightblue")
-        lines(freqs[661,],toOrder[661,],col="green")
-
-        graphics.off()
-        freqs<<-freqs
-        toOrder<<-toOrder
-
-        tmp=kmeans(x=toOrder,centers=nGroup,iter.max=runsMax,nstart=starts)
-        tmp<<-tmp
-        adasd
-
-        
-
-        attribution=tmp$cluster
-        regionAttribution[ID_select,sea]=attribution
-        print(proc.time())
-
-    }
-    regionAttribution<<-regionAttribution
-    if ("endMaps" %in% plot){map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",add_name,"_",nGroup,"_map",".pdf",sep=""),worldmap=worldmap,reihen=t(matrix(regionAttribution,c(1319,length(seasons)))),pointsize=1.5,farb_palette=c("mixed",nGroup,"groups"),region="srex")}
-
-
-    nc_out<-create.nc(paste("../data/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",add_name,"_",nGroup,".nc",sep=""))
-    att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", "gridpoints")
-    att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", period)
-    att.put.nc(nc_out, "NC_GLOBAL", "over all distances from points to group mean", "NC_CHAR", "dasdasd")
-    
-    dim.def.nc(nc_out,"ID",dimlength=1319, unlim=FALSE)
-    dim.def.nc(nc_out,"seasons",dimlength=length(seasons),unlim=FALSE)
-    dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
-    
-
-    var.def.nc(nc_out,"attribution","NC_DOUBLE",c(0,1))
-    att.put.nc(nc_out, "attribution", "missing_value", "NC_DOUBLE", -99999.9)
-    att.put.nc(nc_out, "attribution", "dim_explanation", "NC_CHAR", "ID-season")
-    att.put.nc(nc_out, "attribution", "explanation", "NC_CHAR", "group attribution for eachs season")
-
-    var.put.nc(nc_out,"attribution",regionAttribution)      
- 
-    close.nc(nc_out) 
 }
 
 crossCor <- function(x,y,lagMax){
@@ -389,7 +229,7 @@ crossCor <- function(x,y,lagMax){
 }
 
 
-distance_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,add_name="hclust"){
+distance_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,add_name="hclust",normalize=FALSE){
     #prepare data
     X=array(dat$tas,c(1319,365*65))
     # range in which data coverage is best
@@ -398,18 +238,23 @@ distance_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,add_n
 
     IDlength=dim(X)[1]
     xLen=length(timeRange)
-    # "normailze" using quantiles
     print(proc.time())
-    for (q in ID_select){
-        if (length(which(!is.na(X[q,])))>xLen/2){
-            X[q,]=X[q,]/(quantile(x=X[q,],probs=0.95,na.rm=TRUE)-quantile(x=X[q,],probs=0.05,na.rm=TRUE))
+
+    if (normalize){
+        # "normalize" using quantiles
+        for (q in ID_select){
+            if (length(which(!is.na(X[q,])))>xLen/2){
+                X[q,]=X[q,]/(quantile(x=X[q,],probs=0.95,na.rm=TRUE)-quantile(x=X[q,],probs=0.05,na.rm=TRUE))
+            }
+            else{X[q,]=NA}
         }
-        else{X[q,]=NA}
+        print(proc.time())
     }
-    print(proc.time())
+    
 
     # to many nas -> flat 
     X[is.na(X)]=0
+    #X<<-X
 
     # cross correlation
     distMat=array(NA,c(IDlength,IDlength))
@@ -462,11 +307,12 @@ hcluster_view <- function(lagMax=16,nGroup=12,add_name="hclust"){
     auswahl=c(553,890,132,604,1008)
     reihen=choiceMat[auswahl,]
     #print(dim(reihen))
-    map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,"_best_laf.pdf",sep=""),worldmap=worldmap,reihen=reihen,farb_mitte=0,farb_palette="lila-gruen",paper=c(8,6),highlight_points=auswahl,highlight_color="orange")
-    reihen=distMat[auswahl,]
-    topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,"_distance.pdf",sep=""),reihen=reihen,farb_mitte=c(0,0.006))
+    #map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,"_best_laf.pdf",sep=""),worldmap=worldmap,reihen=reihen,farb_mitte=0,farb_palette="lila-gruen",paper=c(8,6),highlight_points=auswahl,highlight_color="orange")
+    #reihen=distMat[auswahl,]
+    #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,"_distance.pdf",sep=""),reihen=reihen,farb_mitte=c(0,0.006))
 
-    reihen=array(cutree(tmp,15),c(1,1319))
+    reihen=array(NA,c(20,1319))
+    for (nGroup in 1:20){reihen[nGroup,]=cutree(tmp,nGroup)}
     topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,"_groups_",nGroup,"_hcluster_map.pdf",sep=""),reihen=reihen,farb_palette="spacy")
 
 }
@@ -492,29 +338,32 @@ init <- function(){
     dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 }
 
-kmeans_master <- function(nGroup=5,add_name="default"){
-    clustering(markov_style=5,add_name=add_name,seasons=1:5,nGroup=nGroup,versions=10,runsMax=100,ID_select=ID_select,plot=c("endMaps"))
+kmeans_master <- function(nGroup=7,add_name="default"){
+    clustering(add_name=add_name,seasons=1:5,nGroup=nGroup,versions=10,runsMax=100,ID_select=1:1319,plot=c("endMaps","endGroups"))
     #create_regional_distr_out_of_kmeans(add_name=add_name,region_name=paste(add_name,"_",nGroup,sep=""),nGroup=nGroup)
 }
 
-#init()
 
 #create_kompakt_map_plot_of_kmeans(nGroup=7,add_name="KarlPerason_AmpMark")
 
 ID_select=which(dat$lat>0 & dat$lat<100 )
 #ID_select=1:1319
 
-#kmeans_master(nGroup=5,add_name=paste("distr20",tries,sep=""))
 #kmeans_raw(nGroup=7,add_name=paste("raw___",tries,sep=""),starts=10,runsMax=100,ID_select=ID_select,seasons=c(5))
 
+#init()
+kmeans_master(nGroup=5,add_name=paste("distr","neu",sep=""))
 
-distance_matrix(lagMax=10,add_name="_Cor")
 
-hcluster_view(lagMax=10,add_name="_Cor")
-hcluster_view(lagMax=3,add_name="_quNorm")
-hcluster_view(lagMax=2,add_name="_quNorm")
-hcluster_view(lagMax=1,add_name="_quNorm")
-hcluster_view(lagMax=0,add_name="_quNorm")
+
+#distance_matrix(lagMax=15,add_name="_CorNorm",normalize=TRUE)
+#distance_matrix(lagMax=15,add_name="_Cor",normalize=FALSE)
+
+#hcluster_view(lagMax=10,add_name="_Cor")
+#hcluster_view(lagMax=4,add_name="_quNorm")
+#hcluster_view(lagMax=2,add_name="_quNorm")
+#hcluster_view(lagMax=1,add_name="_quNorm")
+#hcluster_view(lagMax=0,add_name="_quNorm")
 
 
 

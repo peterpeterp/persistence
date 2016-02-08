@@ -125,7 +125,7 @@ duration_seasons <- function(dur,dur_mid,season,filename){
 }
     
 
-duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:1319,write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(488,1232,52,661),ID_names=1:1319,ID_length=length(ID_select),noise_level=c(0,0)){
+duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:1319,write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(488,1232,52,661),ID_names=1:1319,ID_length=length(ID_select),noise_level=c(0,0),xStart=1,xStop=100){
 
         
 
@@ -217,7 +217,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                     if (length(which(!is.na(Y)))>15){ 
                         # exponential fit as starting point
                         
-                        tmp_exp=exponential_fit(X,Y)
+                        tmp_exp=exponential_fit(X,Y,xStart=xStart,xStop=xStop)
                         fit_stuff[sea,q,state,1:2]=tmp_exp$pars
                         fit_stuff[sea,q,state,15:16]=tmp_exp$ana
                         expfit=tmp_exp$fit
@@ -225,7 +225,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
 
                         # combination of 2 exponentials seperated by threshold (restricted threshold range)
                         if (option[4]==1){
-                            tmp=two_exp_fit(X,Y,y)
+                            tmp=two_exp_fit(X,Y,y,xStart=xStart,xStop=xStop)
                             fit_stuff[sea,q,state,5:9]=tmp$pars
                             fit_stuff[sea,q,state,19:20]=tmp$ana
                             fit=tmp$fit

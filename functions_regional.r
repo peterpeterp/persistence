@@ -449,7 +449,7 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
     season_names=c("MAM","JJA","SON","DJF","4seasons")
     state_names=c("cold","warm")
 
-    table<-file(paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_all_latex.tex",sep=""))
+    table<-file(paste("/home/peter/Dokumente/pik/geschrieben/ganzjahr/single_chapters/",trendID,"_",region_name,"_",period,"_",fit_style1," _all_latex.tex",sep=""))
     options(scipen=100)
 
     colors=c("white","groegree","zehngree","funfziggree","hundertgree","turkis","violet")

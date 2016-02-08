@@ -153,7 +153,7 @@ put_points <- function(points,points_sig=points*NA,ausschnitt=c(-90,90),pointsiz
 	}
 	if (farb_palette_loc=="spacy"){
 		#jet.colors <- colorRampPalette(c("blue",rgb(0.1,0.2,0.4),"green",rgb(0.5,1,1),rgb(0.5,1,0.5), "yellow",rgb(1,0.7,0.7),rgb(1,0.5,1),"orange",rgb(0.4,0.1,0.4),"red"))
-		jet.colors <- colorRampPalette(c("blue","red","green","yellow","blue","green","orange","violet","red"))
+		jet.colors <- colorRampPalette(c("blue","red","green","yellow","orange","violet"))
 	}
 	if (farb_palette_loc=="groups"){
 		palette=array(c("black","blue","green","yellow","orange","red",rgb(0.5,0.5,0.5,0.5)),nbcol)

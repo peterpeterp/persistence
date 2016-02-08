@@ -183,8 +183,8 @@ fit_plot <- function(X,Y,fit,legend,fit_style,sea,q,state,thresh=NA){
     text(50,0.24,legend[2],pos=1)                 
 }
 
-exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-Inf),upper_limit=c(Inf,Inf)){
-    xy=data.frame(y=Y,x=X)
+exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-Inf),upper_limit=c(Inf,Inf),xStart=1,xStop=100){
+    xy=data.frame(y=Y[xStart:xStop],x=X[xStart:xStop])
     # try fit
     exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,algorithm="port",start=start_guess,lower=lower_limit,upper=upper_limit,na.action=na.exclude),silent=TRUE) 
     
@@ -277,32 +277,22 @@ overlap_two_exp_fit <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thres
     return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA),fit=X*NA))
 }
 
-two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15){
+two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15,xStart=1,xStop=100){
     
-    xy=data.frame(y=Y[1:thresh_guess],x=X[1:thresh_guess])
+    xy=data.frame(y=Y[xStart:thresh_guess],x=X[xStart:thresh_guess])
     exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.1),na.action=na.exclude),silent=TRUE) 
     if (class(exp_nls)!="try-error"){
         a1_guess=summary(exp_nls)$parameters[1]
         b1_guess=summary(exp_nls)$parameters[2]
     }
 
-    xy=data.frame(y=Y[thresh_guess:length(Y)],x=X[thresh_guess:length(Y)])
+    xy=data.frame(y=Y[thresh_guess:xStop],x=X[thresh_guess:xStop])
     exp_nls=try(nls(y~(a1_guess*exp((b-b1_guess)*thresh_guess)*exp(-b*x)),data=xy,start=c(b=0.3),na.action=na.exclude),silent=TRUE) 
     if (class(exp_nls)!="try-error"){
         b2_guess=summary(exp_nls)$parameters[1]        
         a2_guess=a1_guess*exp((b2_guess-b1_guess)*thresh_guess)
     }
-
-    xy=data.frame(y=Y,x=X)
-    #combi_opt=try(optim(par=c(a1_guess,b1_guess,b2_guess,thresh_guess),to_be_minimized,data=xy))
-    #if (class(combi_opt)!="try-error"){
-    #    a1=combi_opt$par[1]
-    #    b1=combi_opt$par[2]
-    #    b2=combi_opt$par[3]
-    #    thresh=combi_opt$par[4]
-    #    a2=a1*exp((b2-b1)*thresh)
-    #    comb_fit=combi_expo(X,a1,b1,b2,thresh)
-    #}
+    xy=data.frame(y=Y[xStart:xStop],x=X[xStart:xStop])
     combi_nls=try(nls(y~combi_expo(x,a1,b1,b2,thresh),data=xy,start=c(a1=a1_guess,b1=b1_guess,b2=b2_guess,thresh=thresh_guess),algorithm="port",lower=c(0,0,0,thresh_down),upper=c(Inf,Inf,Inf,thresh_up),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=TRUE)),silent=TRUE)
     if (class(combi_nls)!="try-error"){
         a1=summary(combi_nls)$parameters[1]
@@ -319,8 +309,7 @@ two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_gues
     if (class(combi_nls)!="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA),fit=X*NA))}
 }
 
-two_exp_fit_restricted <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15){
-    
+two_exp_fit_restricted <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=4,thresh_up=15){
     xy=data.frame(y=Y[1:thresh_guess],x=X[1:thresh_guess])
     exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.1),na.action=na.exclude),silent=TRUE) 
     if (class(exp_nls)!="try-error"){
@@ -440,13 +429,7 @@ two_exp_fit_fixed_thresh <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,
 }
 
 general_extreme_values_fit <- function(X,Y,start_guess=c(xi=0.3,mu=1,beta=2),lower_limit=c(-Inf,-Inf,-Inf),upper_limit=c(Inf,Inf,Inf)){
-
-
-
     #really bad!!!!!!
-
-
-
     xy=data.frame(y=Y,x=X)
     # try fit
     gev_nls=try(nls(y~dgev(x=x,xi=xi,mu=mu,beta=beta),data=xy,algorithm="plinear",start=start_guess,lower=lower_limit,upper=upper_limit,na.action=na.exclude)) 
@@ -470,9 +453,6 @@ general_extreme_values_fit <- function(X,Y,start_guess=c(xi=0.3,mu=1,beta=2),low
         return(list(pars=c(xi,mu,beta),ana=c(R2,BIC),fit=gevfit))
     }
     # if fail
-
-
-
     else{
         return(list(pars=start_guess,ana=c(NA,NA),fit=dgev(x=X,xi=start_guess[1],mu=start_guess[2],beta=start_guess[3])))
     }
