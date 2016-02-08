@@ -325,17 +325,19 @@ map_allgemein <- function(dat=dat,filename_plot=filename_plot,worldmap=worldmap,
     graphics.off()
 }
 
-topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,grid=FALSE,ausschnitt=c(-100,100),paper=c(8,4),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA)){
+topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,grid=FALSE,ausschnitt=c(-90,90),paper=c(8,5),pointsize=0.9,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA)){
 	
 	pdf(file=filename_plot,width=paper[1],height=paper[2])
+
+
 	for (i in 1:dim(reihen)[1]){
 		if (titel[1]!=""){print(titel[i])}
-	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,location="none",col.land="white",col.water="white",mar=c(2,1,0,5))
-	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette)
+	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land="white",col.water="white",mar=c(2,1,1,5))
+	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,pointsize=pointsize)
 		color=tmp$color
 		y=tmp$y
 	    par(new=TRUE)
-	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,location="none",col.land="black",col.water="lightblue",mar=c(2,1,0,5))
+	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land="black",col.water="lightblue",mar=c(2,1,1,5))
 	    image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=FALSE,legend.lab=color_lab)
 	}
 	graphics.off()

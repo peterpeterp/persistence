@@ -109,7 +109,7 @@ plot_aktuelles_muster <- function(attribution,start,nGroup,points=FALSE,main_zus
 
 
 
-clustering <- function(add_name="_forReal_",seasons=1:5,nGroup=7,versions=30,runsMax=100,ID_select=1:1319,distr_select=1:40,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps")){
+clustering <- function(add_name="_forReal_",seasons=1:5,nGroup=7,versions=30,runsMax=100,ID_select=1:1319,distr_select=1:100,plot=c("testMasseGroups","testMasseMaps","endGroups","endMaps")){
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     state_names<<-c("cold","warm")
@@ -121,20 +121,22 @@ clustering <- function(add_name="_forReal_",seasons=1:5,nGroup=7,versions=30,run
     distr_stuff=var.get.nc(nc,"distr_stuff")
 
 
-    ntot<<-length(ID_select)
+    ntot<<-1319
     dimDistr<<-length(distr_select)
 
-    regionAttribution=array(NA,dim=c(6,2,ntot))
-    regionAttribution[6,1,]=1:ntot
-    regionAttribution[6,2,]=1:ntot
-    GroupDistributions=array(NA,dim=c(6,2,nGroup,dimDistr))
+    regionAttribution=array(NA,dim=c(6,ntot))
+    regionAttribution[6,]=1:ntot
+    GroupDistributions=array(NA,dim=c(6,nGroup,dimDistr*2))
 
     for (sea in seasons){
-        for (state in 1:2){
+        if (1==1){
             state<<-state
-            print(paste(season_names[sea],state_names[state]))
+            print(paste(season_names[sea]))
 
-            toOrder=distr_stuff[sea,ID_select,state,2,distr_select]
+            toOrder=array(NA,c(ntot,dimDistr*2))
+            toOrder[ID_select,1:dimDistr]=distr_stuff[sea,ID_select,1,2,distr_select]
+            toOrder[ID_select,(dimDistr+1):(dimDistr*2)]=distr_stuff[sea,ID_select,2,2,distr_select]
+
 
             toOrder[is.na(toOrder)]=0
             toOrder<<-toOrder
@@ -159,21 +161,12 @@ clustering <- function(add_name="_forReal_",seasons=1:5,nGroup=7,versions=30,run
             graphics.off()
             }
 
-            regionAttribution[sea,state,]=attribution
-            GroupDistributions[sea,state,,]=groups
+            regionAttribution[sea,]=attribution
+            GroupDistributions[sea,,]=groups
         }
     }
     if ("endMaps" %in% plot){
-        reihen=array(NA,c(length(seasons)*2,ntot))
-        titel=c()
-        for (sea in seasons){
-            for (state in 1:2){
-                index<-((sea-1)*2+state)
-                titel[index]=paste(season_names[sea],state_names[state])
-                reihen[index,]=regionAttribution[sea,state,]
-            }
-        }
-        topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",add_name,"_",nGroup,"_map",".pdf",sep=""),reihen=reihen,titel=titel,farb_palette="spacy")
+        topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",add_name,"_",nGroup,"_map",".pdf",sep=""),reihen=regionAttribution,farb_palette="spacy")
     }
 
 
@@ -339,20 +332,20 @@ init <- function(){
 }
 
 kmeans_master <- function(nGroup=7,add_name="default"){
-    clustering(add_name=add_name,seasons=1:5,nGroup=nGroup,versions=10,runsMax=100,ID_select=1:1319,plot=c("endMaps","endGroups"))
+    clustering(add_name=add_name,seasons=1:5,nGroup=nGroup,versions=10,runsMax=100,ID_select=ID_select,plot=c("endMaps"))
     #create_regional_distr_out_of_kmeans(add_name=add_name,region_name=paste(add_name,"_",nGroup,sep=""),nGroup=nGroup)
 }
 
 
 #create_kompakt_map_plot_of_kmeans(nGroup=7,add_name="KarlPerason_AmpMark")
 
-ID_select=which(dat$lat>0 & dat$lat<100 )
+ID_select=which(dat$lat>=10 & dat$lat<=90 )
 #ID_select=1:1319
 
 #kmeans_raw(nGroup=7,add_name=paste("raw___",tries,sep=""),starts=10,runsMax=100,ID_select=ID_select,seasons=c(5))
 
-#init()
-kmeans_master(nGroup=5,add_name=paste("distr","neu",sep=""))
+init()
+kmeans_master(nGroup=6,add_name=paste("2distr","neu",sep=""))
 
 
 
