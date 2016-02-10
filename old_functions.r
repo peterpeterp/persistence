@@ -619,6 +619,65 @@ state_attribution_old <- function(dat,detrended,nday,nyr,filename){
     return(0)#list(markov_per=markov_per,shock_per=shock_per))
 }
 
+trend_analysis <- function(x,y){
+    library(Kendall)
+    if (length(which(is.na(y)))>7 | length(which(y==0))>40){
+        return(list(slope=NA,slope_sig=NA,MK=NA,MK_sig=NA))
+    }
+    lm.r=lm(y~x)
+    slope=summary(lm.r)$coefficients[2]
+    slope_sig=summary(lm.r)$coefficients[8]
+    out=MannKendall(y)
+    MK=out[1]$tau
+    MK_sig=out[2]$sl
+    return(list(slope=slope,slope_sig=slope_sig,MK=MK,MK_sig=MK_sig))
+}
+
+global_analysis <- function(toAna,yearPeriod,yearshift=1949){
+    #toANA of dim(ntot, something, year)
+    yearPeriod=yearPeriod-yearshift
+    t=seq(yearPeriod[1],yearPeriod[2],1)
+    ntot=1319
+    series=dim(toAna)[2]
+    analysis=array(NA,dim=c(ntot,series,6))
+    for (i in 1:series){
+        for (q in 1:ntot){
+            tmp=trend_analysis(t,toAna[q,i,yearPeriod[1]:yearPeriod[2]])
+            analysis[q,i,1]=mean(toAna[q,i,yearPeriod[1]:yearPeriod[2]],na.rm=TRUE)
+            analysis[q,i,2]=sd(toAna[q,i,yearPeriod[1]:yearPeriod[2]],na.rm=TRUE)
+            analysis[q,i,3]=tmp$MK
+            analysis[q,i,4]=tmp$MK_sig
+            analysis[q,i,5]=tmp$slope
+            analysis[q,i,6]=tmp$slope_sig
+        }
+    }
+    return(analysis)
+}
+
+end_aussage <- function(dat,yearPeriod,trendID,states,seasons=c("spring","summer","autumn","winter","year"),region=c(-180,180,30,60)){
+    # calculates percentage of grid points in region having positive trend
+    # calculates big average
+    print(yearPeriod)
+    for (season in seasons){
+        print(season)
+        nc=open.ncdf(paste("../data/",trendID,"/",states,"_states/duration/",yearPeriod,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""))
+        dur_ana_full=get.var.ncdf(nc,"dur_ana_full")
+        #duration_analysis_write(paste("../data/",trendID,"/",states,"_states/duration/",yearPeriod,"/",trendID,"_duration_",states,"s_analysis_",season,".nc",sep=""),dur_ana_full,season)
+        quantiles=get.var.ncdf(nc,"quantiles")
+        outs=get.var.ncdf(nc,"outs")
+        percentage=array(NA,dim=c(states,length(quantiles)))
+        for (state in 1:states){
+            for (quan in quantiles){
+                slope=dur_ana_full[1:1319,state,quan,1]
+                inside_region=which(dat$lon>region[1] & dat$lon<region[2] & dat$lat>region[3] & dat$lat< region[4])
+                noNa=which(!is.na(slope[inside_region]))
+                percentage[state,quan]=length(which(slope[inside_region[noNa]]>0))/length(noNa)
+            }
+        }
+        print(percentage)
+    }
+}
+
 #************************************** functions_support.r *************************************************************
 
 

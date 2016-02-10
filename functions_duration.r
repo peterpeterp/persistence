@@ -126,16 +126,11 @@ duration_seasons <- function(dur,dur_mid,season,filename){
     
 
 duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:1319,write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(488,1232,52,661),ID_names=1:1319,ID_length=length(ID_select),noise_level=c(0,0),xStart=1,xStop=100){
-
-        
-
+    
     period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
-    season_names=c("MAM","JJA","SON","DJF","4seasons")
     taus=c(0.05,0.25,0.5,0.75,0.95,0.98,1)
 
     if (!is.na(plot_select[1])){
-        #pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],"_",add_name,".pdf",sep=""),width=8,height=6)
-        #par(mfrow=c(4,5))
         pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],"_",add_name,".pdf",sep=""),width=3,height=3)
         par(mfrow=c(1,1))
         fit_plot_empty()
@@ -294,7 +289,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
 
     if (option[2]==1){quantiles_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
         
-    if (option[3]==1 | option[4]==1 | option[5]==1 | option[6]==1 | option[7]==1){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
+    if (sum(option[2:8],na.rm=TRUE)>0){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
     distr_write(distr_stuff=distr_stuff,filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_distributions.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period)
     graphics.off()
 }
