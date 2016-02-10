@@ -1,41 +1,4 @@
 
-wave_region <- function(wavenumber,trough,lats){
-    # creates a table with coordinates of rectangles representing wave ridges and troughs
-    wellen=array(NA,dim=c(40,13))
-    brei=360/wavenumber/4
-    lon=trough
-    lon0=trough
-    i=1
-    wellen[,7:8]=lats[1]
-    wellen[,9:10]=lats[2]
-    while ((round(x=lon,digits=3)==round(x=lon0,digits=3) & i>1)==FALSE){
-        if (lon>(180-brei) & lon<(180+brei)){
-            wellen[i,1:4]=c(180,lon-brei,lon-brei,180)
-            wellen[i,13]=i  
-            i=i+1   
-            wellen[i,1:4]=c(lon+brei-360,-180,-180,lon+brei-360)
-            wellen[i,13]=i  
-            i=i+1   
-            lon=lon+2*brei
-        }
-        if (lon<=(180-brei)){
-            wellen[i,1:4]=c(lon+brei,lon-brei,lon-brei,lon+brei)
-            wellen[i,13]=i  
-            i=i+1   
-            lon=lon+2*brei
-        }
-        if (lon>=(180+brei)){
-            lon=lon-360
-            wellen[i,1:4]=c(lon+brei,lon-brei,lon-brei,lon+brei)
-            wellen[i,13]=i  
-            i=i+1   
-            lon=lon+2*brei
-        }
-        
-    }
-    write.table(wellen[1:length(which(!is.na(wellen[,13]))),],paste("../data/region_poligons/",wavenumber,"wave.txt",sep=""))
-}
-
 points_to_regions <- function(dat,region_names=c("mid_lat_belt","srex","7rect","6wave","7wave","8wave")){
     # loads region coordinates and writes a file in which grid points are associated to regions
     # outpufile has following columns: ID, regions from region_names
@@ -117,9 +80,6 @@ regions_color <- function(reihen,reihen_sig,worldmap,titles,poli,filename_plot){
     return()
 }
 
-#============================================================================================================================
-
-
 duration_region <- function(regions,reg,dur,dur_mid){
     # combines all recorded durations of one region to one duration array, same for dur_mid
     inside=which(regions==reg)
@@ -139,15 +99,11 @@ duration_region <- function(regions,reg,dur,dur_mid){
     return(list(duration=duration,duration_mid=duration_mid))
 }
 
-
-
 regional_attribution <- function(dat,region_name,trendID,additional_style="",dataset="_TMean",IDregions=c("from polygons"),regNumb=7,comment="polygons"){
     # performs the entire regional analysis of markov and duration
     # result will be written in nc file
 
-    # pnly for one trend and 2 states until now
     ntot=length(dat$ID)
-
 
     if (IDregions[1]=="from polygons"){
         poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
@@ -158,9 +114,6 @@ regional_attribution <- function(dat,region_name,trendID,additional_style="",dat
             IDregions[,i]=IDregions_tmp
         }
     }
-
-    season_names=c("MAM","JJA","SON","DJF","4seasons")
-
 
     for (sea in 1:5){
         season=season_names[sea]
@@ -189,15 +142,12 @@ regional_attribution <- function(dat,region_name,trendID,additional_style="",dat
         len=max(maxis,na.rm=TRUE)
         print(paste("../data/",trendID,"/",dataset,additional_style,"/","regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""))
         duration_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/","regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""),dur=reg_dur[,,1:len],dur_mid=reg_dur_mid[,,1:len],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
-
     }
-
 }
 
 
 # ------------------------------------------------------------------------------------------------
 plot_boxplot <- function(quans,x,width,color="white",border="black",density=NA){
-
     links=x-width/2
     rechts=x+width/2
     polygon(x=c(rechts,links,links,rechts),y=c(quans[2],quans[2],quans[4],quans[4]),col=color,border=border,density=density)    
@@ -213,8 +163,6 @@ plot_boxplot <- function(quans,x,width,color="white",border="black",density=NA){
 
 
 plot_regional_boxplots <- function(period,region_name,trendID,additional_style,dataset,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
-    # performs the entire regional analysis of markov and duration
-    # result will be written in nc file
 
     nc_oth = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_others.nc",sep=""))
     others=var.get.nc(nc_oth,"other_stuff")
@@ -222,10 +170,7 @@ plot_regional_boxplots <- function(period,region_name,trendID,additional_style,d
     quantiles=var.get.nc(nc_qua,"quantile_stuff")
 
     regNumb=dim(quantiles)[2]
-    seaNumb=6
     
-    season_names=c("MAM","JJA","SON","DJF","4seasons")
-
     color=c(rgb(0.5,0.5,1,0.8),rgb(1,0.5,0.5,0.8))
     pos=c(-1,1)*0.15
     width=6
@@ -264,11 +209,8 @@ plot_regional_boxplots <- function(period,region_name,trendID,additional_style,d
     graphics.off()
 }
 
+
 plot_regional_boxplots_vergleich <- function(period1,period2,region_name,trendID,additional_style,dataset,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
-    # performs the entire regional analysis of markov and duration
-    # result will be written in nc file
-
-
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period1,"/",trendID,"_",dataset,"_",region_name,"_",period1,"_quantiles.nc",sep=""))
     quantiles1=var.get.nc(nc,"quantile_stuff")
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period2,"/",trendID,"_",dataset,"_",region_name,"_",period2,"_quantiles.nc",sep=""))
@@ -390,7 +332,6 @@ plot_regional_fit_vergleich <- function(period1,period2,region_name,trendID,addi
         }
     }
     graphics.off()
-
 }
 
 
@@ -612,7 +553,6 @@ fit_info_to_map <- function(trendID="91_5",region_name="srex",period,fit_style1,
 
 
 plot_fits_for_region <- function(reg,IDregions=c("from polygons"),period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",region_name="srex"){
-
     if (IDregions[1]=="from polygons"){
         ntot=1319
         poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
@@ -623,8 +563,7 @@ plot_fits_for_region <- function(reg,IDregions=c("from polygons"),period="1950-2
             IDregions[,i]=IDregions_tmp
         }
     }
-
-
+    
     print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
     fit_stuff_reg=var.get.nc(nc,"fit_stuff")
@@ -678,9 +617,7 @@ plot_fits_for_region <- function(reg,IDregions=c("from polygons"),period="1950-2
 
         }
     }
-    graphics.off()
-    
-    
+    graphics.off()    
 }
 
 

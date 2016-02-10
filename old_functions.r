@@ -102,6 +102,42 @@ master_endaussage <- function(){
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ master.r ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #++++++++++++++++++++++++++++++++++++++ functions_regional.r +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+wave_region <- function(wavenumber,trough,lats){
+    # creates a table with coordinates of rectangles representing wave ridges and troughs
+    wellen=array(NA,dim=c(40,13))
+    brei=360/wavenumber/4
+    lon=trough
+    lon0=trough
+    i=1
+    wellen[,7:8]=lats[1]
+    wellen[,9:10]=lats[2]
+    while ((round(x=lon,digits=3)==round(x=lon0,digits=3) & i>1)==FALSE){
+        if (lon>(180-brei) & lon<(180+brei)){
+            wellen[i,1:4]=c(180,lon-brei,lon-brei,180)
+            wellen[i,13]=i  
+            i=i+1   
+            wellen[i,1:4]=c(lon+brei-360,-180,-180,lon+brei-360)
+            wellen[i,13]=i  
+            i=i+1   
+            lon=lon+2*brei
+        }
+        if (lon<=(180-brei)){
+            wellen[i,1:4]=c(lon+brei,lon-brei,lon-brei,lon+brei)
+            wellen[i,13]=i  
+            i=i+1   
+            lon=lon+2*brei
+        }
+        if (lon>=(180+brei)){
+            lon=lon-360
+            wellen[i,1:4]=c(lon+brei,lon-brei,lon-brei,lon+brei)
+            wellen[i,13]=i  
+            i=i+1   
+            lon=lon+2*brei
+        }
+        
+    }
+    write.table(wellen[1:length(which(!is.na(wellen[,13]))),],paste("../data/region_poligons/",wavenumber,"wave.txt",sep=""))
+}
 
 plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name,additional_style,dataset){
     nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.nc",sep=""))

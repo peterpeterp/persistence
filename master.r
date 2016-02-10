@@ -74,9 +74,7 @@ master_state_attribution <- function(){
     for (q in 1:1319){
        detrended[q,,]=detrended[q,,]-median(detrended[q,,],na.rm=TRUE) 
     }
-    
-    per=state_attribution(dat,detrended,nday,nyr,
-        filename=paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_median",".nc",sep=""))
+    per=state_attribution(dat,detrended,nday,nyr,filename=paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_median",".nc",sep=""))
 }
 
 master_duration <- function(){
@@ -84,14 +82,13 @@ master_duration <- function(){
     trash=((nyr-1)/2*365+(nday-1))
     stateIndeces=c(-1,1)
 
-
-    # calculate seasonal duration
+    # calculate annual period durations
     nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_seasonal_median",".nc",sep=""))
     ind=var.get.nc(nc,"ind")
     cat("\nidentifying persistent periods:")
-    calc_global_dur(dat=dat,ind=ind,trash=trash,filename=paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",trendID,dataset,"_duration_4seasons.nc",sep=""),states=stateIndeces)
+    calc_global_dur(ind=ind,trash=trash,filename=paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",trendID,dataset,"_duration_4seasons.nc",sep=""),states=stateIndeces)
 
-    # open seasonal duration and seperate into individual files
+    # open annual duration and seperate into individual files
     nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_4seasons.nc",sep=""))
     dur=var.get.nc(nc,"dur")
     dur_mid=var.get.nc(nc,"dur_mid")
@@ -104,41 +101,44 @@ master_duration <- function(){
 }
 
 master_duration_analysis <- function(ID_select=1:1319){
-    points=c(1950,2014,1950,1980,1980,2014)
-    for (i in 1:3){
-        yearPeriod=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
+    yearLimits=c(1950,2014,1980,2014)
+    for (i in 1:2){
+        yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
         print(yearPeriod)
 
         print("others")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0))
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0,0))
 
         print("quant")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0),noise_level=c(0,0.000001))
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0),noise_level=c(0,0.000001))
         
         print("fit")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0),plot_select=c(NA),ID_select=ID_select,add_name="2expo_4:100",xStart=4,write=TRUE)
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),plot_select=c(NA),ID_select=ID_select,add_name="2expo_4:100",xStart=4,write=TRUE)
     }
 }
 
-master_regional_climatology <- function(trendID,ID_select=1:7,plot_select=1:7,ID_length=7,dataset="_TMean",additional_style="",region_name="7rect",region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
+master_regional_climatology <- function(region_name="7rect",region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:7,plot_select=1:7,ID_length=7){
 
     
-    #dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-    #regional_attribution(dat=dat,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+    regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
     
     ID_name=paste("_",region_name,sep="")
-    points=c(1950,2014,1950,1980,1980,2014)
-    #points=c(1950,2014)
-    #points=c(1980,1997,1997,2014)
-    for (i in 1){
-        yearPeriod=c(points[(2*(i-1)+1)],points[(2*(i-1)+2)])
+    yearLimits=c(1950,2014,1980,2014)
+    for (i in 1:2){
+        yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
         period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
         print(yearPeriod)
+
+        print("others")
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0,0),ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length)
+
+        print("quant")
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length)
         
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0,0),add_name="2expo_4:100",xStart=4,folder="/regional/",ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length)
-        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,0,0,0,0,1),add_name="gev",folder="/regional/",ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length)
-        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,0,0,0,1,0),add_name="2expo_overlap",folder="/regional/",ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length)
+        print("fit")
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_4:100",xStart=4,ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length)
         
+
         #plot_regional_boxplots(period=paste(yearPeriod[1],"-",yearPeriod[2],sep=""),region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style)
         #plot_regional_fit_parameters(period=period,trendID=trendID,additional_style=additional_style,dataset=dataset,region_name=region_name,fit_style="_fit_2expo_b1>b2_5-10")
         write_regional_fit_table(trendID=trendID,region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style1="2expo_4:100",fit_style2="2expo_thresh_5-15",period=period)
@@ -153,7 +153,7 @@ master_regional_climatology <- function(trendID,ID_select=1:7,plot_select=1:7,ID
 # init: loading sources, setting variables ....
 ###################################################################
 
-initialization <- function(){
+master_init <- function(){
     source("functions_support.r")
     source("functions_duration.r")
     source("functions_regional.r")
@@ -180,6 +180,7 @@ initialization <- function(){
 ###################################################################
 # basic analysis
 ###################################################################
+master_init()
 
 master_trend()
 

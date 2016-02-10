@@ -52,7 +52,7 @@ per_duration <- function(ind,time,state){
 }
 
 
-calc_global_dur <- function(dat,ind,trash,filename,states=c(-1,1)){
+calc_global_dur <- function(ind,trash,filename,states=c(-1,1)){
     # dat: is required for time and ID
     # ind: array of states (same dimentions as temp anomalies)
     # trash: number of days that have to be neglected (due to detrending)

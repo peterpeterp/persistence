@@ -207,8 +207,6 @@ state_attribution <- function(dat,detrended,nday,nyr,filename){
     att.put.nc(nc_out, "ind", "dim_explanation", "NC_CHAR", "ID-day-year")
     att.put.nc(nc_out, "ind", "explanation", "NC_CHAR", "state attribution for each day at each gridpoint")
 
-
-
     var.put.nc(nc_out,"ind",state_ind)             
 
     cat("done.\n")
