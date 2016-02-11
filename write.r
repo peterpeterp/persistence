@@ -1,5 +1,3 @@
-library(RNetCDF)
-
 
 trend_write <- function(filename,trend,ID_length=1319,method="2D running mean")
 {
@@ -20,9 +18,6 @@ trend_write <- function(filename,trend,ID_length=1319,method="2D running mean")
 }
 
 
-
-
-
 duration_write <- function(filename,dur,dur_mid,len,ID_length=1319,ID_name="grid_points",comment="no comment")
 {
     nc_out <- create.nc(filename)
@@ -36,12 +31,12 @@ duration_write <- function(filename,dur,dur_mid,len,ID_length=1319,ID_name="grid
 
     var.def.nc(nc_out,"dur","NC_INT",c(0,1,2))
     att.put.nc(nc_out, "dur", "missing_value", "NC_INT", 99999)
-    att.put.nc(nc_out, "dur", "dim_explanation", "NC_CHAR", "ID-seasons-states-...")
+    att.put.nc(nc_out, "dur", "dim_explanation", "NC_CHAR", "ID-states-...")
     att.put.nc(nc_out, "dur", "val_explanation", "NC_CHAR", "length of persistent period")
 
     var.def.nc(nc_out,"dur_mid","NC_DOUBLE",c(0,1,2))
     att.put.nc(nc_out, "dur_mid", "missing_value", "NC_DOUBLE", -99999.9)
-    att.put.nc(nc_out, "dur_mid", "dim_explanation", "NC_CHAR", "ID-seasons-states-...")
+    att.put.nc(nc_out, "dur_mid", "dim_explanation", "NC_CHAR", "ID-states-...")
     att.put.nc(nc_out, "dur_mid", "val_explanation", "NC_CHAR", "mid-point of persistent period")
 
     var.put.nc(nc_out,"dur",dur)              
@@ -50,7 +45,27 @@ duration_write <- function(filename,dur,dur_mid,len,ID_length=1319,ID_name="grid
     close.nc(nc_out) 
 }
 
+reg_binned_dur_write <- function(filename,binned_dur,len,ID_length=1319,ID_name="grid_points",comment="no comment")
+{
+    nc_out <- create.nc(filename)
+    att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
+    att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
+    
+    dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
+    dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
+    dim.def.nc(nc_out,"years",dimlength=65,unlim=FALSE)
 
+    dim.def.nc(nc_out,"periods",dimlength=len,unlim=FALSE)
+
+    var.def.nc(nc_out,"binned_dur","NC_INT",c(0,1,2))
+    att.put.nc(nc_out, "binned_dur", "missing_value", "NC_INT", 99999)
+    att.put.nc(nc_out, "binned_dur", "dim_explanation", "NC_CHAR", "ID-states-years-...")
+    att.put.nc(nc_out, "binned_dur", "val_explanation", "NC_CHAR", "length of persistent period as set for each year")
+
+    var.put.nc(nc_out,"binned_dur",binned_dur)              
+
+    close.nc(nc_out) 
+}
 
 quantiles_write <- function(filename,ID_length,ID_name,period,taus,quantile_stuff,comment="quantile_analysis"){
 

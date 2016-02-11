@@ -1,8 +1,5 @@
 
 
-
-
-
 plot_maps <- function(trendID="91_5",dataset="_TMean",additional_style="",period="1950-2014",file="_others",var="other_stuff",
 	ausschnitt=c(-80,80),season_auswahl=c(1,2,3,4,5),sub_auswahl=c(NA,NA),value_auswahl=c(1,2),sig_auswahl=c(NA,NA),value_zusatz=c("mean","sd"),sub_zusatz=c("",""),name_zusatz="mean_sd",farb_mitte="mean",farb_palette="lila-gruen",grid=FALSE,region=NA,col_row=c(1,1),mat=NA,paper=c(12,8),pointsize=1.2,subIndex=c("a","b"),sig_style=c(NA),signi_level=0.05){
 

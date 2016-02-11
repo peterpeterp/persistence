@@ -22,15 +22,15 @@ crossCor <- function(x,y,lagMax){
 }
 
 
-dissimilarity_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,add_name="hclust",normalize=FALSE){
+dissimilarity_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=c(4000,11000),add_name="hclust",normalize=FALSE){
     #prepare data
     X=array(dat$tas,c(1319,365*65))
     # range in which data coverage is best
-    X=X[ID_select,timeRange]
+    X=X[ID_select,timeRange[1]:timeRange[2]]
     # remove nas problematic
 
     IDlength=dim(X)[1]
-    xLen=length(timeRange)
+    xLen=length(timeRange[1]:timeRange[2])
     print(proc.time())
 
     if (normalize){
@@ -63,9 +63,9 @@ dissimilarity_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,
         }
     }
 
-    nc_out<-create.nc(paste("../data/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_distance_",lagMax,add_name,".nc",sep=""))
+    nc_out<-create.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],add_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", "gridpoints")
-    att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", period)
+    att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", paste(timeRange[1],"-",timeRange[2]))
     att.put.nc(nc_out, "NC_GLOBAL", "explanation", "NC_CHAR", "distance matrix for time series")
     att.put.nc(nc_out, "NC_GLOBAL", "max lags in both directions", "NC_CHAR", paste(lagMax))
     
@@ -89,8 +89,8 @@ dissimilarity_matrix <- function(lagMax=3,ID_select=1:1319,timeRange=4000:11000,
 }
 
 dissimilarity_view <- function(lagMax=15,load_name="_Cor",add_name="",auswahl=c(333,470,604,890,888)){
-    print(paste("../data/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_distance_",lagMax,load_name,".nc",sep=""))
-    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_distance_",lagMax,load_name,".nc",sep=""))
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],add_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],add_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
     distMat<<-var.get.nc(nc,"distanceMat")
     choiceMat<<-var.get.nc(nc,"choiceMat")
     #distMat[is.na(distMat)]=1
@@ -103,12 +103,11 @@ dissimilarity_view <- function(lagMax=15,load_name="_Cor",add_name="",auswahl=c(
     reihen=distMat[auswahl,]
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,add_name,"_distance.pdf",sep=""),reihen=reihen,farb_mitte=c(0,1),farb_palette="regenbogen",highlight_points=auswahl,highlight_color="red",paper=c(8,10),ausschnitt=c(30,70),layout_mat=matrix(c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6),nrow=16),pointsize=1.5)
     topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_distance.pdf",sep=""),reihen=reihen,farb_palette="regenbogen",pointsize=1.5)
-
 }
 
-cluster_evaluation <- function(method="ward.D2",untilGroup=30,add_name="",ID_select=1:1319,load_name="_Cor",lagMax=15,timeRange=4000:11000,normalize=FALSE){
-    print(paste("../data/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_distance_",lagMax,load_name,".nc",sep=""))
-    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_distance_",lagMax,load_name,".nc",sep=""))
+cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add_name="",ID_select=1:1319,load_name="_CorLag",lagMax=15,timeRange=4000:11000,normalize=FALSE){
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
     distMat<<-var.get.nc(nc,"distanceMat")
     distMat[is.na(distMat)]=1
 
@@ -140,24 +139,24 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=30,add_name="",ID_sel
     if (method!="kmeans"){
         tmp<-hclust(as.dist(distMat[ID_select,ID_select]),method=method)
         rm(distMat)
-        for (nGroup in 1:untilGroup){
-            print(nGroup)
+        for (eva in 1:untilGroup){
+            nGroup<-eva+offsetGroup
+            print(paste(eva,nGroup))
             same=array(1,nGroup)
-            attribution[nGroup,ID_select]=cutree(tmp,nGroup)
+            attribution[eva,ID_select]=cutree(tmp,nGroup)
 
-            if (nGroup>1){
-                critTmp=intCriteria(traj=X[ID_select,],part=attribution[nGroup,ID_select],crit="all")
-                for (i in 1:42){criteria[nGroup,i]=critTmp[[i]]}
+            if (eva>1){
+                critTmp=intCriteria(traj=X[ID_select,],part=attribution[eva,ID_select],crit="all")
+                for (index in 1:42){criteria[eva,index]=critTmp[[index]]}
                 for (G in 1:nGroup){
-                    GG<-attribution[nGroup-1,which(attribution[nGroup,]==G)[1]]
-                    if (length(which(attribution[nGroup,]==G))==length(which(attribution[nGroup-1,]==GG))){same[G]=0}
+                    GG<-attribution[eva-1,which(attribution[eva,]==G)[1]]
+                    if (length(which(attribution[eva,]==G))==length(which(attribution[eva-1,]==GG))){same[G]=0}
                 }
-                attribution_changes[nGroup-1,which(attribution[nGroup,] %in% (1:nGroup)[which(same==1)])]=-2
+                attribution_changes[eva-1,which(attribution[eva,] %in% (1:nGroup)[which(same==1)])]=-2
             }
         }
     }
-
-    nc_out<-create.nc(paste("../data/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,load_name,lagMax,"_clustering",add_name,"_",method,"_",untilGroup,".nc",sep=""))
+    nc_out<-create.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,".nc",sep=""))
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", "gridpoints")
     att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", period)
     att.put.nc(nc_out, "NC_GLOBAL", "explanation", "NC_CHAR", "different cuttrees with indices etc")
@@ -189,6 +188,21 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=30,add_name="",ID_sel
     close.nc(nc_out)         
 }
 
+cluster_view <- function(lagMax=15,load_name="_Cor",add_name="",untilGroup=11,offsetGroup=10,method="ward.D2"){
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,".nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,".nc",sep=""))
+    attribution<-var.get.nc(nc,"attribution")
+    attribution_changes<-var.get.nc(nc,"attribution_changes")
+    criteria<-var.get.nc(nc,"criteria")
+
+
+    topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_map.pdf",sep=""),reihen=attribution,reihen_sig=attribution_changes,farb_palette="viele",pointsize=1.5)
+
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_criteria.pdf",sep=""))
+    plot((1:untilGroup)+offsetGroup,criteria[,1])
+
+}
+
 init <- function(){
     source("load.r")
 
@@ -216,15 +230,14 @@ init <- function(){
 
 init()
 
-#ID_select=which(dat$lat >= 30 & dat$lat <= 70)
 
-
-#dissimilarity_matrix(lagMax=15,add_name="_Cor",normalize=FALSE)
+dissimilarity_matrix(lagMax=15,timeRange=c(2000,22000),add_name="_CorLag",normalize=FALSE)
 
 #dissimilarity_view(lagMax=15,load_name="_Cor",add_name="_ww")
 
-cluster_evaluation(add_name="_ww",ID_select=1:1319,method="ward.D2")
-#cluster_evaluation(add_name="_ml",ID_select=which(dat$lat>=30 & dat$lat<=70 ))
+cluster_evaluation(add_name="_ww",ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",untilGroup=10,offsetGroup=15)
+
+#cluster_view(add_name="_ww",method="ward.D2",untilGroup=10,offsetGroup=15)
 
 
 

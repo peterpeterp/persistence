@@ -1,5 +1,4 @@
-library(ncdf)
-source("load.r")
+library("ncdf")
 
 land_percentage_bigger_than <- function(var,threshold=0,lat_ausschnitt=c(35,60),lon_ausschnitt=c(-180,180),period="1950-2014"){
 	inside_region=which(dat$lon>lon_ausschnitt[1] & dat$lon<lon_ausschnitt[2] & dat$lat>lat_ausschnitt[1] & dat$lat<lat_ausschnitt[2])
@@ -31,7 +30,7 @@ if (1==2){
 	}
 }
 
-if (1==1){
+if (1==2){
 	period="1950-2014"
 	season="4seasons"
 
@@ -52,7 +51,7 @@ if (1==1){
 
 missing_period_view <- function(){
     pdf(file="../plots/missing_periods.pdf")
-    plot(NA,xlim=c(1,15000),ylim=c(1,1319))
+    plot(NA,xlim=c(1,23725),ylim=c(1,1319))
     dat_linear<<-array(dat$tas,c(1319,365*65))
     for (q in 1:1319){
         nas=which(is.na(dat_linear[q,]))

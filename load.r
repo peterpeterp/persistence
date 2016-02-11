@@ -1,4 +1,3 @@
-library(RNetCDF)
 
 dat_load <- function(filename){
     nc  = open.nc(filename)

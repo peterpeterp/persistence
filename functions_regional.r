@@ -140,8 +140,28 @@ regional_attribution <- function(dat,region_name,trendID,additional_style="",dat
             }
         }
         len=max(maxis,na.rm=TRUE)
+
+        # write regional durations in form of gridded durations
         print(paste("../data/",trendID,"/",dataset,additional_style,"/","regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""))
         duration_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/","regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""),dur=reg_dur[,,1:len],dur_mid=reg_dur_mid[,,1:len],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
+
+        # create binned duration file
+        binned_dur=array(NA,dim(regNumb,2,65,365*100))
+        periods_in_yr=array(0,regNumb*2*65)
+        index=0
+        for (reg in 1:regNumb){
+            for (state in 1:2){
+                for (yr in 1:65){
+                    index<-index+1
+                    inYr<-which(reg_dur_mid[reg,state,]>=yr & reg_dur_mid[reg,state,]<yr)
+                    binned_dur[reg,state,yr,1:length(inYr)]=reg_dur[reg,state,inYr]
+                    periods_in_yr[index]=length(inYr)
+                }
+            }
+        }
+        # write regional duration in form of yearly binned durations
+        len=max(periods_in_yr,na.rm=TRUE)
+        reg_binned_dur_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/","regional/",trendID,dataset,"_",region_name,"_reg_binned_duration_",season,".nc",sep=""),binned_dur=binned_dur[,,,1:len],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
     }
 }
 
@@ -563,7 +583,7 @@ plot_fits_for_region <- function(reg,IDregions=c("from polygons"),period="1950-2
             IDregions[,i]=IDregions_tmp
         }
     }
-    
+
     print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
     fit_stuff_reg=var.get.nc(nc,"fit_stuff")

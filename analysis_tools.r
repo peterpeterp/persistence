@@ -1,4 +1,3 @@
-library(stats4)
 
 quantile_pete <- function(dist,taus,na.rm=TRUE,plot=FALSE){
     # calculates quantiles from empirical cumulative distribution function -> gives out decimal numbers

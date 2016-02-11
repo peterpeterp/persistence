@@ -147,8 +147,8 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
         cat(paste("\n",season))  
         dists=list()
 
-        print(paste("../data/",trendID,"/",dataset,additional_style,folder,trendID,dataset,ID_name,"_duration_",season,".nc",sep=""))
-        nc_dur=open.nc(paste("../data/",trendID,"/",dataset,additional_style,folder,trendID,dataset,ID_name,"_duration_",season,".nc",sep=""))
+        print(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,ID_name,"_duration_",season,".nc",sep=""))
+        nc_dur=open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,ID_name,"_duration_",season,".nc",sep=""))
         dur=var.get.nc(nc_dur,"dur")
         dur_mid=var.get.nc(nc_dur,"dur_mid")
 
@@ -285,12 +285,49 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
             }
         }
     }
-    if (option[1]==1){other_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_others.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,other_stuff=other_stuff)}
+    if (option[1]==1){other_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_others.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,other_stuff=other_stuff)}
 
-    if (option[2]==1){quantiles_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
+    if (option[2]==1){quantiles_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
         
-    if (sum(option[2:8],na.rm=TRUE)>0){fit_write(filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
-    distr_write(distr_stuff=distr_stuff,filename=paste("../data/",trendID,"/",dataset,additional_style,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_distributions.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period)
+    if (sum(option[2:8],na.rm=TRUE)>0){fit_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
+    distr_write(distr_stuff=distr_stuff,filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_distributions.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period)
     graphics.off()
+}
+
+
+shuffle_mat <- function(durMat){
+    return(durMat[,,sample(65,65,replace=FALSE),])
+}
+
+
+duration_analysis_for_shuffling <- function(durMat,time_vec,ID_select=1:1319,ID_length=length(ID_select),noise_level=c(0,0)){
+
+    quantile_stuff=array(NA,dim=c(ID_length,2,length(taus),3))
+    other_stuff=array(NA,dim=c(ID_length,2,12))
+
+    for (q in ID_select){
+        for (state in 1:2){
+
+
+            duration=durMat[q,state,]
+            if (length(which(!is.na(duration)))>100){
+
+                # other stuff
+                other_stuff[sea,q,state,1]=mean(y,na.rm=TRUE)
+                other_stuff[sea,q,state,2]=sd(y,na.rm=TRUE)
+                other_stuff[sea,q,state,12]=length(!is.na(y))
+
+                linear=try(lm(y~x),silent=TRUE)
+                if (class(linear)!="try-error"){other_stuff[sea,q,state,3:10]=summary(linear)$coef}
+
+                # quantile values and regressions
+                tmp=quantile_analysis(x,y,taus,noise_level=noise_level)
+                quantile_stuff[sea,q,state,,1]=tmp$quantiles
+                quantile_stuff[sea,q,state,,2]=tmp$slopes
+                quantile_stuff[sea,q,state,,3]=tmp$slope_sigs
+            }
+        }
+    }
+
 }
 

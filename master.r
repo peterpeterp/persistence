@@ -15,12 +15,12 @@ master_nas <- function(){
 master_trend_control <- function(){
     # trend control
     source("trend_view.r")
-    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_median",".nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,trend_style,dataset,"_state_ind","_median",".nc",sep=""))
     ind=var.get.nc(nc,"ind")
-    trend_control_warm_days(dat,ind,filename=paste("../data/",trendID,"/",dataset,additional_style,"/sonstiges/",trendID,trend_style,dataset,"_5seasons_warme_tage_control",additional_style,"_year",".txt",sep=""))   
-    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_seasonal_median",".nc",sep=""))
+    trend_control_warm_days(dat,ind,filename=paste("../data/",dataset,additional_style,"/",trendID,"/sonstiges/",trendID,trend_style,dataset,"_5seasons_warme_tage_control",additional_style,"_year",".txt",sep=""))   
+    nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,trend_style,dataset,"_state_ind","_seasonal_median",".nc",sep=""))
     ind=var.get.nc(nc,"ind")
-    trend_control_warm_days(dat,ind,filename=paste("../data/",trendID,"/",dataset,additional_style,"/sonstiges/",trendID,trend_style,dataset,"_5seasons_warme_tage_control",additional_style,"_4seasons",".txt",sep=""))  
+    trend_control_warm_days(dat,ind,filename=paste("../data/",dataset,additional_style,"/",dataset,additional_style,"/sonstiges/",trendID,trend_style,dataset,"_5seasons_warme_tage_control",additional_style,"_4seasons",".txt",sep=""))  
 }
 
 master_trend <- function(){
@@ -29,11 +29,11 @@ master_trend <- function(){
     if (trend_style=="_mean"){procedure=r_calc_runmean_2D}
     if (trend_style=="_median"){procedure=r_calc_runmedian_2D}
     if (trend_style=="_mode"){procedure=r_calc_runmode_2D}
-    trend=calc_trend(dat,paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""),nday,nyr,procedure=procedure)
+    trend=calc_trend(dat,paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""),nday,nyr,procedure=procedure)
 }
 
 master_seasonal_median_on_detrended <- function(){
-    trend=trend_load(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""))
+    trend=trend_load(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""))
     detrended=dat$tas-trend
 
     ntot = 1319
@@ -61,7 +61,7 @@ master_seasonal_median_on_detrended <- function(){
     ID <- dim.def.nc("ID",units="ID",vals=1:ntot, unlim=FALSE)
 
     seasonal_med <- var.def.nc(name="_seasonal_median",units="medain of season value for each day",dim=list(ID,day), missval=-9999.0)
-    filename=paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind_seasonal_median",".nc",sep="")
+    filename=paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,trend_style,dataset,"_state_ind_seasonal_median",".nc",sep="")
     nc = create.nc(filename,seasonal_med)
     put.var.nc(nc,seasonal_med,seasonalmedian)
     close.nc(nc)
@@ -69,12 +69,12 @@ master_seasonal_median_on_detrended <- function(){
 
 master_state_attribution <- function(){
     # calculate persistence 2 states
-    trend=trend_load(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""))
+    trend=trend_load(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,"_trend",trend_style,dataset,".nc",sep=""))
     detrended=dat$tas-trend
     for (q in 1:1319){
        detrended[q,,]=detrended[q,,]-median(detrended[q,,],na.rm=TRUE) 
     }
-    per=state_attribution(dat,detrended,nday,nyr,filename=paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_median",".nc",sep=""))
+    per=state_attribution(dat,detrended,nday,nyr,filename=paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,trend_style,dataset,"_state_ind","_median",".nc",sep=""))
 }
 
 master_duration <- function(){
@@ -83,21 +83,21 @@ master_duration <- function(){
     stateIndeces=c(-1,1)
 
     # calculate annual period durations
-    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/",trendID,trend_style,dataset,"_state_ind","_seasonal_median",".nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,trend_style,dataset,"_state_ind","_seasonal_median",".nc",sep=""))
     ind=var.get.nc(nc,"ind")
     cat("\nidentifying persistent periods:")
-    calc_global_dur(ind=ind,trash=trash,filename=paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",trendID,dataset,"_duration_4seasons.nc",sep=""),states=stateIndeces)
+    calc_global_dur(ind=ind,trash=trash,filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_4seasons.nc",sep=""),states=stateIndeces)
 
     # open annual duration and seperate into individual files
-    nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_4seasons.nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/","duration/",trendID,dataset,"_duration_4seasons.nc",sep=""))
     dur=var.get.nc(nc,"dur")
     dur_mid=var.get.nc(nc,"dur_mid")
 
     cat("\nattributing periods to seasons:")    
-    duration_seasons(dur,dur_mid,season=c(60,151),filename=paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",trendID,dataset,"_duration_MAM.nc",sep=""))
-    duration_seasons(dur,dur_mid,season=c(152,243),filename=paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",trendID,dataset,"_duration_JJA.nc",sep=""))
-    duration_seasons(dur,dur_mid,season=c(244,334),filename=paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",trendID,dataset,"_duration_SON.nc",sep=""))
-    duration_seasons(dur,dur_mid,season=c(335,424),filename=paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",trendID,dataset,"_duration_DJF.nc",sep=""))
+    duration_seasons(dur,dur_mid,season=c(60,151),filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_MAM.nc",sep=""))
+    duration_seasons(dur,dur_mid,season=c(152,243),filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_JJA.nc",sep=""))
+    duration_seasons(dur,dur_mid,season=c(244,334),filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_SON.nc",sep=""))
+    duration_seasons(dur,dur_mid,season=c(335,424),filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_DJF.nc",sep=""))
 }
 
 master_duration_analysis <- function(ID_select=1:1319){
@@ -163,6 +163,9 @@ master_init <- function(){
 
     library(moments)
     library(quantreg)
+    library(stats4)
+    library(RNetCDF)
+
 
     nday<<-91
     nyr<<-5
