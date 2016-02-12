@@ -140,8 +140,7 @@ calc_trend <- function(dat,filename,nday,nyr,procedure){
         temp[(length(dat$time)-trash):length(dat$time)]=NA
         trend[q,,]=temp
     }
-
-    trend_write(filename,dat,trend)
+    trend_write(filename,trend)
     return(trend)
 }
 
@@ -194,13 +193,17 @@ state_attribution <- function(dat,detrended,nday,nyr,filename){
      
     }
 
+    print(filename)
     nc_out<-create.nc(filename)
+
+    print(dim(state_ind))
+
     att.put.nc(nc_out, "NC_GLOBAL", "method", "NC_CHAR", "detrended with 2d running mean. than for each season and each grid point the median is calculated. days with temp above (below) median are warm (cold).")
     att.put.nc(nc_out, "NC_GLOBAL", "explanation", "NC_CHAR", "state indices -1 (cold), 1 (warm)")
     
     dim.def.nc(nc_out,"ID",dimlength=1319, unlim=FALSE)   
-    dim.def.nc(nc_out,"day",dimlength=65, unlim=FALSE)   
-    dim.def.nc(nc_out,"year",dimlength=365, unlim=FALSE)   
+    dim.def.nc(nc_out,"day",dimlength=365, unlim=FALSE)   
+    dim.def.nc(nc_out,"year",dimlength=65, unlim=FALSE)   
 
     var.def.nc(nc_out,"ind","NC_DOUBLE",c(0,1,2))
     att.put.nc(nc_out, "ind", "missing_value", "NC_DOUBLE", -99999.9)

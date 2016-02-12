@@ -144,10 +144,10 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
             print(paste(eva,nGroup))
             same=array(1,nGroup)
             attribution[eva,ID_select]=cutree(tmp,nGroup)
+            critTmp=intCriteria(traj=X[ID_select,],part=attribution[eva,ID_select],crit="all")
+            for (index in 1:42){criteria[eva,index]=critTmp[[index]]}
 
             if (eva>1){
-                critTmp=intCriteria(traj=X[ID_select,],part=attribution[eva,ID_select],crit="all")
-                for (index in 1:42){criteria[eva,index]=critTmp[[index]]}
                 for (G in 1:nGroup){
                     GG<-attribution[eva-1,which(attribution[eva,]==G)[1]]
                     if (length(which(attribution[eva,]==G))==length(which(attribution[eva-1,]==GG))){same[G]=0}
@@ -188,7 +188,7 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
     close.nc(nc_out)         
 }
 
-cluster_view <- function(lagMax=15,load_name="_Cor",add_name="",untilGroup=11,offsetGroup=10,method="ward.D2"){
+cluster_view <- function(lagMax=15,load_name="_CorLag",add_name="",timeRange=c(2000,22000),untilGroup=11,offsetGroup=10,method="ward.D2"){
     print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,".nc",sep=""))
     nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,".nc",sep=""))
     attribution<-var.get.nc(nc,"attribution")
@@ -196,10 +196,17 @@ cluster_view <- function(lagMax=15,load_name="_Cor",add_name="",untilGroup=11,of
     criteria<-var.get.nc(nc,"criteria")
 
 
-    topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_map.pdf",sep=""),reihen=attribution,reihen_sig=attribution_changes,farb_palette="viele",pointsize=1.5)
+    #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_map.pdf",sep=""),reihen=attribution,reihen_sig=attribution_changes,farb_palette="viele",pointsize=1.5)
 
     pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_criteria.pdf",sep=""))
-    plot((1:untilGroup)+offsetGroup,criteria[,1])
+    for (crit in 1:42){
+        if (crit!=33 &crit!=42){
+            plot((1:untilGroup)+offsetGroup,criteria[,crit])
+        }
+        else {plot(NA,xlim=c(1,2),ylim=c(1,2))}
+    }
+    graphics.off()
+    criteria<<-criteria
 
 }
 
@@ -231,13 +238,13 @@ init <- function(){
 init()
 
 
-dissimilarity_matrix(lagMax=15,timeRange=c(2000,22000),add_name="_CorLag",normalize=FALSE)
+#dissimilarity_matrix(lagMax=15,timeRange=c(2000,22000),add_name="_CorLag",normalize=FALSE)
 
 #dissimilarity_view(lagMax=15,load_name="_Cor",add_name="_ww")
 
-cluster_evaluation(add_name="_ww",ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",untilGroup=10,offsetGroup=15)
+#cluster_evaluation(add_name="_ww",ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",untilGroup=10,offsetGroup=15)
 
-#cluster_view(add_name="_ww",method="ward.D2",untilGroup=10,offsetGroup=15)
+cluster_view(add_name="_ww",method="ward.D2",untilGroup=10,offsetGroup=15)
 
 
 

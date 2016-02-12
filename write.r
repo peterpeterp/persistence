@@ -47,17 +47,22 @@ duration_write <- function(filename,dur,dur_mid,len,ID_length=1319,ID_name="grid
 
 reg_binned_dur_write <- function(filename,binned_dur,len,ID_length=1319,ID_name="grid_points",comment="no comment")
 {
+    print(dim(binned_dur))
+    print(len)
+    print(ID_length)
+
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
     att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
     
     dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
     dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
-    dim.def.nc(nc_out,"years",dimlength=65,unlim=FALSE)
 
     dim.def.nc(nc_out,"periods",dimlength=len,unlim=FALSE)
 
-    var.def.nc(nc_out,"binned_dur","NC_INT",c(0,1,2))
+    dim.def.nc(nc_out,"years",dimlength=65,unlim=FALSE)
+
+    var.def.nc(nc_out,"binned_dur","NC_INT",c(0,1,2,3))
     att.put.nc(nc_out, "binned_dur", "missing_value", "NC_INT", 99999)
     att.put.nc(nc_out, "binned_dur", "dim_explanation", "NC_CHAR", "ID-states-years-...")
     att.put.nc(nc_out, "binned_dur", "val_explanation", "NC_CHAR", "length of persistent period as set for each year")

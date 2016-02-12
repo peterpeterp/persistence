@@ -125,13 +125,13 @@ duration_seasons <- function(dur,dur_mid,season,filename){
 }
     
 
-duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:1319,write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(488,1232,52,661),ID_names=1:1319,ID_length=length(ID_select),noise_level=c(0,0),xStart=1,xStop=100){
+duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:1319,write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(NA),ID_names=1:1319,ID_length=length(ID_select),noise_level=c(0,0),xStart=1,xStop=100){
     
     period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
     taus=c(0.05,0.25,0.5,0.75,0.95,0.98,1)
 
     if (!is.na(plot_select[1])){
-        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],"_",add_name,".pdf",sep=""),width=3,height=3)
+        pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],"_",add_name,".pdf",sep=""),width=3,height=3)
         par(mfrow=c(1,1))
         fit_plot_empty()
     }
@@ -268,66 +268,103 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
 
 
                 }
-                if (length(which(!is.na(duration)))<=100){
-                    x=(1:10)*NA
-                    y=(1:10)*NA
-                    X=(1:10)*NA
-                    Y=(1:10)*NA
-                }
-                if (q %in% plot_select){
-                    if (is.na(fit_stuff[sea,q,state,1])){
-                        expfit=X*NA
-                        fit=X*NA
+                if (!is.na(plot_select[1])){
+                    if (length(which(!is.na(duration)))<=100){
+                        x=(1:10)*NA
+                        y=(1:10)*NA
+                        X=(1:10)*NA
+                        Y=(1:10)*NA
                     }
-                    fit_plot_reference(x=x,y=y,sea=season_names[sea],q=ID_names[q],state=state)
-                    fit_plot_combi(X=X,Y=Y,counts=counts,expfit=expfit,fit=fit,fitstuff=fit_stuff[sea,q,state,],sea=season_names[sea],q=ID_names[q],state=state)
+                    if (q %in% plot_select){
+                        if (is.na(fit_stuff[sea,q,state,1])){
+                            expfit=X*NA
+                            fit=X*NA
+                        }
+                        fit_plot_reference(x=x,y=y,sea=season_names[sea],q=ID_names[q],state=state)
+                        fit_plot_combi(X=X,Y=Y,counts=counts,expfit=expfit,fit=fit,fitstuff=fit_stuff[sea,q,state,],sea=season_names[sea],q=ID_names[q],state=state)
+                    }
                 }
             }
         }
     }
     if (option[1]==1){other_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_others.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,other_stuff=other_stuff)}
 
-    if (option[2]==1){quantiles_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
+    if (option[2]==1){quantiles_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
         
-    if (sum(option[2:8],na.rm=TRUE)>0){fit_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
+    if (sum(option[4:8],na.rm=TRUE)>0){fit_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
     distr_write(distr_stuff=distr_stuff,filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_distributions.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period)
     graphics.off()
 }
 
-
-shuffle_mat <- function(durMat){
-    return(durMat[,,sample(65,65,replace=FALSE),])
+shuffle_mat <- function(durMat,years){
+    return(durMat[,,,sample(years,years,replace=FALSE)])
 }
 
 
-duration_analysis_for_shuffling <- function(durMat,time_vec,ID_select=1:1319,ID_length=length(ID_select),noise_level=c(0,0)){
+trend_analysis <- function(seasons=2,yearPeriod=c(1950,2014),folder="/regional/",ID_name="7rect"){
 
-    quantile_stuff=array(NA,dim=c(ID_length,2,length(taus),3))
-    other_stuff=array(NA,dim=c(ID_length,2,12))
+    for (sea in seasons){
+        season=season_names[sea]
+
+        print(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_reg_binned_duration_",season,".nc",sep=""))
+        print("../data/_TMean_uebergang/91_5/regional/91_5_TMean_7rect_reg_binned_duration_JJA.nc")
+        nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_reg_binned_duration_",season,".nc",sep=""))
+        binned_dur=var.get.nc(nc,"binned_dur")
+        periodsInYr=dim(binned_dur)[4]
+        ID_length=dim(binned_dur)[1]
+
+        binned_dur<<-binned_dur
+
+        # create time vector for trend analysis
+        years=yearPeriod[2]-yearPeriod[1]
+        time_vec=rep(0:years,each=periodsInYr)
+
+        original<<-trend_evaluation(durMat=array(binned_dur,c(ID_length,2,periodsInYr*65)),time_vec=time_vec,ID_select=1:ID_length)
+
+        shuffled<<-trend_evaluation(durMat=array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*65)),time_vec=time_vec,ID_select=1:ID_length)
+
+    }
+}
+
+
+
+trend_evaluation <- function(durMat,time_vec,ID_select=1:1319,ID_length=length(ID_select),noise_level=c(0,0)){
+    trends<-array(NA,c(ID_length,2,9))
 
     for (q in ID_select){
         for (state in 1:2){
-
-
-            duration=durMat[q,state,]
-            if (length(which(!is.na(duration)))>100){
-
-                # other stuff
-                other_stuff[sea,q,state,1]=mean(y,na.rm=TRUE)
-                other_stuff[sea,q,state,2]=sd(y,na.rm=TRUE)
-                other_stuff[sea,q,state,12]=length(!is.na(y))
-
-                linear=try(lm(y~x),silent=TRUE)
-                if (class(linear)!="try-error"){other_stuff[sea,q,state,3:10]=summary(linear)$coef}
+            y<-durMat[q,state,]
+            print(length(y))
+            print(length(time_vec))
+            if (length(which(!is.na(y)))>100){
+                # mean trend
+                #linear<-try(lm(y~time_vec),silent=TRUE)
+                #if (class(linear)!="try-error"){trends[q,state,9]=summary(linear)$coef[2]}
 
                 # quantile values and regressions
-                tmp=quantile_analysis(x,y,taus,noise_level=noise_level)
-                quantile_stuff[sea,q,state,,1]=tmp$quantiles
-                quantile_stuff[sea,q,state,,2]=tmp$slopes
-                quantile_stuff[sea,q,state,,3]=tmp$slope_sigs
+                #time0<-proc.time()
+                #tmp<-quantile_analysis(time_vec,y,taus,noise_level=noise_level)
+
+
+                #trends[q,state,1:7]=tmp$slopes
+                #time1<-proc.time()
+
+                #tmpr<<-rq(y~time_vec,taus)
+                #tmp<<-summary(rq(y~time_vec,taus),se="boot")
+                #trends[q,state,1:7]=sapply(tmp, function(x) c(tau=x$tau, x$coefficients[2,1]))[2,]
+                trends[q,state,1:7]=rq(y~time_vec,taus)$coef[2,]
+                trends[q,state,9]=lm(y~time_vec)$coef[2]
+                #time2<-proc.time()
+                #print(time1-time0)
+                #print(time2-time1)
+
             }
         }
     }
 
+    return(trends)
+
 }
 
+taus=c(0,0.05,0.25,0.5,0.75,0.95,1)
+trend_analysis()

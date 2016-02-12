@@ -2,7 +2,6 @@
 points_to_regions <- function(dat,region_names=c("mid_lat_belt","srex","7rect","6wave","7wave","8wave")){
     # loads region coordinates and writes a file in which grid points are associated to regions
     # outpufile has following columns: ID, regions from region_names
-    library(SDMTools)
     ntot=length(dat$ID)
     points=cbind(x=dat$lon,y=dat$lat)
 
@@ -99,7 +98,7 @@ duration_region <- function(regions,reg,dur,dur_mid){
     return(list(duration=duration,duration_mid=duration_mid))
 }
 
-regional_attribution <- function(dat,region_name,trendID,additional_style="",dataset="_TMean",IDregions=c("from polygons"),regNumb=7,comment="polygons"){
+regional_attribution <- function(region_name,trendID,additional_style="",dataset="_TMean",IDregions=c("from polygons"),regNumb=7,comment="polygons"){
     # performs the entire regional analysis of markov and duration
     # result will be written in nc file
 
@@ -117,8 +116,8 @@ regional_attribution <- function(dat,region_name,trendID,additional_style="",dat
 
     for (sea in 1:5){
         season=season_names[sea]
-        print(paste("../data/",trendID,"/",dataset,additional_style,"/","duration/",trendID,dataset,"_duration_",season,".nc",sep=""))
-        nc_dur=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep=""))
+        print(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep=""))
+        nc_dur=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep=""))
         dur=var.get.nc(nc_dur,"dur")
         dur_mid=var.get.nc(nc_dur,"dur_mid")   
 
@@ -142,26 +141,29 @@ regional_attribution <- function(dat,region_name,trendID,additional_style="",dat
         len=max(maxis,na.rm=TRUE)
 
         # write regional durations in form of gridded durations
-        print(paste("../data/",trendID,"/",dataset,additional_style,"/","regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""))
-        duration_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/","regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""),dur=reg_dur[,,1:len],dur_mid=reg_dur_mid[,,1:len],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
+        print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""))
+        duration_write(filename=paste("../data/",dataset,additional_style,"/",trendID,"/regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""),dur=reg_dur[,,1:len],dur_mid=reg_dur_mid[,,1:len],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
 
         # create binned duration file
-        binned_dur=array(NA,dim(regNumb,2,65,365*100))
+        binned_dur=array(NA,dim=c(regNumb,2,365*100,65))
         periods_in_yr=array(0,regNumb*2*65)
         index=0
         for (reg in 1:regNumb){
             for (state in 1:2){
                 for (yr in 1:65){
                     index<-index+1
-                    inYr<-which(reg_dur_mid[reg,state,]>=yr & reg_dur_mid[reg,state,]<yr)
-                    binned_dur[reg,state,yr,1:length(inYr)]=reg_dur[reg,state,inYr]
-                    periods_in_yr[index]=length(inYr)
+                    inYr<-which(reg_dur_mid[reg,state,]>=(yr+1949) & reg_dur_mid[reg,state,]<(yr+1949+1))
+                    if (length(inYr)>0){
+                        binned_dur[reg,state,1:length(inYr),yr]=reg_dur[reg,state,inYr]
+                        periods_in_yr[index]=length(inYr)
+                    }
                 }
             }
         }
         # write regional duration in form of yearly binned durations
         len=max(periods_in_yr,na.rm=TRUE)
-        reg_binned_dur_write(filename=paste("../data/",trendID,"/",dataset,additional_style,"/","regional/",trendID,dataset,"_",region_name,"_reg_binned_duration_",season,".nc",sep=""),binned_dur=binned_dur[,,,1:len],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
+        print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",trendID,dataset,"_",region_name,"_reg_binned_duration_",season,".nc",sep=""))
+        reg_binned_dur_write(filename=paste("../data/",dataset,additional_style,"/",trendID,"/regional/",trendID,dataset,"_",region_name,"_reg_binned_duration_",season,".nc",sep=""),binned_dur=binned_dur[,,1:len,],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
     }
 }
 
