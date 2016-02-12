@@ -310,7 +310,7 @@ trend_analysis <- function(seasons=2,yearPeriod=c(1950,2014),folder="/regional/"
         print("../data/_TMean_uebergang/91_5/regional/91_5_TMean_7rect_reg_binned_duration_JJA.nc")
         nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_reg_binned_duration_",season,".nc",sep=""))
         binned_dur=var.get.nc(nc,"binned_dur")
-        periodsInYr=dim(binned_dur)[4]
+        periodsInYr=dim(binned_dur)[3]
         ID_length=dim(binned_dur)[1]
 
         binned_dur<<-binned_dur
@@ -318,6 +318,10 @@ trend_analysis <- function(seasons=2,yearPeriod=c(1950,2014),folder="/regional/"
         # create time vector for trend analysis
         years=yearPeriod[2]-yearPeriod[1]
         time_vec=rep(0:years,each=periodsInYr)
+
+        durMat<<-array(binned_dur,c(ID_length,2,periodsInYr*65))
+        time_vec<<-time_vec
+        sfsd
 
         original<<-trend_evaluation(durMat=array(binned_dur,c(ID_length,2,periodsInYr*65)),time_vec=time_vec,ID_select=1:ID_length)
 
