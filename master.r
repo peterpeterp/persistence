@@ -215,6 +215,9 @@ master_init()
 ###################################################################
 
 #master_regional_climatology(region_name="7rect")
+
+taus=c(0,0.05,0.25,0.5,0.75,0.95,1)
+trend_analysis()
 adsas
 
 #master_regional_climatology(region_name="mid_lat_belt",region_names=c("mid-lat","polar"),trendID=trendID,dataset=dataset,additional_style=additional_style)
