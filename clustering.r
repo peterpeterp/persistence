@@ -120,20 +120,8 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
     X=array(dat$tas,c(1319,365*65))
     # range in which data coverage is best
     X=X[ID_select,timeRange[1]:timeRange[2]]
-    # remove nas problematic
-
-    IDlength=dim(X)[1]
     xLen=length(timeRange[1]:timeRange[2])
 
-    if (normalize){
-        # "normalize" using quantiles
-        for (q in ID_select){
-            if (length(which(!is.na(X[q,])))>xLen/2){
-                X[q,]=X[q,]/(quantile(x=X[q,],probs=0.95,na.rm=TRUE)-quantile(x=X[q,],probs=0.05,na.rm=TRUE))
-            }
-            else{X[q,]=NA}
-        }
-    }
     # to many nas -> flat 
     ID_select_not_flat<-c()
     count<-0
@@ -145,33 +133,46 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
     }
     ID_select_not_flat<<-ID_select_not_flat
 
-    X[is.na(X)]=0
-    X<<-X
-
     attribution=array(NA,c(untilGroup,1319))
     attribution_changes=array(NA,c(untilGroup,1319))
-    criteria=array(NA,c(untilGroup,42))
+    criteria=array(NA,c(untilGroup,44))
+
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_tree.pdf",sep=""))
 
     if (method!="kmeans"){
-        tmp<-hclust(as.dist(distMat[ID_select_not_flat,ID_select_not_flat]),method=method)
-        rm(distMat)
+        tmp<<-hclust(as.dist(distMat[ID_select_not_flat,ID_select_not_flat]),method=method)
         for (eva in 0:untilGroup){
             nGroup<-eva+offsetGroup
-            #print(paste(eva,nGroup))
             same=array(1,nGroup)
             attribution[eva,ID_select_not_flat]=cutree(tmp,nGroup)
-            #critTmp=intCriteria(traj=X[ID_select,],part=attribution[eva,ID_select],crit="all")
-            #for (index in 1:42){criteria[eva,index]=critTmp[[index]]}
-
+            plot(tmp,main=method)
+            rect.hclust(tmp,k=nGroup+1)
             if (eva>1){
                 for (G in 1:nGroup){
-                    GG<-attribution[eva-1,which(attribution[eva,]==G)[1]]
-                    if (length(which(attribution[eva,]==G))==length(which(attribution[eva-1,]==GG))){same[G]=0}
+                    GG<-attribution[eva-1,ID_select_not_flat][which(attribution[eva,ID_select_not_flat]==G)[1]]
+                    if (length(which(attribution[eva,ID_select_not_flat]==G))==length(which(attribution[eva-1,ID_select_not_flat]==GG))){same[G]=0}
                 }
-                attribution_changes[eva-1,which(attribution[eva,] %in% (1:nGroup)[which(same==1)])]=-2
+                attribution_changes[eva-1,which(attribution[eva,ID_select_not_flat] %in% (1:nGroup)[which(same==1)])]=-2
             }
         }
     }
+    graphics.off()
+
+    # within sum of dissimilarities
+    wss<-array(0,untilGroup)
+    for (k in offsetGroup:untilGroup){
+        for (G in unique(attribution[k,])){
+            inGroup<-which(attribution[k,]==G)
+            wss[k]<-wss[k]+sum(distMat[inGroup,inGroup]^2,na.rm=TRUE)/2
+        }
+    }
+    criteria[,43]=wss
+
+    # clustering height
+    tmp_length<-length(tmp$height)
+    criteria[,44]=tmp$height[tmp_length:(tmp_length-untilGroup+1)]
+
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,".nc",sep=""))
     nc_out<-create.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,".nc",sep=""))
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", "gridpoints")
     att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", period)
@@ -180,7 +181,7 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
     
     dim.def.nc(nc_out,"ID",dimlength=1319, unlim=FALSE)   
     dim.def.nc(nc_out,"clusters",dimlength=untilGroup, unlim=FALSE)   
-    dim.def.nc(nc_out,"indices",dimlength=42, unlim=FALSE)   
+    dim.def.nc(nc_out,"indices",dimlength=44, unlim=FALSE)   
 
     var.def.nc(nc_out,"attribution","NC_DOUBLE",c(1,0))
     att.put.nc(nc_out, "attribution", "missing_value", "NC_DOUBLE", -99999.9)
@@ -195,7 +196,7 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
     var.def.nc(nc_out,"criteria","NC_DOUBLE",c(1,2))
     att.put.nc(nc_out, "criteria", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "criteria", "dim_explanation", "NC_CHAR", "nClusters-indices")
-    att.put.nc(nc_out, "criteria", "explanation", "NC_CHAR", "intCriteria - all - indices")
+    att.put.nc(nc_out, "criteria", "explanation", "NC_CHAR", "intCriteria - all - indices ; wss")
 
     var.put.nc(nc_out,"attribution",attribution)      
     var.put.nc(nc_out,"attribution_changes",attribution_changes)      
@@ -215,35 +216,25 @@ cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2
     nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
     distMat<<-var.get.nc(nc,"distanceMat")
 
-    wss=array(0,untilGroup+1)
-    for (k in offsetGroup:untilGroup){
-        print(k)
-        for (G in unique(attribution[k,])){
-            inGroup<-which(attribution[k,]==G)
-            wss[k]<-wss[k]+sum(distMat[inGroup,inGroup],na.rm=TRUE)
-        }
-    }
-    wss[1]=sum(distMat[,],na.rm=TRUE)
-    #print(wss)
-    #print(sum(distMat[,],na.rm=TRUE))
-    wss<<-wss
+    #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_map.pdf",sep=""),reihen=attribution,reihen_sig=attribution_changes,farb_palette="viele",pointsize=1.5)
 
 
 
-    topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_map.pdf",sep=""),reihen=attribution,reihen_sig=attribution_changes,farb_palette="viele",pointsize=1.5)
-
+    # ellbow criterium
     pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_ellbow.pdf",sep=""))
-    #for (crit in 1:42){
-    #    if (crit!=33 &crit!=42){
-    #        plot((1:untilGroup)+offsetGroup,criteria[,crit])
-    #    }
-    #    else {plot(NA,xlim=c(1,2),ylim=c(1,2))}
-    #}
-    plot(wss)
+    for (eva in 1:untilGroup){
+        plot(criteria[,43],xlab="number of groups",ylab="whithin group sum of squared dissimilarities")
+        points(eva,criteria[eva,43],cex=2,col="red")
+    }
     graphics.off()
-    #criteria<<-criteria
 
-
+    # height criterium
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_height.pdf",sep=""))
+    for (eva in 1:untilGroup){
+        plot(criteria[,44],xlab="number of groups",ylab="clustering height")
+        points(eva,criteria[eva,44],cex=2,col="red")
+    }
+    graphics.off()
 }
 
 init <- function(){
@@ -280,10 +271,10 @@ init()
 
 #dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name="_CorSdNorm")
 
-#for (method in c("ward.D2","single","centroid")){
-for (method in c("single")){
-    cluster_evaluation(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25,offsetGroup=2)
-    cluster_view(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25,offsetGroup=2)
+for (method in c("ward.D2","single","centroid")){
+#for (method in c("single")){
+    cluster_evaluation(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25,offsetGroup=1)
+    cluster_view(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25,offsetGroup=1)
 }
 
 
