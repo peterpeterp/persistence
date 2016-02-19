@@ -119,9 +119,11 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
     # X is evaluated as in dissimilarity_matrix
     X=array(dat$tas,c(1319,365*65))
     # range in which data coverage is best
-    X=X[ID_select,timeRange]
+    X=X[ID_select,timeRange[1]:timeRange[2]]
     # remove nas problematic
-    xLen=length(timeRange)
+
+    IDlength=dim(X)[1]
+    xLen=length(timeRange[1]:timeRange[2])
 
     if (normalize){
         # "normalize" using quantiles
@@ -133,6 +135,16 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
         }
     }
     # to many nas -> flat 
+    ID_select_not_flat<-c()
+    count<-0
+    for (q in ID_select){
+        if (length(which(is.na(X[q,])))<xLen/2){
+            count<-count+1
+            ID_select_not_flat[count]=q
+        }
+    }
+    ID_select_not_flat<<-ID_select_not_flat
+
     X[is.na(X)]=0
     X<<-X
 
@@ -141,14 +153,13 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
     criteria=array(NA,c(untilGroup,42))
 
     if (method!="kmeans"){
-        tmp<<-hclust(as.dist(distMat[ID_select,ID_select]),method=method)
-        adsa
+        tmp<-hclust(as.dist(distMat[ID_select_not_flat,ID_select_not_flat]),method=method)
         rm(distMat)
         for (eva in 0:untilGroup){
             nGroup<-eva+offsetGroup
-            print(paste(eva,nGroup))
+            #print(paste(eva,nGroup))
             same=array(1,nGroup)
-            attribution[eva,ID_select]=cutree(tmp,nGroup)
+            attribution[eva,ID_select_not_flat]=cutree(tmp,nGroup)
             #critTmp=intCriteria(traj=X[ID_select,],part=attribution[eva,ID_select],crit="all")
             #for (index in 1:42){criteria[eva,index]=critTmp[[index]]}
 
@@ -213,22 +224,23 @@ cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2
         }
     }
     wss[1]=sum(distMat[,],na.rm=TRUE)
-    print(wss)
-    print(sum(distMat[,],na.rm=TRUE))
+    #print(wss)
+    #print(sum(distMat[,],na.rm=TRUE))
     wss<<-wss
 
 
 
-    #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_map.pdf",sep=""),reihen=attribution,reihen_sig=attribution_changes,farb_palette="viele",pointsize=1.5)
+    topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_map.pdf",sep=""),reihen=attribution,reihen_sig=attribution_changes,farb_palette="viele",pointsize=1.5)
 
-    #pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_criteria.pdf",sep=""))
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_ellbow.pdf",sep=""))
     #for (crit in 1:42){
     #    if (crit!=33 &crit!=42){
     #        plot((1:untilGroup)+offsetGroup,criteria[,crit])
     #    }
     #    else {plot(NA,xlim=c(1,2),ylim=c(1,2))}
     #}
-    #graphics.off()
+    plot(wss)
+    graphics.off()
     #criteria<<-criteria
 
 
@@ -249,6 +261,7 @@ init <- function(){
     library(cluster)
     library(clusterCrit)
     library(RNetCDF)
+    library(RColorBrewer)
 
     dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 }
@@ -263,13 +276,14 @@ init <- function(){
 init()
 
 
-#dissimilarity_matrix(lagMax=20,timeRange=c(2000,22000),load_name="_CorSdNorm",normalize=TRUE)
+#dissimilarity_matrix(lagMax=20,timeRange=c(2000,22000),load_name="_AbsCorSdNorm",normalize=TRUE)
 
 #dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name="_CorSdNorm")
 
-cluster_evaluation(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",untilGroup=25,offsetGroup=2)
-
-#cluster_view(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",untilGroup=25,offsetGroup=2)
-
+#for (method in c("ward.D2","single","centroid")){
+for (method in c("single")){
+    cluster_evaluation(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25,offsetGroup=2)
+    cluster_view(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25,offsetGroup=2)
+}
 
 

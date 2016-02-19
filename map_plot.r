@@ -167,6 +167,7 @@ put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(po
 	}
 	if (farb_palette_loc=="viele"){
 		jet.colors <- colorRampPalette(c(rgb(0.5,0.5,0.5),rgb(1,0.5,0.5,0.5),"black",rgb(0.8,0.5,1),rgb(1,0,0),rgb(0.2,1,0.5),"yellow",rgb(0.5,0.5,1),rgb(1,0.6,1),rgb(0.5,1,1),rgb(0.2,0.5,1)))
+		jet.colors <- colorRampPalette(brewer.pal(n=9,name="Set1"))
 	}
 	if (farb_palette_loc=="groups"){
 		palette=array(c("black","blue","green","yellow","orange","red",rgb(0.5,0.5,0.5,0.5)),nbcol)
