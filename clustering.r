@@ -1,11 +1,4 @@
 
-create_regional_distr_out_of_clusters <- function(dataset="_TMean",trendID="91_5",additional_style="",markov_style=5,nGroup=6,add_name="_MarkovDistr",period="1950-2014",region_name="_kmeans"){
-    sourceName=paste("../data/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",add_name,"_",nGroup,".nc",sep="")
-    print(sourceName)
-    nc=open.nc(sourceName)
-    IDregions=var.get.nc(nc,"attribution")
-    regional_attribution(dat=dat,region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,IDregions=IDregions,regNumb=nGroup,comment=sourceName)
-}
 
 create_kompakt_map_plot_of_clusters <- function(dataset="_TMean",trendID="91_5",additional_style="",markov_style=5,nGroup=6,add_name="_MarkovDistr",period="1950-2014",region_name="_kmeans"){
     sourceName=paste("../data/",trendID,"/",dataset,additional_style,"/clustering/",period,"/",trendID,"_",period,"_",add_name,"_",nGroup,".nc",sep="")
@@ -18,7 +11,7 @@ create_kompakt_map_plot_of_clusters <- function(dataset="_TMean",trendID="91_5",
 
 crossCor <- function(x,y,lagMax){
     tmp<-ccf(x,y,lag.max=lagMax,plot=FALSE,na.action=na.pass)
-    return(c(max(tmp$acf),tmp$lag[which.max(tmp$acf)]))
+    return(c(max(abs(tmp$acf)),tmp$lag[which.max(abs(tmp$acf))]))
 }
 
 
@@ -109,7 +102,7 @@ dissimilarity_view <- function(lagMax=15,load_name="_Cor",add_name="",timeRange=
     topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_distance.pdf",sep=""),reihen=reihen,farb_palette="regenbogen",pointsize=1.5)
 }
 
-cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add_name="",ID_select=1:1319,load_name="_CorLag",lagMax=20,timeRange=4000:11000,normalize=FALSE){
+cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_select=1:1319,load_name="_CorLag",lagMax=20,timeRange=4000:11000,normalize=FALSE){
     print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
     nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
     distMat<<-var.get.nc(nc,"distanceMat")
@@ -137,22 +130,23 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
     attribution_changes=array(NA,c(untilGroup,1319))
     criteria=array(NA,c(untilGroup,44))
 
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_tree.pdf",sep=""))
+    
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_tree.pdf",sep=""),width=10,height=3)
+    par(mar=c(0,5,0,0))
 
     if (method!="kmeans"){
         tmp<<-hclust(as.dist(distMat[ID_select_not_flat,ID_select_not_flat]),method=method)
-        for (eva in 0:untilGroup){
-            nGroup<-eva+offsetGroup
+        for (nGroup in 1:untilGroup){
             same=array(1,nGroup)
-            attribution[eva,ID_select_not_flat]=cutree(tmp,nGroup)
-            plot(tmp,main=method)
-            rect.hclust(tmp,k=nGroup+1)
-            if (eva>1){
+            attribution[nGroup,ID_select_not_flat]=cutree(tmp,nGroup)
+            plot(tmp,main="",xlab="")
+            if (nGroup>1){
+            rect.hclust(tmp,k=nGroup)
                 for (G in 1:nGroup){
-                    GG<-attribution[eva-1,ID_select_not_flat][which(attribution[eva,ID_select_not_flat]==G)[1]]
-                    if (length(which(attribution[eva,ID_select_not_flat]==G))==length(which(attribution[eva-1,ID_select_not_flat]==GG))){same[G]=0}
+                    GG<-attribution[nGroup-1,ID_select_not_flat][which(attribution[nGroup,ID_select_not_flat]==G)[1]]
+                    if (length(which(attribution[nGroup,ID_select_not_flat]==G))==length(which(attribution[nGroup-1,ID_select_not_flat]==GG))){same[G]=0}
                 }
-                attribution_changes[eva-1,which(attribution[eva,ID_select_not_flat] %in% (1:nGroup)[which(same==1)])]=-2
+                attribution_changes[nGroup-1,which(attribution[nGroup,ID_select_not_flat] %in% (1:nGroup)[which(same==1)])]=-2
             }
         }
     }
@@ -160,8 +154,8 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
 
     # within sum of dissimilarities
     wss<-array(0,untilGroup)
-    for (k in offsetGroup:untilGroup){
-        for (G in unique(attribution[k,])){
+    for (k in 1:untilGroup){
+        for (G in unique(attribution[k,!is.na(attribution[k,])])){
             inGroup<-which(attribution[k,]==G)
             wss[k]<-wss[k]+sum(distMat[inGroup,inGroup]^2,na.rm=TRUE)/2
         }
@@ -170,10 +164,10 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
 
     # clustering height
     tmp_length<-length(tmp$height)
-    criteria[,44]=tmp$height[tmp_length:(tmp_length-untilGroup+1)]
+    criteria[2:untilGroup,44]=tmp$height[(tmp_length):(tmp_length-untilGroup+2)]
 
-    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,".nc",sep=""))
-    nc_out<-create.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,".nc",sep=""))
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    nc_out<-create.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", "gridpoints")
     att.put.nc(nc_out, "NC_GLOBAL", "period", "NC_CHAR", period)
     att.put.nc(nc_out, "NC_GLOBAL", "explanation", "NC_CHAR", "different cuttrees with indices etc")
@@ -205,9 +199,9 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,offsetGroup=10,add
     close.nc(nc_out)         
 }
 
-cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),untilGroup=11,offsetGroup=10,method="ward.D2",ID_select=1:1319){
-    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,".nc",sep=""))
-    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,".nc",sep=""))
+cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),untilGroup=11,method="ward.D2",ID_select=1:1319){
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
     attribution<<-var.get.nc(nc,"attribution")
     attribution_changes<<-var.get.nc(nc,"attribution_changes")
     criteria<<-var.get.nc(nc,"criteria")
@@ -216,25 +210,37 @@ cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2
     nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
     distMat<<-var.get.nc(nc,"distanceMat")
 
-    #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_map.pdf",sep=""),reihen=attribution,reihen_sig=attribution_changes,farb_palette="viele",pointsize=1.5)
+    #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],farb_palette="viele",pointsize=1.5,ausschnitt=c(-80,80),paper=c(7,4)) #,reihen_sig=attribution_changes[,]
+    #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],farb_palette="viele",pointsize=1.5,ausschnitt=c(35,75),paper=c(7,2)) #,reihen_sig=attribution_changes[,]
 
 
+    if (1==1){
+        # ellbow criterium
+        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_ellbow.pdf",sep=""),width=4,height=4)
+        for (eva in 1:untilGroup){
+            plot(criteria[,43],xlab="number of groups",ylab="whithin group sum of squared dissimilarities")
+            points(eva,criteria[eva,43],cex=2,col="red")
+        }
+        graphics.off()
 
-    # ellbow criterium
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_ellbow.pdf",sep=""))
-    for (eva in 1:untilGroup){
-        plot(criteria[,43],xlab="number of groups",ylab="whithin group sum of squared dissimilarities")
-        points(eva,criteria[eva,43],cex=2,col="red")
+        # height criterium
+        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_height.pdf",sep=""),width=4,height=4)
+        for (eva in 1:untilGroup){
+            plot(criteria[,44],xlab="number of groups",ylab="clustering height")
+            points(eva,criteria[eva,44],cex=2,col="red")
+        }
+        graphics.off()
     }
-    graphics.off()
+}
 
-    # height criterium
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",offsetGroup,"-",untilGroup+offsetGroup,"_height.pdf",sep=""))
-    for (eva in 1:untilGroup){
-        plot(criteria[,44],xlab="number of groups",ylab="clustering height")
-        points(eva,criteria[eva,44],cex=2,col="red")
+create_regional_distr_out_of_clusters <- function(nGroup=22,period="1950-2014",region_name=paste("ward",nGroup,sep=""),lagMax=20,load_name="_CorSdNorm",add_name="",timeRange=c(2000,22000),untilGroup=25,method="ward.D2"){
+    sourceName=paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep="")
+    print(sourceName)
+    nc=open.nc(sourceName)
+    IDregions=array(NA,c(1319,5))
+    for (sea in 1:5){IDregions[,sea]=var.get.nc(nc,"attribution")[nGroup,]
     }
-    graphics.off()
+    regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,IDregions=IDregions,regNumb=nGroup,comment=sourceName)
 }
 
 init <- function(){
@@ -246,6 +252,8 @@ init <- function(){
     period<<-"1950-2014"
 
     source("map_plot.r")
+    source("write.r")
+    source("functions_regional.r")
     library(fields)
     library(oce)
     data(topoWorld)
@@ -253,6 +261,7 @@ init <- function(){
     library(clusterCrit)
     library(RNetCDF)
     library(RColorBrewer)
+    season_names<<-c("MAM","JJA","SON","DJF","4seasons")
 
     dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 }
@@ -272,9 +281,11 @@ init()
 #dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name="_CorSdNorm")
 
 for (method in c("ward.D2","single","centroid")){
-#for (method in c("single")){
-    cluster_evaluation(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25,offsetGroup=1)
-    cluster_view(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25,offsetGroup=1)
+#for (method in c("ward.D2")){
+    print(method)
+    #cluster_evaluation(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
+    #cluster_view(add_name="",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
 }
 
 
+create_regional_distr_out_of_clusters()

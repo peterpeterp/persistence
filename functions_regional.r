@@ -141,14 +141,15 @@ regional_attribution <- function(region_name,trendID,additional_style="",dataset
         len=max(maxis,na.rm=TRUE)
 
         # write regional durations in form of gridded durations
-        print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""))
-        duration_write(filename=paste("../data/",dataset,additional_style,"/",trendID,"/regional/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""),dur=reg_dur[,,1:len],dur_mid=reg_dur_mid[,,1:len],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
+        print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""))
+        duration_write(filename=paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep=""),dur=reg_dur[,,1:len],dur_mid=reg_dur_mid[,,1:len],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
 
         # create binned duration file
         binned_dur=array(NA,dim=c(regNumb,2,365*100,65))
         periods_in_yr=array(0,regNumb*2*65)
         index=0
         for (reg in 1:regNumb){
+            print(reg)
             for (state in 1:2){
                 for (yr in 1:65){
                     index<-index+1
@@ -162,8 +163,8 @@ regional_attribution <- function(region_name,trendID,additional_style="",dataset
         }
         # write regional duration in form of yearly binned durations
         len=max(periods_in_yr,na.rm=TRUE)
-        print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",trendID,dataset,"_",region_name,"_reg_binned_duration_",season,".nc",sep=""))
-        reg_binned_dur_write(filename=paste("../data/",dataset,additional_style,"/",trendID,"/regional/",trendID,dataset,"_",region_name,"_reg_binned_duration_",season,".nc",sep=""),binned_dur=binned_dur[,,1:len,],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
+        print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_binned_duration_",season,".nc",sep=""))
+        reg_binned_dur_write(filename=paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_binned_duration_",season,".nc",sep=""),binned_dur=binned_dur[,,1:len,],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
     }
 }
 
@@ -186,9 +187,9 @@ plot_boxplot <- function(quans,x,width,color="white",border="black",density=NA){
 
 plot_regional_boxplots <- function(period,region_name,trendID,additional_style,dataset,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
 
-    nc_oth = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_others.nc",sep=""))
+    nc_oth = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_others.nc",sep=""))
     others=var.get.nc(nc_oth,"other_stuff")
-    nc_qua = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_quantiles.nc",sep=""))
+    nc_qua = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_quantiles.nc",sep=""))
     quantiles=var.get.nc(nc_qua,"quantile_stuff")
 
     regNumb=dim(quantiles)[2]
@@ -199,7 +200,7 @@ plot_regional_boxplots <- function(period,region_name,trendID,additional_style,d
     height=3
 
     # regional focus
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",region_name,"_",trendID,"_",period,"_boxplots_regional_new.pdf",sep=""),width=width,height=height)
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",region_name,"/",period,"/",region_name,"_",trendID,"_",period,"_boxplots_regional_new.pdf",sep=""),width=width,height=height)
     par(mfrow=c(1,1))
     par(mar=c(1,4,2,3))   
     at_=seq(1, regNumb, 1)
@@ -233,13 +234,13 @@ plot_regional_boxplots <- function(period,region_name,trendID,additional_style,d
 
 
 plot_regional_boxplots_vergleich <- function(period1,period2,region_name,trendID,additional_style,dataset,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period1,"/",trendID,"_",dataset,"_",region_name,"_",period1,"_quantiles.nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period1,"/",trendID,"_",dataset,"_",region_name,"_",period1,"_quantiles.nc",sep=""))
     quantiles1=var.get.nc(nc,"quantile_stuff")
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period2,"/",trendID,"_",dataset,"_",region_name,"_",period2,"_quantiles.nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period2,"/",trendID,"_",dataset,"_",region_name,"_",period2,"_quantiles.nc",sep=""))
     quantiles2=var.get.nc(nc,"quantile_stuff")
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period1,"/",trendID,"_",dataset,"_",region_name,"_",period1,"_others.nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period1,"/",trendID,"_",dataset,"_",region_name,"_",period1,"_others.nc",sep=""))
     others1=var.get.nc(nc,"other_stuff")
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period2,"/",trendID,"_",dataset,"_",region_name,"_",period2,"_others.nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period2,"/",trendID,"_",dataset,"_",region_name,"_",period2,"_others.nc",sep=""))
     others2=var.get.nc(nc,"other_stuff")
 
     regions=var.get.nc(nc,"region")
@@ -248,7 +249,7 @@ plot_regional_boxplots_vergleich <- function(period1,period2,region_name,trendID
     
     season_names=c("MAM","JJA","SON","DJF","4seasons")
 
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/","/",region_name,"_",period1,"_diff_",period2,"_boxplots_regional.pdf",sep=""))
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",region_name,"/",region_name,"_",period1,"_diff_",period2,"_boxplots_regional.pdf",sep=""))
     par(mfrow=c(1,1))
     par(mar=c(1,5,4,3))   
     at_=seq(1, regNumb, 1)
@@ -286,7 +287,7 @@ plot_regional_boxplots_vergleich <- function(period1,period2,region_name,trendID
     graphics.off()
 
     # seasonal focus
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/","/",region_name,"_",period1,"_diff_",period2,"_boxplots_seasonal.pdf",sep=""))
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",region_name,"/",region_name,"_",period1,"_diff_",period2,"_boxplots_seasonal.pdf",sep=""))
     par(mfrow=c(1,1))
     par(mar=c(1,5,4,3))   
     at_=seq(1, seaNumb, 1)
@@ -319,9 +320,9 @@ plot_regional_fit_vergleich <- function(period1,period2,region_name,trendID,addi
     # result will be written in nc file
 
 
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period1,"/",trendID,"_",dataset,"_",region_name,"_",period1,fit_style,".nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period1,"/",trendID,"_",dataset,"_",region_name,"_",period1,fit_style,".nc",sep=""))
     fit_stuff1=var.get.nc(nc,"fit_stuff")
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period2,"/",trendID,"_",dataset,"_",region_name,"_",period2,fit_style,".nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period2,"/",trendID,"_",dataset,"_",region_name,"_",period2,fit_style,".nc",sep=""))
     fit_stuff2=var.get.nc(nc,"fit_stuff")
 
 
@@ -331,7 +332,7 @@ plot_regional_fit_vergleich <- function(period1,period2,region_name,trendID,addi
     
     season_names=c("MAM","JJA","SON","DJF","4seasons")
 
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/","/",region_name,"_",period1,"_diff_",period2,fit_style,".pdf",sep=""))
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",region_name,"/",region_name,"_",period1,"_diff_",period2,fit_style,".pdf",sep=""))
     fit_stuff=fit_stuff1-fit_stuff2
     fit_stuff[,,,2]=1/fit_stuff1[,,,2]-1/fit_stuff2[,,,2]
     fit_stuff[,,,4]=1/fit_stuff1[,,,4]-1/fit_stuff2[,,,4]
@@ -362,8 +363,8 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
     # performs the entire regional analysis of markov and duration
     # result will be written in nc file
 
-    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,fit_style,".nc",sep=""))
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,fit_style,".nc",sep=""))
+    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,fit_style,".nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,fit_style,".nc",sep=""))
     fit_stuff=var.get.nc(nc,"fit_stuff")
 
 
@@ -378,7 +379,7 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
     height=5
 
     # regional focus
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",period,fit_style,".pdf",sep=""),width=width,height=height)
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",region_name,"/",period,"/",trendID,"_",period,fit_style,".pdf",sep=""),width=width,height=height)
     par(mfrow=c(1,1))
     par(mar=c(3,5,0,1))   
 
@@ -402,17 +403,19 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
 write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fit_style1,fit_style2,region_names,ID_select){
     regNumb=length(ID_select)
 
-    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
+    print("../data/_TMean/91_5/regional/7rect/1950-2014/91_5__TMean_7rect_1950-2014_fit_2expo_4:100.nc")
+    print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
+    nc = open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
     fit_stuff1=var.get.nc(nc,"fit_stuff")
-    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
+    print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
+    nc = open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
     fit_stuff2=var.get.nc(nc,"fit_stuff")
 
     season_names=c("MAM","JJA","SON","DJF","4seasons")
     state_names=c("cold","warm")
 
-    table<-file(paste("/home/peter/Dokumente/pik/geschrieben/ganzjahr/single_chapters/",trendID,"_",region_name,"_",period,"_",fit_style1," _all_latex.tex",sep=""))
+    table<-file(paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_fit_",fit_style1,"_",fit_style2,".tex",sep=""))
+    #table<-file(paste("/home/peter/Dokumente/pik/geschrieben/ganzjahr/single_chapters/",trendID,"_",region_name,"_",period,"_",fit_style1," _all_latex.tex",sep=""))
     options(scipen=100)
 
     colors=c("white","groegree","zehngree","funfziggree","hundertgree","turkis","violet")
@@ -510,13 +513,13 @@ fit_info_to_map <- function(trendID="91_5",region_name="srex",period,fit_style1,
     poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
 
 
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
     fit_stuff1=var.get.nc(nc,"fit_stuff")
 
     season_names=c("MAM","JJA","SON","DJF","4seasons")
     state_names=c("cold","warm")
 
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",period,"/",trendID,"_",region_name,"_",period,"_seasons.pdf",sep=""))
+    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_seasons.pdf",sep=""))
 
     for (sea in 1:5){
         for (state in 1:2){
@@ -586,8 +589,8 @@ plot_fits_for_region <- function(reg,IDregions=c("from polygons"),period="1950-2
         }
     }
 
-    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+    print(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
     fit_stuff_reg=var.get.nc(nc,"fit_stuff")
     print(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_fit_",fit_style,".nc",sep=""))
     nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,"_fit_",fit_style,".nc",sep=""))

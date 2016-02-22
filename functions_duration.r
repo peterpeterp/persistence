@@ -128,7 +128,7 @@ duration_seasons <- function(dur,dur_mid,season,filename){
 duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:1319,write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(NA),ID_names=1:1319,ID_length=length(ID_select),noise_level=c(0,0),xStart=1,xStop=100){
     
     period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
-    taus=c(0.05,0.25,0.5,0.75,0.95,0.98,1)
+    taus=c(0.5,0.75,0.95,0.99)
 
     if (!is.na(plot_select[1])){
         pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],"_",add_name,".pdf",sep=""),width=3,height=3)

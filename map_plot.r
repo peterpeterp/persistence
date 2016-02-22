@@ -70,6 +70,8 @@ add_region <- function(region_name,farbe){
 }
 
 put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(points)),pch_sig=4,col_sig="black",ausschnitt=c(-90,90),pointsize=1,farb_mitte="mean",farb_palette="regenbogen",signi_level=0,i=1,ID_select=1:1319){
+
+
 	y1=points[ID_select]
 	sig=points_sig[ID_select]
 	pch=pch_points[ID_select]
@@ -178,10 +180,17 @@ put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(po
 
 	facetcol <- cut(y,nbcol)
 
+
+	farben=color[facetcol[3:(length(notna)+2)]]
+
 	lon=dat$lon[notna]
 	lat=dat$lat[notna]
-	points(lon,lat,pch=pch,col=color[facetcol[3:(length(notna)+2)]],cex=pointsize)
-	points(lon,lat,pch=sig,cex=pointsize,col=col_sig)
+
+	#delete out of ausschnitt
+	ID_select=which(lat >= ausschnitt[1] & lat <= ausschnitt[2])
+
+	points(lon[ID_select],lat[ID_select],pch=pch[ID_select],col=farben[ID_select],cex=pointsize)
+	points(lon[ID_select],lat[ID_select],pch=sig[ID_select],cex=pointsize,col=col_sig)
 
 	return(list(y=y,color=color))
 }
@@ -347,7 +356,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	if (is.na(layout_mat[1])){par(mfrow=c(1,1))}
 	for (i in 1:dim(reihen)[1]){
 		if (titel[1]!=""){main<-titel[i]}
-	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land="white",col.water="white",mar=c(2,1,1,5),main=main)
+	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land="white",col.water="white",mar=c(0,0,0,5),main=main)
 	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,pointsize=pointsize,pch_points=pch_points,pch_sig=15,col_sig=rgb(0,0,0,0.5),ID_select=ID_select)
 		for (rad in c(1,1.5,2,2.5)){
 			points(dat$lon[highlight_points[i]],dat$lat[highlight_points[i]],col=highlight_color,pch=1,cex=(pointsize*rad))
@@ -355,7 +364,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		color=tmp$color
 		y=tmp$y
 	    par(new=TRUE)
-	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land="black",col.water="lightblue",mar=c(2,1,1,5))
+	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land="black",col.water="lightblue",mar=c(0,0,0,5)) # mar=c(2,1,1,5)
 	    if (is.na(layout_mat[1])){image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=FALSE,legend.lab=color_lab)}
 	}
 	if (!is.na(layout_mat[1])){
