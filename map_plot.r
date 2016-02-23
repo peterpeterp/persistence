@@ -357,7 +357,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	for (i in 1:dim(reihen)[1]){
 		if (titel[1]!=""){main<-titel[i]}
 	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land="white",col.water="white",mar=c(0,0,0,5),main=main)
-	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,pointsize=pointsize,pch_points=pch_points,pch_sig=15,col_sig=rgb(0,0,0,0.5),ID_select=ID_select)
+	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,pointsize=pointsize,pch_points=pch_points,pch_sig=4,col_sig=rgb(0,0,0,0.5),ID_select=ID_select)
 		for (rad in c(1,1.5,2,2.5)){
 			points(dat$lon[highlight_points[i]],dat$lat[highlight_points[i]],col=highlight_color,pch=1,cex=(pointsize*rad))
 		}

@@ -3,7 +3,8 @@ shuffle_mat <- function(durMat,years){
     return(durMat[,,,sample(years,years,replace=FALSE)])
 }
 
-trend_analysis <- function(seasons=1,yearPeriod=c(1950,2014),ID_name="7rect",folder="/regional/7rect/"){
+trend_analysis <- function(seasons=1,id=999,yearPeriod=c(1950,2014),ID_name="7rect",folder="/regional/7rect/"){
+    print(id)
     for (sea in seasons){
         season<-season_names[sea]
 
@@ -27,7 +28,8 @@ trend_analysis <- function(seasons=1,yearPeriod=c(1950,2014),ID_name="7rect",fol
         	shuffled[shuff,,,]<-trend_evaluation(durMat=array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*65)),time_vec=time_vec,ID_select=1:ID_length)
         }
 
-        nc_out <- create.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,"/shuffled/",trendID,dataset,"_",ID_name,"_",yearPeriod[1],"-",yearPeriod[2],"_shuffled_trends_",season,"_",id,".nc",sep=""))
+        print(paste("../data/",dataset,additional_style,"/",trendID,folder,"shuffled/",trendID,dataset,"_",ID_name,"_",yearPeriod[1],"-",yearPeriod[2],"_shuffled_trends_",season,"_",id,".nc",sep=""))
+        nc_out <- create.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,"shuffled/",trendID,dataset,"_",ID_name,"_",yearPeriod[1],"-",yearPeriod[2],"_shuffled_trends_",season,"_",id,".nc",sep=""))
         att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
             
         dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
@@ -74,8 +76,7 @@ init <- function(){
     library(RNetCDF)
 }
 
-id<-Sys.getenv("SLURM_ARRAY_TASK_ID")
-print(id)
+
 
 init()
 
@@ -87,4 +88,18 @@ additional_style<-""
 taus<-c(0.5,0.75,0.95,0.99)
 season_names<-c("MAM","JJA","SON","DJF","4seasons")
 
-trend_analysis()
+id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+print(id)
+
+name_id<-0
+for (i in 1:10){
+    if (id>40){
+        id<-id-40
+        name_id<-name_id+10
+    }
+}
+
+if (id<11){trend_analysis(seasons=1,id=(id+name_id))}
+if (id<21 & id>10){trend_analysis(seasons=2,id=(id-10+name_id))}
+if (id<31 & id>20){trend_analysis(seasons=3,id=(id-20+name_id))}
+if (id<41 & id>30){trend_analysis(seasons=4,id=(id-30+name_id))}

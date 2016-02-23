@@ -95,11 +95,11 @@ dissimilarity_view <- function(lagMax=15,load_name="_Cor",add_name="",timeRange=
 
     reihen=choiceMat[auswahl,]
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,add_name,"_best_lag.pdf",sep=""),reihen=reihen,farb_mitte=0,farb_palette="lila-gruen",highlight_points=auswahl,highlight_color="red",paper=c(8,10),ausschnitt=c(30,70),layout_mat=matrix(c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6),nrow=16),pointsize=1.5)
-    topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_best_lag.pdf",sep=""),reihen=reihen,farb_palette="lila-gruen",highlight_points=auswahl,highlight_color="red",pointsize=1.5)
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_best_lag.pdf",sep=""),reihen=reihen,farb_palette="lila-gruen",highlight_points=auswahl,highlight_color="red",pointsize=1.5)
 
     reihen=distMat[auswahl,]
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,add_name,"_distance.pdf",sep=""),reihen=reihen,farb_mitte=c(0,1),farb_palette="regenbogen",highlight_points=auswahl,highlight_color="red",paper=c(8,10),ausschnitt=c(30,70),layout_mat=matrix(c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6),nrow=16),pointsize=1.5)
-    topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_distance.pdf",sep=""),reihen=reihen,farb_palette="regenbogen",pointsize=1.5)
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_distance.pdf",sep=""),reihen=reihen,farb_palette="regenbogen",pointsize=1.5)
 }
 
 cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_select=1:1319,load_name="_CorLag",lagMax=20,timeRange=4000:11000,normalize=FALSE){
@@ -131,7 +131,7 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_sel
     criteria=array(NA,c(untilGroup,44))
 
     
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_tree.pdf",sep=""),width=10,height=3)
+    pdf(file=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_tree.pdf",sep=""),width=10,height=3)
     par(mar=c(0,5,0,0))
 
     if (method!="kmeans"){
@@ -210,13 +210,13 @@ cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2
     nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
     distMat<<-var.get.nc(nc,"distanceMat")
 
-    #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],farb_palette="viele",pointsize=1.5,ausschnitt=c(-80,80),paper=c(7,4)) #,reihen_sig=attribution_changes[,]
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],reihen_sig=attribution_changes[,],farb_palette="viele",pointsize=1.0,ausschnitt=c(-80,80),paper=c(7,4)) #,reihen_sig=attribution_changes[,]
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],farb_palette="viele",pointsize=1.5,ausschnitt=c(35,75),paper=c(7,2)) #,reihen_sig=attribution_changes[,]
 
 
-    if (1==1){
+    if (1==2){
         # ellbow criterium
-        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_ellbow.pdf",sep=""),width=4,height=4)
+        pdf(file=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_ellbow.pdf",sep=""),width=4,height=4)
         for (eva in 1:untilGroup){
             plot(criteria[,43],xlab="number of groups",ylab="whithin group sum of squared dissimilarities")
             points(eva,criteria[eva,43],cex=2,col="red")
@@ -224,7 +224,7 @@ cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2
         graphics.off()
 
         # height criterium
-        pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_height.pdf",sep=""),width=4,height=4)
+        pdf(file=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_height.pdf",sep=""),width=4,height=4)
         for (eva in 1:untilGroup){
             plot(criteria[,44],xlab="number of groups",ylab="clustering height")
             points(eva,criteria[eva,44],cex=2,col="red")
@@ -233,7 +233,7 @@ cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2
     }
 }
 
-create_regional_distr_out_of_clusters <- function(nGroup=22,period="1950-2014",region_name=paste("ward",nGroup,sep=""),lagMax=20,load_name="_CorSdNorm",add_name="",timeRange=c(2000,22000),untilGroup=25,method="ward.D2"){
+create_regional_distr_out_of_clusters <- function(nGroup=20,period="1950-2014",region_name=paste("ward",nGroup,sep=""),lagMax=20,add_name="",timeRange=c(2000,22000),untilGroup=25,method="ward.D2"){
     sourceName=paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep="")
     print(sourceName)
     nc=open.nc(sourceName)
@@ -275,16 +275,18 @@ init <- function(){
 
 init()
 
+#load_name="_CorSdNorm"
+load_name="_AbsCorSdNorm"
 
 #dissimilarity_matrix(lagMax=20,timeRange=c(2000,22000),load_name="_AbsCorSdNorm",normalize=TRUE)
 
-#dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name="_CorSdNorm")
+#dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
 
-for (method in c("ward.D2","single","centroid")){
-#for (method in c("ward.D2")){
+#for (method in c("ward.D2","single","centroid")){
+for (method in c("ward.D2")){
     print(method)
-    #cluster_evaluation(add_name="_ww",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
-    #cluster_view(add_name="",load_name="_CorSdNorm",ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
+    #cluster_evaluation(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
+    #cluster_view(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
 }
 
 

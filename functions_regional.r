@@ -400,21 +400,18 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
 }
 
 
-write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fit_style1,fit_style2,region_names,ID_select){
+write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fit_style,region_names,ID_select){
     regNumb=length(ID_select)
 
-    print("../data/_TMean/91_5/regional/7rect/1950-2014/91_5__TMean_7rect_1950-2014_fit_2expo_4:100.nc")
-    print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
-    nc = open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
+    print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+    nc = open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
     fit_stuff1=var.get.nc(nc,"fit_stuff")
-    print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
-    nc = open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style2,".nc",sep=""))
-    fit_stuff2=var.get.nc(nc,"fit_stuff")
+
 
     season_names=c("MAM","JJA","SON","DJF","4seasons")
     state_names=c("cold","warm")
 
-    table<-file(paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_fit_",fit_style1,"_",fit_style2,".tex",sep=""))
+    table<-file(paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_fit_",fit_style,".tex",sep=""))
     #table<-file(paste("/home/peter/Dokumente/pik/geschrieben/ganzjahr/single_chapters/",trendID,"_",region_name,"_",period,"_",fit_style1," _all_latex.tex",sep=""))
     options(scipen=100)
 
@@ -446,20 +443,18 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
             lines[index+1]=paste("\\begin{table}[!h]")
             lines[index+2]=paste("\\vspace{0cm}")
             lines[index+3]=paste("\\hspace{0cm}")
-            lines[index+4]=paste("\\begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|cc|c|c|c|c|c|c|c|c|c|c|c|c|c}")
+            lines[index+4]=paste("\\begin{tabular}{c|c|c|c|c|c|c|c|c|c}")
 
-            lines[index+5]=paste("\\multicolumn{15}{1}{",season_names[sea]," ",state_names[state]," ",period,"}\\","\\",sep="")
-            lines[index+6]=paste("\\ reg & R2 & BIC & P & R2 & BIC & thresh & P1 & P2 & P2-P1 & R2 & BIC & a1 & a2 & P1 & P2","\\","\\",sep="")
+            lines[index+5]=paste("\\multicolumn{9}{1}{",season_names[sea]," ",state_names[state]," ",period,"}\\","\\",sep="")
+            lines[index+6]=paste("\\ reg & R2 & BIC & P & R2 & BIC & thresh & P1 & P2 & P2-P1","\\","\\",sep="")
             #lines[index+6]=paste("\\ reg & R2 & BIC & P & R2 & BIC & thresh & P1 & P2 & P2-P1","\\","\\",sep="")
             index=index+6
             for (reg in ID_select){
-                background=c(colors[1],colors[1],colors[1])
-                BICs=c(fit_stuff1[sea,reg,state,c(16,20)],fit_stuff2[sea,reg,state,20])
-                # whithout overlap
-                #BICs=c(fit_stuff1[sea,reg,state,c(16,20)])
+                background=c(colors[1],colors[1])
+                BICs=c(fit_stuff1[sea,reg,state,c(16,20)])
                 if (length(which(!is.na(BICs)))>0){
                     worst=BICs[which(BICs==max(BICs,na.rm=TRUE))]
-                    for (i in 1:3){
+                    for (i in 1:2){
                         if (!is.na(BICs[i])){
                             if (BICs[i]<worst){background[i]=colors[2]}
                             if ((BICs[i]+10)<worst){background[i]=colors[3]}
@@ -481,10 +476,6 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
                 else {farbe=colors[7]}
                 newline=paste(newline," &{\\cellcolor{",farbe,"}}",round(diffP,01),sep="")
 
-                for (i in c(19,20,5,7)){
-                    newline=paste(newline," &{\\cellcolor{",background[3],"}}",round(fit_stuff2[sea,reg,state,i],02),"",sep="")}
-                newline=paste(newline," &{\\cellcolor{",background[3],"}}",round(exp(-fit_stuff2[sea,reg,state,6])*100,01),sep="")
-                newline=paste(newline," &{\\cellcolor{",background[3],"}}",round(exp(-fit_stuff2[sea,reg,state,8])*100,01),sep="")
                 
                 newline=paste(newline,paste("\\","\\",sep=""))
                 lines[index+1]=newline

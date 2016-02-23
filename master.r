@@ -150,7 +150,7 @@ master_regional_climatology <- function(region_name="7rect",region_names=c("wNA"
 
         #plot_regional_boxplots(period=paste(yearPeriod[1],"-",yearPeriod[2],sep=""),region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style)
         #plot_regional_fit_parameters(period=period,trendID=trendID,additional_style=additional_style,dataset=dataset,region_name=region_name,fit_style="_fit_2expo_b1>b2_5-10")
-        write_regional_fit_table(trendID=trendID,region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style1="2expo_4:100",period=period)
+        write_regional_fit_table(trendID=trendID,region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style="2expo_4:100",period=period)
 
     }
     #plot_regional_boxplots_vergleich(period1="1950-1980",period2="1980-2014",region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
@@ -211,7 +211,7 @@ master_init()
 # regional commands
 ###################################################################
 
-master_regional_climatology()
+master_regional_climatology(region_name="ward20",region_names=1:20,ID_select=1:20,plot_select=1:20,ID_length=20)
 asasd
 
 taus=c(0,0.05,0.25,0.5,0.75,0.95,1)
