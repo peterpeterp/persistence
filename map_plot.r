@@ -348,7 +348,24 @@ map_allgemein <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
     graphics.off()
 }
 
-topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,grid=FALSE,ausschnitt=c(-90,90),paper=c(12,8),pointsize=1,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),layout_mat=c(NA),main="",pch_points=array(15,dim(reihen)),ID_select=1:1319){
+region_border <- function(ID_select=1:1319,region_name="ward22",regNumb=22,border_col="white",text_col=border_col){
+    # loads attribution file and visualizes regions on map
+    attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
+    mids<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,"_mids.txt",sep=""))    
+
+    for (G in 1:regNumb){
+        inside<-which(attribution==G)
+        for (q in inside){
+            if (!((dat$lon[q]+3.75) %in% dat$lon[inside[which(dat$lat[inside]==dat$lat[q])]])){lines(c(dat$lon[q]+3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]-1.25,dat$lat[q]+1.25),col=border_col)}
+            if (!((dat$lon[q]-3.75) %in% dat$lon[inside[which(dat$lat[inside]==dat$lat[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]-3.75/2),c(dat$lat[q]-1.25,dat$lat[q]+1.25),col=border_col)}
+            if (!((dat$lat[q]+2.5) %in% dat$lat[inside[which(dat$lon[inside]==dat$lon[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]+1.25,dat$lat[q]+1.25),col=border_col)}
+            if (!((dat$lat[q]-2.5) %in% dat$lat[inside[which(dat$lon[inside]==dat$lon[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]-1.25,dat$lat[q]-1.25),col=border_col)}
+        }
+        text(mids[G,2],mids[G,3],label=G,col=text_col)
+    }
+}
+
+topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,grid=FALSE,ausschnitt=c(-90,90),paper=c(12,8),pointsize=1,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),layout_mat=c(NA),main="",pch_points=array(15,dim(reihen)),ID_select=1:1319,region_name=NA,regNumb=NA,border_col="white",land_col=rgb(0.5,0.5,0.5,0.5),water_col=rgb(0,0.2,0.8,0.0)){
 	
 	pdf(file=filename_plot,width=paper[1],height=paper[2])
 
@@ -356,15 +373,31 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	if (is.na(layout_mat[1])){par(mfrow=c(1,1))}
 	for (i in 1:dim(reihen)[1]){
 		if (titel[1]!=""){main<-titel[i]}
-	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land="white",col.water="white",mar=c(0,0,0,5),main=main)
+	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,5),main=main)
+
+	    #data points
 	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,pointsize=pointsize,pch_points=pch_points,pch_sig=4,col_sig=rgb(0,0,0,0.5),ID_select=ID_select)
+
+	    #highlight points
 		for (rad in c(1,1.5,2,2.5)){
 			points(dat$lon[highlight_points[i]],dat$lat[highlight_points[i]],col=highlight_color,pch=1,cex=(pointsize*rad))
 		}
+
+		#region contours
+		if (!is.na(region_name)){region_border(region_name=region_name,regNumb=regNumb,border_col=border_col)}
+
+		# contour lines topography
+		if (!is.na(land_col)){
+		    par(new=TRUE)
+		    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land=land_col,col.water=water_col,mar=c(0,0,0,5))
+		}
+		#draw over axes
+		polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")
+		polygon(x=c(-200,-200,200,200),y=c(100,88,88,100),col="white",border="white")
+
+		#color bar
 		color=tmp$color
 		y=tmp$y
-	    par(new=TRUE)
-	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land="black",col.water="lightblue",mar=c(0,0,0,5)) # mar=c(2,1,1,5)
 	    if (is.na(layout_mat[1])){image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=FALSE,legend.lab=color_lab)}
 	}
 	if (!is.na(layout_mat[1])){
@@ -373,3 +406,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	}
 	graphics.off()
 }
+
+library(oce)
+data(topoWorld)
+library(RColorBrewer)

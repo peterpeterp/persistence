@@ -250,29 +250,6 @@ create_regional_distr_out_of_clusters <- function(nGroup=20,period="1950-2014",r
     regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,IDregions=IDregions,regNumb=nGroup,comment=sourceName)
 }
 
-init <- function(){
-    source("load.r")
-
-    trendID<<-"91_5"
-    dataset<<-"_TMean"
-    additional_style<<-""
-    period<<-"1950-2014"
-
-    source("map_plot.r")
-    source("write.r")
-    source("functions_regional.r")
-    library(fields)
-    library(oce)
-    data(topoWorld)
-    library(cluster)
-    library(clusterCrit)
-    library(RNetCDF)
-    library(RColorBrewer)
-    season_names<<-c("MAM","JJA","SON","DJF","4seasons")
-
-    dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-}
-
 
 write_cluster_region_files <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),nGroup=22,untilGroup=25,method="ward.D2",region_name="ward22",ID_select=1:1319){
     print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
@@ -287,6 +264,29 @@ write_cluster_region_files <- function(lagMax=20,load_name="_CorLag",add_name=""
     write.table(attribution[nGroup,],paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))
     write.table(mids,paste("../data/",dataset,"/ID_regions/",region_name,"_mids.txt",sep=""))
 }
+
+init <- function(){
+    source("load.r")
+
+    trendID<<-"91_5"
+    dataset<<-"_TMean"
+    additional_style<<-""
+    period<<-"1950-2014"
+
+    source("map_plot.r")
+    source("write.r")
+    source("functions_regional.r")
+    library(fields)
+
+    library(cluster)
+    library(clusterCrit)
+    library(RNetCDF)
+    season_names<<-c("MAM","JJA","SON","DJF","4seasons")
+
+    dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+}
+
+
 
 
 

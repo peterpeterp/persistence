@@ -1,103 +1,34 @@
 
-points_to_regions <- function(dat,region_names=c("mid_lat_belt","srex","7rect","6wave","7wave","8wave")){
+points_to_regions <- function(region_name="7rect"){
     # loads region coordinates and writes a file in which grid points are associated to regions
     # outpufile has following columns: ID, regions from region_names
     ntot=length(dat$ID)
     points=cbind(x=dat$lon,y=dat$lat)
 
-    region = array(NA,dim=c(ntot,(length(region_names)+1)))
+    poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
 
-    for (j in 1:length(region_names)){
-        poli=read.table(paste("../data/region_poligons/",region_names[j],".txt",sep=""))
-        for (k in 1:dim(poli)[1]){
-            x=c()
-            y=c()
-            for (i in 1:6){
-                if (!is.na(poli[k,i])){
-                    x[i]=poli[k,i]
-                    y[i]=poli[k,(i+6)]
-                }
-            }
-            poligon=cbind(x=x,y=y)
-            inside=pnt.in.poly(points,poligon)$pip
-            region[which(inside==1),(j+1)]=poli[k,13]
-        }
-    }
+    region<-array(NA,dim=c(ntot))
+    mids<-array(NA,c(dim(poli)[1],3))
 
-    if (length(region_names)>1){
-        region[1:ntot,1]=dat$ID
-        write.table(region,"../data/ID-regions.txt")
-    }
-    return(region[1:ntot,2])
-}
-
-
-regions_color <- function(reihen,reihen_sig,worldmap,titles,poli,filename_plot){
-    # plots worldmap and colored regions on it
-    jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.2),rgb(0.5,1,0.5), rgb(0.98,0.98,0.98) ,rgb(1,0.5,1),rgb(0.6,0.2,0.6)))
-    
-    nbcol <- 101
-    color <- jet.colors(nbcol)
-
-    pdf(file = filename_plot,width=12,height=8)
-
-    for (rei in 1:dim(reihen)[1]){            
-        y=c()
-        index=c()
-        signi=c()
-        j=0
-        for (i in 1:dim(poli)[1]){
-            poliLabel=i
-            if (!is.na(reihen[rei,poliLabel])){
-                j=j+1
-                y[j]=reihen[rei,poliLabel]
-                index[j]=i 
-                if (abs(reihen[rei,poliLabel])>0.0001){
-                    signi[j]=sprintf("%.04f",reihen_sig[rei,poliLabel])
-                }         
+    for (k in 1:dim(poli)[1]){
+        x<-c()
+        y<-c()
+        for (i in 1:6){
+            if (!is.na(poli[k,i])){
+                x[i]=poli[k,i]
+                y[i]=poli[k,(i+6)]
             }
         }
-        aushol=max(c(abs(max(y)),abs(min(y))))
-        y[j+1]=-aushol
-        y[j+2]=aushol
-        facetcol <- cut(y,nbcol)  
-
-        print(titles[rei])
-        plot(worldmap,main=titles[rei])
-
-        for (i in 1:j){
-            lon=poli[index[i],1:6]
-            lat=poli[index[i],7:12]
-            lon=lon[!is.na(lon)]
-            lat=lat[!is.na(lat)]
-            polygon(x=lon,y=lat,col=color[facetcol[i]],border="green")
-            text(mean(lon),mean(lat),label=signi[i],cex=0.7,col="black")
-        }
-        image.plot(legend.only=T, zlim=range(y), col=color)
+        poligon=cbind(x=x,y=y)
+        inside=pnt.in.poly(points,poligon)$pip
+        region[which(inside==1)]=poli[k,13]
+        mids[k,]=c(k,mean(dat$lon[which(inside==1)]),mean(dat$lat[which(inside==1)]))
     }
-    graphics.off()
-    return()
-}
 
-region_vis <- function(ID_select=1:1319,region_name="ward22",regNumb=22,region_color=NA){
-    # loads attribution file and visualizes regions on map
-    attribution<<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
-    mids<<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,"_mids.txt",sep=""))    
+    write.table(region,paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))
+    write.table(mids,paste("../data/",dataset,"/ID_regions/",region_name,"_mids.txt",sep=""))
 
-    pdf("../plots/cluster_vis.pdf",width=5,height=3.4)
-    plot(topoWorld,xlim=c(-180,180),ylim=c(-90,90),asp=1.5,location="none",col.land=rgb(0.5,0.5,0.5,0.0),col.water=rgb(0.2,0.5,0.1,0.0),mar=c(0,0,0,0))
-    if (!is.na(region_color)){put_points(points=attribution,ausschnitt=c(-90,90),farb_mitte="mean",farb_palette=region_color,pointsize=0.7,ID_select=ID_select)}
-    for (G in 1:regNumb){
-        inside<<-which(attribution==G)
-        for (q in inside){
-            if (!((dat$lon[q]+3.75) %in% dat$lon[inside[which(dat$lat[inside]==dat$lat[q])]])){lines(c(dat$lon[q]+3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]-1.25,dat$lat[q]+1.25),col="blue")}
-            if (!((dat$lon[q]-3.75) %in% dat$lon[inside[which(dat$lat[inside]==dat$lat[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]-3.75/2),c(dat$lat[q]-1.25,dat$lat[q]+1.25),col="blue")}
-            if (!((dat$lat[q]+2.5) %in% dat$lat[inside[which(dat$lon[inside]==dat$lon[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]+1.25,dat$lat[q]+1.25),col="blue")}
-            if (!((dat$lat[q]-2.5) %in% dat$lat[inside[which(dat$lon[inside]==dat$lon[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]-1.25,dat$lat[q]-1.25),col="blue")}
-        }
-        text(mids[G,2],mids[G,3],label=G)
-    }
-    graphics.off()
+    return(region)
 }
 
 duration_region <- function(regions,reg,dur,dur_mid){
@@ -190,8 +121,6 @@ regional_attribution <- function(region_name,trendID,additional_style="",dataset
 }
 
 #--------------------------------------------------------------------------
-
-
 
 plot_regional_fit_vergleich <- function(period1,period2,region_name,trendID,additional_style,dataset,fit_style,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
     # performs the entire regional analysis of markov and duration
@@ -373,75 +302,36 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
     close(table)
 }
 
-fit_info_to_map <- function(trendID="91_5",region_name="srex",period,fit_style1,fit_style2,region_names,ID_select){
+fit_info_to_map <- function(region_name="ward22",fit_style,region_names,regNumb,ID_select,period){
     # plots worldmap and colored regions on it
-    library(rworldmap)
-    library(fields)
-    worldmap = getMap(resolution = "low")
+    attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
+    print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+    nc = open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+    fit_stuff=var.get.nc(nc,"fit_stuff")
 
-    poli=read.table(paste("../data/region_poligons/",region_name,".txt",sep=""))
+    filename<-paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_seasons.pdf",sep="")
 
-
-    nc = open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style1,".nc",sep=""))
-    fit_stuff1=var.get.nc(nc,"fit_stuff")
-
-    season_names=c("MAM","JJA","SON","DJF","4seasons")
-    state_names=c("cold","warm")
-
-    pdf(file=paste("../plots/",trendID,"/",dataset,additional_style,"/regions/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_seasons.pdf",sep=""))
-
+    reihen1<-array(NA,c(10,1319))
+    reihen2<-array(NA,c(10,1319))
+    reihen3<-array(NA,c(10,1319))
+    reihen4<-array(NA,c(10,1319))
+    index<-0
     for (sea in 1:5){
         for (state in 1:2){
-            plot(worldmap,main=paste(season_names[sea],state_names[state]))
-
-            for (reg in ID_select){
-                BICs=c(fit_stuff1[sea,reg,state,c(16,20)])
-                if (is.na(BICs[1])){
-                    fit=1
-                    farbe="white"#rgb(1,0,1,0.3)
-                }
-                if (is.na(BICs[2])){
-                    fit=2
-                    farbe="white"#rgb(0,1,0,0.3)
-                }
-                if (is.na(BICs[2]) & is.na(BICs[1])){
-                    fit=0
-                    farbe="white"
-                    text=""
-                }
-                if (length(which(!is.na(BICs)))==2){
-                    opacity=abs((BICs[2]-BICs[1])/100)
-                    if (opacity>1){opacity=1}
-                    if (BICs[1]<BICs[2]){
-                        fit=1
-                        farbe=rgb(0.9,0.5,0.9,opacity)}
-                    if (BICs[1]>BICs[2]){
-                        fit=2
-                        farbe=rgb(0.5,0.9,0.5,opacity)}
-                }
-                if (fit==1){
-                    text=paste("P=",round(exp(-fit_stuff1[sea,reg,state,2])*100,01))
-                }                
-                if (fit==2){
-                    text=paste("P1=",round(exp(-fit_stuff1[sea,reg,state,6])*100,01),"P2=",round(exp(-fit_stuff1[sea,reg,state,8])*100,01),"\n thresh=",round(fit_stuff1[sea,reg,state,9]))
-                }
-
-                lon=poli[reg,1:6]
-                lat=poli[reg,7:12]
-                lon=lon[!is.na(lon)]
-                lat=lat[!is.na(lat)]
-                #polygon(x=lon,y=lat,col=rgb(farb,1,farb),border="green")
-                polygon(x=lon,y=lat,col="white",border="white")
-                polygon(x=lon,y=lat,col=farbe,border="white")
-                text(mean(lon),mean(lat),label=text,cex=0.3,col="black")
-
-                
+            index<-index+1
+            for (reg in 1:regNumb){
+                reihen1[index,which(attribution==reg)]=fit_stuff[sea,reg,state,9]
+                reihen2[index,which(attribution==reg)]=fit_stuff[sea,reg,state,17]
+                reihen3[index,which(attribution==reg)]=fit_stuff[sea,reg,state,6]-fit_stuff[sea,reg,state,8]
+                reihen4[index,which(attribution==reg)]=fit_stuff[sea,reg,state,2]
             }
-            #image.plot(legend.only=T, zlim=range(y), col=color)
+                      
         }
     }
-
-    graphics.off()
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_thresh.pdf",sep=""),reihen=reihen1[1:2,],farb_mitte=c(4,12),farb_palette="regenbogen",pointsize=0.8,ausschnitt=c(-90,90),paper=c(6.4,3.7),region_name=region_name,regNumb=regNumb,land_col=NA)
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_dBIC.pdf",sep=""),reihen=reihen2,farb_mitte=c(-100,0),farb_palette="regenbogen",pointsize=0.8,ausschnitt=c(-90,90),paper=c(6.4,3.7),region_name=region_name,regNumb=regNumb,land_col=rgb(0,0,0,0))
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_b1-b2.pdf",sep=""),reihen=reihen3,farb_mitte=c(-0.3,0.3),farb_palette="lila-gruen",pointsize=0.8,ausschnitt=c(-90,90),paper=c(6.4,3.7),region_name=region_name,regNumb=regNumb,land_col=rgb(0,0,0,0))
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_b.pdf",sep=""),reihen=reihen4,farb_mitte=c(0.15,0.35),farb_palette="regenbogen",pointsize=0.8,ausschnitt=c(-90,90),paper=c(6.4,3.7),region_name=region_name,regNumb=regNumb,land_col=rgb(0,0,0,0))
     return()
 }
 

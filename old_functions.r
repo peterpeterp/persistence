@@ -139,6 +139,54 @@ wave_region <- function(wavenumber,trough,lats){
     write.table(wellen[1:length(which(!is.na(wellen[,13]))),],paste("../data/region_poligons/",wavenumber,"wave.txt",sep=""))
 }
 
+
+regions_color <- function(reihen,reihen_sig,worldmap,titles,poli,filename_plot){
+    # plots worldmap and colored regions on it
+    jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.2),rgb(0.5,1,0.5), rgb(0.98,0.98,0.98) ,rgb(1,0.5,1),rgb(0.6,0.2,0.6)))
+    
+    nbcol <- 101
+    color <- jet.colors(nbcol)
+
+    pdf(file = filename_plot,width=12,height=8)
+
+    for (rei in 1:dim(reihen)[1]){            
+        y=c()
+        index=c()
+        signi=c()
+        j=0
+        for (i in 1:dim(poli)[1]){
+            poliLabel=i
+            if (!is.na(reihen[rei,poliLabel])){
+                j=j+1
+                y[j]=reihen[rei,poliLabel]
+                index[j]=i 
+                if (abs(reihen[rei,poliLabel])>0.0001){
+                    signi[j]=sprintf("%.04f",reihen_sig[rei,poliLabel])
+                }         
+            }
+        }
+        aushol=max(c(abs(max(y)),abs(min(y))))
+        y[j+1]=-aushol
+        y[j+2]=aushol
+        facetcol <- cut(y,nbcol)  
+
+        print(titles[rei])
+        plot(worldmap,main=titles[rei])
+
+        for (i in 1:j){
+            lon=poli[index[i],1:6]
+            lat=poli[index[i],7:12]
+            lon=lon[!is.na(lon)]
+            lat=lat[!is.na(lat)]
+            polygon(x=lon,y=lat,col=color[facetcol[i]],border="green")
+            text(mean(lon),mean(lat),label=signi[i],cex=0.7,col="black")
+        }
+        image.plot(legend.only=T, zlim=range(y), col=color)
+    }
+    graphics.off()
+    return()
+}
+
 plot_regional_boxplots <- function(trendID,dat,yearPeriod,region_name,additional_style,dataset){
     nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/regional/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,"_",region_name,"_",yearPeriod[1],"-",yearPeriod[2],"_distributions.nc",sep=""))
     regions=get.var.ncdf(nc,"region")
