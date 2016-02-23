@@ -130,11 +130,9 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_sel
     attribution_changes=array(NA,c(untilGroup,1319))
     criteria=array(NA,c(untilGroup,44))
 
-    
-    pdf(file=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_tree.pdf",sep=""),width=10,height=3)
-    par(mar=c(0,5,0,0))
-
     if (method!="kmeans"){
+        pdf(file=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_tree.pdf",sep=""),width=10,height=3)
+        par(mar=c(0,5,0,0))
         tmp<<-hclust(as.dist(distMat[ID_select_not_flat,ID_select_not_flat]),method=method)
         for (nGroup in 1:untilGroup){
             same=array(1,nGroup)
@@ -149,8 +147,19 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_sel
                 attribution_changes[nGroup-1,which(attribution[nGroup,ID_select_not_flat] %in% (1:nGroup)[which(same==1)])]=-2
             }
         }
+        # clustering height
+        tmp_length<-length(tmp$height)
+        criteria[2:untilGroup,44]=tmp$height[(tmp_length):(tmp_length-untilGroup+2)]
     }
     graphics.off()
+
+    if (method=="kmeans"){
+        attribution[1,ID_select_not_flat]=array(1,length(ID_select_not_flat))
+        for (nGroup in 2:untilGroup){
+            tmp<<-pam(x=as.dist(distMat[ID_select_not_flat,ID_select_not_flat]),k=nGroup,diss=TRUE)
+            attribution[nGroup,ID_select_not_flat]=tmp$clustering
+        }
+    }
 
     # within sum of dissimilarities
     wss<-array(0,untilGroup)
@@ -162,9 +171,7 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_sel
     }
     criteria[,43]=wss
 
-    # clustering height
-    tmp_length<-length(tmp$height)
-    criteria[2:untilGroup,44]=tmp$height[(tmp_length):(tmp_length-untilGroup+2)]
+
 
     print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
     nc_out<-create.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
@@ -267,27 +274,37 @@ init <- function(){
 }
 
 
+write_cluster_region_files <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),nGroup=22,untilGroup=25,method="ward.D2",region_name="ward22",ID_select=1:1319){
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    attribution<<-var.get.nc(nc,"attribution")
 
-
-
+    mids<-array(NA,c(nGroup,3))
+    for (G in 1:nGroup){
+        inside<<-which(attribution[nGroup,]==G)
+        mids[G,]=c(G,mean(dat$lon[inside]),mean(dat$lat[inside]))
+    }
+    write.table(attribution[nGroup,],paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))
+    write.table(mids,paste("../data/",dataset,"/ID_regions/",region_name,"_mids.txt",sep=""))
+}
 
 
 
 init()
 
-#load_name="_CorSdNorm"
-load_name="_AbsCorSdNorm"
+load_name="_CorSdNorm"
 
 #dissimilarity_matrix(lagMax=20,timeRange=c(2000,22000),load_name="_AbsCorSdNorm",normalize=TRUE)
 
 #dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
 
 #for (method in c("ward.D2","single","centroid")){
-for (method in c("ward.D2")){
+for (method in c("kmeans")){
     print(method)
     #cluster_evaluation(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
     #cluster_view(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
 }
 
-
-create_regional_distr_out_of_clusters()
+#write_cluster_region_files(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=22,region_name="ward22")
+region_vis(ID_select=1:1319,region_name="ward22",regNumb=22)
+#create_regional_distr_out_of_clusters()

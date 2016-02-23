@@ -348,7 +348,7 @@ map_allgemein <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
     graphics.off()
 }
 
-topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,grid=FALSE,ausschnitt=c(-90,90),paper=c(12,8),pointsize=0.9,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),layout_mat=c(NA),main="",pch_points=array(15,dim(reihen)),ID_select=1:1319){
+topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,grid=FALSE,ausschnitt=c(-90,90),paper=c(12,8),pointsize=1,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),layout_mat=c(NA),main="",pch_points=array(15,dim(reihen)),ID_select=1:1319){
 	
 	pdf(file=filename_plot,width=paper[1],height=paper[2])
 
