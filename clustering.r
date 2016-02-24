@@ -149,7 +149,7 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_sel
         }
         # clustering height
         tmp_length<-length(tmp$height)
-        criteria[2:untilGroup,44]=tmp$height[(tmp_length):(tmp_length-untilGroup+2)]
+        criteria[1:untilGroup,44]=tmp$height[(tmp_length):(tmp_length-untilGroup+1)]
     }
     graphics.off()
 
@@ -221,7 +221,7 @@ cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],farb_palette="viele",pointsize=1.5,ausschnitt=c(35,75),paper=c(7,2)) #,reihen_sig=attribution_changes[,]
 
 
-    if (1==2){
+    if (1==1){
         # ellbow criterium
         pdf(file=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_ellbow.pdf",sep=""),width=4,height=4)
         for (eva in 1:untilGroup){
@@ -298,13 +298,12 @@ load_name="_CorSdNorm"
 
 #dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
 
-#for (method in c("ward.D2","single","centroid")){
-for (method in c("kmeans")){
+for (method in c("ward.D2","single","centroid")){
+#for (method in c("kmeans")){
     print(method)
-    #cluster_evaluation(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
-    #cluster_view(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
+    cluster_evaluation(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
+    cluster_view(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
 }
 
 #write_cluster_region_files(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=22,region_name="ward22")
-region_vis(ID_select=1:1319,region_name="ward22",regNumb=22)
 #create_regional_distr_out_of_clusters()

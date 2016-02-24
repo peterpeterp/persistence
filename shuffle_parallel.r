@@ -3,7 +3,7 @@ shuffle_mat <- function(durMat,years){
     return(durMat[,,,sample(years,years,replace=FALSE)])
 }
 
-trend_analysis <- function(seasons=1,id=999,yearPeriod=c(1950,2014),ID_name="7rect",folder="/regional/7rect/"){
+trend_analysis <- function(seasons=1,id=999,yearPeriod=c(1980,2014),ID_name="7rect",folder="/regional/7rect/"){
     print(id)
     for (sea in seasons){
         season<-season_names[sea]
@@ -15,21 +15,21 @@ trend_analysis <- function(seasons=1,id=999,yearPeriod=c(1950,2014),ID_name="7re
         ID_length<-dim(binned_dur)[1]
 
         # create time vector for trend analysis
-        years<-yearPeriod[2]-yearPeriod[1]
-        time_vec<-rep(0:years,each=periodsInYr)
+        years<-yearPeriod[2]-yearPeriod[1]+1
+        time_vec<-rep(1:years,each=periodsInYr)
         binned_dur[,,,(yearPeriod[1]-1949+1):(yearPeriod[2]-1949)]
 
-        original<-trend_evaluation(durMat=array(binned_dur,c(ID_length,2,periodsInYr*65)),time_vec=time_vec,ID_select=1:ID_length)
+        original<-trend_evaluation(durMat=array(binned_dur,c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
 
         nShuffle<-100
         shuffled<-array(NA,c(nShuffle,ID_length,2,5))
         for (shuff in 1:nShuffle){
         	cat(paste("--",shuff))
-        	shuffled[shuff,,,]<-trend_evaluation(durMat=array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*65)),time_vec=time_vec,ID_select=1:ID_length)
+        	shuffled[shuff,,,]<-trend_evaluation(durMat=array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
         }
 
-        print(paste("../data/",dataset,additional_style,"/",trendID,folder,"shuffled/",trendID,dataset,"_",ID_name,"_",yearPeriod[1],"-",yearPeriod[2],"_shuffled_trends_",season,"_",id,".nc",sep=""))
-        nc_out <- create.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,"shuffled/",trendID,dataset,"_",ID_name,"_",yearPeriod[1],"-",yearPeriod[2],"_shuffled_trends_",season,"_",id,".nc",sep=""))
+        print(paste("../data/",dataset,additional_style,"/",trendID,folder,"shuffled/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,dataset,"_",ID_name,"_",yearPeriod[1],"-",yearPeriod[2],"_shuffled_trends_",season,"_",id,".nc",sep=""))
+        nc_out <- create.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,"shuffled/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,dataset,"_",ID_name,"_",yearPeriod[1],"-",yearPeriod[2],"_shuffled_trends_",season,"_",id,".nc",sep=""))
         att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
             
         dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
