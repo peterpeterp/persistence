@@ -196,23 +196,24 @@ master_init <- function(){
 ###################################################################
 master_init()
 
-#master_trend()
-#master_seasonal_median_on_detrended()
-#master_state_attribution()
-#master_duration()
+master_trend()
+master_seasonal_median_on_detrended()
+master_state_attribution()
+master_duration()
 
 ###################################################################
 # fits, quantiles etc
 ###################################################################
 
-#master_duration_analysis()
+master_duration_analysis()
 
 
 ###################################################################
 # regional commands
 ###################################################################
 
-#master_regional_climatology(region_name="7rect",ID_length=7,region_names=1:7)
+asdasdas
+master_regional_climatology(region_name="7rect",ID_length=7,region_names=1:7)
 master_regional_climatology(region_name="ward22",ID_length=22,region_names=1:22)
 asasd
 

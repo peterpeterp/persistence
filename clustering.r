@@ -144,7 +144,7 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_sel
                     GG<-attribution[nGroup-1,ID_select_not_flat][which(attribution[nGroup,ID_select_not_flat]==G)[1]]
                     if (length(which(attribution[nGroup,ID_select_not_flat]==G))==length(which(attribution[nGroup-1,ID_select_not_flat]==GG))){same[G]=0}
                 }
-                attribution_changes[nGroup-1,which(attribution[nGroup,ID_select_not_flat] %in% (1:nGroup)[which(same==1)])]=-2
+                attribution_changes[nGroup,which(attribution[nGroup,ID_select_not_flat] %in% (1:nGroup)[which(same==1)])]=-2
             }
         }
         # clustering height

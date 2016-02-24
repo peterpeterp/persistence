@@ -17,7 +17,7 @@ trend_analysis <- function(seasons=1,id=999,yearPeriod=c(1980,2014),ID_name="7re
         # create time vector for trend analysis
         years<-yearPeriod[2]-yearPeriod[1]+1
         time_vec<-rep(1:years,each=periodsInYr)
-        binned_dur[,,,(yearPeriod[1]-1949+1):(yearPeriod[2]-1949)]
+        binned_dur<-binned_dur[,,,(yearPeriod[1]-1949):(yearPeriod[2]-1949)]
 
         original<-trend_evaluation(durMat=array(binned_dur,c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
 
@@ -28,8 +28,9 @@ trend_analysis <- function(seasons=1,id=999,yearPeriod=c(1980,2014),ID_name="7re
         	shuffled[shuff,,,]<-trend_evaluation(durMat=array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
         }
 
-        print(paste("../data/",dataset,additional_style,"/",trendID,folder,"shuffled/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,dataset,"_",ID_name,"_",yearPeriod[1],"-",yearPeriod[2],"_shuffled_trends_",season,"_",id,".nc",sep=""))
-        nc_out <- create.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,"shuffled/",yearPeriod[1],"-",yearPeriod[2],"/",trendID,dataset,"_",ID_name,"_",yearPeriod[1],"-",yearPeriod[2],"_shuffled_trends_",season,"_",id,".nc",sep=""))
+        period<-paste(yearPeriod[1],"-",yearPeriod[2],sep="")    
+        print(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/shuffled/",trendID,dataset,"_",ID_name,"_",period,"_shuffled_trends_",season,"_",id,".nc",sep=""))
+        nc_out <- create.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/shuffled/",trendID,dataset,"_",ID_name,"_",period,"_shuffled_trends_",season,"_",id,".nc",sep=""))
         att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
             
         dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
@@ -54,14 +55,12 @@ trend_analysis <- function(seasons=1,id=999,yearPeriod=c(1980,2014),ID_name="7re
     }
 }
 
-trend_evaluation <- function(durMat,time_vec,ID_select=1:1319,ID_length=length(ID_select)){    #,noise_level=c(0,0)
+trend_evaluation <- function(durMat,time_vec,ID_select=1:1319,ID_length=length(ID_select)){
     trends<-array(NA,c(ID_length,2,5))
-    #time_vec=time_vec+rnorm(length(time_vec),mean=0,sd=1)*noise_level[1]
     for (q in ID_select){
         for (state in 1:2){
             y<-durMat[q,state,]
             if (length(which(!is.na(y)))>100){
-                #y=y+rnorm(length(y),mean=0,sd=1)*noise_level[2]
                 trends[q,state,1:4]=rq(y~time_vec,taus)$coef[2,]
                 trends[q,state,5]=lm(y~time_vec)$coef[2]
             }
