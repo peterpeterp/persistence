@@ -1,16 +1,16 @@
 
-confidence_interval <- function(seasons=2,period="1950-2014",folder="/regional/7rect/",ID_name="7rect",regNumb=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
+confidence_interval <- function(seasons=1:4,period="1980-2014",folder="/regional/7rect/",ID_name="7rect",regNumb=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
 	confi_quantiles<-array(NA,dim=c(5,regNumb,2,5,5))
     quant_regressions<-array(NA,dim=c(5,regNumb,2,5))
     for (sea in seasons){
         season<-season_names[sea]
         shuffled_mass<-array(NA,dim=c(10000,regNumb,2,5))
         original_mass<-array(NA,dim=c(100,regNumb,2,5))
-        for (id in 1:60){
-        	print(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/shuffled/",trendID,dataset,"_",ID_name,"_",period,"_shuffled_trends_",season,"_",id,".nc",sep=""))
+        for (id in 1:100){
+        	#print(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/shuffled/",trendID,dataset,"_",ID_name,"_",period,"_shuffled_trends_",season,"_",id,".nc",sep=""))
         	nc <- try(open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/shuffled/",trendID,dataset,"_",ID_name,"_",period,"_shuffled_trends_",season,"_",id,".nc",sep="")))
         	if (class(nc)!="try-error"){
-	        	shuffled<<-var.get.nc(nc,"shuffled")
+	        	shuffled<-var.get.nc(nc,"shuffled")
 	        	original<-var.get.nc(nc,"original")
 	        	shuffled_mass[((id-1)*100+1):(id*100),,,]=shuffled
 	        	original_mass[id,,,]=original
@@ -18,7 +18,7 @@ confidence_interval <- function(seasons=2,period="1950-2014",folder="/regional/7
         }
         shuffled_mass<<-shuffled_mass
         original_mass<<-original_mass
-        quant_regressions[sea,,,]=original_mass[1,,,]
+        quant_regressions[sea,,,]=original_mass[3,,,]
 
         #pdf("../plots/test1.pdf")
         for (q in 1:regNumb){
@@ -35,12 +35,12 @@ confidence_interval <- function(seasons=2,period="1950-2014",folder="/regional/7
         }
         #graphics.off()
     }
-    pdf(paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_rq_trends.pdf",sep=""))
+    pdf(paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_rq_trends33.pdf",sep=""))
     for (sea in seasons){
         season<-season_names[sea]
         for (state in 1:2){
             for (out in c(2,3,5)){
-                plot(NA,xlim=c(1,regNumb),ylim=c(-0.15,0.15),axes=FALSE,ylab="period length per year",xlab="",main=paste(season,state_names[state],out_names[out]))
+                plot(NA,xlim=c(1,regNumb),ylim=c(-0.3,0.3),axes=FALSE,ylab="period length per year",xlab="",main=paste(season,state_names[state],out_names[out]))
                 axis(2)
                 axis(1,1:regNumb,labels=region_names)
                 polygon(x=c(1:regNumb,regNumb:1),y=c(confi_quantiles[sea,1:regNumb,state,out,1],confi_quantiles[sea,regNumb:1,state,out,5]),border="white",col=rgb(0.5,0.5,0.5,0.5))
@@ -51,6 +51,7 @@ confidence_interval <- function(seasons=2,period="1950-2014",folder="/regional/7
         
     }
     graphics.off()
+    quant_regressions<<-quant_regressions
 
 }
 
@@ -67,6 +68,7 @@ init <- function(){
     dataset<<-"_TMean"
     additional_style<<-""
 
+    state_names<<-c("cold","warm")
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     out_names<<-c(0.5,0.75,0.95,0.99,"mean")
 }

@@ -6,8 +6,12 @@ plot_maps <- function(trendID="91_5",dataset="_TMean",additional_style="",period
 	season_names=c("MAM","JJA","SON","DJF","4seasons")
 	state_names=c("cold","warm")
 
-	nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,file,".nc",sep=""))
+	nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",dataset,"_",period,file,".nc",sep=""))
 	values=var.get.nc(nc,var)
+
+	values<<-values
+	adas
+
 	if (!is.na(sig_style[1])){
 		nc_2=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/gridded/",period,"/",trendID,"_",dataset,"_",period,sig_style[2],".nc",sep=""))
 		values2=var.get.nc(nc_2,var)
@@ -48,7 +52,10 @@ plot_maps <- function(trendID="91_5",dataset="_TMean",additional_style="",period
 		}
 	}
 	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
-	map_allgemein(dat=dat,filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/maps/duration/",period,"/","duration_trend_",trendID,"_",season,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),worldmap=worldmap,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt,region=region,col_row=col_row,mat=mat,paper=paper,pointsize=pointsize,subIndex=subIndex,signi_level=signi_level)
+	topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_trend_",trendID,"_",season,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,grid=grid,region=region,pointsize=0.85,ausschnitt=c(-90,90),paper=c(7,5),signi_level=signi_level) #,reihen_sig=attribution_changes[,]
+
+	#map_allgemein(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_trend_",trendID,"_",season,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt,region=region,col_row=col_row,mat=mat,paper=paper,pointsize=pointsize,subIndex=subIndex,signi_level=signi_level)
+	#map_allgemein(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_trend_",trendID,"_",season,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,grid=grid,ausschnitt=ausschnitt,region=region,col_row=col_row,mat=mat,paper=paper,pointsize=pointsize,subIndex=subIndex,signi_level=signi_level)
 }
 
 plot_diff_maps <- function(trendID="91_5",dataset="_TMean",additional_style="",period="1950-2014",file="_fit_2expo",var="fit_stuff",
@@ -131,17 +138,16 @@ dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",se
 #plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("gr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte="0")
 #plot_maps(file="_fit_2expo_thresh_5-15",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(2,4,5,18,19,20),sig_auswahl=c(NA,NA,NA,NA,NA),value_zusatz=c("b1","b2","thresh","distr_size","R2","BIC"),sub_zusatz=c(NA),name_zusatz="expo")
 
-period=c("1950-2014","1950-1980","1980-2014")
+period=c("1950-2014","1980-2014")
 for (i in c(1)){
 	print(period[i])
-	plot_maps(file="_fit_2expo_thresh_5-15",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("P1","P2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="2expo_thresh_5-15_BIC-sig",period=period[i],signi_level=0,farb_mitte=c(70,90,70,90,5,15,20,50),farb_palette="spacy")
-	#plot_maps(file="_fit_2expo_overlap",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,5,7,14),sig_auswahl=c(17,17,17,17,17),value_zusatz=c("b1","b2","a1","a2","distr_size"),sub_zusatz=c(NA),name_zusatz="2expo_overlap_BIC-sig",period=period[i],signi_level=0,farb_mitte=c(0,0.35,0,0.35,0,0.2,0,0.2,20,50))
-
-	#plot_diff_maps(farb_mitte=c(-0.3,0.3),file="_fit_2expo_thresh_5-15",period=period[i],name_zusatz="2_fit_2expo_thresh_5-15_diffB")
-	#plot_fit_diff_maps(period=period[i],farb_mitte="0",farb_palette="regenbogen",file1="_fit_expo",file2="_fit_2expo_restrict",value_auswahl=c(2,4,5))
+	plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("P1","P2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period[i],signi_level=0,farb_mitte=c(70,90,70,90,5,15,20,50),farb_palette="spacy")
+	plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th"),name_zusatz="quantile",farb_mitte="mean",farb_palette="regenbogen")
+	plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte="0",signi_level=0.05)
+	plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),sub_zusatz=c(NA),name_zusatz="mean",period=period[i],signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen")
+	plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lm",period=period[i],signi_level=0.05,farb_mitte="0",farb_palette="lila-gruen")
 	
 }
-#plot_fit_diff_maps(farb_palette="lila-gruen",period1="1950-1980",period2="1980-2014",file1="_fit_2expo_restrict",file2="_fit_2expo_restrict",value_auswahl=c(5,2,4,19),value_zusatz=c("shift in threshold","shift in b1","shift in b2","shift in BIC"),name_zusatz="shifts_restricted")
 
 
 #location_view(regions=TRUE)

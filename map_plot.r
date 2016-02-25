@@ -75,10 +75,11 @@ put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(po
 	y1=points[ID_select]
 	sig=points_sig[ID_select]
 	pch=pch_points[ID_select]
+	sig[(!is.na(sig) & sig>signi_level)]=NA
 	sig[(!is.na(sig) & sig<signi_level)]=pch_sig
 
 	notna=which(!is.na(y1))
-	y=c(0,1,y1[notna])
+	y=c(NA,NA,y1[notna])
 
 	# depending on color-cheme --------------------------------
 	if (length(farb_mitte)>=3){
@@ -189,7 +190,7 @@ put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(po
 	#delete out of ausschnitt
 	ID_select=which(lat >= ausschnitt[1] & lat <= ausschnitt[2])
 
-	points(lon[ID_select],lat[ID_select],pch=pch[ID_select],col=farben[ID_select],cex=pointsize)
+	points(lon[ID_select],lat[ID_select],pch=pch[ID_select],col=farben[ID_select],cex=pointsize)#
 	points(lon[ID_select],lat[ID_select],pch=sig[ID_select],cex=pointsize,col=col_sig)
 
 	return(list(y=y,color=color))
@@ -372,8 +373,13 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	if (!is.na(layout_mat[1])){layout(layout_mat)}
 	if (is.na(layout_mat[1])){par(mfrow=c(1,1))}
 	for (i in 1:dim(reihen)[1]){
-		if (titel[1]!=""){main<-titel[i]}
-	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,5),main=main)
+	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,5))
+	    if (titel[1]!=""){
+	    	main<-titel[i]
+	    	print(titel[i])
+	    	text(0,-85,main)
+	    }
+
 
 	    #data points
 	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,pointsize=pointsize,pch_points=pch_points,pch_sig=4,col_sig=rgb(0,0,0,0.5),ID_select=ID_select)

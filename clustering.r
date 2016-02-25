@@ -135,6 +135,7 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_sel
         par(mar=c(0,5,0,0))
         tmp<<-hclust(as.dist(distMat[ID_select_not_flat,ID_select_not_flat]),method=method)
         for (nGroup in 1:untilGroup){
+            print(nGroup)
             same=array(1,nGroup)
             attribution[nGroup,ID_select_not_flat]=cutree(tmp,nGroup)
             plot(tmp,main="",xlab="")
@@ -298,8 +299,8 @@ load_name="_CorSdNorm"
 
 #dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
 
-for (method in c("ward.D2","single","centroid")){
-#for (method in c("kmeans")){
+#for (method in c("ward.D2","single","centroid")){
+for (method in c("ward.D2")){
     print(method)
     cluster_evaluation(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
     cluster_view(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)

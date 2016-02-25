@@ -3,7 +3,7 @@ shuffle_mat <- function(durMat,years){
     return(durMat[,,,sample(years,years,replace=FALSE)])
 }
 
-trend_analysis <- function(seasons=1,id=999,yearPeriod=c(1980,2014),ID_name="7rect",folder="/regional/7rect/"){
+trend_analysis <- function(seasons=4,id=2,yearPeriod=c(1980,2014),ID_name="7rect",folder="/regional/7rect/"){
     print(id)
     for (sea in seasons){
         season<-season_names[sea]
@@ -19,13 +19,13 @@ trend_analysis <- function(seasons=1,id=999,yearPeriod=c(1980,2014),ID_name="7re
         time_vec<-rep(1:years,each=periodsInYr)
         binned_dur<-binned_dur[,,,(yearPeriod[1]-1949):(yearPeriod[2]-1949)]
 
-        original<-trend_evaluation(durMat=array(binned_dur,c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
+        original<<-trend_evaluation(durMat=array(binned_dur,c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
 
         nShuffle<-100
         shuffled<-array(NA,c(nShuffle,ID_length,2,5))
         for (shuff in 1:nShuffle){
         	cat(paste("--",shuff))
-        	shuffled[shuff,,,]<-trend_evaluation(durMat=array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
+        	#shuffled[shuff,,,]<-trend_evaluation(durMat=array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
         }
 
         period<-paste(yearPeriod[1],"-",yearPeriod[2],sep="")    
@@ -51,7 +51,10 @@ trend_analysis <- function(seasons=1,id=999,yearPeriod=c(1980,2014),ID_name="7re
         var.put.nc(nc_out,"original",original)              
         var.put.nc(nc_out,"shuffled",shuffled)              
 
-        close.nc(nc_out)       
+        close.nc(nc_out) 
+        print("---------------original------------")
+        print(original)    
+        print("-----------------------------------")  
     }
 }
 
@@ -79,6 +82,7 @@ init <- function(){
 
 init()
 
+
 nday<-91
 nyr<-5
 trendID<-paste(nday,"_",nyr,sep="")
@@ -86,6 +90,8 @@ dataset<-"_TMean"
 additional_style<-""
 taus<-c(0.5,0.75,0.95,0.99)
 season_names<-c("MAM","JJA","SON","DJF","4seasons")
+
+trend_analysis(1:4)
 
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
