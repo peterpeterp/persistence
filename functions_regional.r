@@ -50,7 +50,7 @@ duration_region <- function(regions,reg,dur,dur_mid){
     return(list(duration=duration,duration_mid=duration_mid))
 }
 
-regional_attribution <- function(region_name,trendID,additional_style="",dataset="_TMean",IDregions=c("from polygons"),regNumb=7,comment="polygons"){
+regional_attribution <- function(region_name,trendID,additional_style="",dataset="_TMean",IDregions=c("from file"),regNumb=7,comment="polygons"){
     # performs the entire regional analysis of markov and duration
     # result will be written in nc file
 
@@ -66,6 +66,14 @@ regional_attribution <- function(region_name,trendID,additional_style="",dataset
         }
     }
 
+    if (IDregions[1]=="from file"){
+        attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
+        IDregions<-array(NA,c(ntot,5))
+        for (i in 1:5){
+            IDregions[,i]=attribution
+        }
+    }
+
     for (sea in 1:5){
         season=season_names[sea]
         print(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep=""))
@@ -78,7 +86,7 @@ regional_attribution <- function(region_name,trendID,additional_style="",dataset
         maxis=array(NA,dim=c(2*regNumb))
 
         for (state in 1:2){
-            for (reg in 1:regNumb){            
+            for (reg in 1:regNumb){        
                 tmp=duration_region(IDregions[,sea],reg,dur[1:ntot,state,],dur_mid[1:ntot,state,])
                 duration=tmp$duration
                 duration_mid=tmp$duration_mid

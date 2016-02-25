@@ -110,7 +110,7 @@ master_duration <- function(){
     duration_seasons(dur,dur_mid,season=c(335,424),filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_DJF.nc",sep=""))
 }
 
-master_duration_analysis <- function(ID_select=1:1319){
+master_gridded_analysis <- function(ID_select=1:1319){
     yearLimits=c(1950,2014,1980,2014)
     for (i in 1:2){
         yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
@@ -120,11 +120,16 @@ master_duration_analysis <- function(ID_select=1:1319){
         duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0,0))
 
         print("quant")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0),noise_level=c(0,0.000001))
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0))
         
         print("fit")
         duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),plot_select=c(NA),ID_select=ID_select,add_name="2expo_4:100",xStart=4,write=TRUE)
     }
+
+}
+
+master_gridded_plots <- function(ID_select=1:1319){
+    yearLimits=c(1950,2014,1980,2014)
 
     for (i in 1:2){
         period<<-paste(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)],sep="")
@@ -136,10 +141,8 @@ master_duration_analysis <- function(ID_select=1:1319){
     }
 }
 
-master_regional_climatology <- function(region_name="7rect",ID_length=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:ID_length,plot_select=1:ID_length){
-
-    
-    #regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+master_regional_analysis <- function(region_name="7rect",ID_length=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:ID_length,plot_select=1:ID_length){
+    regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
     
     ID_name=paste("_",region_name,sep="")
     yearLimits=c(1950,2014,1980,2014)
@@ -149,23 +152,32 @@ master_regional_climatology <- function(region_name="7rect",ID_length=7,region_n
         print(yearPeriod)
 
         print("others")
-        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0,0),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0,0),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
 
         print("quant")
-        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
         
         print("fit")
-        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_4:100",xStart=4,ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))        
-
-        #plot_regional_boxplots(period=paste(yearPeriod[1],"-",yearPeriod[2],sep=""),region_name=region_name,region_names=region_names,trendID=trendID,dataset=dataset,additional_style=additional_style)
-        #plot_regional_fit_parameters(period=period,trendID=trendID,additional_style=additional_style,dataset=dataset,region_name=region_name,fit_style="_fit_2expo_b1>b2_5-10")
-        #write_regional_fit_table(trendID=trendID,region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style="2expo_4:100",period=period)
-        fit_info_to_map(region_name=region_name,fit_style="2expo_4:100",region_names=region_names,ID_select=ID_select,regNumb=ID_length,period=period)
-    }
-    #plot_regional_boxplots_vergleich(period1="1950-1980",period2="1980-2014",region_name=region_name,trendID=trendID,additional_style=additional_style,dataset=dataset)
-    #plot_regional_fit_vergleich(period1="1950-1980",period2="1997-2014",fit_style="_fit_2expo_b1>b2_5-15",region_name=region_name,region_names=region_names,trendID=trendID,additional_style=additional_style,dataset=dataset)
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_4:100",xStart=4,ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))       
+    } 
 }
 
+master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:ID_length,plot_select=1:ID_length){
+    regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+    
+    ID_name=paste("_",region_name,sep="")
+    yearLimits=c(1950,2014,1980,2014)
+    for (i in 1:2){
+        yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
+        period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
+        print(yearPeriod)
+
+      
+
+        write_regional_fit_table(trendID=trendID,region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style="2expo_4:100",period=period)
+        fit_info_to_map(region_name=region_name,fit_style="2expo_4:100",region_names=region_names,ID_select=ID_select,regNumb=ID_length,period=period)
+    }
+}
 
 ###################################################################
 # init: loading sources, setting variables ....
@@ -205,86 +217,23 @@ master_init <- function(){
 ###################################################################
 master_init()
 
-master_trend()
-master_seasonal_median_on_detrended()
-master_state_attribution()
-master_duration()
+#master_trend()
+#master_seasonal_median_on_detrended()
+#master_state_attribution()
+#master_duration()
 
 ###################################################################
 # fits, quantiles etc
 ###################################################################
 
-master_duration_analysis()
+#aster_gridded_analysis()
+#master_gridded_plots()
 
 
 ###################################################################
 # regional commands
 ###################################################################
 
-asdasdas
-master_regional_climatology(region_name="7rect",ID_length=7,region_names=1:7)
-master_regional_climatology(region_name="ward22",ID_length=22,region_names=1:22)
-asasd
+master_regional_analysis(region_name="7rect",ID_length=7,region_names=1:7)
+master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
 
-taus=c(0,0.05,0.25,0.5,0.75,0.95,1)
-trend_analysis()
-adsas
-
-#master_regional_climatology(region_name="mid_lat_belt",region_names=c("mid-lat","polar"),trendID=trendID,dataset=dataset,additional_style=additional_style)
-
-#ID_select=c(1,2,3,4,5,6,9,10,11,12,13,14,16,17,18,19,20,21,22,23,24,25,26)
-#master_regional_climatology(trendID=trendID,region_name="srex",region_names=1:26,ID_select=ID_select,plot_select=ID_select,ID_length=26)
-
-#plot_fits_for_region(period="1950-2014",trendID=trendID,dataset=dataset,fit_style="2expo_thresh_5-15",reg=13,region_name="7rect",ID_select=ID_select)
-
-
-#regional_quantiles_fits(dat=dat,yearPeriod=c(1950.2014),region_name="mid_lat_belt",trendID=trendID,dataset=dataset,additional_style=additional_style,plot=TRUE,season_auswahl=c(2),write=FALSE,add_name="_4sea",region_names=c("661","488"),q=c(661,488))
-
-#master_regional_climatology(region_name="kmeans_ma5_grou6",trendID=trendID,dataset=dataset,additional_style=additional_style)
-
-#dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-#IDregions=points_to_regions(dat,region_name)
-#ID_select=which(IDregions==reg)
-
-period="1950-2014"
-nGroup=7
-add_name="2Distr_3Red"
-region_name=paste(add_name,"_",nGroup,sep="")
-region_name="7rect"
-
-#duration_analysis(yearPeriod=c(1950,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_thresh_5-15",folder="/regional/",ID_name=paste("_",region_name,sep=""),ID_select=1:nGroup,plot_select=1:nGroup,ID_names=1:nGroup,ID_length=nGroup)
-
-
-
-#nc=open.nc(paste("../data/",trendID,"/",dataset,additional_style,"/nearest_neighbors/",period,"/",trendID,"_",period,"_",region_name,".nc",sep=""))
-#IDregions=var.get.nc(nc,"attribution")
-
-
-IDregions=points_to_regions(dat,region_name)
-#ID_select=which(IDregions==reg)
-
-
-for (reg in 1:7){
-    plot_fits_for_region(reg=reg,IDregions=c("from polygons"),region_name=region_name)
-}
-
-
-
-#master_duration_analysis <- function(trendID){
-#full(nday,nyr,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
-
-#master_trend_control(trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)
-
-#sdsdsdsds
-
-
-
-#duration_analysis(yearPeriod=c(1980,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,1,0),add_name="_testin2",ID_select=c(460,466,554),plot_select=c(460,466,554),ID_length=1319,write=FALSE)
-#duration_analysis(yearPeriod=c(1950,1980),trendID=trendID,dataset=dataset,option=c(0,0,1,1,1,0),add_name="_testin2",ID_select=c(460,466,554),plot_select=c(460,466,554),ID_length=1319,write=FALSE)
-#duration_analysis(yearPeriod=c(1950,2014),trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),plot_select=c(NA),ID_select=1:1319,add_name="2expo_4:100",xStart=4,write=TRUE)
-
-#adsas
-
-#master_duration_analysis(trendID=trendID)
-
-#master_duration(nday,nyr,trendID,trend_style=trend_style,dataset=dataset,additional_style=additional_style)

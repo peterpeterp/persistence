@@ -91,8 +91,6 @@ additional_style<-""
 taus<-c(0.5,0.75,0.95,0.99)
 season_names<-c("MAM","JJA","SON","DJF","4seasons")
 
-trend_analysis(1:4)
-
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
 

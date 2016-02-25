@@ -263,7 +263,18 @@ write_cluster_region_files <- function(lagMax=20,load_name="_CorLag",add_name=""
         mids[G,]=c(G,mean(dat$lon[inside]),mean(dat$lat[inside]))
     }
     write.table(attribution[nGroup,],paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))
-    write.table(mids,paste("../data/",dataset,"/ID_regions/",region_name,"_mids.txt",sep=""))
+    write.table(mids,paste("../data/",dataset,"/ID_regions/",region_name,"_mids_mean.txt",sep=""))
+
+    ausschnitt=c(-90,90)
+    pdf(paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",nGroup,"_vis.pdf",sep=""),width=7,height=5)
+    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,5))
+
+    tmp=put_points(points=attribution[nGroup,],ausschnitt=ausschnitt,farb_palette="viele",pointsize=0.85,ID_select=ID_select)
+    region_border(region_name=region_name,regNumb=nGroup,border_col="black")
+    #draw over axes
+    polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")
+    polygon(x=c(-200,-200,200,200),y=c(100,88,88,100),col="white",border="white")
+    graphics.off()
 }
 
 init <- function(){
@@ -293,7 +304,7 @@ init <- function(){
 
 init()
 
-load_name="_CorSdNorm"
+load_name<-"_CorSdNorm"
 
 #dissimilarity_matrix(lagMax=20,timeRange=c(2000,22000),load_name="_AbsCorSdNorm",normalize=TRUE)
 
@@ -302,9 +313,9 @@ load_name="_CorSdNorm"
 #for (method in c("ward.D2","single","centroid")){
 for (method in c("ward.D2")){
     print(method)
-    cluster_evaluation(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
-    cluster_view(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
+    #cluster_evaluation(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
+    #cluster_view(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
 }
 
-#write_cluster_region_files(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=22,region_name="ward22")
+write_cluster_region_files(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=23,region_name="ward23")
 #create_regional_distr_out_of_clusters()
