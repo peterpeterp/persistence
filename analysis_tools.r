@@ -36,7 +36,7 @@ quantile_pete <- function(dist,taus,na.rm=TRUE,plot=FALSE){
     return(out)
 }
 
-quantile_analysis <- function(x,y,taus,noise_level=c(0.000001,0.0001)){
+quantile_analysis <- function(x,y,taus,noise_level=c(0,0)){
     # x=dur_mid, y=dur, taus=percentiles
 
     # noise is added to x and y to avoid crash
@@ -57,6 +57,7 @@ quantile_analysis <- function(x,y,taus,noise_level=c(0.000001,0.0001)){
     }
     return(list(quantiles=quantiles,slopes=slopes,slope_sigs=slope_sigs))
 }
+
 
 fit_plot_empty <- function(){
     # creates empty plots with x-axis and y-axis

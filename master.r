@@ -130,20 +130,26 @@ master_gridded_analysis <- function(ID_select=1:1319){
 
 master_gridded_plots <- function(ID_select=1:1319){
     yearLimits=c(1950,2014,1980,2014)
-
     for (i in 1:2){
-        period<<-paste(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)],sep="")
-        plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("P1","P2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period[i],signi_level=0,farb_mitte=c(70,90,70,90,5,15,20,50),farb_palette="spacy")
-        plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th"),name_zusatz="quantile",farb_mitte="mean",farb_palette="regenbogen")
-        plot_maps(file="_quantiles",var="quantile_stuff",sub_auswahl=c(5,7),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte="0",signi_level=0.05)
-        plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),sub_zusatz=c(NA),name_zusatz="mean",period=period[i],signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen")
-        plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lm",period=period[i],signi_level=0.05,farb_mitte="0",farb_palette="lila-gruen")
+        period<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
+        print(period)
+
+        #others
+        plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),sub_zusatz=c(NA),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
+        plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lm",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")
+
+        # quantiles
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(3),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(3),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+        
+        #fits
+        plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
+
     }
 }
 
 master_regional_analysis <- function(region_name="7rect",ID_length=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:ID_length,plot_select=1:ID_length){
     regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
-    
     ID_name=paste("_",region_name,sep="")
     yearLimits=c(1950,2014,1980,2014)
     for (i in 1:2){
@@ -155,7 +161,7 @@ master_regional_analysis <- function(region_name="7rect",ID_length=7,region_name
         duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0,0),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
 
         print("quant")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,1,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
         
         print("fit")
         duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_4:100",xStart=4,ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))       
@@ -163,7 +169,6 @@ master_regional_analysis <- function(region_name="7rect",ID_length=7,region_name
 }
 
 master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:ID_length,plot_select=1:ID_length){
-    regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
     
     ID_name=paste("_",region_name,sep="")
     yearLimits=c(1950,2014,1980,2014)
@@ -172,10 +177,20 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
         period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
         print(yearPeriod)
 
-      
+        #others
+        plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),sub_zusatz=c(NA),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
+        plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(NA),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lm",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
 
-        write_regional_fit_table(trendID=trendID,region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style="2expo_4:100",period=period)
-        fit_info_to_map(region_name=region_name,fit_style="2expo_4:100",region_names=region_names,ID_select=ID_select,regNumb=ID_length,period=period)
+        #quants
+        plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2,3,4),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("75","95th","99th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
+        plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(3),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+
+        #fits
+        plot_reg_maps(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
+   
+
+        #write_regional_fit_table(trendID=trendID,region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style="2expo_4:100",period=period)
+        #fit_info_to_map(region_name=region_name,fit_style="2expo_4:100",region_names=region_names,ID_select=ID_select,regNumb=ID_length,period=period)
     }
 }
 
@@ -183,24 +198,26 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
 # init: loading sources, setting variables ....
 ###################################################################
 
-master_init <- function(){
+master_init <- function(id=5){
     source("functions_support.r")
     source("functions_duration.r")
     source("functions_regional.r")
     source("analysis_tools.r")
     source("write.r")
     source("load.r")
+    source("plot_master.r")
     source("map_plot.r")
+
 
     library(moments)
     library(quantreg)
     library(stats4)
     library(RNetCDF)
     library(SDMTools)
-
+    library(fields)
 
     nday<<-91
-    nyr<<-5
+    nyr<<-id
     trendID<<-paste(nday,"_",nyr,sep="")
     dataset<<-"_TMean"
     trend_style<<-"_mean"
@@ -213,9 +230,15 @@ master_init <- function(){
 }
 
 ###################################################################
+#parallel for different trends
+id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+id<-id*2+3
+
+
+###################################################################
 # basic analysis
 ###################################################################
-master_init()
+master_init(id)
 
 #master_trend()
 #master_seasonal_median_on_detrended()
@@ -226,14 +249,18 @@ master_init()
 # fits, quantiles etc
 ###################################################################
 
-#aster_gridded_analysis()
-#master_gridded_plots()
+#master_gridded_analysis()
+master_gridded_plots()
 
 
 ###################################################################
 # regional commands
 ###################################################################
 
-master_regional_analysis(region_name="7rect",ID_length=7,region_names=1:7)
-master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
+#master_regional_analysis(region_name="7rect",ID_length=7,region_names=1:7)
+master_regional_plots(region_name="7rect",ID_length=7,region_names=1:7)
+
+
+#master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
+master_regional_plots(region_name="ward23",ID_length=23,region_names=1:23)
 

@@ -181,12 +181,18 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                         if (class(linear)!="try-error"){other_stuff[sea,q,state,3:10]=summary(linear)$coef}
                     }
 
-                    # quantile values and regressions
+                    # quantile values and regressions for grid points
                     if (option[2]==1){
                         tmp=quantile_analysis(x,y,taus,noise_level=noise_level)
                         quantile_stuff[sea,q,state,,1]=tmp$quantiles
                         quantile_stuff[sea,q,state,,2]=tmp$slopes
                         quantile_stuff[sea,q,state,,3]=tmp$slope_sigs
+                    }
+
+                    # quantile values and regressions for regions
+                    if (option[3]==1){
+                        quantile_stuff[sea,q,state,,1]=quantile_pete(y,taus=taus,na.rm=TRUE)
+                        quantile_stuff[sea,q,state,,2]=rq(y~x,taus)$coef[2,]
                     }
 
                     # data to be fitted
@@ -289,7 +295,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
     }
     if (option[1]==1){other_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_others.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,other_stuff=other_stuff)}
 
-    if (option[2]==1){quantiles_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
+    if (option[2]==1 | option[3]==1){quantiles_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
         
     if (sum(option[4:8],na.rm=TRUE)>0){fit_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
     distr_write(distr_stuff=distr_stuff,filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_distributions.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period)

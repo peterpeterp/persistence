@@ -69,6 +69,7 @@ regional_attribution <- function(region_name,trendID,additional_style="",dataset
     if (IDregions[1]=="from file"){
         attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
         IDregions<-array(NA,c(ntot,5))
+        regNumb<-length(unique(attribution[!is.na(attribution)]))
         for (i in 1:5){
             IDregions[,i]=attribution
         }
@@ -310,38 +311,6 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
     close(table)
 }
 
-fit_info_to_map <- function(region_name="ward22",fit_style,region_names,regNumb,ID_select,period){
-    # plots worldmap and colored regions on it
-    attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
-    print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
-    nc = open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
-    fit_stuff=var.get.nc(nc,"fit_stuff")
-
-    filename<-paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_seasons.pdf",sep="")
-
-    reihen1<-array(NA,c(10,1319))
-    reihen2<-array(NA,c(10,1319))
-    reihen3<-array(NA,c(10,1319))
-    reihen4<-array(NA,c(10,1319))
-    index<-0
-    for (sea in 1:5){
-        for (state in 1:2){
-            index<-index+1
-            for (reg in 1:regNumb){
-                reihen1[index,which(attribution==reg)]=fit_stuff[sea,reg,state,9]
-                reihen2[index,which(attribution==reg)]=fit_stuff[sea,reg,state,17]
-                reihen3[index,which(attribution==reg)]=fit_stuff[sea,reg,state,6]-fit_stuff[sea,reg,state,8]
-                reihen4[index,which(attribution==reg)]=fit_stuff[sea,reg,state,2]
-            }
-                      
-        }
-    }
-    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_thresh.pdf",sep=""),reihen=reihen1,farb_mitte=c(4,12),farb_palette="regenbogen",pointsize=0.8,ausschnitt=c(-90,90),paper=c(6.4,3.7),region_name=region_name,regNumb=regNumb,land_col=NA)
-    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_dBIC.pdf",sep=""),reihen=reihen2,farb_mitte=c(-100,0),farb_palette="regenbogen",pointsize=0.8,ausschnitt=c(-90,90),paper=c(6.4,3.7),region_name=region_name,regNumb=regNumb,land_col=rgb(0,0,0,0))
-    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_b1-b2.pdf",sep=""),reihen=reihen3,farb_mitte=c(-0.3,0.3),farb_palette="lila-gruen",pointsize=0.8,ausschnitt=c(-90,90),paper=c(6.4,3.7),region_name=region_name,regNumb=regNumb,land_col=rgb(0,0,0,0))
-    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_b.pdf",sep=""),reihen=reihen4,farb_mitte=c(0.15,0.35),farb_palette="regenbogen",pointsize=0.8,ausschnitt=c(-90,90),paper=c(6.4,3.7),region_name=region_name,regNumb=regNumb,land_col=rgb(0,0,0,0))
-    return()
-}
 
 
 plot_fits_for_region <- function(reg,IDregions=c("from polygons"),period="1950-2014",trendID="91_5",dataset="_TMean",fit_style="2expo_thresh_5-15",region_name="srex"){

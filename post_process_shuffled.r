@@ -1,5 +1,5 @@
 
-confidence_interval <- function(seasons=1:4,period="1980-2014",folder="/regional/7rect/",ID_name="7rect",regNumb=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
+confidence_interval <- function(seasons=1:4,period="1980-2014",ID_name="ward23",folder=paste("/regional/",ID_name,"/",sep=""),regNumb=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA")){
 	confi_quantiles<-array(NA,dim=c(5,regNumb,2,5,5))
     quant_regressions<-array(NA,dim=c(5,regNumb,2,5))
     for (sea in seasons){
@@ -12,6 +12,9 @@ confidence_interval <- function(seasons=1:4,period="1980-2014",folder="/regional
         	if (class(nc)!="try-error"){
 	        	shuffled<-var.get.nc(nc,"shuffled")
 	        	original<-var.get.nc(nc,"original")
+                print(dim(shuffled_mass))
+                print(dim(shuffled))
+                print(dim(shuffled_mass[((id-1)*100+1):(id*100),,,]))
 	        	shuffled_mass[((id-1)*100+1):(id*100),,,]=shuffled
 	        	original_mass[id,,,]=original
 	        }
@@ -74,4 +77,4 @@ init <- function(){
 }
 
 init()
-confidence_interval()
+confidence_interval(ID_name="ward23",regNumb=23,region_names=1:23)
