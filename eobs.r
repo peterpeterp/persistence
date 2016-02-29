@@ -1,9 +1,4 @@
 
-#cdo -f nc sellonlatbox,0,360,90,-90 -random,r96x72 cdoregridmap_96x72.nc 
-
-
-
-
 library(RNetCDF)
 
 split_original <- function(i=1){

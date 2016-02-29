@@ -22,7 +22,7 @@ trend_load <- function(filename){
     return(trend)
 }
 
-dat_load_eobs <- function(filename){
+dat_load_precipitation <- function(filename){
     nc  = open.nc(filename)
     dat = list()     
     dat$day  = var.get.nc(nc,"day")

@@ -52,7 +52,7 @@ per_duration <- function(ind,time,state){
 }
 
 
-calc_global_dur <- function(ind,trash,filename,states=c(-1,1)){
+calc_global_dur <- function(ind,trash,filename,states=c(-1,1),years=length(dat$year)){
     # dat: is required for time and ID
     # ind: array of states (same dimentions as temp anomalies)
     # trash: number of days that have to be neglected (due to detrending)
@@ -60,8 +60,8 @@ calc_global_dur <- function(ind,trash,filename,states=c(-1,1)){
     # states: label of states
     ntot=length(dat$ID)
     
-    dur=array(NA,dim=c(ntot,length(states),65*365))
-    dur_mid=array(NA,dim=c(ntot,length(states),65*365))
+    dur=array(NA,dim=c(ntot,length(states),years*365))
+    dur_mid=array(NA,dim=c(ntot,length(states),years*365))
 
     maxis=array(NA,ntot)
     len=array(NA,length(states)*2)
@@ -69,12 +69,15 @@ calc_global_dur <- function(ind,trash,filename,states=c(-1,1)){
     percentage=0
     cat(paste("\n0 -> -> -> -> -> 100\n"))
     for (q in 1:ntot){
-        if (q/1319*100 > percentage){
+        if (q/ntot*100 > percentage){
             cat("-")
             percentage=percentage+5
         }
         for (state in 1:length(states)){
             tmp=per_duration(as.vector(ind[q,,])[(trash+1):(length(ind[q,,])-trash)],dat$time[(trash+1):(length(ind[q,,])-trash)],states[state])
+            tmp<<-tmp
+            dur<<-dur
+            dur_mid<<-dur_mid
             dur[q,state,1:length(tmp$period)]=tmp$period
             dur_mid[q,state,1:length(tmp$period)]=tmp$period_mid
         }
@@ -89,13 +92,13 @@ calc_global_dur <- function(ind,trash,filename,states=c(-1,1)){
 }
 
 
-duration_seasons <- function(dur,dur_mid,season,filename){
+duration_seasons <- function(dur,dur_mid,season,filename,years=length(dat$year)){
     # selects periods with midpoint in season
     # creates new duration files
     states=dim(dur)[2]
-    ntot=1319
-    dur_neu=array(NA,dim=c(ntot,states,65*92))
-    dur_mid_neu=array(NA,dim=c(ntot,states,65*92))
+    ntot=length(dat$ID)
+    dur_neu=array(NA,dim=c(ntot,states,years*92))
+    dur_mid_neu=array(NA,dim=c(ntot,states,years*92))
     maxis=array(NA,ntot)
 
     start=season[1]/365
@@ -105,7 +108,7 @@ duration_seasons <- function(dur,dur_mid,season,filename){
     for (q in 1:ntot){
         for (state in 1:states){
             select=c()
-            for (year in 1950:2014){
+            for (year in 1950:(1950+years)){
                 select=c(select,which(dur_mid[q,state,]>(start+year) & dur_mid[q,state,]<(stop+year)))
             }   
             if (length(select)>0){
@@ -125,7 +128,7 @@ duration_seasons <- function(dur,dur_mid,season,filename){
 }
     
 
-duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:1319,write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(NA),ID_names=1:1319,ID_length=length(ID_select),noise_level=c(0,0),xStart=1,xStop=100){
+duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:length(dat$ID),write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(NA),ID_names=1:length(dat$ID),ID_length=length(ID_select),noise_level=c(0,0),xStart=1,xStop=100){
     
     period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
     taus=c(0.5,0.75,0.95,0.99)
