@@ -84,7 +84,7 @@ master_state_attribution <- function(){
     for (year in 1:65){
         detrended[,,year]=detrended[,,year]-seasonal_median
     }
-    per=state_attribution(dat,detrended,nday,nyr,filename=paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,trend_style,dataset,"_state_ind.nc",sep=""))
+    per=state_attribution(detrended,nday,nyr,filename=paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,trend_style,dataset,"_state_ind.nc",sep=""))
 }
 
 master_duration <- function(){
@@ -199,6 +199,7 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
 ###################################################################
 
 master_init <- function(id=5){
+    print(id)
     source("functions_support.r")
     source("functions_duration.r")
     source("functions_regional.r")
@@ -222,7 +223,7 @@ master_init <- function(id=5){
     dataset<<-"_TMean"
     trend_style<<-"_mean"
     additional_style<<-""
-    dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
@@ -232,7 +233,9 @@ master_init <- function(id=5){
 ###################################################################
 #parallel for different trends
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-id<-id*2+3
+print(id)
+if (!is.na(id)){id<-id*2+3}
+if (is.na(id)){id<-9}
 
 
 ###################################################################
@@ -250,7 +253,7 @@ master_init(id)
 ###################################################################
 
 #master_gridded_analysis()
-master_gridded_plots()
+#master_gridded_plots()
 
 
 ###################################################################
@@ -258,9 +261,9 @@ master_gridded_plots()
 ###################################################################
 
 #master_regional_analysis(region_name="7rect",ID_length=7,region_names=1:7)
-master_regional_plots(region_name="7rect",ID_length=7,region_names=1:7)
+#master_regional_plots(region_name="7rect",ID_length=7,region_names=1:7)
 
 
 #master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
-master_regional_plots(region_name="ward23",ID_length=23,region_names=1:23)
+#master_regional_plots(region_name="ward23",ID_length=23,region_names=1:23)
 

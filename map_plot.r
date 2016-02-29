@@ -20,10 +20,6 @@ location_finder <- function(dat,station=0,lon=0,lat=0){
 }
 
 location_view <- function(station=0,lon=0,lat=0,regions=NA){
-	dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-	library(rworldmap)
-    library(oce)
-	library(fields)
 	if (station!=0){
 		q=which(dat$ID==station)
 	}
@@ -366,14 +362,14 @@ region_border <- function(ID_select=1:1319,region_name="ward22",regNumb=22,borde
     }
 }
 
-topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,grid=FALSE,ausschnitt=c(-90,90),paper=c(12,8),pointsize=1,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),layout_mat=c(NA),main="",pch_points=array(15,dim(reihen)),ID_select=1:1319,region_name=NA,regNumb=NA,border_col="white",land_col=rgb(0.5,0.5,0.5,0.5),water_col=rgb(0,0.2,0.8,0.0)){
+topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,grid=FALSE,ausschnitt=c(-90,90),paper=c(12,8),pointsize=1,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),layout_mat=c(NA),main="",pch_points=array(15,dim(reihen)),ID_select=1:1319,region_name=NA,regNumb=NA,border_col="white",land_col=rgb(0.5,0.5,0.5,0.5),water_col=rgb(0,0.2,0.8,0.0),xAusschnitt=c(-180,180)){
 	
 	pdf(file=filename_plot,width=paper[1],height=paper[2])
 
 	if (!is.na(layout_mat[1])){layout(layout_mat)}
 	if (is.na(layout_mat[1])){par(mfrow=c(1,1))}
 	for (i in 1:dim(reihen)[1]){
-	    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,5))
+	    plot(topoWorld,xlim=xAusschnitt,ylim=ausschnitt,asp=1.5,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,5))
 	    if (titel[1]!=""){
 	    	main<-titel[i]
 	    	print(titel[i])
@@ -395,7 +391,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		# contour lines topography
 		if (!is.na(land_col)){
 		    par(new=TRUE)
-		    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land=land_col,col.water=water_col,mar=c(0,0,0,5))
+		    plot(topoWorld,xlim=xAusschnitt,ylim=ausschnitt,asp=1.5,location="none",col.land=land_col,col.water=water_col,mar=c(0,0,0,5))
 		}
 		#draw over axes
 		polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")
@@ -416,3 +412,5 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 library(oce)
 data(topoWorld)
 library(RColorBrewer)
+library(rworldmap)
+library(fields)

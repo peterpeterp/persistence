@@ -3,15 +3,14 @@ shuffle_mat <- function(durMat,years){
     return(durMat[,,,sample(years,years,replace=FALSE)])
 }
 
-trend_analysis <- function(seasons=4,id=2,yearPeriod=c(1980,2014),ID_name="7rect",folder="/regional/7rect/"){
+trend_analysis <- function(seasons=4,id=2,yearPeriod=c(1980,2014),ID_name="ward23",folder=paste("/regional/",ID_name,"/",sep="")){
     print(id)
     for (sea in seasons){
         season<-season_names[sea]
 
         print(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_reg_binned_duration_",season,".nc",sep=""))
         nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_reg_binned_duration_",season,".nc",sep=""))
-        binned_dur<<-var.get.nc(nc,"binned_dur")
-        adas
+        binned_dur<-var.get.nc(nc,"binned_dur")
         periodsInYr<-dim(binned_dur)[3]
         ID_length<-dim(binned_dur)[1]
 
@@ -26,7 +25,7 @@ trend_analysis <- function(seasons=4,id=2,yearPeriod=c(1980,2014),ID_name="7rect
         shuffled<-array(NA,c(nShuffle,ID_length,2,5))
         for (shuff in 1:nShuffle){
         	cat(paste("--",shuff))
-        	#shuffled[shuff,,,]<-trend_evaluation(durMat=array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
+        	shuffled[shuff,,,]<-trend_evaluation(durMat=array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
         }
 
         period<-paste(yearPeriod[1],"-",yearPeriod[2],sep="")    
@@ -92,8 +91,6 @@ additional_style<-""
 taus<-c(0.5,0.75,0.95,0.99)
 season_names<-c("MAM","JJA","SON","DJF","4seasons")
 
-trend_analysis()
-adsas
 
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)

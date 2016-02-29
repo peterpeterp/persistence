@@ -156,7 +156,7 @@ find_nas <- function(dat){
     write.table(nas,"../data/number_of_NA_per_station_2011.txt")
 }
 
-state_attribution <- function(dat,detrended,nday,nyr,filename){
+state_attribution <- function(detrended,nday,nyr,filename){
     ## User parameters 
     #trash is the number of data point which are wasted by detrending
     trash = ((nyr-1)/2*365+(nday-1))

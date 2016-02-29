@@ -74,7 +74,7 @@ calc_global_dur <- function(ind,trash,filename,states=c(-1,1)){
             percentage=percentage+5
         }
         for (state in 1:length(states)){
-            tmp=per_duration(as.vector(ind[q,,])[trash:(length(ind[q,,])-trash)],dat$time[trash:(length(ind[q,,])-trash)],states[state])
+            tmp=per_duration(as.vector(ind[q,,])[(trash+1):(length(ind[q,,])-trash)],dat$time[(trash+1):(length(ind[q,,])-trash)],states[state])
             dur[q,state,1:length(tmp$period)]=tmp$period
             dur_mid[q,state,1:length(tmp$period)]=tmp$period_mid
         }

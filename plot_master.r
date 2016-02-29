@@ -40,13 +40,14 @@ plot_maps <- function(period="1950-2014",file="_others",var="other_stuff",aussch
 					    reihen[index,]=values[sea,,state,sub_auswahl[sub],value_auswahl[val]]
 					    if (!is.na(sig_auswahl[val])){reihen_sig[index,]=values[sea,,state,sub_auswahl[sub],sig_auswahl[val]]}
 					    if (value_zusatz[1]!=""){titel[index]=paste(value_zusatz[val],"of the",sub_zusatz[sub],"percentile of",state_names[state],"period duration in",season,"in",period)}
+						if (length(farb_mitte)>1){farb_mitte_end[(2+2*(index-1)):(3+2*(index-1))]=farb_mitte[((val-1)*2+1):((val-1)*2+2)]}
 					}
 				}
 			}
 		}
 	}
 	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
-	topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_trend_",trendID,"_",season,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,grid=grid,region=region,pointsize=0.85,ausschnitt=c(-90,90),paper=c(7,5),signi_level=signi_level) #,reihen_sig=attribution_changes[,]
+	topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_trend_",trendID,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,grid=grid,region=region,pointsize=0.85,ausschnitt=c(-90,90),paper=c(7,5),signi_level=signi_level) #,reihen_sig=attribution_changes[,]
 }
 
 plot_diff_maps <- function(trendID="91_5",dataset="_TMean",additional_style="",period="1950-2014",file="_fit_2expo",var="fit_stuff",
@@ -204,5 +205,5 @@ plot_reg_maps <- function(region_name="ward23",period="1950-2014",file="_others"
 		}
 	}
 	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
-	topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/","duration_trend_",trendID,"_",region_name,"_",season,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,grid=grid,region=region,pointsize=0.85,ausschnitt=c(-90,90),paper=c(7,5),signi_level=signi_level) #,reihen_sig=attribution_changes[,]
+	topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/","duration_trend_",trendID,"_",region_name,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,grid=grid,region=region,pointsize=0.85,ausschnitt=c(-90,90),paper=c(7,5),signi_level=signi_level) #,reihen_sig=attribution_changes[,]
 }
