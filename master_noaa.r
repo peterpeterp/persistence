@@ -46,7 +46,7 @@ master_state_attribution <- function(threshold=0.5){
     
     dim.def.nc(nc_out,"ID",dimlength=ntot, unlim=FALSE)   
     dim.def.nc(nc_out,"day",dimlength=365, unlim=FALSE)   
-    dim.def.nc(nc_out,"year",dimlength=66, unlim=FALSE)   
+    dim.def.nc(nc_out,"year",dimlength=59, unlim=FALSE)   
 
     var.def.nc(nc_out,"ind","NC_SHORT",c(0,1,2))
     att.put.nc(nc_out, "ind", "missing_value", "NC_SHORT", -99)
@@ -63,6 +63,7 @@ master_duration <- function(){
     stateIndeces=c(-1,1)
 
     # calculate annual period durations
+    print(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,dataset,"_state_ind.nc",sep=""))
     nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,dataset,"_state_ind.nc",sep=""))
     ind=var.get.nc(nc,"ind")
     cat("\nidentifying persistent periods:")
@@ -144,7 +145,7 @@ master_init <- function(){
     trendID<<-"0p5"
     dataset<<-"_noaa"
     additional_style<<-""
-    dat <<- dat_load_precipitation(paste("../data/raw_data/precip/precip.V1.0.1948-2006_0p5.nc",sep=""))
+    dat <<- dat_load_precipitation(paste("../data/_noaa/precip.V1.0.1948-2006_0p5.nc",sep=""))
 
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
@@ -158,12 +159,12 @@ master_init <- function(){
 master_init()
 
 master_state_attribution()
-#master_duration()
+master_duration()
 
 ###################################################################
 # fits, quantiles etc
 ###################################################################
 
-#master_gridded_analysis()
-#master_gridded_plots()
+master_gridded_analysis()
+master_gridded_plots()
 

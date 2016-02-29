@@ -34,7 +34,7 @@ dat_load_precipitation <- function(filename){
 
     # Add additional time dimension (days are decimal points dt=1/365)
     dat$time = c(1:(length(dat$day)*length(dat$year)))/365 - 0.5*1/365 + min(dat$year)
-    dat$time_2D = array(dat$time,dim=c(365,66))
+    dat$time_2D = array(dat$time,dim=c(365,length(dat$year)))
 
     return(dat)
 }
