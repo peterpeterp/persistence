@@ -144,7 +144,7 @@ master_init <- function(){
     trendID<<-"0p5"
     dataset<<-"_eobs"
     additional_style<<-""
-    dat <<- dat_load_precipitation(paste("../data/",dataset,"/rr_0.50deg_reg_v12.0_end.nc",sep=""))
+    dat <<- dat_load_precipitation(paste("../data/",dataset,"/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
 
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
@@ -157,7 +157,7 @@ master_init <- function(){
 ###################################################################
 master_init()
 
-master_state_attribution()
+#master_state_attribution()
 master_duration()
 
 ###################################################################

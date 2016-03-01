@@ -174,7 +174,7 @@ put_in_dat_format <- function(){
 	var.put.nc(nc_out,"lon",lon)    
 	var.put.nc(nc_out,"lat",lat) 
 	var.put.nc(nc_out,"day",1:365)      
-	var.put.nc(nc_out,"year",1:66)      
+	var.put.nc(nc_out,"year",1950:2015)      
 	var.put.nc(nc_out,"pp",pp_neu)              
 	close.nc(nc_out) 
 }
@@ -182,7 +182,7 @@ put_in_dat_format <- function(){
 
 
 data_view <- function(){
-	dat <<- dat_load_eobs(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_end.nc",sep=""))
+	dat <<- dat_load_eobs(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
 	pp<-dat$pp
 	ntot<-length(dat$ID)
 
@@ -217,7 +217,7 @@ location_view_eobs <- function(station=0,lon=0,lat=0,regions=NA){
 }
 
 pdf_view <- function(q){
-	dat <<- dat_load_eobs(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_end.nc",sep=""))
+	dat <<- dat_load_eobs(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
 	pp<-dat$pp	
 	histo(pp[q,,],plot=TRUE)
 }
@@ -229,7 +229,7 @@ pdf_view <- function(q){
 #	keep_not_empty(i)
 #}
 #merge_reduced()
-#put_in_dat_format()
+put_in_dat_format()
 
 
 library(SDMTools)

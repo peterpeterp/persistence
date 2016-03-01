@@ -3,7 +3,7 @@ shuffle_mat <- function(durMat,years){
     return(durMat[,,,sample(years,years,replace=FALSE)])
 }
 
-trend_analysis <- function(seasons=4,id=2,yearPeriod=c(1980,2014),ID_name="ward23",folder=paste("/regional/",ID_name,"/",sep="")){
+trend_analysis <- function(seasons=1,id=2){
     print(id)
     for (sea in seasons){
         season<-season_names[sea]
@@ -73,24 +73,62 @@ trend_evaluation <- function(durMat,time_vec,ID_select=1:1319,ID_length=length(I
 
 }
 
+shuffle_check <- function(seasons=1:4,id=2){
+    print(id)
+    for (sea in seasons){
+        season<-season_names[sea]
+
+        print(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_reg_binned_duration_",season,".nc",sep=""))
+        nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_reg_binned_duration_",season,".nc",sep=""))
+        binned_dur<-var.get.nc(nc,"binned_dur")
+        periodsInYr<-dim(binned_dur)[3]
+        ID_length<-dim(binned_dur)[1]
+
+        # create time vector for trend analysis
+        years<-yearPeriod[2]-yearPeriod[1]+1
+        time_vec<-rep(1:years,each=periodsInYr)
+        binned_dur<-binned_dur[,,,(yearPeriod[1]-1949):(yearPeriod[2]-1949)]
+
+        pdf(paste("../plots/_TMean/shuff_test_",season,".pdf",sep=""))
+        reg<-16
+        print(dim(binned_dur))
+        plot(time_vec,array(binned_dur,c(ID_length,2,periodsInYr*years))[reg,2,],pch=20,cex=0.5,col=rgb(0.5,0.5,0.5,0.2))
+
+        nShuffle<-1
+        for (shuff in 1:nShuffle){
+            cat(paste("--",shuff))
+            durMat<-array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*years))
+            abline(rq(durMat[reg,2,]~time_vec,tau=0.95),col=rgb(0.5,1,0.5,0.5,0.5))
+        } 
+        abline(rq(array(binned_dur,c(ID_length,2,periodsInYr*years))[reg,2,]~time_vec,tau=0.95),col="red") 
+        graphics.off()
+    }  
+    
+}
+
 init <- function(){
     library(quantreg)
     library(RNetCDF)
+    nday<<-91
+    nyr<<-9
+    trendID<<-paste(nday,"_",nyr,sep="")
+    dataset<<-"_TMean"
+    additional_style<<-""
+    taus<<-c(0.5,0.75,0.95,0.99)
+    season_names<<-c("MAM","JJA","SON","DJF","4seasons")
 }
 
 
 
 init()
 
+yearPeriod<-c(1950,2014)
+ID_name<-"ward23"
+folder<-paste("/regional/",ID_name,"/",sep="")
 
-nday<-91
-nyr<-5
-trendID<-paste(nday,"_",nyr,sep="")
-dataset<-"_TMean"
-additional_style<-""
-taus<-c(0.5,0.75,0.95,0.99)
-season_names<-c("MAM","JJA","SON","DJF","4seasons")
+shuffle_check()
 
+adsa
 
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)

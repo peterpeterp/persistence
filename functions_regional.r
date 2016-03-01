@@ -112,7 +112,7 @@ regional_attribution <- function(region_name,trendID,additional_style="",dataset
         for (reg in 1:regNumb){
             print(reg)
             for (state in 1:2){
-                for (yr in 1:65){
+                for (yr in 1:length(dat$year)){
                     index<-index+1
                     inYr<-which(reg_dur_mid[reg,state,]>=(yr+1949) & reg_dur_mid[reg,state,]<(yr+1949+1))
                     if (length(inYr)>0){

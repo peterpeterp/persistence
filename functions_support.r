@@ -131,7 +131,7 @@ c_calc_runmean_2D <- function(y2D,nday,nyr){
 calc_trend <- function(dat,filename,nday,nyr,procedure){
     # calculates running mean for each grid point
     # can choose between the c script and r function
-    trash = ((nyr-1)/2*365+(nday-1))
+    trash = ((nyr-1)/2*365+(nday-1)/2)
     ntot = length(dat$ID)
     trend=dat$tas*NA
     for (q in 1:ntot) {
@@ -140,6 +140,7 @@ calc_trend <- function(dat,filename,nday,nyr,procedure){
         temp[(length(dat$time)-trash):length(dat$time)]=NA
         trend[q,,]=temp
     }
+    trrr<<-trend
     trend_write(filename,trend)
     return(trend)
 }
@@ -159,24 +160,22 @@ find_nas <- function(dat){
 state_attribution <- function(detrended,nday,nyr,filename){
     ## User parameters 
     #trash is the number of data point which are wasted by detrending
-    trash = ((nyr-1)/2*365+(nday-1))
-    ntot = length(dat$ID)
-    laenge_zeit = length(dat$time)
+    ntot<-length(dat$ID)
 
     # Calculate persistence information
     #cat("Calculating persistence... ")
 
-    state_ind=dat$tas*NA
+    state_ind<-dat$tas*NA
 
     for (q in 1:ntot) { 
         cat("-")
-        if (length(which(is.na(dat$tas[q,,])))<(2*trash+365*20)){
+        if (length(which(!is.na(dat$tas[q,,])))>(365*20)){
 
             # Calculate persistence vector
-            y = detrended[q,,]
-            per_ind = y*NA 
+            y <- detrended[q,,]
+            per_ind <- y*NA 
 
-            threshold = 0
+            threshold <- 0
             per_ind[detrended[q,,] < threshold]=-1
             per_ind[detrended[q,,] > threshold]=1
             # the >= was somehow problematic, since it affects roughly 5% of the datapoints
@@ -192,7 +191,6 @@ state_attribution <- function(detrended,nday,nyr,filename){
         }
      
     }
-
     print(filename)
     nc_out<-create.nc(filename)
 

@@ -115,7 +115,7 @@ merge_files <- function(){
 	var.put.nc(nc_out,"lon",lon_merged)    
 	var.put.nc(nc_out,"lat",lat_merged) 
 	var.put.nc(nc_out,"day",1:365)      
-	var.put.nc(nc_out,"year",1:59)      
+	var.put.nc(nc_out,"year",1948:2006)      
 	var.put.nc(nc_out,"pp",pp_merged)              
 	close.nc(nc_out) 
 }
@@ -151,5 +151,5 @@ source("load.r")
 source("map_plot.r")
 
 #remap_check()
-#merge_files()
+merge_files()
 #check_merged()

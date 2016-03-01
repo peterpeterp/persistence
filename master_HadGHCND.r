@@ -81,22 +81,21 @@ master_state_attribution <- function(){
     nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,trend_style,dataset,"_seasonal_median",".nc",sep=""))
     seasonal_median=var.get.nc(nc,"seasonal_median")
     detrended=dat$tas-trend
-    for (year in 1:65){
+    for (year in 1:length(dat$year)){
         detrended[,,year]=detrended[,,year]-seasonal_median
     }
-    per=state_attribution(detrended,nday,nyr,filename=paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,trend_style,dataset,"_state_ind.nc",sep=""))
+    per=state_attribution(detrended=detrended,nday=nday,nyr=nyr,filename=paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,trend_style,dataset,"_state_ind.nc",sep=""))
 }
 
 master_duration <- function(){
     # calculate duration periods 2 states
-    trash=((nyr-1)/2*365+(nday-1))
     stateIndeces=c(-1,1)
 
     # calculate annual period durations
     nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,trend_style,dataset,"_state_ind.nc",sep=""))
     ind=var.get.nc(nc,"ind")
     cat("\nidentifying persistent periods:")
-    calc_global_dur(ind=ind,trash=trash,filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_4seasons.nc",sep=""),states=stateIndeces)
+    calc_global_dur(ind=ind,filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_4seasons.nc",sep=""),states=stateIndeces)
 
     # open annual duration and seperate into individual files
     nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_4seasons.nc",sep=""))
@@ -198,7 +197,7 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
 # init: loading sources, setting variables ....
 ###################################################################
 
-master_init <- function(id=5){
+master_init <- function(id){
     print(id)
     source("functions_support.r")
     source("functions_duration.r")
@@ -235,7 +234,7 @@ master_init <- function(id=5){
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
 if (!is.na(id)){id<-id*2+3}
-if (is.na(id)){id<-9}
+if (is.na(id)){id<-5}
 
 
 ###################################################################
@@ -243,27 +242,27 @@ if (is.na(id)){id<-9}
 ###################################################################
 master_init(id)
 
-#master_trend()
-#master_seasonal_median_on_detrended()
-#master_state_attribution()
-#master_duration()
+master_trend()
+master_seasonal_median_on_detrended()
+master_state_attribution()
+master_duration()
 
 ###################################################################
 # fits, quantiles etc
 ###################################################################
 
-#master_gridded_analysis()
-#master_gridded_plots()
+master_gridded_analysis()
+master_gridded_plots()
 
 
 ###################################################################
 # regional commands
 ###################################################################
 
-#master_regional_analysis(region_name="7rect",ID_length=7,region_names=1:7)
-#master_regional_plots(region_name="7rect",ID_length=7,region_names=1:7)
+master_regional_analysis(region_name="7rect",ID_length=7,region_names=1:7)
+master_regional_plots(region_name="7rect",ID_length=7,region_names=1:7)
 
 
-#master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
-#master_regional_plots(region_name="ward23",ID_length=23,region_names=1:23)
+master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
+master_regional_plots(region_name="ward23",ID_length=23,region_names=1:23)
 

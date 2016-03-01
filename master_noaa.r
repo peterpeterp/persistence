@@ -64,10 +64,10 @@ master_duration <- function(){
 
     # calculate annual period durations
     print(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,dataset,"_state_ind.nc",sep=""))
-    nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,dataset,"_state_ind.nc",sep=""))
-    ind=var.get.nc(nc,"ind")
-    cat("\nidentifying persistent periods:")
-    calc_global_dur(ind=ind,trash=trash,filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_4seasons.nc",sep=""),states=stateIndeces)
+    #nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/",trendID,dataset,"_state_ind.nc",sep=""))
+    #ind=var.get.nc(nc,"ind")
+    #cat("\nidentifying persistent periods:")
+    #calc_global_dur(ind=ind,trash=trash,filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_4seasons.nc",sep=""),states=stateIndeces)
 
     # open annual duration and seperate into individual files
     nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_4seasons.nc",sep=""))
@@ -158,7 +158,7 @@ master_init <- function(){
 ###################################################################
 master_init()
 
-master_state_attribution()
+#master_state_attribution()
 master_duration()
 
 ###################################################################

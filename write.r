@@ -1,5 +1,5 @@
 
-trend_write <- function(filename,trend,ID_length=1319,method="2D running mean")
+trend_write <- function(filename,trend,ID_length=length(dat$ID),method="2D running mean")
 {
     nc_out <- create.nc(filename)
 
@@ -18,8 +18,11 @@ trend_write <- function(filename,trend,ID_length=1319,method="2D running mean")
 }
 
 
-duration_write <- function(filename,dur,dur_mid,len,ID_length=1319,ID_name="grid_points",comment="no comment")
+duration_write <- function(filename,dur,dur_mid,len,ID_length=length(dat$ID),ID_name="grid_points",comment="no comment")
 {
+    print(dim(dur))
+    print(dim(dur_mid))
+    print(length(len))
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
     att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
@@ -45,7 +48,7 @@ duration_write <- function(filename,dur,dur_mid,len,ID_length=1319,ID_name="grid
     close.nc(nc_out) 
 }
 
-reg_binned_dur_write <- function(filename,binned_dur,len,ID_length=1319,ID_name="grid_points",comment="no comment")
+reg_binned_dur_write <- function(filename,binned_dur,len,ID_length=length(dat$ID),ID_name="grid_points",comment="no comment")
 {
     print(dim(binned_dur))
     print(len)
@@ -60,7 +63,7 @@ reg_binned_dur_write <- function(filename,binned_dur,len,ID_length=1319,ID_name=
 
     dim.def.nc(nc_out,"periods",dimlength=len,unlim=FALSE)
 
-    dim.def.nc(nc_out,"years",dimlength=65,unlim=FALSE)
+    dim.def.nc(nc_out,"years",dimlength=length(dat$year),unlim=FALSE)
 
     var.def.nc(nc_out,"binned_dur","NC_INT",c(0,1,2,3))
     att.put.nc(nc_out, "binned_dur", "missing_value", "NC_INT", 99999)

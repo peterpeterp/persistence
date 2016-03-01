@@ -52,32 +52,29 @@ per_duration <- function(ind,time,state){
 }
 
 
-calc_global_dur <- function(ind,trash,filename,states=c(-1,1),years=length(dat$year)){
+calc_global_dur <- function(ind,filename,states=c(-1,1),years=length(dat$year)){
     # dat: is required for time and ID
     # ind: array of states (same dimentions as temp anomalies)
     # trash: number of days that have to be neglected (due to detrending)
     # filename: where to store result
     # states: label of states
-    ntot=length(dat$ID)
+    ntot<-length(dat$ID)
     
-    dur=array(NA,dim=c(ntot,length(states),years*365))
-    dur_mid=array(NA,dim=c(ntot,length(states),years*365))
+    dur<-array(NA,dim=c(ntot,length(states),years*365))
+    dur_mid<-array(NA,dim=c(ntot,length(states),years*365))
 
-    maxis=array(NA,ntot)
-    len=array(NA,length(states)*2)
+    maxis<-array(NA,ntot)
+    len<-array(NA,length(states)*2)
 
-    percentage=0
+    percentage<-0
     cat(paste("\n0 -> -> -> -> -> 100\n"))
     for (q in 1:ntot){
         if (q/ntot*100 > percentage){
             cat("-")
-            percentage=percentage+5
+            percentage<-percentage+5
         }
         for (state in 1:length(states)){
-            tmp=per_duration(as.vector(ind[q,,])[(trash+1):(length(ind[q,,])-trash)],dat$time[(trash+1):(length(ind[q,,])-trash)],states[state])
-            tmp<<-tmp
-            dur<<-dur
-            dur_mid<<-dur_mid
+            tmp<-per_duration(as.vector(ind[q,,]),dat$time,states[state])
             dur[q,state,1:length(tmp$period)]=tmp$period
             dur_mid[q,state,1:length(tmp$period)]=tmp$period_mid
         }
@@ -87,10 +84,8 @@ calc_global_dur <- function(ind,trash,filename,states=c(-1,1),years=length(dat$y
         }
         maxis[q]=max(len,na.rm=TRUE)
     }
-    duration_write(filename,dur[1:ntot,1:length(states),1:max(maxis,na.rm=TRUE)],
-        dur_mid[1:ntot,1:length(states),1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
+    duration_write(filename,dur[1:ntot,1:length(states),1:max(maxis,na.rm=TRUE)],dur_mid[1:ntot,1:length(states),1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
 }
-
 
 duration_seasons <- function(dur,dur_mid,season,filename,years=length(dat$year)){
     # selects periods with midpoint in season
@@ -108,7 +103,7 @@ duration_seasons <- function(dur,dur_mid,season,filename,years=length(dat$year))
     for (q in 1:ntot){
         for (state in 1:states){
             select=c()
-            for (year in 1950:(1950+years)){
+            for (year in dat$year){
                 select=c(select,which(dur_mid[q,state,]>(start+year) & dur_mid[q,state,]<(stop+year)))
             }   
             if (length(select)>0){
@@ -116,14 +111,13 @@ duration_seasons <- function(dur,dur_mid,season,filename,years=length(dat$year))
                 dur_mid_neu[q,state,1:length(select)]=dur_mid[q,state,select]
             }        
         }
-
         for (state in 1:states){
             len[state]=length(which(!is.na(dur_neu[q,state,])))
         }
         maxis[q]=max(len,na.rm=TRUE)
+        print(maxis[q])
     }
-    duration_write(filename,dur_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],
-        dur_mid_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],max(maxis,na.rm=TRUE))
+    duration_write(filename=filename,dur=dur_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],dur_mid=dur_mid_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],len=max(maxis,na.rm=TRUE))
     cat(paste("\ndays in year:",season[1],"-",season[2]))    
 }
     
