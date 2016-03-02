@@ -65,7 +65,7 @@ add_region <- function(region_name,farbe){
     }
 }
 
-put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(points)),pch_sig=4,col_sig="black",ausschnitt=c(-90,90),pointsize=1,farb_mitte="mean",farb_palette="regenbogen",signi_level=0,i=1,ID_select=1:1319){
+put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(points)),pch_sig=4,col_sig="black",yAusschnitt=c(-90,90),pointsize=1,farb_mitte="mean",farb_palette="regenbogen",signi_level=0,i=1,ID_select=1:1319){
 
 
 	y1=points[ID_select]
@@ -164,6 +164,11 @@ put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(po
 		#jet.colors <- colorRampPalette(c("blue",rgb(0.1,0.2,0.4),"green",rgb(0.5,1,1),rgb(0.5,1,0.5), "yellow",rgb(1,0.7,0.7),rgb(1,0.5,1),"orange",rgb(0.4,0.1,0.4),"red"))
 		jet.colors <- colorRampPalette(c("blue","red","green","yellow","orange","violet"))
 	}
+	if (farb_palette_loc=="niederschlag"){
+		jet.colors <- colorRampPalette( c( "orange","yellow","green","blue") )
+	}
+	
+
 	if (farb_palette_loc=="viele"){
 		jet.colors <- colorRampPalette(c(rgb(0.5,0.5,0.5),rgb(1,0.5,0.5,0.5),"black",rgb(0.8,0.5,1),rgb(1,0,0),rgb(0.2,1,0.5),"yellow",rgb(0.5,0.5,1),rgb(1,0.6,1),rgb(0.5,1,1),rgb(0.2,0.5,1)))
 		jet.colors <- colorRampPalette(brewer.pal(n=9,name="Set1"))
@@ -183,8 +188,8 @@ put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(po
 	lon=dat$lon[notna]
 	lat=dat$lat[notna]
 
-	#delete out of ausschnitt
-	ID_select=which(lat >= ausschnitt[1] & lat <= ausschnitt[2])
+	#delete out of yAusschnitt
+	ID_select=which(lat >= yAusschnitt[1] & lat <= yAusschnitt[2])
 
 	points(lon[ID_select],lat[ID_select],pch=pch[ID_select],col=farben[ID_select],cex=pointsize)#
 	points(lon[ID_select],lat[ID_select],pch=sig[ID_select],cex=pointsize,col=col_sig)
@@ -362,23 +367,25 @@ region_border <- function(ID_select=1:1319,region_name="ward22",regNumb=22,borde
     }
 }
 
-topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,grid=FALSE,ausschnitt=c(-90,90),paper=c(12,8),pointsize=1,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),layout_mat=c(NA),main="",pch_points=array(15,dim(reihen)),ID_select=1:1319,region_name=NA,regNumb=NA,border_col="white",land_col=rgb(0.5,0.5,0.5,0.5),water_col=rgb(0,0.2,0.8,0.0),xAusschnitt=c(-180,180)){
+topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,grid=FALSE,paper=c(12,8),pointsize=1,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),layout_mat=c(NA),main="",pch_points=array(15,dim(reihen)),ID_select=1:length(dat$ID),region_name=NA,regNumb=NA,border_col="white",land_col=rgb(0.5,0.5,0.5,0.5),water_col=rgb(0,0.2,0.8,0.0),yAusschnitt=c(-90,90),xAusschnitt=c(-180,180),asp=1.5){
 	
 	pdf(file=filename_plot,width=paper[1],height=paper[2])
 
 	if (!is.na(layout_mat[1])){layout(layout_mat)}
 	if (is.na(layout_mat[1])){par(mfrow=c(1,1))}
 	for (i in 1:dim(reihen)[1]){
-	    plot(topoWorld,xlim=xAusschnitt,ylim=ausschnitt,asp=1.5,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,5))
+	    plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(2,3,2,5),main=titel[i])
 	    if (titel[1]!=""){
 	    	main<-titel[i]
 	    	print(titel[i])
 	    	text(0,-85,main)
 	    }
 
+	    axis(2)
+
 
 	    #data points
-	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,pointsize=pointsize,pch_points=pch_points,pch_sig=4,col_sig=rgb(0,0,0,0.5),ID_select=ID_select)
+	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],yAusschnitt=yAusschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,pointsize=pointsize,pch_points=pch_points,pch_sig=4,col_sig=rgb(0,0,0,0.5),ID_select=ID_select)
 
 	    #highlight points
 		for (rad in c(1,1.5,2,2.5)){
@@ -391,7 +398,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		# contour lines topography
 		if (!is.na(land_col)){
 		    par(new=TRUE)
-		    plot(topoWorld,xlim=xAusschnitt,ylim=ausschnitt,asp=1.5,location="none",col.land=land_col,col.water=water_col,mar=c(0,0,0,5))
+		    plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=land_col,col.water=water_col,mar=c(2,3,2,5))
 		}
 		#draw over axes
 		polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")

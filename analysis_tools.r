@@ -40,22 +40,27 @@ quantile_analysis <- function(x,y,taus,noise_level=c(0,0)){
     # x=dur_mid, y=dur, taus=percentiles
 
     # noise is added to x and y to avoid crash
-    x=x+rnorm(length(x),mean=0,sd=1)*noise_level[1]
-    y=y+rnorm(length(y),mean=0,sd=1)*noise_level[2]
-    
-    quantiles=quantile_pete(y,taus=taus,na.rm=TRUE)
-    slopes=taus*NA
-    slope_sigs=taus*NA
+    x<-x+rnorm(length(x),mean=0,sd=1)*noise_level[1]
+    y<-y+rnorm(length(y),mean=0,sd=1)*noise_level[2]
 
-    # try quantile regression for each tau individually 
-    for (i in 1:length(taus)){
-        quant_zwi=try(summary(rq(y~x,taus[i]),se="boot"),silent=TRUE)
-        if (class(quant_zwi)!="try-error"){
-            slopes[i]=quant_zwi$coefficients[2]
-            slope_sigs[i]=quant_zwi$coefficients[8]
+    cat(length(unique(y)))
+    if (length(unique(y))>=20){
+        quantiles<-quantile_pete(y,taus=taus,na.rm=TRUE)
+        slopes<-taus*NA
+        slope_sigs<-taus*NA
+
+        # try quantile regression for each tau individually 
+        for (i in 1:length(taus)){
+            #print(taus[i])
+            quant_zwi<-try(summary(rq(y~x,taus[i]),se="boot"))#,silent=TRUE
+            if (class(quant_zwi)!="try-error"){
+                slopes[i]=quant_zwi$coefficients[2]
+                slope_sigs[i]=quant_zwi$coefficients[8]
+            }
         }
+        return(list(quantiles=quantiles,slopes=slopes,slope_sigs=slope_sigs))  
     }
-    return(list(quantiles=quantiles,slopes=slopes,slope_sigs=slope_sigs))
+    else{return(list(quantiles=taus*NA,slopes=taus*NA,slope_sigs=taus*NA))}
 }
 
 
