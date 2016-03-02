@@ -63,7 +63,7 @@ trend_evaluation <- function(durMat,time_vec,ID_select=1:1319,ID_length=length(I
         for (state in 1:2){
             y<-durMat[q,state,]
             if (length(which(!is.na(y)))>100){
-                trends[q,state,1:4]=rq(y~time_vec,taus)$coef[2,]
+                trends[q,state,1:4]=rq(dither(y,value=noise_level)~time_vec,taus)$coef[2,]
                 trends[q,state,5]=lm(y~time_vec)$coef[2]
             }
         }
@@ -115,6 +115,9 @@ init <- function(){
     additional_style<<-""
     taus<<-c(0.5,0.75,0.95,0.99)
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
+
+    #noise level to avoid crash of rq()
+    noise_level<<-0.00001
 }
 
 
