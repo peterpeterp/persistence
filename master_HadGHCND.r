@@ -138,8 +138,8 @@ master_gridded_plots <- function(ID_select=1:1319){
         plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lm",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")
 
         # quantiles
-        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(3),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
-        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(3),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
         
         #fits
         plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
@@ -181,8 +181,8 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
         plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(NA),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lm",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
 
         #quants
-        plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2,3,4),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("75","95th","99th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
-        plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(3),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+        plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("75","95th","99th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
+        plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
 
         #fits
         plot_reg_maps(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
@@ -242,10 +242,10 @@ if (is.na(id)){id<-5}
 ###################################################################
 master_init(id)
 
-master_trend()
-master_seasonal_median_on_detrended()
-master_state_attribution()
-master_duration()
+#master_trend()
+#master_seasonal_median_on_detrended()
+#master_state_attribution()
+#master_duration()
 
 ###################################################################
 # fits, quantiles etc
@@ -259,10 +259,10 @@ master_gridded_plots()
 # regional commands
 ###################################################################
 
-master_regional_analysis(region_name="7rect",ID_length=7,region_names=1:7)
-master_regional_plots(region_name="7rect",ID_length=7,region_names=1:7)
+#master_regional_analysis(region_name="7rect",ID_length=7,region_names=1:7)
+#master_regional_plots(region_name="7rect",ID_length=7,region_names=1:7)
 
 
-master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
-master_regional_plots(region_name="ward23",ID_length=23,region_names=1:23)
+#master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
+#master_regional_plots(region_name="ward23",ID_length=23,region_names=1:23)
 

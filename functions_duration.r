@@ -115,7 +115,6 @@ duration_seasons <- function(dur,dur_mid,season,filename,years=length(dat$year))
             len[state]=length(which(!is.na(dur_neu[q,state,])))
         }
         maxis[q]=max(len,na.rm=TRUE)
-        print(maxis[q])
     }
     duration_write(filename=filename,dur=dur_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],dur_mid=dur_mid_neu[1:ntot,1:states,1:max(maxis,na.rm=TRUE)],len=max(maxis,na.rm=TRUE))
     cat(paste("\ndays in year:",season[1],"-",season[2]))    
@@ -125,7 +124,7 @@ duration_seasons <- function(dur,dur_mid,season,filename,years=length(dat$year))
 duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:length(dat$ID),write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(NA),ID_names=1:length(dat$ID),ID_length=length(ID_select),noise_level=c(0,0),xStart=1,xStop=100){
     
     period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
-    taus=c(0.5,0.75,0.95,0.99)
+    taus=c(0.75,0.95,0.99)
 
     if (!is.na(plot_select[1])){
         pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],"_",add_name,".pdf",sep=""),width=3,height=3)
@@ -152,6 +151,9 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
         percentage=0
         cat(paste("\n0 -> -> -> -> -> 100\n"))
         for (q in ID_select){
+            cat("-")
+            cat(q)
+            cat("-")
             if (q/ID_length*100 > percentage){
                 cat("-")
                 percentage=percentage+5
