@@ -121,7 +121,7 @@ duration_seasons <- function(dur,dur_mid,season,filename,years=length(dat$year))
 }
     
 
-duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:length(dat$ID),write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(NA),ID_names=1:length(dat$ID),ID_length=length(ID_select),noise_level=c(0,0),xStart=1,xStop=100){
+duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:length(dat$ID),write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(NA),ID_names=1:length(dat$ID),ID_length=length(ID_select),noise_level=0,xStart=1,xStop=100){
     
     period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
     taus=c(0.75,0.95,0.99)
@@ -153,13 +153,11 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
         for (q in ID_select){
             cat("-")
             cat(q)
-            cat("-")
             if (q/ID_length*100 > percentage){
                 cat("-")
                 percentage=percentage+5
             }
-            for (state in 1:2){
-                #cat(q)
+            for (state in ID_select){
                 duration=dur[q,state,]
                 duration_mid=dur_mid[q,state,]
                 ord=order(duration_mid)

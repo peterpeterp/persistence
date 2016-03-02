@@ -36,13 +36,8 @@ quantile_pete <- function(dist,taus,na.rm=TRUE,plot=FALSE){
     return(out)
 }
 
-quantile_analysis <- function(x,y,taus,noise_level=c(0,0)){
+quantile_analysis <- function(x,y,taus,noise_level=0){
     # x=dur_mid, y=dur, taus=percentiles
-
-    # noise is added to x and y to avoid crash
-    x<-x+rnorm(length(x),mean=0,sd=1)*noise_level[1]
-    y<-y+rnorm(length(y),mean=0,sd=1)*noise_level[2]
-
     cat(length(unique(y)))
     if (length(unique(y))>=20){
         quantiles<-quantile_pete(y,taus=taus,na.rm=TRUE)
@@ -51,8 +46,8 @@ quantile_analysis <- function(x,y,taus,noise_level=c(0,0)){
 
         # try quantile regression for each tau individually 
         for (i in 1:length(taus)){
-            #print(taus[i])
-            quant_zwi<-try(summary(rq(y~x,taus[i]),se="boot"))#,silent=TRUE
+            # noise is added via "dither()" to x and y to avoid crash
+            quant_zwi<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),se="nid"))#,silent=TRUE
             if (class(quant_zwi)!="try-error"){
                 slopes[i]=quant_zwi$coefficients[2]
                 slope_sigs[i]=quant_zwi$coefficients[8]
