@@ -67,6 +67,7 @@ add_region <- function(region_name,farbe){
 
 put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(points)),pch_sig=4,col_sig="black",yAusschnitt=c(-90,90),pointsize=1,farb_mitte="mean",farb_palette="regenbogen",signi_level=0,i=1,ID_select=1:1319){
 
+	if (length(which(!is.na(points[ID_select])))<3){return(list(y=c(NA),color=c(NA)))}
 
 	y1=points[ID_select]
 	sig=points_sig[ID_select]
@@ -76,6 +77,7 @@ put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(po
 
 	notna=which(!is.na(y1))
 	y=c(NA,NA,y1[notna])
+	sig=sig[notna]
 
 	# depending on color-cheme --------------------------------
 	if (length(farb_mitte)>=3){
@@ -407,9 +409,9 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		#color bar
 		color=tmp$color
 		y=tmp$y
-	    if (is.na(layout_mat[1])){image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=FALSE,legend.lab=color_lab)}
+	    if (is.na(layout_mat[1]) & !is.na(color[1])){image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=FALSE,legend.lab=color_lab)}
 	}
-	if (!is.na(layout_mat[1])){
+	if (!is.na(layout_mat[1]) & !is.na(color[1])){
 		par(new=TRUE)
 		plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 		image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.9,0.5,0.9))

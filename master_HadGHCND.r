@@ -223,6 +223,7 @@ master_init <- function(id){
     trend_style<<-"_mean"
     additional_style<<-""
     dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    ntot<<-length(dat$ID)
 
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")

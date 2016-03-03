@@ -102,14 +102,13 @@ shuffle_check <- function(seasons=1:4,id=2){
         abline(rq(array(binned_dur,c(ID_length,2,periodsInYr*years))[reg,2,]~time_vec,tau=0.95),col="red") 
         graphics.off()
     }  
-    
 }
 
 init <- function(){
     library(quantreg)
     library(RNetCDF)
     nday<<-91
-    nyr<<-5
+    nyr<<-7
     trendID<<-paste(nday,"_",nyr,sep="")
     dataset<<-"_TMean"
     additional_style<<-""
@@ -120,14 +119,11 @@ init <- function(){
     noise_level<<-0.00001
 }
 
-
-
 init()
-
 
 ID_name<-"ward23"
 folder<-paste("/regional/",ID_name,"/",sep="")
-period<-"1950-2014"
+period<-"1980-2014"
 
 #shuffle_check()
 
@@ -143,7 +139,7 @@ for (i in 1:10){
     }
 }
 
-if (id<11){trend_analysis(seasons=1,id=(id+name_id),yearPeriod=c(1952,2012))}
-if (id<21 & id>10){trend_analysis(seasons=2,id=(id-10+name_id),yearPeriod=c(1952,2012))}
-if (id<31 & id>20){trend_analysis(seasons=3,id=(id-20+name_id),yearPeriod=c(1952,2011))}
-if (id<41 & id>30){trend_analysis(seasons=4,id=(id-30+name_id),yearPeriod=c(1952,2011))}
+if (id<11){trend_analysis(seasons=1,id=(id+name_id),yearPeriod=c(1980,2011))}
+if (id<21 & id>10){trend_analysis(seasons=2,id=(id-10+name_id),yearPeriod=c(1980,2011))}
+if (id<31 & id>20){trend_analysis(seasons=3,id=(id-20+name_id),yearPeriod=c(1980,2010))}
+if (id<41 & id>30){trend_analysis(seasons=4,id=(id-30+name_id),yearPeriod=c(1980,2010))}

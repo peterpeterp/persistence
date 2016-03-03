@@ -46,7 +46,7 @@ master_state_attribution <- function(threshold=0.5){
     
     dim.def.nc(nc_out,"ID",dimlength=ntot, unlim=FALSE)   
     dim.def.nc(nc_out,"day",dimlength=365, unlim=FALSE)   
-    dim.def.nc(nc_out,"year",dimlength=59, unlim=FALSE)   
+    dim.def.nc(nc_out,"year",dimlength=length(dat$year), unlim=FALSE)   
 
     var.def.nc(nc_out,"ind","NC_SHORT",c(0,1,2))
     att.put.nc(nc_out, "ind", "missing_value", "NC_SHORT", -99)
@@ -80,7 +80,7 @@ master_duration <- function(){
     duration_seasons(dur,dur_mid,season=c(335,424),filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_DJF.nc",sep=""))
 }
 
-master_gridded_analysis <- function(ID_select=1:1319){
+master_gridded_analysis <- function(){
     yearLimits=c(1948,2006,1980,2006)
     for (i in 1:2){
         yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
@@ -93,12 +93,11 @@ master_gridded_analysis <- function(ID_select=1:1319){
         duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0),noise_level=0.00001)
         
         print("fit")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),plot_select=c(NA),ID_select=ID_select,add_name="2expo_4:100",xStart=4,write=TRUE)
+        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),plot_select=c(NA),ID_select=ID_select,add_name="2expo_4:100",xStart=4,write=TRUE)
     }
-
 }
 
-master_gridded_plots <- function(ID_select=1:1319){
+master_gridded_plots <- function(){
     yearLimits=c(1948,2006,1980,2006)
     for (i in 1:2){
         period<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
@@ -113,7 +112,18 @@ master_gridded_plots <- function(ID_select=1:1319){
         
         #fits
         plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
+    }
+}
 
+master_support_analysis <- function(){
+    source("precip-tools.r")
+    yearLimits=c(1948,2006,1980,2006)
+    for (i in 1:2){
+        yearPeriod<<-c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
+        period<<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
+        print(period)
+        state_ana()
+        state_ana_view(yAusschnitt=c(20,50),xAusschnitt=c(220,310),asp=1,paper=c(8,3.5),pointsize=0.58)
     }
 }
 
@@ -144,6 +154,7 @@ master_init <- function(){
     dataset<<-"_noaa"
     additional_style<<-""
     dat <<- dat_load_precipitation(paste("../data/_noaa/precip.V1.0.1948-2006_0p5.nc",sep=""))
+    ntot<<-length(dat$ID)
 
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
@@ -163,6 +174,8 @@ master_init()
 # fits, quantiles etc
 ###################################################################
 
-master_gridded_analysis()
-master_gridded_plots()
+#master_gridded_analysis()
+#master_gridded_plots()
+
+master_support_analysis()
 

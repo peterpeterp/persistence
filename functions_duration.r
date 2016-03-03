@@ -148,25 +148,23 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
         dur=var.get.nc(nc_dur,"dur")
         dur_mid=var.get.nc(nc_dur,"dur_mid")
 
-        percentage=0
+        percentage<-0
         cat(paste("\n0 -> -> -> -> -> 100\n"))
         for (q in ID_select){
-            cat("-")
-            cat(q)
             if (q/ID_length*100 > percentage){
                 cat("-")
-                percentage=percentage+5
+                percentage<-percentage+5
             }
-            for (state in ID_select){
-                duration=dur[q,state,]
-                duration_mid=dur_mid[q,state,]
-                ord=order(duration_mid)
+            for (state in 1:2){
+                duration<-dur[q,state,]
+                duration_mid<-dur_mid[q,state,]
+                ord<-order(duration_mid)
                 if (length(which(!is.na(duration)))>100){
-                    y=as.vector(duration[ord])
-                    x=as.vector(duration_mid[ord])
-                    inYearPeriod=which(x>yearPeriod[1] & x<yearPeriod[2])
-                    y=y[inYearPeriod]
-                    x=x[inYearPeriod]
+                    y<-as.vector(duration[ord])
+                    x<-as.vector(duration_mid[ord])
+                    inYearPeriod<-which(x>yearPeriod[1] & x<yearPeriod[2])
+                    y<-y[inYearPeriod]
+                    x<-x[inYearPeriod]
 
                     # other stuff
                     if (option[1]==1){
@@ -174,13 +172,13 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                         other_stuff[sea,q,state,2]=sd(y,na.rm=TRUE)
                         other_stuff[sea,q,state,12]=length(!is.na(y))
 
-                        linear=try(lm(y~x),silent=TRUE)
+                        linear<-try(lm(y~x),silent=TRUE)
                         if (class(linear)!="try-error"){other_stuff[sea,q,state,3:10]=summary(linear)$coef}
                     }
 
                     # quantile values and regressions for grid points
                     if (option[2]==1){
-                        tmp=quantile_analysis(x,y,taus,noise_level=noise_level)
+                        tmp<-quantile_analysis(x,y,taus,noise_level=noise_level)
                         quantile_stuff[sea,q,state,,1]=tmp$quantiles
                         quantile_stuff[sea,q,state,,2]=tmp$slopes
                         quantile_stuff[sea,q,state,,3]=tmp$slope_sigs
@@ -194,15 +192,15 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
 
                     # data to be fitted
                     # wie sollte breaks definiert sein ....
-                    br=seq(0.5,max(y,na.rm=TRUE)+0.5,1)
-                    histo=hist(y,breaks=br,plot=FALSE)
+                    br<-seq(0.5,max(y,na.rm=TRUE)+0.5,1)
+                    histo<-hist(y,breaks=br,plot=FALSE)
                         
-                    counts=histo$counts
-                    Y=histo$density
-                    X=histo$mids
+                    counts<-histo$counts
+                    Y<-histo$density
+                    X<-histo$mids
 
-                    if (length(X)>100){stop=100}
-                    else {stop=length(X)}
+                    if (length(X)>100){stop<-100}
+                    else {stop<-length(X)}
 
                     distr_stuff[sea,q,state,1,1:stop]=X[1:stop]
                     distr_stuff[sea,q,state,2,1:stop]=Y[1:stop]
