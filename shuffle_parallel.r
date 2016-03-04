@@ -108,7 +108,7 @@ init <- function(){
     library(quantreg)
     library(RNetCDF)
     nday<<-91
-    nyr<<-7
+    nyr<<-9
     trendID<<-paste(nday,"_",nyr,sep="")
     dataset<<-"_TMean"
     additional_style<<-""
@@ -139,7 +139,7 @@ for (i in 1:10){
     }
 }
 
-if (id<11){trend_analysis(seasons=1,id=(id+name_id),yearPeriod=c(1980,2011))}
-if (id<21 & id>10){trend_analysis(seasons=2,id=(id-10+name_id),yearPeriod=c(1980,2011))}
-if (id<31 & id>20){trend_analysis(seasons=3,id=(id-20+name_id),yearPeriod=c(1980,2010))}
-if (id<41 & id>30){trend_analysis(seasons=4,id=(id-30+name_id),yearPeriod=c(1980,2010))}
+if (id<11){trend_analysis(seasons=1,id=(id+name_id),yearPeriod=c(1980,2010))}
+if (id<21 & id>10){trend_analysis(seasons=2,id=(id-10+name_id),yearPeriod=c(1980,2010))}
+if (id<31 & id>20){trend_analysis(seasons=3,id=(id-20+name_id),yearPeriod=c(1980,2009))}
+if (id<41 & id>30){trend_analysis(seasons=4,id=(id-30+name_id),yearPeriod=c(1980,2009))}

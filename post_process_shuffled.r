@@ -65,14 +65,14 @@ init <- function(){
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     out_names<<-c(0.5,0.75,0.95,0.99,"mean")
 
-    period<<-"1950-2014"
+    period<<-"1980-2014"
     ID_name<<-"ward23"
     folder<<-paste("/regional/",ID_name,"/",sep="")
     regNumb<<-23
     region_names<<-1:23
 
     plot_select<<-c(3,4,5,7,11,12,13,14,16,18,20,21)
-    plot_select<<-c(11,12,16,20)
+    #plot_select<<-c(11,12,16,20)
     plotNumb<<-length(plot_select)
 }
 
