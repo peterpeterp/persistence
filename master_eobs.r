@@ -106,13 +106,12 @@ master_gridded_plots <- function(){
         #others
         plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),sub_zusatz=c(NA),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen",yAusschnitt=c(20,80),xAusschnitt=c(-30,80),asp=1,pointsize=0.44,paper=c(8,5))
         plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lm",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen",yAusschnitt=c(20,80),xAusschnitt=c(-30,80),asp=1,pointsize=0.44,paper=c(8,5))
-        adas
         # quantiles
-        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
-        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen",yAusschnitt=c(20,80),xAusschnitt=c(-30,80),asp=1,pointsize=0.44,paper=c(8,5))
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05,yAusschnitt=c(20,80),xAusschnitt=c(-30,80),asp=1,pointsize=0.44,paper=c(8,5))
         
         #fits
-        plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
+        #plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
 
     }
 }
@@ -123,8 +122,9 @@ master_support_analysis <- function(){
     for (i in 1:2){
         yearPeriod<<-c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
         period<<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
-        #state_ana()
+        state_ana()
         state_ana_view(yAusschnitt=c(20,80),xAusschnitt=c(-30,80),asp=1,paper=c(8,5),pointsize=0.44)
+        memory_test(yAusschnitt=c(20,80),xAusschnitt=c(-30,80),asp=1,paper=c(8,5),pointsize=0.44)
     }
 }
 
@@ -154,7 +154,7 @@ master_init <- function(){
     trendID<<-"0p5"
     dataset<<-"_eobs"
     additional_style<<-""
-    dat <<- dat_load_precipitation(paste("../data/",dataset,"/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
+    #dat <<- dat_load_precipitation(paste("../data/",dataset,"/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
     ntot<<-length(dat$ID)
 
 
@@ -166,7 +166,7 @@ master_init <- function(){
 ###################################################################
 # basic analysis
 ###################################################################
-#master_init()
+master_init()
 
 #master_state_attribution()
 #master_duration()

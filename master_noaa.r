@@ -111,7 +111,7 @@ master_gridded_plots <- function(){
         plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
         
         #fits
-        plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
+        #plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
     }
 }
 
@@ -122,8 +122,9 @@ master_support_analysis <- function(){
         yearPeriod<<-c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
         period<<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
         print(period)
-        state_ana()
-        state_ana_view(yAusschnitt=c(20,50),xAusschnitt=c(220,310),asp=1,paper=c(8,3.5),pointsize=0.58)
+        #state_ana()
+        #state_ana_view(yAusschnitt=c(20,50),xAusschnitt=c(220,310),asp=1,paper=c(8,3.5),pointsize=0.58)
+        memory_test(yAusschnitt=c(20,50),xAusschnitt=c(220,310),asp=1,paper=c(8,3.5),pointsize=0.58)
     }
 }
 
