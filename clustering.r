@@ -264,12 +264,17 @@ write_cluster_region_files <- function(lagMax=20,load_name="_CorLag",add_name=""
     }
     write.table(attribution[nGroup,],paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))
     write.table(mids,paste("../data/",dataset,"/ID_regions/",region_name,"_mids_mean.txt",sep=""))
+}
 
-    ausschnitt=c(-90,90)
+cluster_vis_map <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),nGroup=22,untilGroup=25,method="ward.D2",region_name="ward22",ID_select=1:1319){
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    attribution<<-var.get.nc(nc,"attribution")
+
     pdf(paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",nGroup,"_vis.pdf",sep=""),width=7,height=5)
-    plot(topoWorld,xlim=c(-180,180),ylim=ausschnitt,asp=1.5,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,5))
+    plot(topoWorld,xlim=c(-180,180),ylim=c(-90,90),asp=1.5,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,0))
 
-    tmp=put_points(points=attribution[nGroup,],ausschnitt=ausschnitt,farb_palette="viele",pointsize=0.85,ID_select=ID_select)
+    tmp=put_points(points=attribution[nGroup,],yAusschnitt=c(-90,90),farb_palette="viele",pointsize=0.93,ID_select=ID_select)
     region_border(region_name=region_name,regNumb=nGroup,border_col="black")
     #draw over axes
     polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")
@@ -295,7 +300,7 @@ init <- function(){
     library(RNetCDF)
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
 
-    dat<<-dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    dat<<-dat_load(paste("../data/_TMean/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 }
 
 
@@ -317,5 +322,6 @@ for (method in c("ward.D2")){
     #cluster_view(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
 }
 
-write_cluster_region_files(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=23,region_name="ward23")
+#write_cluster_region_files(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=23,region_name="ward23")
+cluster_vis_map(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=23,region_name="ward23")
 #create_regional_distr_out_of_clusters()

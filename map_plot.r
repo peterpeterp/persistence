@@ -65,6 +65,23 @@ add_region <- function(region_name,farbe){
     }
 }
 
+region_border <- function(ID_select=1:1319,region_name="ward22",regNumb=22,border_col="white",text_col=border_col){
+    # loads attribution file and visualizes regions on map
+    attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
+    mids<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,"_mids.txt",sep=""))    
+
+    for (G in 1:regNumb){
+        inside<-which(attribution==G)
+        for (q in inside){
+            if (!((dat$lon[q]+3.75) %in% dat$lon[inside[which(dat$lat[inside]==dat$lat[q])]])){lines(c(dat$lon[q]+3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]-1.25,dat$lat[q]+1.25),col=border_col)}
+            if (!((dat$lon[q]-3.75) %in% dat$lon[inside[which(dat$lat[inside]==dat$lat[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]-3.75/2),c(dat$lat[q]-1.25,dat$lat[q]+1.25),col=border_col)}
+            if (!((dat$lat[q]+2.5) %in% dat$lat[inside[which(dat$lon[inside]==dat$lon[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]+1.25,dat$lat[q]+1.25),col=border_col)}
+            if (!((dat$lat[q]-2.5) %in% dat$lat[inside[which(dat$lon[inside]==dat$lon[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]-1.25,dat$lat[q]-1.25),col=border_col)}
+        }
+        text(mids[G,2],mids[G,3],label=G,col=text_col)
+    }
+}
+
 put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(points)),pch_sig=4,col_sig="black",yAusschnitt=c(-90,90),pointsize=1,farb_mitte="mean",farb_palette="regenbogen",signi_level=0,i=1,ID_select=1:1319){
 
 	if (length(which(!is.na(points[ID_select])))<3){return(list(y=c(NA),color=c(NA)))}
@@ -352,22 +369,6 @@ map_allgemein <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
     graphics.off()
 }
 
-region_border <- function(ID_select=1:1319,region_name="ward22",regNumb=22,border_col="white",text_col=border_col){
-    # loads attribution file and visualizes regions on map
-    attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
-    mids<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,"_mids.txt",sep=""))    
-
-    for (G in 1:regNumb){
-        inside<-which(attribution==G)
-        for (q in inside){
-            if (!((dat$lon[q]+3.75) %in% dat$lon[inside[which(dat$lat[inside]==dat$lat[q])]])){lines(c(dat$lon[q]+3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]-1.25,dat$lat[q]+1.25),col=border_col)}
-            if (!((dat$lon[q]-3.75) %in% dat$lon[inside[which(dat$lat[inside]==dat$lat[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]-3.75/2),c(dat$lat[q]-1.25,dat$lat[q]+1.25),col=border_col)}
-            if (!((dat$lat[q]+2.5) %in% dat$lat[inside[which(dat$lon[inside]==dat$lon[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]+1.25,dat$lat[q]+1.25),col=border_col)}
-            if (!((dat$lat[q]-2.5) %in% dat$lat[inside[which(dat$lon[inside]==dat$lon[q])]])){lines(c(dat$lon[q]-3.75/2,dat$lon[q]+3.75/2),c(dat$lat[q]-1.25,dat$lat[q]-1.25),col=border_col)}
-        }
-        text(mids[G,2],mids[G,3],label=G,col=text_col)
-    }
-}
 
 topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,grid=FALSE,paper=c(12,8),pointsize=1,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),layout_mat=c(NA),main="",pch_points=array(15,dim(reihen)),ID_select=1:length(dat$ID),region_name=NA,regNumb=NA,border_col="white",land_col=rgb(0.5,0.5,0.5,0.5),water_col=rgb(0,0.2,0.8,0.0),yAusschnitt=c(-90,90),xAusschnitt=c(-180,180),asp=1.5){
 	
