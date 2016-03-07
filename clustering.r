@@ -276,6 +276,7 @@ cluster_vis_map <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=
 
     tmp=put_points(points=attribution[nGroup,],yAusschnitt=c(-90,90),farb_palette="viele",pointsize=0.93,ID_select=ID_select)
     region_border(region_name=region_name,regNumb=nGroup,border_col="black")
+    for (i in c(-60,-35,0,35,60)){abline(h=i,lty=2,col="grey")}
     #draw over axes
     polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")
     polygon(x=c(-200,-200,200,200),y=c(100,88,88,100),col="white",border="white")

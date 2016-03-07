@@ -163,7 +163,8 @@ master_regional_analysis <- function(region_name="7rect",ID_length=7,region_name
         duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,1,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
         
         print("fit")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_4:100",xStart=4,ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))       
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),add_name="2expo_4:100",xStart=4,ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
+
     } 
 }
 
@@ -179,19 +180,18 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
         #others
         plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),sub_zusatz=c(NA),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
         plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(NA),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lm",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
-        plot_reg_maps(region_name=region_name,file="_shuffQuant",var="original_slopes",sub_auswahl=c(5),value_auswahl=c(1),sig_auswahl=c(2),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lmSig",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
+        #plot_reg_maps(region_name=region_name,file="_shuffQuant",var="original_slopes",sub_auswahl=c(5),value_auswahl=c(1),sig_auswahl=c(2),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lmSig",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
 
         #quants
         plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("75","95th","99th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
         plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
-        plot_reg_maps(region_name=region_name,file="_shuffQuant",var="original_slopes",period=period,sub_auswahl=c(3),value_auswahl=c(1),sig_auswahl=c(2),value_zusatz=c("qr slope"),sub_zusatz=c("95th"),name_zusatz="qr_slopeSig",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+        #plot_reg_maps(region_name=region_name,file="_shuffQuant",var="original_slopes",period=period,sub_auswahl=c(3),value_auswahl=c(1),sig_auswahl=c(2),value_zusatz=c("qr slope"),sub_zusatz=c("95th"),name_zusatz="qr_slopeSig",farb_mitte=c(-0.35,0.35),signi_level=0.05)
 
         #fits
-        plot_reg_maps(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
+        plot_reg_maps(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="regenbogen")
    
 
-        #write_regional_fit_table(trendID=trendID,region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style="2expo_4:100",period=period)
-        #fit_info_to_map(region_name=region_name,fit_style="2expo_4:100",region_names=region_names,ID_select=ID_select,regNumb=ID_length,period=period)
+        write_regional_fit_table(trendID=trendID,region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style="2expo_4:100",period=period)
     }
 }
 
@@ -205,6 +205,7 @@ master_init <- function(id){
     source("functions_duration.r")
     source("functions_regional.r")
     source("analysis_tools.r")
+    source("post_process_shuffled.r")
     source("write.r")
     source("load.r")
     source("plot_master.r")
@@ -224,7 +225,7 @@ master_init <- function(id){
     dataset<<-"_TMean"
     trend_style<<-"_mean"
     additional_style<<-""
-    dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    #dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
     ntot<<-length(dat$ID)
 
 
@@ -237,7 +238,7 @@ master_init <- function(id){
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
 if (!is.na(id)){id<-id*2+3}
-if (is.na(id)){id<-5}
+if (is.na(id)){id<-7}
 
 
 ###################################################################
@@ -265,7 +266,10 @@ master_init(id)
 #master_regional_analysis(region_name="7rect",ID_length=7,region_names=1:7)
 #master_regional_plots(region_name="7rect",ID_length=7,region_names=1:7)
 
+master_regional_analysis(region_name="midlat",ID_length=1,region_names="midlat")
+master_regional_plots(region_name="midlat",ID_length=1,region_names="midlat")
+
 
 #master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
-master_regional_plots(region_name="ward23",ID_length=23,region_names=1:23)
+#master_regional_plots(region_name="ward23",ID_select=c(1,2,6,10,13,19,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,23),ID_length=23,region_names=1:23)
 

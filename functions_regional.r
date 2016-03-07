@@ -1,4 +1,18 @@
 
+write_midlat_region_file <- function(region_name="midlat"){
+    nGroup<-2
+    attribution<-array(NA,1319)
+    attribution[dat$lat>23 & dat$lat<66]=1
+    attribution[dat$lat< -23 & dat$lat> -66]=2
+    mids<-array(NA,c(nGroup,3))
+    for (G in 1:nGroup){
+        inside<<-which(attribution==G)
+        mids[G,]=c(G,mean(dat$lon[inside]),mean(dat$lat[inside]))
+    }
+    write.table(attribution,paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))
+    write.table(mids,paste("../data/",dataset,"/ID_regions/",region_name,"_mids_mean.txt",sep=""))
+}
+
 points_to_regions <- function(region_name="7rect"){
     # loads region coordinates and writes a file in which grid points are associated to regions
     # outpufile has following columns: ID, regions from region_names
@@ -110,7 +124,6 @@ regional_attribution <- function(region_name,trendID,additional_style="",dataset
         periods_in_yr=array(0,regNumb*2*65)
         index=0
         for (reg in 1:regNumb){
-            print(reg)
             for (state in 1:2){
                 for (yr in 1:length(dat$year)){
                     index<-index+1
@@ -216,100 +229,121 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
 }
 
 
-write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fit_style,region_names,ID_select){
+write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fit_style,region_names,ID_select,hlines=c(19,20,22,8)){
     regNumb=length(ID_select)
+
+    rel_sensitivity=array(0,c(3,5,regNumb,2,20))
+    fit_mass=array(0,c(3,6,regNumb,2,20))
+    trends=c("91_5","91_7","91_9")
+    for (i in 1:3){
+        trendID<-trends[i]
+        print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+        nc<-open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+        fit_mass[i,,,,]<-var.get.nc(nc,"fit_stuff")
+    }
+
+    for (sea in 1:5){
+        for (reg in ID_select){
+            for (state in 1:2){
+                for (out in 1:20){
+                    rel_sensitivity[1,sea,reg,state,out]=mean(fit_mass[,sea,reg,state,out],na.rm=TRUE)
+                    rel_sensitivity[2,sea,reg,state,out]=sd(fit_mass[,sea,reg,state,out],na.rm=TRUE)
+                    rel_sensitivity[3,sea,reg,state,out]=sd(fit_mass[,sea,reg,state,out],na.rm=TRUE)/mean(fit_mass[,sea,reg,state,out],na.rm=TRUE)
+                }
+            }
+        }
+    }
 
     print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
     nc = open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
-    fit_stuff1=var.get.nc(nc,"fit_stuff")
+    fit_stuff<-var.get.nc(nc,"fit_stuff")
 
-
-    season_names=c("MAM","JJA","SON","DJF","4seasons")
-    state_names=c("cold","warm")
 
     table<-file(paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_fit_",fit_style,".tex",sep=""))
-    #table<-file(paste("/home/peter/Dokumente/pik/geschrieben/ganzjahr/single_chapters/",trendID,"_",region_name,"_",period,"_",fit_style1," _all_latex.tex",sep=""))
     options(scipen=100)
 
     colors=c("white","groegree","zehngree","funfziggree","hundertgree","turkis","violet")
     lines=c()
     index=0
 
-    lines[index+1]="\\documentclass[a4paper,12pt]{article}"
-    lines[index+2]="\\usepackage{xcolor,colortbl,pgf}"
-    lines[index+3]="\\definecolor{white}{rgb}{1,1,1}"
-    lines[index+4]="\\definecolor{groegree}{rgb}{0.85,1,0.85}"
-    lines[index+5]="\\definecolor{zehngree}{rgb}{0.75,1,0.75}"
-    lines[index+6]="\\definecolor{funfziggree}{rgb}{0.5,1,0.5}"
-    lines[index+7]="\\definecolor{hundertgree}{rgb}{0.3,1,0.3}"
-    lines[index+8]="\\definecolor{turkis}{rgb}{0.5,1,1}"
-    lines[index+9]="\\definecolor{violet}{rgb}{1,0.5,1}"
-    lines[index+10]="\\begin{document}\\vspace{-2cm}"
-    lines[index+11]="\\fcolorbox{groegree}{groegree}{dBIC$<$0}\\"
-    lines[index+12]="\\fcolorbox{zehngree}{zehngree}{dBIC$<$-10}\\"
-    lines[index+13]="\\fcolorbox{funfziggree}{funfziggree}{dBIC$<$-50}\\"
-    lines[index+14]="\\fcolorbox{hundertgree}{hundertgree}{dBIC$<$-100}\\"
-    lines[index+15]="\\fcolorbox{turkis}{turkis}{P2$>$P1}\\"
-    lines[index+16]="\\fcolorbox{violet}{violet}{P2$<$P1}\\"
-    index=index+16
+    lines[index<-index+1]="\\documentclass[a4paper,12pt]{article}"
+    lines[index<-index+1]="\\usepackage{xcolor,colortbl,pgf}"
+    lines[index<-index+1]="\\usepackage{makecell}"
+    lines[index<-index+1]="\\usepackage{geometry}"
+    lines[index<-index+1]="\\geometry{ a4paper, total={190mm,288mm}, left=10mm, top=10mm, }"
+
+    lines[index<-index+1]="\\definecolor{white}{rgb}{1,1,1}"
+    lines[index<-index+1]="\\definecolor{green}{rgb}{0.5,1,0.5}"
+    lines[index<-index+1]="\\definecolor{turkis}{rgb}{0.5,1,1}"
+    lines[index<-index+1]="\\definecolor{violet}{rgb}{1,0.5,1}"
+
+    lines[index<-index+1]="\\begin{document}"
 
     for (sea in 1:5){
-        for (state in 1:2){
+        lines[index<-index+1]=paste("\\begin{table}[!h]")
+        lines[index<-index+1]=paste("\\begin{tabular}{c||c||c|c|c|c|c||c||c||c|c|c|c|c}")
 
-            lines[index+1]=paste("\\begin{table}[!h]")
-            lines[index+2]=paste("\\vspace{0cm}")
-            lines[index+3]=paste("\\hspace{0cm}")
-            lines[index+4]=paste("\\begin{tabular}{c|c|c|c|c|c|c|c|c|c}")
+        lines[index<-index+1]=paste("\\multicolumn{14}{c}{",season_names[sea],period,"}\\","\\",sep="")
+        lines[index<-index+1]=paste(" &\\multicolumn{6}{c}{",state_names[1],"}","& &\\multicolumn{6}{c}{",state_names[2],"}\\","\\",sep="")
+        lines[index<-index+1]=paste("reg & $b_{expo}$  & b1 & b2 & thresh & b2-b1 & dBIC & & $b_{expo}$ & b1 & b2 & thresh & b2-b1 & dBIC  ","\\","\\",sep="")
+        for (reg in ID_select){
+            newline=paste(region_names[reg],sep="")
+            for (state in 1:2){
+                if (state==2){newline<-paste(newline," &",sep="")}
 
-            lines[index+5]=paste("\\multicolumn{9}{1}{",season_names[sea]," ",state_names[state]," ",period,"}\\","\\",sep="")
-            lines[index+6]=paste("\\ reg & R2 & BIC & P & R2 & BIC & thresh & P1 & P2 & P2-P1","\\","\\",sep="")
-            #lines[index+6]=paste("\\ reg & R2 & BIC & P & R2 & BIC & thresh & P1 & P2 & P2-P1","\\","\\",sep="")
-            index=index+6
-            for (reg in ID_select){
-                background=c(colors[1],colors[1])
-                BICs=c(fit_stuff1[sea,reg,state,c(16,20)])
-                if (length(which(!is.na(BICs)))>0){
-                    worst=BICs[which(BICs==max(BICs,na.rm=TRUE))]
-                    for (i in 1:2){
-                        if (!is.na(BICs[i])){
-                            if (BICs[i]<worst){background[i]=colors[2]}
-                            if ((BICs[i]+10)<worst){background[i]=colors[3]}
-                            if ((BICs[i]+50)<worst){background[i]=colors[4]}
-                            if ((BICs[i]+100)<worst){background[i]=colors[5]}
-                        }
-                    }
+                for (i in c(2,6,8,9)){
+                    if (rel_sensitivity[3,sea,reg,state,i]<=0.05){background<-"white!25"}
+                    if (rel_sensitivity[3,sea,reg,state,i]>0.05){background<-"violet!25"}
+                    if (rel_sensitivity[3,sea,reg,state,i]>0.1){background<-"violet!50"}
+                    if (rel_sensitivity[3,sea,reg,state,i]>0.2){background<-"violet!75"}
+                    newline<-paste(newline," &{\\cellcolor{",background,"}{",round(fit_stuff[sea,reg,state,i],02),"}}",sep="")
                 }
-                newline=paste("\\ ",region_names[reg],sep="")
-                for (i in c(15,16)){
-                    newline=paste(newline," &{\\cellcolor{",background[1],"}}",round(fit_stuff1[sea,reg,state,i],02),"",sep="")}
-                newline=paste(newline," &{\\cellcolor{",background[1],"}}",round(exp(-fit_stuff1[sea,reg,state,2])*100,01),sep="")
-                for (i in c(19,20,9)){
-                    newline=paste(newline," &{\\cellcolor{",background[2],"}}",round(fit_stuff1[sea,reg,state,i],02),"",sep="")}
-                newline=paste(newline," &{\\cellcolor{",background[2],"}}",round(exp(-fit_stuff1[sea,reg,state,6])*100,01),sep="")
-                newline=paste(newline," &{\\cellcolor{",background[2],"}}",round(exp(-fit_stuff1[sea,reg,state,8])*100,01),sep="")
-                diffP=round(exp(-fit_stuff1[sea,reg,state,8])*100,03)-round(exp(-fit_stuff1[sea,reg,state,6])*100,03)
-                if (diffP>0){farbe=colors[6]}
-                else {farbe=colors[7]}
-                newline=paste(newline," &{\\cellcolor{",farbe,"}}",round(diffP,01),sep="")
-
+                diffb<-round(fit_stuff[sea,reg,state,8]-fit_stuff[sea,reg,state,6],03)
+                if (diffb>0){farbe="turkis"}
+                else {farbe="white"}
+                newline<-paste(newline," &{\\cellcolor{",farbe,"}{",round(diffb,03),"}}",sep="")
+                for (i in c(17)){
+                    if (fit_stuff[sea,reg,state,i]>=0){background<-"white!10"}
+                    if (fit_stuff[sea,reg,state,i]<0){background<-"green!25"}
+                    if (fit_stuff[sea,reg,state,i]< -10){background<-"green!50"}
+                    if (fit_stuff[sea,reg,state,i]< -50){background<-"green!75"}
+                    newline<-paste(newline," &{\\cellcolor{",background,"}{",round(fit_stuff[sea,reg,state,i],02),"}}",sep="")
+                }
                 
-                newline=paste(newline,paste("\\","\\",sep=""))
-                lines[index+1]=newline
-                index=index+1
             }
-            lines[index+1]=paste("\\end{tabular}")
-            #lines[index+2]=paste("\\end{table} \\newpage")
-            lines[index+2]=paste("\\end{table}")
-            lines[index+3]=paste("\\vspace{0cm}")
-            index=index+3
-
+            newline<-paste(newline,paste("\\","\\",sep=""))
+            lines[index<-index+1]=newline
+            if (reg %in% hlines){
+                lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+                lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+            }
         }
+        lines[index<-index+1]=paste("\\end{tabular}")
+        lines[index<-index+1]=paste("\\end{table}")
+        lines[index<-index+1]=paste("\\vspace{0cm}")
         
     }
-    lines[index+1]="\\end{document}"
+
+    lines[index<-index+1]="\\newpage"
+
+    lines[index<-index+1]="\\fcolorbox{green!25}{green!25}{dBIC$<$0}\\"
+    lines[index<-index+1]="\\fcolorbox{green!50}{green!50}{dBIC$<$-10}\\"
+    lines[index<-index+1]="\\fcolorbox{green!75}{green!75}{dBIC$<$-50}\\"
+
+    lines[index<-index+1]="\\fcolorbox{violet!25}{violet!25}{sd/mean$>$0.05}\\"
+    lines[index<-index+1]="\\fcolorbox{violet!50}{violet!50}{sd/mean$>$0.10}\\"
+    lines[index<-index+1]="\\fcolorbox{violet!75}{violet!75}{sd/mean$>$0.20}\\"
+
+    lines[index<-index+1]="\\fcolorbox{turkis}{turkis}{b2$<$b1}\\"
+
+
+    lines[index<-index+1]="\\end{document}"
     writeLines(lines, table)
     close(table)
 }
+
+
+
 
 
 
