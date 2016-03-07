@@ -150,7 +150,6 @@ plot_reg_maps <- function(region_name="ward23",period="1950-2014",file="_others"
     attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
     regNumb<-length(unique(attribution[!is.na(attribution)]))
 
-    print("../data/_TMean/91_5/regional/7rect/1950-2014/91_5__TMean_7rect_1950-2014_others.nc")
 	print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,file,".nc",sep=""))
 	nc<-open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,file,".nc",sep=""))
 	values<-var.get.nc(nc,var)
@@ -205,5 +204,5 @@ plot_reg_maps <- function(region_name="ward23",period="1950-2014",file="_others"
 		}
 	}
 	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
-	topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/","duration_trend_",trendID,"_",region_name,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,grid=grid,region=region,pointsize=0.85,yAausschnitt=yAausschnitt,paper=c(7,5),signi_level=signi_level) #,reihen_sig=attribution_changes[,]
+	topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/","duration_trend_",trendID,"_",region_name,"_",name_zusatz,"_",period,additional_style,".pdf",sep=""),reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,grid=grid,region=region,pointsize=0.85,yAusschnitt=yAusschnitt,paper=c(7,5),signi_level=signi_level) #,reihen_sig=attribution_changes[,]
 }

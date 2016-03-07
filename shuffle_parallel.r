@@ -72,7 +72,7 @@ trend_evaluation <- function(durMat,time_vec,ID_select=1:1319,ID_length=length(I
 
 }
 
-shuffle_check <- function(seasons=1:4,id=2){
+shuffle_check <- function(seasons=1:2,id=2,yearPeriod=c(1952,2012)){
     print(id)
     for (sea in seasons){
         season<-season_names[sea]
@@ -93,7 +93,7 @@ shuffle_check <- function(seasons=1:4,id=2){
         print(dim(binned_dur))
         plot(time_vec,array(binned_dur,c(ID_length,2,periodsInYr*years))[reg,2,],pch=20,cex=0.5,col=rgb(0.5,0.5,0.5,0.2))
 
-        nShuffle<-1
+        nShuffle<-20
         for (shuff in 1:nShuffle){
             cat(paste("--",shuff))
             durMat<-array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*years))
@@ -108,7 +108,7 @@ init <- function(){
     library(quantreg)
     library(RNetCDF)
     nday<<-91
-    nyr<<-9
+    nyr<<-5
     trendID<<-paste(nday,"_",nyr,sep="")
     dataset<<-"_TMean"
     additional_style<<-""
@@ -123,10 +123,11 @@ init()
 
 ID_name<-"ward23"
 folder<-paste("/regional/",ID_name,"/",sep="")
-period<-"1980-2014"
+period<-"1950-2014"
 
-#shuffle_check()
-
+shuffle_check(seasons=1:2,id=2,yearPeriod=c(1952,2012))
+shuffle_check(seasons=3:4,id=2,yearPeriod=c(1952,2011))
+asda
 
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
@@ -139,7 +140,7 @@ for (i in 1:10){
     }
 }
 
-if (id<11){trend_analysis(seasons=1,id=(id+name_id),yearPeriod=c(1980,2010))}
-if (id<21 & id>10){trend_analysis(seasons=2,id=(id-10+name_id),yearPeriod=c(1980,2010))}
-if (id<31 & id>20){trend_analysis(seasons=3,id=(id-20+name_id),yearPeriod=c(1980,2009))}
-if (id<41 & id>30){trend_analysis(seasons=4,id=(id-30+name_id),yearPeriod=c(1980,2009))}
+if (id<11){trend_analysis(seasons=1,id=(id+name_id),yearPeriod=c(1954,2010))}
+if (id<21 & id>10){trend_analysis(seasons=2,id=(id-10+name_id),yearPeriod=c(1954,2010))}
+if (id<31 & id>20){trend_analysis(seasons=3,id=(id-20+name_id),yearPeriod=c(1954,2009))}
+if (id<41 & id>30){trend_analysis(seasons=4,id=(id-30+name_id),yearPeriod=c(1954,2009))}
