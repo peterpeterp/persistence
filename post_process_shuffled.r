@@ -156,7 +156,7 @@ init <- function(){
 
 
     nday<<-91
-    nyr<<-5
+    nyr<<-7
     trendID<<-paste(nday,"_",nyr,sep="")
     dataset<<-"_TMean"
     additional_style<<-""
@@ -165,7 +165,7 @@ init <- function(){
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     out_names<<-c(0.5,0.75,0.95,0.99,"mean")
 
-    period<<-"1950-2014"
+    period<<-"1980-2014"
     ID_name<<-"ward23"
     folder<<-paste("/regional/",ID_name,"/",sep="")
     regNumb<<-23
@@ -173,14 +173,15 @@ init <- function(){
 
     plot_select<<-c(3,4,5,7,11,12,13,14,16,18,20,21)
     reg_order<<-c(1,2,610,13,19,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,23)
+    reg_order<<-c(3,4,7,11,12,14,16,18,20,22)
     hlines<<-c(19,20,22,8)
     #plot_select<<-c(11,12,16,20)
     plotNumb<<-length(plot_select)
 }
 
-#init()
+init()
 #confidence_interval()
 
-#plot_confi_intervals()
+plot_confi_intervals()
 
-#write_slope_table()
+write_slope_table()

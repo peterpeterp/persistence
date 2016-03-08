@@ -239,8 +239,8 @@ cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2
 }
 
 write_cluster_region_files <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),nGroup=22,untilGroup=25,method="ward.D2",region_name="ward22",ID_select=1:1319){
-    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
-    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
     attribution<<-var.get.nc(nc,"attribution")
 
     mids<-array(NA,c(nGroup,3))
@@ -253,8 +253,8 @@ write_cluster_region_files <- function(lagMax=20,load_name="_CorLag",add_name=""
 }
 
 cluster_vis_map <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),nGroup=22,untilGroup=25,method="ward.D2",region_name="ward22",ID_select=1:1319){
-    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
-    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
     attribution<<-var.get.nc(nc,"attribution")
 
     pdf(paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",nGroup,"_vis.pdf",sep=""),width=7,height=5)
@@ -311,9 +311,8 @@ ID_select=which(dat$lat<60 & dat$lat>30)
 for (method in c("ward.D2")){
     print(method)
     #cluster_evaluation(add_name="_ml",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=25)
-    cluster_view(add_name="_ml",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=25)
+    #cluster_view(add_name="_ml",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=25)
 }
 
-#write_cluster_region_files(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=23,region_name="ward23")
-#cluster_vis_map(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=23,region_name="ward23")
-#create_regional_distr_out_of_clusters()
+write_cluster_region_files(add_name="_ml",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=7,region_name="ml7")
+cluster_vis_map(add_name="_ml",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=7,region_name="ml7")

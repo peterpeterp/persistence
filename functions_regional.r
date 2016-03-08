@@ -2,8 +2,8 @@
 write_midlat_region_file <- function(region_name="midlat"){
     nGroup<-2
     attribution<-array(NA,1319)
-    attribution[dat$lat>23 & dat$lat<66]=1
-    attribution[dat$lat< -23 & dat$lat> -66]=2
+    attribution[dat$lat>30 & dat$lat<60]=1
+    attribution[dat$lat< -30 & dat$lat> -60]=2
     mids<-array(NA,c(nGroup,3))
     for (G in 1:nGroup){
         inside<<-which(attribution==G)

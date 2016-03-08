@@ -21,8 +21,11 @@ plot_maps <- function(period="1950-2014",file="_others",var="other_stuff",yAussc
 			for (val in 1:length(value_auswahl)){
 				for (state in 1:2){
 					index<-index+1
-				    if (value_auswahl[val] %in% c(2,6,8)){reihen[index,]=round(exp(-values[sea,,state,value_auswahl[val]])*100,01)}
-				    else{reihen[index,]=values[sea,,state,value_auswahl[val]]}
+					print(dim(values))
+					print(dim(reihen))
+					print(value_auswahl[val])
+				    #if (value_auswahl[val] %in% c(2,6,8)){reihen[index,]=round(exp(-values[sea,,state,value_auswahl[val]])*100,01)}
+				    reihen[index,]=values[sea,,state,value_auswahl[val]]
 				    if (!is.na(sig_style[1])){reihen_sig[index,]=values[sea,,state,20]-values2[sea,,state,20]}
 				    if (!is.na(sig_auswahl[val])){reihen_sig[index,]=values[sea,,state,sig_auswahl[val]]}
 				    if (value_zusatz[1]!=""){titel[index]=paste(value_zusatz[val],"of",state_names[state],"period duration in",season,"in",period)}

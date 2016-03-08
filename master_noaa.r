@@ -87,13 +87,13 @@ master_gridded_analysis <- function(){
         print(yearPeriod)
 
         print("others")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0,0))
+        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0,0))
 
         print("quant")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0),noise_level=0.00001)
+        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0),noise_level=0.00001)
         
         print("fit")
-        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),plot_select=c(NA),ID_select=ID_select,add_name="2expo_4:100",xStart=4,write=TRUE)
+        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),plot_select=c(NA),add_name="2expo_4:100",xStart=4,write=TRUE)
     }
 }
 
@@ -104,14 +104,14 @@ master_gridded_plots <- function(){
         print(period)
 
         #others
-        plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),sub_zusatz=c(NA),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen",yAusschnitt=c(20,50),xAusschnitt=c(220,310),asp=1)
-        plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lm",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen",yAusschnitt=c(25,50),xAusschnitt=c(235,300),asp=1,pointsize=0.58,paper=c(8,3.5))
+        #plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),sub_zusatz=c(NA),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen",yAusschnitt=c(20,50),xAusschnitt=c(220,310),asp=1)
+        #plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lm",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen",yAusschnitt=c(25,50),xAusschnitt=c(235,300),asp=1,pointsize=0.58,paper=c(8,3.5))
         # quantiles
-        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
-        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+        #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
+        #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
         
         #fits
-        #plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
+        plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
     }
 }
 
@@ -175,8 +175,8 @@ master_init()
 # fits, quantiles etc
 ###################################################################
 
-#master_gridded_analysis()
-#master_gridded_plots()
+master_gridded_analysis()
+master_gridded_plots()
 
 master_support_analysis()
 
