@@ -148,7 +148,7 @@ master_gridded_plots <- function(ID_select=1:1319){
 }
 
 master_regional_analysis <- function(region_name="7rect",ID_length=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:ID_length,plot_select=1:ID_length){
-    regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+    #regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
     ID_name=paste("_",region_name,sep="")
     yearLimits=c(1950,2014,1980,2014)
     for (i in 1:2){
@@ -225,7 +225,7 @@ master_init <- function(id){
     dataset<<-"_TMean"
     trend_style<<-"_mean"
     additional_style<<-""
-    #dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
     ntot<<-length(dat$ID)
 
 
@@ -266,9 +266,11 @@ master_init(id)
 #master_regional_analysis(region_name="7rect",ID_length=7,region_names=1:7)
 #master_regional_plots(region_name="7rect",ID_length=7,region_names=1:7)
 
-master_regional_analysis(region_name="midlat",ID_length=1,region_names="midlat")
-master_regional_plots(region_name="midlat",ID_length=1,region_names="midlat")
+master_regional_analysis(region_name="midlat",ID_length=2,region_names="midlat")
+master_regional_plots(region_name="midlat",ID_length=2,region_names="midlat")
 
+#master_regional_analysis(region_name="ml7",ID_length=7,region_names=1:7)
+#master_regional_plots(region_name="ml7",ID_length=7,region_names=1:7)
 
 #master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
 #master_regional_plots(region_name="ward23",ID_select=c(1,2,6,10,13,19,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,23),ID_length=23,region_names=1:23)
