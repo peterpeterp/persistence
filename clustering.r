@@ -238,17 +238,6 @@ cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2
     }
 }
 
-create_regional_distr_out_of_clusters <- function(nGroup=20,period="1950-2014",region_name=paste("ward",nGroup,sep=""),lagMax=20,add_name="",timeRange=c(2000,22000),untilGroup=25,method="ward.D2"){
-    sourceName=paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep="")
-    print(sourceName)
-    nc=open.nc(sourceName)
-    IDregions=array(NA,c(1319,5))
-    for (sea in 1:5){IDregions[,sea]=var.get.nc(nc,"attribution")[nGroup,]
-    }
-    regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style,IDregions=IDregions,regNumb=nGroup,comment=sourceName)
-}
-
-
 write_cluster_region_files <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),nGroup=22,untilGroup=25,method="ward.D2",region_name="ward22",ID_select=1:1319){
     print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
     nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
