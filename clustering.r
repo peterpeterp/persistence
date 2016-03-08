@@ -112,14 +112,14 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_sel
     # X is evaluated as in dissimilarity_matrix
     X=array(dat$tas,c(1319,365*65))
     # range in which data coverage is best
-    X=X[ID_select,timeRange[1]:timeRange[2]]
+    X=X[,timeRange[1]:timeRange[2]]
     xLen=length(timeRange[1]:timeRange[2])
 
     # to many nas -> flat 
     ID_select_not_flat<-c()
     count<-0
     for (q in ID_select){
-        if (length(which(is.na(X[q,])))<xLen/2){
+            if (length(which(is.na(X[q,])))<xLen/2){
             count<-count+1
             ID_select_not_flat[count]=q
         }
@@ -208,17 +208,14 @@ cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_sel
 }
 
 cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),untilGroup=11,method="ward.D2",ID_select=1:1319){
-    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
-    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering","_ww","_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
     attribution<<-var.get.nc(nc,"attribution")
     attribution_changes<<-var.get.nc(nc,"attribution_changes")
     criteria<<-var.get.nc(nc,"criteria")
 
-    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
-    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_dissimilarity_matrix.nc",sep=""))
-    distMat<<-var.get.nc(nc,"distanceMat")
 
-    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],reihen_sig=attribution_changes[,],farb_palette="viele",pointsize=1.0,ausschnitt=c(-80,80),paper=c(7,4)) #,reihen_sig=attribution_changes[,]
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],farb_palette="viele",pointsize=1.0,yAusschnitt=c(-80,80),paper=c(7,4)) #,reihen_sig=attribution_changes[,]
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],farb_palette="viele",pointsize=1.5,ausschnitt=c(35,75),paper=c(7,2)) #,reihen_sig=attribution_changes[,]
 
 
@@ -276,7 +273,10 @@ cluster_vis_map <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=
 
     tmp=put_points(points=attribution[nGroup,],yAusschnitt=c(-90,90),farb_palette="viele",pointsize=0.93,ID_select=ID_select)
     region_border(region_name=region_name,regNumb=nGroup,border_col="black")
-    for (i in c(-60,-35,0,35,60)){abline(h=i,lty=2,col="grey")}
+    for (i in c(-60,-30,0,30,60)){
+        abline(h=i,lty=2,col="grey")
+        text(-170,i,label=i)
+    }
     #draw over axes
     polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")
     polygon(x=c(-200,-200,200,200),y=c(100,88,88,100),col="white",border="white")
@@ -317,12 +317,14 @@ load_name<-"_CorSdNorm"
 #dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
 
 #for (method in c("ward.D2","single","centroid")){
+
+ID_select=which(dat$lat<60 & dat$lat>30)
 for (method in c("ward.D2")){
     print(method)
-    #cluster_evaluation(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
-    #cluster_view(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method=method,untilGroup=25)
+    #cluster_evaluation(add_name="_ml",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=25)
+    cluster_view(add_name="_ml",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=25)
 }
 
 #write_cluster_region_files(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=23,region_name="ward23")
-cluster_vis_map(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=23,region_name="ward23")
+#cluster_vis_map(add_name="",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=23,region_name="ward23")
 #create_regional_distr_out_of_clusters()

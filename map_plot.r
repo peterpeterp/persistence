@@ -85,6 +85,7 @@ region_border <- function(ID_select=1:1319,region_name="ward22",regNumb=22,borde
 put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(points)),pch_sig=4,col_sig="black",yAusschnitt=c(-90,90),pointsize=1,farb_mitte="mean",farb_palette="regenbogen",signi_level=0,i=1,ID_select=1:1319){
 
 	if (length(which(!is.na(points[ID_select])))<3){return(list(y=c(NA),color=c(NA)))}
+	if (length(unique(points[ID_select]))<3){return(list(y=c(NA),color=c(NA)))}
 
 	y1=points[ID_select]
 	sig=points_sig[ID_select]
@@ -389,7 +390,6 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 
 	    #data points
 	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],yAusschnitt=yAusschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,pointsize=pointsize,pch_points=pch_points,pch_sig=4,col_sig=rgb(0,0,0,0.5),ID_select=ID_select)
-
 	    #highlight points
 		for (rad in c(1,1.5,2,2.5)){
 			points(dat$lon[highlight_points[i]],dat$lat[highlight_points[i]],col=highlight_color,pch=1,cex=(pointsize*rad))
