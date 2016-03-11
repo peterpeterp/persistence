@@ -38,7 +38,7 @@ quantile_pete <- function(dist,taus,na.rm=TRUE,plot=FALSE){
 
 quantile_analysis <- function(x,y,taus,noise_level=0){
     # x=dur_mid, y=dur, taus=percentiles
-    cat(length(unique(y)))
+    #cat(length(unique(y)))
     quantiles<-quantile_pete(y,taus=taus,na.rm=TRUE)
     slopes<-taus*NA
     slope_sigs<-taus*NA
@@ -46,7 +46,26 @@ quantile_analysis <- function(x,y,taus,noise_level=0){
     # try quantile regression for each tau individually 
     for (i in 1:length(taus)){
         # noise is added via "dither()" to x and y to avoid crash
-        quant_zwi<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),se="nid"))#,silent=TRUE
+        print(proc.time()) 
+        quant_zwi1<<-try(summary(rq(y~x,taus[i]),cov=FALSE,se="boot"))#,silent=TRUE
+        print(proc.time())        
+        quant_zwi2<<-try(summary(rq(y~x,taus[i]),cov=FALSE,se="nid"))#,silent=TRUE
+        print(proc.time())
+        quant_zwi3<<-try(summary(rq(y~x,taus[i]),cov=FALSE,se="iid"))#,silent=TRUE
+        print(proc.time())
+        quant_zwi4<<-try(summary(rq(y~x,taus[i]),cov=FALSE,se="ker"))#,silent=TRUE
+        print(proc.time())
+        quant_zwi5<<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),cov=FALSE,se="boot"))#,silent=TRUE
+        print(proc.time())
+        quant_zwi6<<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),cov=FALSE,se="nid"))#,silent=TRUE
+        print(proc.time())
+        quant_zwi7<<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),cov=FALSE,se="iid"))#,silent=TRUE
+        print(proc.time())
+        quant_zwi8<<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),cov=FALSE,se="ker"))#,silent=TRUE
+        print(proc.time())
+        quant_zwi<<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),cov=FALSE))#,silent=TRUE
+        print(proc.time())
+        adsasd
         if (class(quant_zwi)!="try-error"){
             slopes[i]=quant_zwi$coefficients[2]
             slope_sigs[i]=quant_zwi$coefficients[8]
@@ -114,7 +133,6 @@ fit_plot_reference <- function(x,y,sea,q,state){
 }
 
 fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state){
-    state_names=c("cold","warm")
     color=c("blue","red",rgb(0.5,0.1,0.5),rgb(0.1,0.7,0.1),rgb(0,0,0))
 
     par(mar=c(3, 3, 3, 3) + 0.1)  
@@ -151,8 +169,32 @@ fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state)
     lines(fit,col=color[4],lty=1)
     text(50,0.22,paste("P=",round(exp(-fitstuff[2])*100,01)),pos=1,col=color[3])                 
     text(50,0.05,paste("P1=",round(exp(-fitstuff[6])*100,01)),pos=1,col=color[4])                 
-    text(50,0.02,paste("P2=",round(exp(-fitstuff[8])*100,01)),pos=1,col=color[4])  
-               
+    text(50,0.02,paste("P2=",round(exp(-fitstuff[8])*100,01)),pos=1,col=color[4])                
+}
+
+fit_plot_comparison <- function(distr,fits,sea,q,state,wilcox){
+    color=c("green","orange",rgb(0.5,0.1,0.5),rgb(0.1,0.7,0.1),rgb(0,0,0))
+
+    par(mar=c(3, 3, 3, 3) + 0.1)  
+
+    # first plot page
+    plot(NA,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
+    text(50,0.18+0.06,paste("wilcox=",round(wilcox,01),"\n ",season_names[sea],q,state_names[state]),pos=1,col=color[3])                 
+    for (i in 1:2){
+        nonull<-which(distr[i,3,]>0)
+        points(distr[i,1,nonull],distr[i,2,nonull],pch=20,col=color[i],cex=0.5)
+        lines(distr[i,1,nonull],combi_expo(distr[i,1,nonull],fits[i,5],fits[i,6],fits[i,8],fits[i,9]),col=color[i],lty=1)
+
+    }  
+
+    # second plot page
+    plot(NA,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5,log="y")
+    text(50,0.22,paste("wilcox=",round(wilcox,01),"\n ",season_names[sea],q,state_names[state]),pos=1,col=color[3])                 
+    for (i in 1:2){
+        nonull<-which(distr[i,3,]>0)
+        points(distr[i,1,nonull],distr[i,2,nonull],pch=20,col=color[i],cex=0.5)
+        lines(distr[i,1,nonull],combi_expo(distr[i,1,nonull],fits[i,5],fits[i,6],fits[i,8],fits[i,9]),col=color[i],lty=1)
+    }              
 }
 
 fit_plot <- function(X,Y,fit,legend,fit_style,sea,q,state,thresh=NA){
