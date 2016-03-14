@@ -20,6 +20,7 @@ trend_write <- function(filename,trend,ID_length=length(dat$ID),method="2D runni
 
 duration_write <- function(filename,dur,dur_mid,len,ID_length=length(dat$ID),ID_name="grid_points",comment="no comment")
 {
+    print(filename)
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
     att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
@@ -45,8 +46,8 @@ duration_write <- function(filename,dur,dur_mid,len,ID_length=length(dat$ID),ID_
     close.nc(nc_out) 
 }
 
-reg_binned_dur_write <- function(filename,binned_dur,len,ID_length=length(dat$ID),ID_name="grid_points",comment="no comment")
-{
+reg_binned_dur_write <- function(filename,binned_dur,len,ID_length=length(dat$ID),ID_name="grid_points",comment="no comment"){
+    print(filename)
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
     att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
@@ -69,7 +70,7 @@ reg_binned_dur_write <- function(filename,binned_dur,len,ID_length=length(dat$ID
 }
 
 quantiles_write <- function(filename,ID_length,ID_name,period,taus,quantile_stuff,comment="quantile_analysis"){
-
+    print(filename)
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
     att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
@@ -96,6 +97,7 @@ quantiles_write <- function(filename,ID_length,ID_name,period,taus,quantile_stuf
 
 other_write <- function(filename,ID_length,ID_name,period,other_stuff,comment="other_analysis"){
 
+    print(filename)
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
     att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
@@ -119,6 +121,7 @@ other_write <- function(filename,ID_length,ID_name,period,other_stuff,comment="o
 
 fit_write <- function(filename,ID_length,ID_name,period,fit_stuff,comment="distribution_fits"){
 
+    print(filename)
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
     att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)
@@ -142,6 +145,7 @@ fit_write <- function(filename,ID_length,ID_name,period,fit_stuff,comment="distr
 
 distr_write <- function(distr_stuff,filename,ID_length,ID_name,period,comment="distribution_fits"){
 
+    print(filename)
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
     att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", comment)

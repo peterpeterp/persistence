@@ -143,8 +143,8 @@ memory_test <- function(yAusschnitt=c(20,80),xAusschnitt=c(-30,80),asp=1,paper=c
             index<-index+1
             reihen1[index,]=values[sea,,state,4]-mean_dur_no_memory_change(ind_ana[sea,state,,6],ind_ana[sea,state,,3])
             reihen2[index,]=mean_dur_no_memory_change(ind_ana[sea,state,,6],ind_ana[sea,state,,3])
-            titel1[index]=paste(season_names[sea],"difference between measured and no memory mean dur for",state_names[state],"periods")
-            titel2[index]=paste(season_names[sea],"expected no memory mean dur for",state_names[state],"periods")
+            titel1[index]=paste(season_names[sea],"difference between measured and no memory change in mean dur for",state_names[state],"periods")
+            titel2[index]=paste(season_names[sea],"expected no memory change in mean dur for",state_names[state],"periods")
 
             plot(NA,xlim=c(-0.1,0.1),ylim=c(-0.1,0.1),main=paste(season_names[sea],state_names[state]),xlab="measured increase in mean(dur)",ylab="expected increase in mean(dur) without memory")
             points(values[sea,,state,4],mean_dur_no_memory_change(ind_ana[sea,state,,6],ind_ana[sea,state,,3]),cex=0.5,pch=20)

@@ -229,16 +229,15 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
 }
 
 
-write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fit_style,region_names,ID_select,hlines=c(19,20,22,8)){
-    regNumb=length(ID_select)
+write_regional_fit_table <- function(region_name="srex",period,fit_style,region_names,ID_select,ID_length=length(ID_select),hlines=c(30)){
 
-    rel_sensitivity=array(0,c(3,5,regNumb,2,20))
-    fit_mass=array(0,c(3,6,regNumb,2,20))
+    rel_sensitivity=array(0,c(3,5,ID_length,2,20))
+    fit_mass=array(0,c(3,6,ID_length,2,20))
     trends=c("91_5","91_7","91_9")
     for (i in 1:3){
-        trendID<-trends[i]
-        print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
-        nc<-open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+        trendID_loc<-trends[i]
+        print(paste("../data/",dataset,additional_style,"/",trendID_loc,"/regional/",region_name,"/",period,"/",trendID_loc,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
+        nc<-open.nc(paste("../data/",dataset,additional_style,"/",trendID_loc,"/regional/",region_name,"/",period,"/",trendID_loc,"_",dataset,"_",region_name,"_",period,"_fit_",fit_style,".nc",sep=""))
         fit_mass[i,,,,]<-var.get.nc(nc,"fit_stuff")
     }
 
@@ -262,7 +261,6 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
     table<-file(paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",period,"_fit_",fit_style,".tex",sep=""))
     options(scipen=100)
 
-    colors=c("white","groegree","zehngree","funfziggree","hundertgree","turkis","violet")
     lines=c()
     index=0
 
@@ -283,7 +281,7 @@ write_regional_fit_table <- function(trendID="91_5",region_name="srex",period,fi
         lines[index<-index+1]=paste("\\begin{table}[!h]")
         lines[index<-index+1]=paste("\\begin{tabular}{c||c||c|c|c|c|c||c||c||c|c|c|c|c}")
 
-        lines[index<-index+1]=paste("\\multicolumn{14}{c}{",season_names[sea],period,"}\\","\\",sep="")
+        lines[index<-index+1]=paste("\\multicolumn{14}{c}{",season_names[sea]," ",period," $",trendID,"$}\\","\\",sep="")
         lines[index<-index+1]=paste(" &\\multicolumn{6}{c}{",state_names[1],"}","& &\\multicolumn{6}{c}{",state_names[2],"}\\","\\",sep="")
         lines[index<-index+1]=paste("reg & $b_{expo}$  & b1 & b2 & thresh & b2-b1 & dBIC & & $b_{expo}$ & b1 & b2 & thresh & b2-b1 & dBIC  ","\\","\\",sep="")
         for (reg in ID_select){

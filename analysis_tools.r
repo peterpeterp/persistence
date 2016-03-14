@@ -46,26 +46,7 @@ quantile_analysis <- function(x,y,taus,noise_level=0){
     # try quantile regression for each tau individually 
     for (i in 1:length(taus)){
         # noise is added via "dither()" to x and y to avoid crash
-        print(proc.time()) 
-        quant_zwi1<<-try(summary(rq(y~x,taus[i]),cov=FALSE,se="boot"))#,silent=TRUE
-        print(proc.time())        
-        quant_zwi2<<-try(summary(rq(y~x,taus[i]),cov=FALSE,se="nid"))#,silent=TRUE
-        print(proc.time())
-        quant_zwi3<<-try(summary(rq(y~x,taus[i]),cov=FALSE,se="iid"))#,silent=TRUE
-        print(proc.time())
-        quant_zwi4<<-try(summary(rq(y~x,taus[i]),cov=FALSE,se="ker"))#,silent=TRUE
-        print(proc.time())
-        quant_zwi5<<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),cov=FALSE,se="boot"))#,silent=TRUE
-        print(proc.time())
-        quant_zwi6<<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),cov=FALSE,se="nid"))#,silent=TRUE
-        print(proc.time())
-        quant_zwi7<<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),cov=FALSE,se="iid"))#,silent=TRUE
-        print(proc.time())
-        quant_zwi8<<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),cov=FALSE,se="ker"))#,silent=TRUE
-        print(proc.time())
-        quant_zwi<<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),cov=FALSE))#,silent=TRUE
-        print(proc.time())
-        adsasd
+        quant_zwi<-try(summary(rq(dither(y,value=noise_level)~x,taus[i]),cov=FALSE,se="boot"))#,silent=TRUE
         if (class(quant_zwi)!="try-error"){
             slopes[i]=quant_zwi$coefficients[2]
             slope_sigs[i]=quant_zwi$coefficients[8]

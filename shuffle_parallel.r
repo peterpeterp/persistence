@@ -132,6 +132,10 @@ period<-"1950-2014"
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
 
+trend_analysis(seasons=5,id=id,yearPeriod=c(1952,2010))
+
+asda
+
 name_id<-0
 for (i in 1:10){
     if (id>40){

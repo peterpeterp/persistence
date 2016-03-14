@@ -65,11 +65,12 @@ add_region <- function(region_name,farbe){
     }
 }
 
-region_border <- function(ID_select=1:1319,region_name="ward22",regNumb=22,border_col="white",text_col=border_col){
+region_border <- function(ID_select=1:1319,region_name="ward22",border_col="white",text_col=border_col){
     # loads attribution file and visualizes regions on map
     attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
     mids<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,"_mids.txt",sep=""))    
 
+    regNumb<-dim(mids)[1]
     for (G in 1:regNumb){
         inside<-which(attribution==G)
         for (q in inside){
@@ -82,7 +83,8 @@ region_border <- function(ID_select=1:1319,region_name="ward22",regNumb=22,borde
     }
 }
 
-put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(points)),pch_sig=4,col_sig="black",yAusschnitt=c(-90,90),pointsize=1,farb_mitte="mean",farb_palette="regenbogen",signi_level=0,i=1,ID_select=1:1319){
+
+put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palette="regenbogen",signi_level=0,i=1,ID_select=1:1319){
 
 	if (length(which(!is.na(points[ID_select])))<3){return(list(y=c(NA),color=c(NA)))}
 	if (length(unique(points[ID_select]))<3){return(list(y=c(NA),color=c(NA)))}
@@ -209,10 +211,23 @@ put_points <- function(points,points_sig=points*NA,pch_points=array(15,length(po
 	lat=dat$lat[notna]
 
 	#delete out of yAusschnitt
-	ID_select=which(lat >= yAusschnitt[1] & lat <= yAusschnitt[2])
+	ID_select=which(lat >= yAusschnitt[1] & lat <= yAusschnitt[2] & lon >= xAusschnitt[1] & lon <= xAusschnitt[2])
 
-	points(lon[ID_select],lat[ID_select],pch=pch[ID_select],col=farben[ID_select],cex=pointsize)#
-	points(lon[ID_select],lat[ID_select],pch=sig[ID_select],cex=pointsize,col=col_sig)
+	if (!is.na(pch_points[2])){
+		points(lon[ID_select],lat[ID_select],pch=pch[ID_select],col=farben[ID_select],cex=pointsize)#
+		points(lon[ID_select],lat[ID_select],pch=sig[ID_select],cex=pointsize,col=col_sig)
+	}
+
+	if (is.na(pch_points[2])){
+		for (q in ID_select){
+			polygon(x=c(lon[q]-pch_points[3],lon[q]+pch_points[3],lon[q]+pch_points[3],lon[q]-pch_points[3]),y=c(lat[q]-pch_points[4],lat[q]-pch_points[4],lat[q]+pch_points[4],lat[q]+pch_points[4]),border=rgb(1,1,1,0.0),col=farben[q])
+			if (!is.na(sig[q])){
+				lines(c(lon[q]-pch_points[3],lon[q]),c(lat[q]-pch_points[4],lat[q]+pch_points[4]),col=col_sig,cex=cex_sig)
+				lines(c(lon[q],lon[q]+pch_points[3]),c(lat[q]-pch_points[4],lat[q]+pch_points[4]),col=col_sig,cex=cex_sig)
+			}
+		}
+		#points(lon[ID_select],lat[ID_select],pch=sig[ID_select],cex=pointsize,col=col_sig)
+	}
 
 	return(list(y=y,color=color))
 }
@@ -371,9 +386,9 @@ map_allgemein <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 }
 
 
-topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,grid=FALSE,paper=c(12,8),pointsize=1,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),layout_mat=c(NA),main="",pch_points=array(15,dim(reihen)),ID_select=1:length(dat$ID),region_name=NA,regNumb=NA,border_col="white",land_col=rgb(0.5,0.5,0.5,0.5),water_col=rgb(0,0.2,0.8,0.0),yAusschnitt=c(-90,90),xAusschnitt=c(-180,180),asp=1.5){
+topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",regionColor="black",average=FALSE,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),main="",ID_select=1:length(dat$ID),region_name=NA,regNumb=NA,border_col="black",land_col=rgb(0.5,0.5,0.5,0.5),water_col=rgb(0,0.2,0.8,0.0)){
 	
-	pdf(file=filename_plot,width=paper[1],height=paper[2])
+	pdf(file=filename_plot,width=paper[1],height=paper[2])	
 
 	if (!is.na(layout_mat[1])){layout(layout_mat)}
 	if (is.na(layout_mat[1])){par(mfrow=c(1,1))}
@@ -382,21 +397,21 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	    if (titel[1]!=""){
 	    	main<-titel[i]
 	    	print(titel[i])
-	    	text(0,-85,main)
+	    	#text(0,-85,main)
 	    }
-
-	    axis(2)
+	    axis(2,at=seq(yAusschnitt[1],yAusschnitt[2],10))
 
 
 	    #data points
-	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],yAusschnitt=yAusschnitt,signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,pointsize=pointsize,pch_points=pch_points,pch_sig=4,col_sig=rgb(0,0,0,0.5),ID_select=ID_select)
+	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,ID_select=ID_select)
 	    #highlight points
 		for (rad in c(1,1.5,2,2.5)){
 			points(dat$lon[highlight_points[i]],dat$lat[highlight_points[i]],col=highlight_color,pch=1,cex=(pointsize*rad))
 		}
 
 		#region contours
-		if (!is.na(region_name)){region_border(region_name=region_name,regNumb=regNumb,border_col=border_col)}
+		if (!is.na(region_name)){region_border(region_name=region_name,border_col=border_col)}
+		if (!is.na(region)){region_border(region_name=region,border_col=border_col)}
 
 		# contour lines topography
 		if (!is.na(land_col)){

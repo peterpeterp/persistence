@@ -132,7 +132,6 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
         fit_plot_empty()
     }
 
-    print(ID_length)
     quantile_stuff=array(NA,dim=c(length(season_names),ID_length,2,length(taus),3))
     fit_stuff=array(NA,dim=c(length(season_names),ID_length,2,20))
     other_stuff=array(NA,dim=c(length(season_names),ID_length,2,12))

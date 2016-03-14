@@ -314,5 +314,5 @@ for (method in c("ward.D2")){
     #cluster_view(add_name="_ml",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=25)
 }
 
-write_cluster_region_files(add_name="_ml",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=7,region_name="ml7")
+#write_cluster_region_files(add_name="_ml",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=7,region_name="ml7")
 cluster_vis_map(add_name="_ml",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=7,region_name="ml7")

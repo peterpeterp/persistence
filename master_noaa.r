@@ -81,8 +81,7 @@ master_duration <- function(){
 }
 
 master_gridded_analysis <- function(){
-    yearLimits=c(1948,2006,1980,2006)
-    for (i in 1:2){
+    for (i in 1:(length(yearLimits)/2)){
         yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
         print(yearPeriod)
 
@@ -98,20 +97,20 @@ master_gridded_analysis <- function(){
 }
 
 master_gridded_plots <- function(){
-    yearLimits=c(1948,2006,1980,2006)
-    for (i in 1:2){
+    for (i in 1:(length(yearLimits)/2)){
         period<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
         print(period)
 
         #others
-        #plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),sub_zusatz=c(NA),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen",yAusschnitt=c(20,50),xAusschnitt=c(220,310),asp=1)
-        #plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c("linear regression"),sub_zusatz=c(NA),name_zusatz="lm",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen",yAusschnitt=c(25,50),xAusschnitt=c(235,300),asp=1,pointsize=0.58,paper=c(8,3.5))
+        plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
+        plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c("linear regression"),name_zusatz="lm",period=period,signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")
         # quantiles
-        #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),sub_zusatz=c("95th"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
-        #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),sub_zusatz=c("95th","100th"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),name_zusatz="qu_95",farb_mitte=c(8,28),farb_palette="regenbogen")
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),name_zusatz="qr_sl_95",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(1),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),name_zusatz="qr_sl_75",farb_mitte=c(-0.2,0.2),signi_level=0.05)
         
         #fits
-        plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),sub_zusatz=c(NA),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
+        plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(6,8,9,14),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
     }
 }
 
@@ -156,17 +155,42 @@ master_init <- function(){
     additional_style<<-""
     dat <<- dat_load_precipitation(paste("../data/_noaa/precip.V1.0.1948-2006_0p5.nc",sep=""))
     ntot<<-length(dat$ID)
+    yearLimits<<-c(1980,2006,1948,2006)
 
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     state_names<<-c("dry","wet")
 }
 
+plot_init <- function(){
+    paper<<-c(8,3.5)
+    yAusschnitt<<-c(20,50)
+    xAusschnitt<<-c(220,310)
+    asp<<-1
+    pointsize<<-0.44
+    pch_points<<-c(1,NA,0.25,0.25)
+
+    pch_sig<<-4
+    col_sig<<-rgb(0.1,0.1,0.1,0.6)
+    cex_sig<<-0.03
+
+    region<<-NA
+
+    season_auswahl<<-c(1,2,3,4,5)
+    sub_zusatz<<-c("75th","95th","99th")
+    name_reg_zusatz<<-""
+
+    col_row<<-c(1,1)
+    mat<<-NA
+    layout_mat<<-c(NA)
+    subIndex<<-c("a","b")
+}
 
 ###################################################################
 # basic analysis
 ###################################################################
 master_init()
+plot_init()
 
 #master_state_attribution()
 #master_duration()
@@ -175,8 +199,8 @@ master_init()
 # fits, quantiles etc
 ###################################################################
 
-master_gridded_analysis()
+#master_gridded_analysis()
 master_gridded_plots()
 
-master_support_analysis()
+#master_support_analysis()
 
