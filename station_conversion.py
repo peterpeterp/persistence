@@ -17,7 +17,8 @@ def convert_station_files():
 			if element!="":neu.write(element+"\t")
 		neu.write("\n")
 
-	neu=open("../data/raw_data/ghcn/ghcnd-stations_ID.txt","w")
+	neu=open("../data/raw_data/ghcn/ghcnd-stations_ID_lat_lon.txt","w")
+	neu.write("ID\tlat\tlon\t\n")
 	for i in range(0,len(lines)):
 		elements=lines[i].split(" ")
 		neu.write(str(i+1)+"\t")
@@ -31,10 +32,10 @@ def convert_station_files():
 
 def write_regional_selection(region_name="ward23",G="7"):
 	station_all=open("../data/raw_data/ghcn/ghcnd-stations_all.txt","r").read().split("\n")
-	regional_selection=open("../data/raw_data/ghcn/ghcnd-stations_"+region_name+"_"+G+".txt","r").read().split("\n")
+	regional_selection=open("../data/raw_data/ghcn/ghcnd-stations_"+region_name+"_"+G+"_lat_lon.txt","r").read().split("\n")
 	reg_sel=[]
 	for line in regional_selection:
-		if len(line.split(" "))>1:
+		if len(line.split(" "))>1 and line.split(" ")[0]!='"V1"':
 			reg_sel.append(int(line.split(" ")[1]))
 
 
@@ -60,7 +61,7 @@ def reduce_precip_file_to_stations(yr="2013",region_name="ward23",G="7"):
 
 
 
-
+#convert_station_files()
 
 write_regional_selection()
 

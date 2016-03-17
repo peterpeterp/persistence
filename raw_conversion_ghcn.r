@@ -1,15 +1,17 @@
 
 station_to_region_attribution <- function(region_name="ward23"){
     library(ff)
-
+    # dat from HadGHCND is required for reagion attribution!!!!
     # loads attribution file and visualizes regions on map
     attribution<-read.table(paste("../data/_TMean/ID_regions/",region_name,".txt",sep=""))[,1]
     mids<-read.table(paste("../data/_TMean/ID_regions/",region_name,"_mids.txt",sep=""))  
 
-    stations<<-read.csv.ffdf(file="../data/raw_data/ghcn/ghcnd-stations_ID.txt",sep="\t",fill=TRUE)    
+    stations<<-read.csv.ffdf(file="../data/raw_data/ghcn/ghcnd-stations_ID_lat_lon.txt",sep="\t",fill=TRUE)    
 
-    station_attribution=array(NA,c(dim(stations)[1],2))
-    station_attribution[,1]=1:dim(stations)[1]
+    station_attribution=array(NA,c(dim(stations)[1],4))
+    station_attribution[,1]=stations[,1]
+    station_attribution[,3]=stations[,2]
+    station_attribution[,4]=stations[,3]
 
     regNumb<-dim(mids)[1]
     for (G in 1:regNumb){
@@ -25,14 +27,17 @@ station_to_region_attribution <- function(region_name="ward23"){
 create_region_list <- function(region_name="ward23",G=7){
     station_attribution<<-read.table(paste("../data/raw_data/ghcn/ghcnd-stations_",region_name,".txt",sep=""))  
     inside<<-which(station_attribution[,2]==G)
-    write.table(inside,paste("../data/raw_data/ghcn/ghcnd-stations_",region_name,"_",G,".txt",sep=""))      
+    station_info<-array(NA,c(length(inside),3))
+    station_info[,1]=inside
+    station_info[,2]=station_attribution[inside,3]
+    station_info[,3]=station_attribution[inside,4]
+    write.table(station_info,paste("../data/raw_data/ghcn/ghcnd-stations_",region_name,"_",G,"_lat_lon.txt",sep=""))    
 }
 
 extract_precip <- function(yr=2013,region_name="ward23",G=7){
     library(ff)
 
     selection<-read.table(paste("../data/raw_data/ghcn/ghcnd-stations_",region_name,"_",G,"_ID.txt",sep=""))
-    #tmp<-read.csv.ffdf(file=paste("../data/raw_data/ghcn/",yr,".csv",sep=""))
     tmp<-read.csv(paste("../data/raw_data/ghcn/",yr,".csv",sep=""))
     print("loaded")
     prcp<-which(tmp[,3]=="PRCP" & tmp[,1] %in% selection[,2])
@@ -80,17 +85,104 @@ convert_tables <- function(yr=2013,region_name="ward23",G=7){
 #station_to_region_attribution()
 #create_region_list()
 
-
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
-toDos<-c(1956,1960,1964,1968,1972,1976,1980,1984,1992,1996,1999:2015)
-toDos<-c(1956,1960,1964,1968,1972,1976,1980,1984,1992,1996)
+toDos<-1950:2015
 
 
 if (id<=length(toDos)){
     yr<-toDos[id]
     print(yr)
-    #extract_precip(yr=yr)
+    extract_precip(yr=yr)
     convert_tables(yr=yr)
 }
 
+asdas
+
+merge_years <- function(yrs=1950:2015,region_name="ward23",G=7){
+    library(RNetCDF)
+    ntot=16157
+    pp=array(NA,c(ntot,365,66))
+    for (yr in yrs){
+        cat(paste("-",yr))
+        tmp<-read.table(paste("../data/raw_data/ghcn/toMerge/precip_",region_name,"_",G,"_",yr,"_toMerge.txt",sep=""))
+        for (day in 1:365){
+            pp[,day,(yr-1949)]=tmp[,day]
+        }
+    }  
+    selection<-read.table(paste("../data/raw_data/ghcn/ghcnd-stations_",region_name,"_",G,"_lat_lon.txt",sep=""))
+
+    nc_out=create.nc("../data/raw_data/ghcn/ghcn_pp_1950-2015.nc")
+
+    dim.def.nc(nc_out,"ID",dimlength=ntot, unlim=FALSE)
+    dim.def.nc(nc_out,"days",dimlength=365,unlim=FALSE)
+    dim.def.nc(nc_out,"years",dimlength=66,unlim=FALSE)
+
+    var.def.nc(nc_out,"day","NC_SHORT",c(1))
+    var.def.nc(nc_out,"year","NC_SHORT",c(2))
+    var.def.nc(nc_out,"ID","NC_SHORT",c(0))
+    var.def.nc(nc_out,"lon","NC_FLOAT",c(0))
+    var.def.nc(nc_out,"lat","NC_FLOAT",c(0))
+
+
+    var.def.nc(nc_out,"pp","NC_SHORT",c(0,1,2))
+    att.put.nc(nc_out, "pp", "missing_value", "NC_SHORT", -999)
+
+    var.put.nc(nc_out,"ID",1:ntot)  
+    var.put.nc(nc_out,"lon",selection[,3]) 
+    var.put.nc(nc_out,"lat",selection[,2]) 
+    var.put.nc(nc_out,"day",1:365)  
+    var.put.nc(nc_out,"year",1:66)  
+    var.put.nc(nc_out,"pp",pp)     
+    close.nc(nc_out)    
+}
+
+#merge_years(yrs=1950:2015)
+
+record_length_view <- function(){
+    source("load.r")
+    source("map_plot.r")
+    #dat<<-dat_load_precipitation("../data/raw_data/ghcn/ghcn_pp_1950-2015.nc")
+    ntot=length(dat$ID)
+    reihen<<-array(NA,c(1,ntot))
+    for (q in 1:ntot){
+        cat("-")
+        reihen[1,q]=length(which(!is.na(dat$pp[q,,])))/(365*66)
+    }
+    topo_map_plot(filename_plot=paste("../data/raw_data/ghcn/ghcn_pp_1950-2015_data_coverage.pdf",sep=""),reihen=reihen,titel=c("not missing percentage"),farb_mitte=c(0,1),farb_palette="regenbogen")
+}
+
+plot_init <- function(){
+    paper<<-c(8,3.5)
+    yAusschnitt<<-c(20,80)
+    xAusschnitt<<-c(-150,-10)
+    asp<<-1
+    pointsize<<-0.44
+    pch_points<<-c(1,NA,0.25,0.25)
+
+    pch_sig<<-4
+    col_sig<<-rgb(0.1,0.1,0.1,0.6)
+    cex_sig<<-0.03
+
+    region<<-NA
+
+    season_auswahl<<-c(1,2,3,4,5)
+    sub_zusatz<<-c("75th","95th","99th")
+    name_reg_zusatz<<-""
+
+    col_row<<-c(1,1)
+    mat<<-NA
+    layout_mat<<-c(NA)
+    subIndex<<-c("a","b")
+}
+
+plot_init()
+#record_length_view()
+
+topo_map_plot(filename_plot=paste("../data/raw_data/ghcn/ghcn_pp_1950-2015_data_coverage.pdf",sep=""),reihen=array(1:length(dat$ID),c(1,length(dat$ID))),titel=c("not missing percentage"),farb_mitte=c(0,1),farb_palette="regenbogen")
+
+tmp<-read.table("/home/peter/Dokumente/pik/backuped/data/raw_data/ghcn/ghcnd-stations_ward23_7_lat_lon.txt")
+pdf("../data/raw_data/ghcn/ghcnd-stations_ward23_7_lat_lon.pdf")
+#plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(2,3,2,5))
+plot(tmp[,3],tmp[,2])
+graphics.off()
