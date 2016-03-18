@@ -47,6 +47,7 @@ duration_write <- function(filename,dur,dur_mid,len,ID_length=length(dat$ID),ID_
 }
 
 reg_binned_dur_write <- function(filename,binned_dur,len,ID_length=length(dat$ID),ID_name="grid_points",comment="no comment"){
+
     print(filename)
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)

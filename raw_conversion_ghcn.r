@@ -80,25 +80,6 @@ convert_tables <- function(yr=2013,region_name="ward23",G=7){
     write.table(pp,paste("../data/raw_data/ghcn/toMerge/precip_",region_name,"_",G,"_",yr,"_toMerge.txt",sep=""))
 }
 
-
-# prepare regional information (with python script together)
-#station_to_region_attribution()
-#create_region_list()
-
-id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-print(id)
-toDos<-1950:2015
-
-
-if (id<=length(toDos)){
-    yr<-toDos[id]
-    print(yr)
-    extract_precip(yr=yr)
-    convert_tables(yr=yr)
-}
-
-asdas
-
 merge_years <- function(yrs=1950:2015,region_name="ward23",G=7){
     library(RNetCDF)
     ntot=16157
@@ -137,25 +118,50 @@ merge_years <- function(yrs=1950:2015,region_name="ward23",G=7){
     close.nc(nc_out)    
 }
 
-#merge_years(yrs=1950:2015)
-
-record_length_view <- function(){
+record_length_check <- function(){
     source("load.r")
     source("map_plot.r")
-    #dat<<-dat_load_precipitation("../data/raw_data/ghcn/ghcn_pp_1950-2015.nc")
+    dat<<-dat_load_precipitation("../data/raw_data/ghcn/ghcn_pp_1950-2015_reg7.nc")
     ntot=length(dat$ID)
-    reihen<<-array(NA,c(1,ntot))
+    missingRatio<-array(NA,c(ntot))
     for (q in 1:ntot){
         cat("-")
-        reihen[1,q]=length(which(!is.na(dat$pp[q,,])))/(365*66)
+        missingRatio[q]=length(which(is.na(dat$pp[q,,])))/(365*66)
     }
-    topo_map_plot(filename_plot=paste("../data/raw_data/ghcn/ghcn_pp_1950-2015_data_coverage.pdf",sep=""),reihen=reihen,titel=c("not missing percentage"),farb_mitte=c(0,1),farb_palette="regenbogen")
+    missingRatio<<-missingRatio
+    useableStations=which(missingRatio<=0.1)
+    ntot<-length(useableStations)
+
+    nc_out=create.nc("../data/raw_data/ghcn/ghcn_pp_1950-2015_reg7_<10.nc")
+    att.put.nc(nc_out, "NC_GLOBAL", "explanation", "NC_CHAR", "only stations with less than 10% missing")
+
+    dim.def.nc(nc_out,"ID",dimlength=ntot, unlim=FALSE)
+    dim.def.nc(nc_out,"days",dimlength=365,unlim=FALSE)
+    dim.def.nc(nc_out,"years",dimlength=66,unlim=FALSE)
+
+    var.def.nc(nc_out,"day","NC_SHORT",c(1))
+    var.def.nc(nc_out,"year","NC_SHORT",c(2))
+    var.def.nc(nc_out,"ID","NC_SHORT",c(0))
+    var.def.nc(nc_out,"lon","NC_FLOAT",c(0))
+    var.def.nc(nc_out,"lat","NC_FLOAT",c(0))
+
+
+    var.def.nc(nc_out,"pp","NC_SHORT",c(0,1,2))
+    att.put.nc(nc_out, "pp", "missing_value", "NC_SHORT", -999)
+
+    var.put.nc(nc_out,"ID",1:ntot)  
+    var.put.nc(nc_out,"lon",dat$lon[useableStations]) 
+    var.put.nc(nc_out,"lat",dat$lat[useableStations]) 
+    var.put.nc(nc_out,"day",1:365)  
+    var.put.nc(nc_out,"year",1950:2015)  
+    var.put.nc(nc_out,"pp",dat$pp[useableStations,,])     
+    close.nc(nc_out)  
 }
 
 plot_init <- function(){
     paper<<-c(8,3.5)
     yAusschnitt<<-c(20,80)
-    xAusschnitt<<-c(-150,-10)
+    xAusschnitt<<-c(-100,-10)
     asp<<-1
     pointsize<<-0.44
     pch_points<<-c(1,NA,0.25,0.25)
@@ -176,13 +182,41 @@ plot_init <- function(){
     subIndex<<-c("a","b")
 }
 
+
+
+# prepare regional information (with python script together)
+#station_to_region_attribution()
+#create_region_list()
+
+#id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+#print(id)
+#toDos<-1950:2015
+
+#if (id<=length(toDos)){
+#    yr<-toDos[id]
+#    print(yr)
+#    extract_precip(yr=yr)
+#    convert_tables(yr=yr)
+#}
+
+#merge_years(yrs=1950:2015)
+
 plot_init()
+
+record_length_check()
+adas
+
+
+reihen_full<-reihen
+reihen_full[reihen_full<0.9]=NA
+topo_map_plot(filename_plot=paste("../data/raw_data/ghcn/ghcn_pp_1950-2015_data_coverage+90.pdf",sep=""),reihen=reihen_full,titel=c("not missing percentage"),farb_mitte=c(0,1),farb_palette="regenbogen")
+
 #record_length_view()
 
-topo_map_plot(filename_plot=paste("../data/raw_data/ghcn/ghcn_pp_1950-2015_data_coverage.pdf",sep=""),reihen=array(1:length(dat$ID),c(1,length(dat$ID))),titel=c("not missing percentage"),farb_mitte=c(0,1),farb_palette="regenbogen")
+#topo_map_plot(filename_plot=paste("../data/raw_data/ghcn/ghcn_pp_1950-2015_data_loc.pdf",sep=""),reihen=array(1:length(dat$ID),c(1,length(dat$ID))),titel=c("not missing percentage"),farb_mitte=c(0,1),farb_palette="regenbogen")
 
-tmp<-read.table("/home/peter/Dokumente/pik/backuped/data/raw_data/ghcn/ghcnd-stations_ward23_7_lat_lon.txt")
-pdf("../data/raw_data/ghcn/ghcnd-stations_ward23_7_lat_lon.pdf")
+#tmp<-read.table("/home/peter/Dokumente/pik/backuped/data/raw_data/ghcn/ghcnd-stations_ward23_7_lat_lon.txt")
+#pdf("../data/raw_data/ghcn/ghcnd-stations_ward23_7_lat_lon.pdf")
 #plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(2,3,2,5))
-plot(tmp[,3],tmp[,2])
-graphics.off()
+#plot(tmp[,3],tmp[,2])
+#graphics.off()

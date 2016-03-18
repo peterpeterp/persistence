@@ -155,15 +155,15 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                 percentage<-percentage+5
             }
             for (state in 1:2){
-                duration<-dur[q,state,]
-                duration_mid<-dur_mid[q,state,]
+                duration<<-dur[q,state,]
+                duration_mid<<-dur_mid[q,state,]
                 ord<-order(duration_mid)
                 if (length(which(!is.na(duration)))>100){
-                    y<-as.vector(duration[ord])
-                    x<-as.vector(duration_mid[ord])
+                    y<<-as.vector(duration[ord])
+                    x<<-as.vector(duration_mid[ord])
                     inYearPeriod<-which(x>yearPeriod[1] & x<yearPeriod[2])
-                    y<-y[inYearPeriod]
-                    x<-x[inYearPeriod]
+                    y<<-y[inYearPeriod]
+                    x<<-x[inYearPeriod]
 
                     # other stuff
                     if (option[1]==1){
