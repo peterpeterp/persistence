@@ -207,14 +207,14 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
 
 
 
-                    fit_stuff[sea,q,state,14]=length(which(histo$counts>0))
+                    fit_stuff[sea,q,state,11]=length(which(histo$counts>0))
             
                     if (length(which(!is.na(Y)))>15){ 
                         # exponential fit as starting point
                         
                         tmp_exp=exponential_fit(X,Y,xStart=xStart,xStop=xStop)
                         fit_stuff[sea,q,state,1:2]=tmp_exp$pars
-                        fit_stuff[sea,q,state,15:16]=tmp_exp$ana
+                        fit_stuff[sea,q,state,13:16]=tmp_exp$ana
                         expfit=tmp_exp$fit
                         distr_stuff[sea,q,state,4,1:stop]=expfit[1:stop]
 
@@ -222,7 +222,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                         if (option[4]==1){
                             tmp=two_exp_fit(X,Y,y,xStart=xStart,xStop=xStop)
                             fit_stuff[sea,q,state,5:9]=tmp$pars
-                            fit_stuff[sea,q,state,19:20]=tmp$ana
+                            fit_stuff[sea,q,state,17:20]=tmp$ana
                             fit=tmp$fit
                             distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
                         }
@@ -231,7 +231,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                         if (option[5]==1){
                             tmp=two_exp_fit_fixed_thresh(X,Y)
                             fit_stuff[sea,q,state,5:9]=tmp$pars
-                            fit_stuff[sea,q,state,19:20]=tmp$ana
+                            fit_stuff[sea,q,state,17:20]=tmp$ana
                             fit=tmp$fit
                             distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
                         }
@@ -240,7 +240,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                         if (option[6]==1){
                             tmp=two_exp_fit_restricted(X,Y,y)
                             fit_stuff[sea,q,state,5:9]=tmp$pars
-                            fit_stuff[sea,q,state,19:20]=tmp$ana
+                            fit_stuff[sea,q,state,17:20]=tmp$ana
                             fit=tmp$fit
                             distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
                         }
@@ -249,7 +249,7 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                         if (option[7]==1){
                             tmp=overlap_two_exp_fit(X,Y)
                             fit_stuff[sea,q,state,5:9]=tmp$pars
-                            fit_stuff[sea,q,state,19:20]=tmp$ana
+                            fit_stuff[sea,q,state,17:20]=tmp$ana
                             fit=tmp$fit
                             distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
                         }
@@ -258,12 +258,12 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                         if (option[8]==1){
                             tmp=general_extreme_values_fit(X,Y)
                             fit_stuff[sea,q,state,5:7]=tmp$pars
-                            fit_stuff[sea,q,state,19:20]=tmp$ana
+                            fit_stuff[sea,q,state,17:20]=tmp$ana
                             fit=tmp$fit
                             distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
                         }
 
-                        fit_stuff[sea,q,state,17]=fit_stuff[sea,q,state,20]-fit_stuff[sea,q,state,16]
+                        fit_stuff[sea,q,state,12]=fit_stuff[sea,q,state,20]-fit_stuff[sea,q,state,16]
                     }
 
 

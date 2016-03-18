@@ -1,3 +1,4 @@
+library(dgof)
 
 quantile_pete <- function(dist,taus,na.rm=TRUE,plot=FALSE){
     # calculates quantiles from empirical cumulative distribution function -> gives out decimal numbers
@@ -204,24 +205,27 @@ fit_plot <- function(X,Y,fit,legend,fit_style,sea,q,state,thresh=NA){
 }
 
 exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-Inf),upper_limit=c(Inf,Inf),xStart=1,xStop=100){
-    xy=data.frame(y=Y[xStart:xStop],x=X[xStart:xStop])
+    Y<-Y[xStart:xStop]
+    X<-X[xStart:xStop]
+    xy=data.frame(y=Y,x=X)
     # try fit
     exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,algorithm="port",start=start_guess,lower=lower_limit,upper=upper_limit,na.action=na.exclude),silent=TRUE) 
     
     # if succes
     if (class(exp_nls)!="try-error"){
-        a=summary(exp_nls)$parameters[1]
-        b=summary(exp_nls)$parameters[2]
+        a<-summary(exp_nls)$parameters[1]
+        b<-summary(exp_nls)$parameters[2]
 
-        expfit=a*exp(-X*b)
-        R2=1-sum(((Y-expfit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-        BIC=BIC(exp_nls)
-
-        return(list(pars=c(a,b),ana=c(R2,BIC),fit=expfit))
+        expfit<-a*exp(-X*b)
+        R2<-1-sum(((Y-expfit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
+        BIC<-BIC(exp_nls)
+        ks<-ks.test(Y,expfit)$p.value
+        wilcox<-wilcox.test(x=Y,y=expfit)$p.value
+        return(list(pars=c(a,b),ana=c(ks,wilcox,R2,BIC),fit=expfit))
     }
     # if fail
     else{
-        return(list(pars=c(NA,NA),ana=c(NA,NA),fit=X*NA))
+        return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA),fit=X*NA))
     }
 }
 
@@ -290,11 +294,13 @@ overlap_two_exp_fit <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thres
             comb_fit=overlap_expo(X,a1,b1,a2,b2)
             R2=1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
             BIC=try(BIC(combi_nls),silent=TRUE)
+            ks<-ks.test(Y,comb_fit)$p.value
+            wilcox<-wilcox.test(x=Y,y=comb_fit)$p.value
             if (class(BIC)=="try-error"){BIC=NA}
-            return(list(pars=c(a1,b1,a2,b2,NA),ana=c(R2,BIC),fit=comb_fit))
+            return(list(pars=c(a1,b1,a2,b2,NA),ana=c(ks,wilcox,R2,BIC),fit=comb_fit))
         }
     }
-    return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA),fit=X*NA))
+    return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA),fit=X*NA))
 }
 
 two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15,xStart=1,xStop=100){
@@ -324,13 +330,15 @@ two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_gues
             comb_fit<-combi_expo(X,a1,b1,b2,thresh)
             R2<-1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
             BIC<-try(BIC(combi_nls),silent=TRUE)
+            ks<-ks.test(Y,comb_fit)$p.value
+            wilcox<-wilcox.test(x=Y,y=comb_fit)$p.value
             if (class(BIC)=="try-error"){BIC=NA}
-            return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(R2,BIC),fit=comb_fit))
+            return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(ks,wilcox,R2,BIC),fit=comb_fit))
         }
-        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA),fit=X*NA))}
+        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA),fit=X*NA))}
 
     }
-    if (class(combi_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA),fit=X*NA))}
+    if (class(combi_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA),fit=X*NA))}
 }
 
 two_exp_fit_restricted <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=4,thresh_up=15){
@@ -370,9 +378,11 @@ two_exp_fit_restricted <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,
         comb_fit=combi_expo(X,a1,b1,b2,thresh)
         R2=1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
         BIC=try(BIC(combi_nls),silent=TRUE)
+        ks<-ks.test(Y,comb_fit)$p.value
+        wilcox<-wilcox.test(x=Y,y=comb_fit)$p.value
         if (class(BIC)=="try-error"){BIC=NA}
     }
-    if (b1>b2){return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(R2,BIC),fit=comb_fit))}
+    if (b1>b2){return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(ks,wilcox,R2,BIC),fit=comb_fit))}
 
     if (b1<b2){
         b=mean(c(b1,b2))
@@ -388,11 +398,13 @@ two_exp_fit_restricted <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,
                 comb_fit=combi_expo(X,a1,b1,b2,thresh)
                 R2=1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
                 BIC=BIC(combi_nls_restricted)
-                return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(R2,BIC),fit=comb_fit))
+                ks<-ks.test(Y,comb_fit)$p.value
+                wilcox<-wilcox.test(x=Y,y=comb_fit)$p.value
+                return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(ks,wilcox,R2,BIC),fit=comb_fit))
             }
         }
     }
-    return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA),fit=X*NA))
+    return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA),fit=X*NA))
 }
 
 
@@ -444,7 +456,7 @@ two_exp_fit_fixed_thresh <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,
         }   
     }
     if (length(which(!is.na(R2)))<3){        
-        return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA),fit=X*NA))
+        return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA),fit=X*NA))
     }
     if (length(which(!is.na(R2)))>1){   
         best=which(R2==max(R2,na.rm=TRUE))
@@ -474,11 +486,11 @@ general_extreme_values_fit <- function(X,Y,start_guess=c(xi=0.3,mu=1,beta=2),low
         R2=1-sum(((Y-gevfit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
         BIC=BIC(gev_nls)
 
-        return(list(pars=c(xi,mu,beta),ana=c(R2,BIC),fit=gevfit))
+        return(list(pars=c(xi,mu,beta),ana=c(ks,wilcox,R2,BIC),fit=gevfit))
     }
     # if fail
     else{
-        return(list(pars=start_guess,ana=c(NA,NA),fit=dgev(x=X,xi=start_guess[1],mu=start_guess[2],beta=start_guess[3])))
+        return(list(pars=start_guess,ana=c(NA,NA,NA,NA),fit=dgev(x=X,xi=start_guess[1],mu=start_guess[2],beta=start_guess[3])))
     }
 }
 
