@@ -81,25 +81,28 @@ ks_wilcoxon_period <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=pa
     graphics.off()
 }
 
-distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",ID_name,"/",sep=""),ID_select,ID_length=length(ID_select),add_name="2expo_4:100",region_names=1:23,hlines=c(30)){
+distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",ID_name,"/",sep=""),ID_select,ID_length=length(ID_select),region_names=1:23,hlines=c(30)){
 
-    print(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vs_",periods[2],".nc",sep=""))
-   	print(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vs_",periods[2],".nc",sep=""))
-    nc <- open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vs_",periods[2],".nc",sep=""))
-    wilcox_test <- var.get.nc(nc,"wilcox_test")
-    ks_test <- var.get.nc(nc,"ks_test")
+   	filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vs_",periods[2],".nc",sep="") ; print(filename)
+    wilcox_test <- var.get.nc(open.nc(filename),"wilcox_test")
+    ks_test <- var.get.nc(open.nc(filename),"ks_test")
 
     fit_params=array(NA,c(2,6,ID_length,2,20))
+    quantiles=array(NA,c(2,6,ID_length,2,4,3))
     distrs=array(NA,c(2,6,ID_length,2,5,100))
     for (i in 1:length(periods)){
     	period<-periods[i]
-    	print(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_fit_",add_name,".nc",sep=""))
-   	 	nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_fit_",add_name,".nc",sep=""))
-   	 	fit_params[i,,,,]=var.get.nc(nc,"fit_stuff")
+    	filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_fit_","2expo_4:100",".nc",sep=""); print(filename)
+   	 	fit_params[i,,,,]=var.get.nc(open.nc(filename),"fit_stuff")
+
+        filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_quantiles",".nc",sep=""); print(filename)
+        quantiles[i,,,,1:3,]=var.get.nc(open.nc(filename),"quantile_stuff")
+
+        filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_others",".nc",sep=""); print(filename)
+        quantiles[i,,,,4,1]=var.get.nc(open.nc(filename),"other_stuff")[,,,1]
 		
-		print(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_distributions.nc",sep=""))
-		nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_distributions.nc",sep=""))
-		distrs[i,,,,,]=var.get.nc(nc,"distr_stuff")
+		filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_distributions.nc",sep=""); print(filename)
+		distrs[i,,,,,]=var.get.nc(open.nc(filename),"distr_stuff")
 	}
 
 	pdf(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vs_",periods[2],".pdf",sep=""),width=3,height=3)
@@ -120,12 +123,10 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
     }
     graphics.off()
 
-    table<-file(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vx_",periods[2],"_diff.tex",sep=""))
+    table<-file(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vx_",periods[2],"_fit_diff.tex",sep=""))
     options(scipen=100)
-
     lines=c()
     index=0
-
     lines[index<-index+1]="\\documentclass[a4paper,12pt]{article}"
     lines[index<-index+1]="\\usepackage{xcolor,colortbl,pgf}"
     lines[index<-index+1]="\\usepackage{makecell}"
@@ -138,7 +139,6 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
     lines[index<-index+1]="\\definecolor{violet}{rgb}{1,0.5,1}"
 
     lines[index<-index+1]="\\begin{document}"
-
     for (sea in 1:5){
         lines[index<-index+1]=paste("\\begin{table}[!h]")
         lines[index<-index+1]=paste("\\begin{tabular}{c||c||c|c|c|c||c||c||c|c|c|c}")
@@ -169,22 +169,76 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
         lines[index<-index+1]=paste("\\end{tabular}")
         lines[index<-index+1]=paste("\\end{table}")
         lines[index<-index+1]=paste("\\vspace{0cm}")
-        
+      
     }
-
     lines[index<-index+1]="\\newpage"
+    lines[index<-index+1]="\\fcolorbox{red!25}{red!25}{p.value(ks.test)$<$0.1}\\"
+    lines[index<-index+1]="\\fcolorbox{red!50}{red!50}{p.value(ks.test)$<$0.05}\\"
+    lines[index<-index+1]="\\end{document}"
+    writeLines(lines, table)
+    close(table)
 
-    lines[index<-index+1]="\\fcolorbox{green!25}{green!25}{dBIC$<$0}\\"
-    lines[index<-index+1]="\\fcolorbox{green!50}{green!50}{dBIC$<$-10}\\"
-    lines[index<-index+1]="\\fcolorbox{green!75}{green!75}{dBIC$<$-50}\\"
+    table<-file(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vx_",periods[2],"_quantile_diff.tex",sep=""))
+    options(scipen=100)
+    lines=c()
+    index=0
+    lines[index<-index+1]="\\documentclass[a4paper,12pt]{article}"
+    lines[index<-index+1]="\\usepackage{xcolor,colortbl,pgf}"
+    lines[index<-index+1]="\\usepackage{makecell}"
+    lines[index<-index+1]="\\usepackage{geometry}"
+    lines[index<-index+1]="\\geometry{ a4paper, total={190mm,288mm}, left=10mm, top=10mm, }"
 
-    lines[index<-index+1]="\\fcolorbox{violet!25}{violet!25}{sd/mean$>$0.05}\\"
-    lines[index<-index+1]="\\fcolorbox{violet!50}{violet!50}{sd/mean$>$0.10}\\"
-    lines[index<-index+1]="\\fcolorbox{violet!75}{violet!75}{sd/mean$>$0.20}\\"
+    lines[index<-index+1]="\\definecolor{white}{rgb}{1,1,1}"
+    lines[index<-index+1]="\\definecolor{green}{rgb}{0.5,1,0.5}"
+    lines[index<-index+1]="\\definecolor{turkis}{rgb}{0.5,1,1}"
+    lines[index<-index+1]="\\definecolor{violet}{rgb}{1,0.5,1}"
 
-    lines[index<-index+1]="\\fcolorbox{turkis}{turkis}{b2$<$b1}\\"
+    lines[index<-index+1]="\\begin{document}"
+    for (sea in 1:5){
+        lines[index<-index+1]=paste("\\begin{table}[!h]")
+        lines[index<-index+1]=paste("\\begin{tabular}{c||c|c|c||c||c||c|c|c||c}")
 
+        lines[index<-index+1]=paste("\\multicolumn{10}{c}{",season_names[sea]," ",period," $",trendID,"$}\\","\\",sep="")
+        lines[index<-index+1]=paste(" &\\multicolumn{4}{c}{",state_names[1],"}","& &\\multicolumn{4}{c}{",state_names[2],"}\\","\\",sep="")
+        lines[index<-index+1]=paste("reg & 75th & 95th & 99th & mean & & 75th & 95th & 99th & mean &","\\","\\",sep="")
+        for (reg in ID_select){
+            newline=paste(region_names[reg],sep="")
+            for (state in 1:2){
+                if (state==2){newline<-paste(newline," &",sep="")}
 
+                for (i in c(1,2,3,4)){
+                    val<-quantiles[2,sea,reg,state,i,1]-quantiles[1,sea,reg,state,i,1]
+                    if (ks_test[sea,reg,state,1]>0.1 & val>0){background<-"violet!10"}
+                    if (ks_test[sea,reg,state,1]<=0.1 & val>0){background<-"violet!25"}
+                    if (ks_test[sea,reg,state,1]<=0.05 & val>0){background<-"violet!50"}
+
+                    if (ks_test[sea,reg,state,1]>0.1 & val<0){background<-"turkis!10"}
+                    if (ks_test[sea,reg,state,1]<=0.1 & val<0){background<-"turkis!25"}
+                    if (ks_test[sea,reg,state,1]<=0.05 & val<0){background<-"turkis!50"}
+                    newline<-paste(newline," &{\\cellcolor{",background,"}{",round(val,02),"}}",sep="")
+                }
+                
+            }
+            newline<-paste(newline,paste("\\","\\",sep=""))
+            lines[index<-index+1]=newline
+            if (reg %in% hlines){
+                lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+                lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+            }
+        }
+        lines[index<-index+1]=paste("\\end{tabular}")
+        lines[index<-index+1]=paste("\\end{table}")
+        lines[index<-index+1]=paste("\\vspace{0cm}")
+      
+    }
+    lines[index<-index+1]="\\newpage"
+    lines[index<-index+1]="\\fcolorbox{violet!25}{violet!25}{p.value(ks.test)$>$0.1 and increase}\\"
+    lines[index<-index+1]="\\fcolorbox{violet!25}{violet!25}{p.value(ks.test)$<$0.1 and increase}\\"
+    lines[index<-index+1]="\\fcolorbox{violet!50}{violet!50}{p.value(ks.test)$<$0.05 and increase}\\"
+
+    lines[index<-index+1]="\\fcolorbox{turkis!25}{turkis!25}{p.value(ks.test)$>$0.1 and decrease}\\"
+    lines[index<-index+1]="\\fcolorbox{turkis!25}{turkis!25}{p.value(ks.test)$<$0.1 and decrease}\\"
+    lines[index<-index+1]="\\fcolorbox{turkis!50}{turkis!50}{p.value(ks.test)$<$0.05 and decrease}\\"
     lines[index<-index+1]="\\end{document}"
     writeLines(lines, table)
     close(table)
@@ -258,10 +312,10 @@ ks_wilcoxon_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9")){
 
 
 
-ks_wilcoxon_trenID_sensitivity(trendIDs=c("91_5","91_7","91_9"))
+#ks_wilcoxon_trenID_sensitivity(trendIDs=c("91_5","91_7","91_9"))
 
 
 
 #wilcoxon_period(ID_name="ward23",yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),periods=c("1950-1980","1980-2014"),ID_select=1:23)
 
-#distribution_comparision(ID_name="ward23",periods=c("1950-1980","1980-2014"),ID_select=c(3,4,7,11,12,14,16,18,20,22),ID_length=23,add_name="2expo_4:100")
+distribution_comparision(ID_name="ward23",periods=c("1950-1980","1980-2014"),ID_select=c(3,4,7,11,12,14,16,18,20,22),ID_length=23)

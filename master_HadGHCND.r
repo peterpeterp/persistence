@@ -145,7 +145,7 @@ master_gridded_plots <- function(){
 }
 
 master_regional_analysis <- function(region_name="7rect",ID_length=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:ID_length,plot_select=1:ID_length){
-    #regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
+    regional_attribution(region_name=region_name,trendID=trendID,dataset=dataset,additional_style=additional_style)
     ID_name=paste("_",region_name,sep="")
     for (i in 1:(length(yearLimits)/2)){
         yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
@@ -259,7 +259,7 @@ plot_init <- function(){
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
 if (!is.na(id)){id<-id*2+3}
-if (is.na(id)){id<-7}
+if (is.na(id)){id<-5}
 
 
 ###################################################################
@@ -294,6 +294,6 @@ plot_init()
 #master_regional_analysis(region_name="ml7",ID_length=7,region_names=1:7)
 #master_regional_plots(region_name="ml7",ID_length=7,region_names=1:7)
 
-#master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
-#master_regional_plots(region_name="ward23",ID_select=c(3,4,7,11,12,14,16,18,20,22),ID_length=23,region_names=1:23)
+master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
+master_regional_plots(region_name="ward23",ID_select=c(3,4,7,11,12,14,16,18,20,22),ID_length=23,region_names=1:23)
 

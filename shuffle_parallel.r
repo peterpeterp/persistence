@@ -121,9 +121,9 @@ init <- function(){
 
 init()
 
-ID_name<-"midlat"
+ID_name<-"ward23"
 folder<-paste("/regional/",ID_name,"/",sep="")
-period<-"1950-2014"
+period<-"1980-2014"
 
 #shuffle_check(seasons=1:2,id=2,yearPeriod=c(1952,2012))
 #shuffle_check(seasons=3:4,id=2,yearPeriod=c(1952,2011))
@@ -132,7 +132,7 @@ period<-"1950-2014"
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
 
-trend_analysis(seasons=5,id=id,yearPeriod=c(1952,2010))
+trend_analysis(seasons=5,id=id,yearPeriod=c(1980,2010))
 
 asda
 
