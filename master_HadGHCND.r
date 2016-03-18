@@ -9,7 +9,14 @@
 
 master_nas <- function(){
     # count nas
-    find_nas(dat)    
+    naRatio=array(NA,c(5,ntot))
+    for (q in 1:ntot){naRatio[1,q]<-length(which(is.na(dat$tas[q,,])))/(365*length(dat$year))}
+    naRatio[2,which(naRatio[1,]<0.3)]=naRatio[1,which(naRatio[1,]<0.3)]
+    naRatio[3,which(naRatio[1,]<0.2)]=naRatio[1,which(naRatio[1,]<0.2)]
+    naRatio[4,which(naRatio[1,]<0.1)]=naRatio[1,which(naRatio[1,]<0.1)]
+    naRatio[5,which(naRatio[1,]<0.01)]=naRatio[1,which(naRatio[1,]<0.01)]
+
+    topo_map_plot(filename=paste("../plots/",dataset,"/na_ratio.pdf",sep=""),reihen=naRatio,farb_mitte="mean",farb_palette="regenbogen",titel=c("na ratio","less than 30% nas","less than 20% nas","less than 10% nas","less than 1% nas"))
 }
 
 master_trend_control <- function(){
@@ -259,7 +266,7 @@ plot_init <- function(){
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
 if (!is.na(id)){id<-id*2+3}
-if (is.na(id)){id<-5}
+if (is.na(id)){id<-7}
 
 
 ###################################################################
@@ -267,6 +274,7 @@ if (is.na(id)){id<-5}
 ###################################################################
 master_init(id)
 plot_init()
+master_nas()
 
 #master_trend()
 #master_seasonal_median_on_detrended()
@@ -294,6 +302,6 @@ plot_init()
 #master_regional_analysis(region_name="ml7",ID_length=7,region_names=1:7)
 #master_regional_plots(region_name="ml7",ID_length=7,region_names=1:7)
 
-master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
-master_regional_plots(region_name="ward23",ID_select=c(3,4,7,11,12,14,16,18,20,22),ID_length=23,region_names=1:23)
+#master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
+#master_regional_plots(region_name="ward23",ID_select=c(3,4,7,11,12,14,16,18,20,22),ID_length=23,region_names=1:23)
 
