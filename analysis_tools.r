@@ -330,15 +330,14 @@ two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_gues
             comb_fit<-combi_expo(X,a1,b1,b2,thresh)
             R2<-1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
             BIC<-try(BIC(combi_nls),silent=TRUE)
-            ks<-ks.test(Y,comb_fit)$p.value
-            wilcox<-wilcox.test(x=Y,y=comb_fit)$p.value
+            chi2<-chisq.test(Y[which(!is.na(Y))],p=comb_fit[which(!is.na(Y))],rescale=TRUE)
             if (class(BIC)=="try-error"){BIC=NA}
-            return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(ks,wilcox,R2,BIC),fit=comb_fit))
+            return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(chi2,R2,BIC),fit=comb_fit))
         }
-        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA),fit=X*NA))}
+        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA),fit=X*NA))}
 
     }
-    if (class(combi_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA),fit=X*NA))}
+    if (class(combi_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA),fit=X*NA))}
 }
 
 two_exp_fit_restricted <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=4,thresh_up=15){
