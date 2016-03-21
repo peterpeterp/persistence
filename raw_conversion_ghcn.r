@@ -124,6 +124,7 @@ record_length_check <- function(){
     dat<<-dat_load_precipitation("../data/raw_data/ghcn/ghcn_pp_1950-2015_reg7.nc")
     ntot=length(dat$ID)
     missingRatio<-array(NA,c(ntot))
+    asdas
     for (q in 1:ntot){
         cat("-")
         missingRatio[q]=length(which(is.na(dat$pp[q,,])))/(365*66)
@@ -159,12 +160,12 @@ record_length_check <- function(){
 }
 
 plot_init <- function(){
-    paper<<-c(8,3.5)
-    yAusschnitt<<-c(20,80)
-    xAusschnitt<<-c(-100,-10)
+    paper<<-c(8,5)
+    yAusschnitt<<-c(35,60)
+    xAusschnitt<<-c(-100,-50)
     asp<<-1
     pointsize<<-0.44
-    pch_points<<-c(1,NA,0.25,0.25)
+    pch_points<<-c(1,NA,0.1,0.1)
 
     pch_sig<<-4
     col_sig<<-rgb(0.1,0.1,0.1,0.6)
@@ -203,7 +204,9 @@ plot_init <- function(){
 
 plot_init()
 
-record_length_check()
+#record_length_check()
+topo_map_plot(filename_plot=paste("../data/raw_data/ghcn/ghcn_pp_1950-2015_data_coverage_all.pdf",sep=""),reihen=array(1:length(dat$ID),c(1,length(dat$ID))),titel=c("stations in reg 7"),farb_mitte=c(0,1),farb_palette="regenbogen")
+
 adas
 
 

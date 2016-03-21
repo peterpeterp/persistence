@@ -2,16 +2,17 @@
 library(RNetCDF)
 
 split_original <- function(i=1){
-	nc<-open.nc("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0.nc")
-	rr<-var.get.nc(nc,"rr",start=c((58*(i-1)+1),1,1),count=c(58,101,23922))
+	print("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0.nc")
+	nc<-open.nc("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0.nc")
+	tg<-var.get.nc(nc,"tg",start=c((58*(i-1)+1),1,1),count=c(58,101,23922))
 	lon<-var.get.nc(nc,"longitude",start=c((58*(i-1)+1)),count=c(58))
 	lat<-var.get.nc(nc,"latitude")
 	time<-var.get.nc(nc,"time")
-	print(dim(rr))
+	print(dim(tg))
 
 	close.nc(nc) 
 
-	nc_out <- create.nc(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_",i,".nc",sep=""))
+	nc_out <- create.nc(paste("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0_",i,".nc",sep=""))
 	            
 	dim.def.nc(nc_out,"lon",dimlength=58, unlim=FALSE)
 	dim.def.nc(nc_out,"lat",dimlength=101,unlim=FALSE)
@@ -26,42 +27,42 @@ split_original <- function(i=1){
 	var.def.nc(nc_out,"time","NC_DOUBLE",c(2))
 	#att.put.nc(nc_out, "time", "missing_value", "NC_DOUBLE", 99999)
 
-	var.def.nc(nc_out,"rr","NC_SHORT",c(0,1,2))
-	att.put.nc(nc_out, "rr", "missing_value", "NC_SHORT", -99)
+	var.def.nc(nc_out,"tg","NC_SHORT",c(0,1,2))
+	att.put.nc(nc_out, "tg", "missing_value", "NC_SHORT", -99)
 
 	var.put.nc(nc_out,"lon",lon)              
 	var.put.nc(nc_out,"lat",lat)              
 	var.put.nc(nc_out,"time",time)              
-	var.put.nc(nc_out,"rr",rr)              
+	var.put.nc(nc_out,"tg",tg)              
 
 	close.nc(nc_out) 
 }
 
 keep_not_empty <-function(i=1){
-	nc<-open.nc(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_",i,".nc",sep=""))
-	rr<<-var.get.nc(nc,"rr")
+	nc<-open.nc(paste("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0_",i,".nc",sep=""))
+	tg<<-var.get.nc(nc,"tg")
 	lon<<-var.get.nc(nc,"lon")
 	lat<<-var.get.nc(nc,"lat")
 	time_vec<<-var.get.nc(nc,"time")
-	print(dim(rr))
+	print(dim(tg))
 
 	lon_neu<-array(NA,58*101)
 	lat_neu<-array(NA,58*101)
 	ID_neu<-array(NA,58*101)
-	precip<-array(NA,c(58*101,23922))
+	tas<-array(NA,c(58*101,23922))
 	index<-0
 	for (x in 1:58){
 		for (y in 1:101){
-			if (length(which(!is.na(rr[x,y,])))>0){
+			if (length(which(!is.na(tg[x,y,])))>0){
 				index<-index+1
 				lon_neu[index]=lon[x]
 				lat_neu[index]=lat[y]
 				ID_neu[index]=index
-				precip[index,]=rr[x,y,]
+				tas[index,]=tg[x,y,]
 			}
 		}
 	}
-	nc_out <- create.nc(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_reduced",i,".nc",sep=""))
+	nc_out <- create.nc(paste("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0_reduced",i,".nc",sep=""))
 	            
 	dim.def.nc(nc_out,"ID",dimlength=index, unlim=FALSE)
 	dim.def.nc(nc_out,"time",dimlength=23922,unlim=FALSE)
@@ -77,14 +78,14 @@ keep_not_empty <-function(i=1){
 	var.def.nc(nc_out,"time","NC_DOUBLE",c(1))
 	#att.put.nc(nc_out, "time", "missing_value", "NC_DOUBLE", 99999)
 
-	var.def.nc(nc_out,"precip","NC_SHORT",c(0,1))
-	att.put.nc(nc_out, "precip", "missing_value", "NC_SHORT", -99)
+	var.def.nc(nc_out,"tas","NC_SHORT",c(0,1))
+	att.put.nc(nc_out, "tas", "missing_value", "NC_SHORT", -99)
 
 	var.put.nc(nc_out,"ID",ID_neu[1:index])    
 	var.put.nc(nc_out,"lon",lon_neu[1:index])    
 	var.put.nc(nc_out,"lat",lat_neu[1:index]) 
 	var.put.nc(nc_out,"time",time_vec)      
-	var.put.nc(nc_out,"precip",precip[1:index,])              
+	var.put.nc(nc_out,"tas",tas[1:index,])              
 	close.nc(nc_out) 
 
 }
@@ -98,8 +99,8 @@ merge_reduced <- function(files=1:4){
 	lat<-array(NA,232*101)
 	index<-0
 	for (i in files){
-		nc <- open.nc(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_reduced",i,".nc",sep=""))
-		tmp_rr<-var.get.nc(nc,"precip")
+		nc <- open.nc(paste("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0_reduced",i,".nc",sep=""))
+		tmp_tg<-var.get.nc(nc,"tas")
 		tmp_ID<-var.get.nc(nc,"ID")
 		tmp_lon<-var.get.nc(nc,"lon")
 		tmp_lat<-var.get.nc(nc,"lat")
@@ -108,8 +109,8 @@ merge_reduced <- function(files=1:4){
 		len<-length(tmp_ID)
 
 		print(dim(pp[(index+1):(index+len),]))
-		print(dim(tmp_rr))
-		pp[(index+1):(index+len),]=tmp_rr
+		print(dim(tmp_tg))
+		pp[(index+1):(index+len),]=tmp_tg
 		ID[(index+1):(index+len)]=tmp_ID+index
 		lon[(index+1):(index+len)]=tmp_lon
 		lat[(index+1):(index+len)]=tmp_lat
@@ -119,7 +120,7 @@ merge_reduced <- function(files=1:4){
 
 	}
 
-	nc_out <- create.nc(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_merged.nc",sep=""))
+	nc_out <- create.nc(paste("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0_merged.nc",sep=""))
 	            
 	dim.def.nc(nc_out,"ID",dimlength=index, unlim=FALSE)
 	dim.def.nc(nc_out,"time",dimlength=23922,unlim=FALSE)
@@ -141,7 +142,7 @@ merge_reduced <- function(files=1:4){
 }
 
 put_in_dat_format <- function(){
-	nc <- open.nc(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_merged.nc",sep=""))
+	nc <- open.nc(paste("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0_merged.nc",sep=""))
 	pp<<-var.get.nc(nc,"pp")
 	lon<<-var.get.nc(nc,"lon")
 	lat<<-var.get.nc(nc,"lat")
@@ -154,7 +155,7 @@ put_in_dat_format <- function(){
 	}	
 	pp_neu[,1:197,66]=pp[,23726:23922]
 
-	nc_out <- create.nc(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_end.nc",sep=""))
+	nc_out <- create.nc(paste("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0_end.nc",sep=""))
 	            
 	dim.def.nc(nc_out,"ID",dimlength=ntot, unlim=FALSE)
 	dim.def.nc(nc_out,"days",dimlength=365,unlim=FALSE)
@@ -182,7 +183,7 @@ put_in_dat_format <- function(){
 
 
 data_view <- function(){
-	dat <<- dat_load_eobs(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
+	dat <<- dat_load_eobs(paste("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
 	pp<-dat$pp
 	ntot<-length(dat$ID)
 
@@ -217,18 +218,18 @@ location_view_eobs <- function(station=0,lon=0,lat=0,regions=NA){
 }
 
 pdf_view <- function(q){
-	dat <<- dat_load_eobs(paste("../data/raw_data/eobs-rr/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
+	dat <<- dat_load_eobs(paste("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
 	pp<-dat$pp	
 	histo(pp[q,,],plot=TRUE)
 }
 
 ################################
 
-#for (i in 1:4){
-#	split_original(i)
-#	keep_not_empty(i)
-#}
-#merge_reduced()
+for (i in 1:4){
+	split_original(i)
+	keep_not_empty(i)
+}
+merge_reduced()
 put_in_dat_format()
 
 

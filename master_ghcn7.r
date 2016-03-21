@@ -183,12 +183,12 @@ master_init <- function(){
 }
 
 plot_init <- function(){
-    paper<<-c(8,3.5)
-    yAusschnitt<<-c(20,50)
-    xAusschnitt<<-c(220,310)
+    paper<<-c(8,5)
+    yAusschnitt<<-c(35,60)
+    xAusschnitt<<-c(-100,-50)
     asp<<-1
     pointsize<<-0.44
-    pch_points<<-c(1,NA,0.25,0.25)
+    pch_points<<-c(1,NA,0.5,0.5)
 
     pch_sig<<-4
     col_sig<<-rgb(0.1,0.1,0.1,0.6)
@@ -220,9 +220,9 @@ plot_init()
 ###################################################################
 
 #master_gridded_analysis()
-#master_gridded_plots()
+master_gridded_plots()
 
-master_regional_analysis()
+#master_regional_analysis()
 
 #master_support_analysis()
 
