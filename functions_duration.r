@@ -249,14 +249,15 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
                 }
             }
         }
-        adsasd
     }
     if (option[1]==1){other_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_others.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,other_stuff=other_stuff)}
 
     if (option[2]==1 | option[3]==1){quantiles_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_quantiles.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,taus=taus,quantile_stuff=quantile_stuff)}
         
-    if (sum(option[4:8],na.rm=TRUE)>0){fit_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)}
-    distr_write(distr_stuff=distr_stuff,filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_distributions.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period)
+    if (sum(option[4:8],na.rm=TRUE)>0){
+        fit_write(filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_fit_",add_name,".nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period,fit_stuff=fit_stuff)
+        distr_write(distr_stuff=distr_stuff,filename=paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,ID_name,"_",period,"_distributions.nc",sep=""),ID_length=ID_length,ID_name="grid_points",period=period)
+    }
     graphics.off()
 }
 
