@@ -150,7 +150,7 @@ master_init <- function(){
 
 
     trendID<<-"0p5"
-    dataset<<-"_eobs"
+    dataset<<-"_eobsPP"
     additional_style<<-""
     dat <<- dat_load_precipitation(paste("../data/",dataset,"/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
     ntot<<-length(dat$ID)
@@ -159,30 +159,8 @@ master_init <- function(){
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     state_names<<-c("dry","wet")
-}
 
-plot_init <- function(){
-    paper<<-c(8,5)
-    yAusschnitt<<-c(20,80)
-    xAusschnitt<<-c(-30,80)
-    asp<<-1
-    pointsize<<-0.44
-    pch_points<<-c(1,NA,0.25,0.25)
-
-    pch_sig<<-4
-    col_sig<<-rgb(0.1,0.1,0.1,0.6)
-    cex_sig<<-0.03
-
-    region<<-NA
-
-    season_auswahl<<-c(1,2,3,4,5)
-    sub_zusatz<<-c("75th","95th","99th")
-    name_reg_zusatz<<-""
-
-    col_row<<-c(1,1)
-    mat<<-NA
-    layout_mat<<-c(NA)
-    subIndex<<-c("a","b")
+    taus<<-c(0.75,0.95,0.99)
 }
 
 
@@ -190,7 +168,7 @@ plot_init <- function(){
 # basic analysis
 ###################################################################
 master_init()
-plot_init()
+plot_init_EU()
 
 #master_state_attribution()
 #master_duration()
