@@ -393,14 +393,14 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	if (!is.na(layout_mat[1])){layout(layout_mat)}
 	if (is.na(layout_mat[1])){par(mfrow=c(1,1))}
 	for (i in 1:dim(reihen)[1]){
-	    plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(2,3,2,5),main=titel[i])
+	    #mapPlot(coastlineWorld,latitudelim=yAusschnitt,longitudelim=xAusschnitt,proj="stereographic",axes=FALSE, fill='white',mar=c(2,3,2,5),main=titel[i])
+	    plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=margins,main=titel[i])
 	    if (titel[1]!=""){
 	    	main<-titel[i]
 	    	print(titel[i])
 	    	#text(0,-85,main)
 	    }
 	    axis(2,at=seq(yAusschnitt[1],yAusschnitt[2],10))
-
 
 	    #data points
 	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,ID_select=ID_select)
@@ -416,11 +416,14 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		# contour lines topography
 		if (!is.na(land_col)){
 		    par(new=TRUE)
-		    plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=land_col,col.water=water_col,mar=c(2,3,2,5))
+		    try(plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=land_col,col.water=water_col,mar=margins),silent=TRUE)
 		}
 		#draw over axes
-		polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")
-		polygon(x=c(-200,-200,200,200),y=c(100,88,88,100),col="white",border="white")
+		polygon(x=c(-200,-200,200,200),y=c(yAusschnitt[1]-outer_cut,yAusschnitt[1]+inner_cut,yAusschnitt[1]+inner_cut,yAusschnitt[1]-outer_cut),col="white",border="white")
+		polygon(x=c(-200,-200,200,200),y=c(yAusschnitt[2]-inner_cut,yAusschnitt[2]+outer_cut,yAusschnitt[2]+outer_cut,yAusschnitt[2]-inner_cut),col="white",border="white")
+		polygon(x=c(xAusschnitt[1]-outer_cut,xAusschnitt[1]-outer_cut,xAusschnitt[1]+inner_cut,xAusschnitt[1]+inner_cut),y=c(yAusschnitt[1],yAusschnitt[2],yAusschnitt[2],yAusschnitt[1]),col="white",border="white")
+		polygon(x=c(xAusschnitt[2]-inner_cut,xAusschnitt[2]-inner_cut,xAusschnitt[2]+outer_cut,xAusschnitt[2]+outer_cut),y=c(yAusschnitt[1],yAusschnitt[2],yAusschnitt[2],yAusschnitt[1]),col="white",border="white")
+
 
 		#color bar
 		color=tmp$color
@@ -437,6 +440,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 
 library(oce)
 data(topoWorld)
+data(coastlineWorld)
 library(RColorBrewer)
 library(rworldmap)
 library(fields)

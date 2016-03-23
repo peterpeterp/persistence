@@ -95,11 +95,11 @@ dissimilarity_view <- function(lagMax=15,load_name="_Cor",add_name="",timeRange=
 
     reihen=choiceMat[auswahl,]
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,add_name,"_best_lag.pdf",sep=""),reihen=reihen,farb_mitte=0,farb_palette="lila-gruen",highlight_points=auswahl,highlight_color="red",paper=c(8,10),ausschnitt=c(30,70),layout_mat=matrix(c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6),nrow=16),pointsize=1.5)
-    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_best_lag.pdf",sep=""),reihen=reihen,farb_palette="lila-gruen",highlight_points=auswahl,highlight_color="red",pointsize=1.5)
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_best_lag.pdf",sep=""),reihen=reihen,farb_palette="lila-gruen",highlight_points=auswahl,highlight_color="red")
 
     reihen=distMat[auswahl,]
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,add_name,"_distance.pdf",sep=""),reihen=reihen,farb_mitte=c(0,1),farb_palette="regenbogen",highlight_points=auswahl,highlight_color="red",paper=c(8,10),ausschnitt=c(30,70),layout_mat=matrix(c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6),nrow=16),pointsize=1.5)
-    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_distance.pdf",sep=""),reihen=reihen,farb_palette="regenbogen",pointsize=1.5)
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_distance.pdf",sep=""),reihen=reihen,farb_palette="regenbogen")
 }
 
 cluster_evaluation <- function(method="ward.D2",untilGroup=11,add_name="",ID_select=1:1319,load_name="_CorLag",lagMax=20,timeRange=4000:11000,normalize=FALSE){
@@ -290,7 +290,7 @@ init <- function(){
     library(RNetCDF)
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
 
-    dat<<-dat_load(paste("../data/_TMean/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    #dat<<-dat_load(paste("../data/_TMean/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 }
 
 
@@ -303,7 +303,7 @@ load_name<-"_CorSdNorm"
 
 #dissimilarity_matrix(lagMax=20,timeRange=c(2000,22000),load_name="_AbsCorSdNorm",normalize=TRUE)
 
-#dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
+dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
 
 #for (method in c("ward.D2","single","centroid")){
 
@@ -315,4 +315,4 @@ for (method in c("ward.D2")){
 }
 
 #write_cluster_region_files(add_name="_ml",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=7,region_name="ml7")
-cluster_vis_map(add_name="_ml",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=7,region_name="ml7")
+#cluster_vis_map(add_name="_ml",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=7,region_name="ml7")
