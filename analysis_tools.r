@@ -128,55 +128,30 @@ fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state)
     # second plot page
     par(mar=c(3, 3, 3, 3) + 0.1)                
     plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
-    if (!is.na(fitstuff[9])){
-        abline(v=fitstuff[9],col="grey")
+    if (!is.na(fitstuff[13])){
+        abline(v=fitstuff[13],col="grey")
         #text(thresh,0.22,label=round(thresh,02),col="grey")
     }
     lines(expfit,col=color[3],lty=2)
     lines(fit,col=color[4],lty=1)               
  
-    text(50,0.18+0.06,paste("BIC=",round(fitstuff[16],01)),pos=1,col=color[3])                 
-    text(50,0.155+0.06,paste("BIC=",round(fitstuff[20],01)),pos=1,col=color[4])      
+    text(50,0.18+0.06,paste("BIC=",round(fitstuff[7],01)),pos=1,col=color[3])                 
+    text(50,0.155+0.06,paste("BIC=",round(fitstuff[18],01)),pos=1,col=color[4])      
 
-    text(50,0.11+0.06,paste("R2=",round(fitstuff[15],03)),pos=1,col=color[3])                 
-    text(50,0.085+0.06,paste("R2=",round(fitstuff[19],03)),pos=1,col=color[4])            
+    text(50,0.11+0.06,paste("KS=",round(fitstuff[6],03)),pos=1,col=color[3])                 
+    text(50,0.085+0.06,paste("KS=",round(fitstuff[17],03)),pos=1,col=color[4])            
 
     # third version
     plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
-    if (!is.na(fitstuff[9])){
-        abline(v=fitstuff[9],col="grey")
-        text(fitstuff[9],0.00002,label=round(fitstuff[9],02),col=rgb(0,0,0))
+    if (!is.na(fitstuff[13])){
+        abline(v=fitstuff[13],col="grey")
+        text(fitstuff[13],0.00002,label=round(fitstuff[13],02),col=rgb(0,0,0))
     }    
     lines(expfit,col=color[3],lty=2)
     lines(fit,col=color[4],lty=1)
-    text(50,0.22,paste("P=",round(exp(-fitstuff[2])*100,01)),pos=1,col=color[3])                 
-    text(50,0.05,paste("P1=",round(exp(-fitstuff[6])*100,01)),pos=1,col=color[4])                 
-    text(50,0.02,paste("P2=",round(exp(-fitstuff[8])*100,01)),pos=1,col=color[4])                
-}
-
-fit_plot_comparison <- function(distr,fits,sea,q,state,wilcox){
-    color=c("green","orange",rgb(0.5,0.1,0.5),rgb(0.1,0.7,0.1),rgb(0,0,0))
-
-    par(mar=c(3, 3, 3, 3) + 0.1)  
-
-    # first plot page
-    plot(NA,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
-    text(50,0.18+0.06,paste("wilcox=",round(wilcox,01),"\n ",season_names[sea],q,state_names[state]),pos=1,col=color[3])                 
-    for (i in 1:2){
-        nonull<-which(distr[i,3,]>0)
-        points(distr[i,1,nonull],distr[i,2,nonull],pch=20,col=color[i],cex=0.5)
-        lines(distr[i,1,nonull],combi_expo(distr[i,1,nonull],fits[i,5],fits[i,6],fits[i,8],fits[i,9]),col=color[i],lty=1)
-
-    }  
-
-    # second plot page
-    plot(NA,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5,log="y")
-    text(50,0.22,paste("wilcox=",round(wilcox,01),"\n ",season_names[sea],q,state_names[state]),pos=1,col=color[3])                 
-    for (i in 1:2){
-        nonull<-which(distr[i,3,]>0)
-        points(distr[i,1,nonull],distr[i,2,nonull],pch=20,col=color[i],cex=0.5)
-        lines(distr[i,1,nonull],combi_expo(distr[i,1,nonull],fits[i,5],fits[i,6],fits[i,8],fits[i,9]),col=color[i],lty=1)
-    }              
+    text(50,0.22,paste("b=",round(fitstuff[2],03)),pos=1,col=color[3])                 
+    text(50,0.05,paste("b1=",round(fitstuff[10],03)),pos=1,col=color[4])                 
+    text(50,0.02,paste("b2=",round(fitstuff[12],03)),pos=1,col=color[4])                
 }
 
 fit_plot <- function(X,Y,fit,legend,fit_style,sea,q,state,thresh=NA){
@@ -205,31 +180,41 @@ fit_plot <- function(X,Y,fit,legend,fit_style,sea,q,state,thresh=NA){
 }
 
 exponential_fit <- function(X,Y,y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-Inf),upper_limit=c(Inf,Inf),xStart=1,xStop=100){
+    # required for data storage later on
+    X_full<-X
+
+    # only data points which are not zero     
     Y<-Y[xStart:xStop]
     X<-X[xStart:xStop]
     nona<-which(Y>0)
     Y<-Y[nona]
     X<-X[nona]
-    xy=data.frame(y=Y,x=X)
-    # try fit
-    exp_nls=try(nls(y~(a*exp(-b*x)),data=xy,algorithm="port",start=start_guess,lower=lower_limit,upper=upper_limit,na.action=na.exclude),silent=TRUE) 
-    
-    # if succes
-    if (class(exp_nls)!="try-error"){
-        a<-summary(exp_nls)$parameters[1]
-        b<-summary(exp_nls)$parameters[2]
 
-        expfit<-a*exp(-X*b)
-        R2<-1-sum(((Y-expfit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-        BIC<-BIC(exp_nls)
-        chi2<-chisq.test(Y[which(!is.na(Y))],p=expfit[which(!is.na(Y))],rescale=TRUE)$p.value
-        ks<-ks.test(Y,expfit)$p.value
-        return(list(pars=c(a,b),ana=c(chi2,R2,ks,BIC),fit=expfit))
+    # perform fit
+    xy<-data.frame(y=Y,x=X)
+    nls_fit<-try(nls(y~(a*exp(-b*x)),data=xy,algorithm="port",start=start_guess,lower=lower_limit,upper=upper_limit,na.action=na.exclude),silent=TRUE) 
+    if (class(nls_fit)!="try-error"){
+        summ_nls<-try(summary(nls_fit))
+        if (class(summ_nls)!="try-error"){
+            a<-summ_nls$parameters[1]
+            b<-summ_nls$parameters[2]
+
+            # goodness analysis
+            exp_fit<-a*exp(-X*b)
+
+            chi2<-chisq.test(Y[which(!is.na(Y))],p=exp_fit[which(!is.na(Y))],rescale=TRUE)$p.value
+            R2<-1-sum(((Y-exp_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
+            ks<-ks.test(Y,exp_fit)$p.value
+            D<-ks.test(Y,exp_fit)$statistic
+            BIC<-try(BIC(nls_fit),silent=TRUE)
+            if (class(BIC)=="try-error"){BIC=NA}
+
+            exp_fit<-a*exp(-X_full*b)
+            return(list(pars=c(a,b),ana=c(chi2,R2,ks,D,BIC),fit=exp_fit))
+        }
+        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA,NA),fit=X_full*NA))}
     }
-    # if fail
-    else{
-        return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA),fit=X*NA))
-    }
+    if (class(nls_fit)=="try-error"){return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA,NA),fit=X_full*NA))}
 }
 
 combi_expo <-function(x,a1,b1,b2,thresh){
@@ -240,40 +225,60 @@ combi_expo <-function(x,a1,b1,b2,thresh){
 }
 
 two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15,xStart=1,xStop=100){
-    xy<-data.frame(y=Y[xStart:thresh_guess],x=X[xStart:thresh_guess])
+    # required for data storage later on
+    X_full<-X
+
+    # only data points which are not zero 
+    Y<-Y[xStart:xStop]
+    X<-X[xStart:xStop]
+    nona<-which(Y>0)
+    Y<-Y[nona]
+    X<-X[nona]
+
+    # prepare guesses for the parameters
+    xy<-data.frame(y=Y[which(X>=xStart & X<=thresh_guess)],x=X[which(X>=xStart & X<=thresh_guess)])
     exp_nls<-try(nls(y~(a*exp(-b*x)),data=xy,start=c(a=0.1,b=0.1),na.action=na.exclude),silent=TRUE) 
     if (class(exp_nls)!="try-error"){
         a1_guess<-summary(exp_nls)$parameters[1]
         b1_guess<-summary(exp_nls)$parameters[2]
     }
 
-    xy<-data.frame(y=Y[thresh_guess:xStop],x=X[thresh_guess:xStop])
+    xy<-data.frame(y=Y[which(X<=xStop & X>=thresh_guess)],x=X[which(X<=xStop & X>=thresh_guess)])
     exp_nls<-try(nls(y~(a1_guess*exp((b-b1_guess)*thresh_guess)*exp(-b*x)),data=xy,start=c(b=0.3),na.action=na.exclude),silent=TRUE) 
     if (class(exp_nls)!="try-error"){
         b2_guess<-summary(exp_nls)$parameters[1]        
         a2_guess<-a1_guess*exp((b2_guess-b1_guess)*thresh_guess)
     }
 
-    xy<-data.frame(y=Y[xStart:xStop],x=X[xStart:xStop])
-    combi_nls<-try(nls(y~combi_expo(x,a1,b1,b2,thresh),data=xy,start=c(a1=a1_guess,b1=b1_guess,b2=b2_guess,thresh=thresh_guess),algorithm="port",lower=c(0,0,0,thresh_down),upper=c(Inf,Inf,Inf,thresh_up),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=TRUE)),silent=TRUE)
-    if (class(combi_nls)!="try-error"){
-        summ_nls<-try(summary(combi_nls))
+    # perform actual fit
+    xy<-data.frame(y=Y,x=X)
+    nls_fit<-try(nls(y~combi_expo(x,a1,b1,b2,thresh),data=xy,start=c(a1=a1_guess,b1=b1_guess,b2=b2_guess,thresh=thresh_guess),algorithm="port",lower=c(0,0,0,thresh_down),upper=c(Inf,Inf,Inf,thresh_up),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=TRUE)),silent=TRUE)
+    if (class(nls_fit)!="try-error"){
+        summ_nls<-try(summary(nls_fit))
         if (class(summ_nls)!="try-error"){
+            # fit parameters
             a1<-summ_nls$parameters[1]
             b1<-summ_nls$parameters[2]
             b2<-summ_nls$parameters[3] 
             thresh<-summ_nls$parameters[4] 
             a2<-a1*exp((b2-b1)*thresh)
+
+            # goodness analysis
             comb_fit<-combi_expo(X,a1,b1,b2,thresh)
-            R2<-1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-            BIC<-try(BIC(combi_nls),silent=TRUE)
+
             chi2<-chisq.test(Y[which(!is.na(Y))],p=comb_fit[which(!is.na(Y))],rescale=TRUE)$p.value
+            R2<-1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
             ks<-ks.test(Y,comb_fit)$p.value
+            D<-ks.test(Y,comb_fit)$statistic
+            BIC<-try(BIC(nls_fit),silent=TRUE)
             if (class(BIC)=="try-error"){BIC=NA}
-            return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(chi2,R2,ks,BIC),fit=comb_fit))
+
+            # store the fit for complete X in order to plot it later on
+            comb_fit<-combi_expo(X_full,a1,b1,b2,thresh)
+            return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(chi2,R2,ks,D,BIC),fit=comb_fit))
         }
-        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA),fit=X*NA))}
+        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA,NA),fit=X_full*NA))}
     }
-    if (class(combi_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA),fit=X*NA))}
+    if (class(combi_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA,NA),fit=X_full*NA))}
 }
 

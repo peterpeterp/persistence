@@ -58,7 +58,6 @@ calc_global_dur <- function(ind,filename,states=c(-1,1),years=length(dat$year)){
     # trash: number of days that have to be neglected (due to detrending)
     # filename: where to store result
     # states: label of states
-    ntot<-length(dat$ID)
     
     dur<-array(NA,dim=c(ntot,length(states),years*365))
     dur_mid<-array(NA,dim=c(ntot,length(states),years*365))
@@ -121,19 +120,16 @@ duration_seasons <- function(dur,dur_mid,season,filename,years=length(dat$year))
 }
     
 
-duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:length(dat$ID),write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(NA),ID_names=1:length(dat$ID),ID_length=length(ID_select),noise_level=0,xStart=1,xStop=100){
-    
-    period=paste(yearPeriod[1],"-",yearPeriod[2],sep="")
-    taus=c(0.75,0.95,0.99)
+duration_analysis <- function(yearPeriod,season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:length(dat$ID),write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(NA),ID_names=1:length(dat$ID),ID_length=length(ID_select),noise_level=0,xStart=1,xStop=100){    
 
     if (!is.na(plot_select[1])){
-        pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",yearPeriod[1],"-",yearPeriod[2],"_",add_name,".pdf",sep=""),width=3,height=3)
+        pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",period,"_",add_name,".pdf",sep=""),width=3,height=3)
         par(mfrow=c(1,1))
         fit_plot_empty()
     }
 
     quantile_stuff=array(NA,dim=c(length(season_names),ID_length,2,length(taus),3))
-    fit_stuff=array(NA,dim=c(length(season_names),ID_length,2,20))
+    fit_stuff=array(NA,dim=c(length(season_names),ID_length,2,30))
     other_stuff=array(NA,dim=c(length(season_names),ID_length,2,12))
     distr_stuff=array(NA,dim=c(length(season_names),ID_length,2,5,100))
 
@@ -207,28 +203,28 @@ duration_analysis <- function(yearPeriod,trendID,dataset="_TMean",season_auswahl
 
 
 
-                    fit_stuff[sea,q,state,20]=length(which(histo$counts>0))
+                    fit_stuff[sea,q,state,22]=length(which(histo$counts>0))
             
                     if (length(which(!is.na(Y)))>15){ 
-                        # exponential fit as starting point
-                        
-                        tmp_exp=exponential_fit(X,Y,y,xStart=xStart,xStop=xStop)
-                        fit_stuff[sea,q,state,1:2]=tmp_exp$pars
-                        fit_stuff[sea,q,state,4:7]=tmp_exp$ana
-                        expfit=tmp_exp$fit
-                        distr_stuff[sea,q,state,4,1:stop]=expfit[1:stop]
-
-                        # combination of 2 exponentials seperated by threshold (restricted threshold range)
                         if (option[4]==1){
+                            # exponential fit as starting point
+                            
+                            tmp_exp=exponential_fit(X,Y,y,xStart=xStart,xStop=xStop)
+                            fit_stuff[sea,q,state,1:2]=tmp_exp$pars
+                            fit_stuff[sea,q,state,4:8]=tmp_exp$ana
+                            expfit=tmp_exp$fit
+                            distr_stuff[sea,q,state,4,1:stop]=expfit[1:stop]
+
+                            # combination of 2 exponentials seperated by threshold (restricted threshold range)
+                        
                             tmp=two_exp_fit(X,Y,y,xStart=xStart,xStop=xStop)
-                            fit_stuff[sea,q,state,9:13]=tmp$pars
-                            fit_stuff[sea,q,state,15:18]=tmp$ana
+                            fit_stuff[sea,q,state,10:14]=tmp$pars
+                            fit_stuff[sea,q,state,16:20]=tmp$ana
                             fit=tmp$fit
                             distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
                         }
-                        fit_stuff[sea,q,state,19]=fit_stuff[sea,q,state,18]-fit_stuff[sea,q,state,7]
+                        fit_stuff[sea,q,state,24]=fit_stuff[sea,q,state,20]-fit_stuff[sea,q,state,8]
                     }
-
 
                 }
                 if (!is.na(plot_select[1])){

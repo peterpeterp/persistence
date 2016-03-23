@@ -91,7 +91,7 @@ regional_attribution <- function(region_name,IDregions=c("from file"),regNumb=7,
         }
     }
 
-    for (sea in c(5)){
+    for (sea in 1:5){
         season=season_names[sea]
         print(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep=""))
         nc_dur=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep=""))
@@ -281,28 +281,28 @@ write_regional_fit_table <- function(region_name="srex",period,fit_style,region_
 
     for (sea in 1:5){
         lines[index<-index+1]=paste("\\begin{table}[!h]")
-        lines[index<-index+1]=paste("\\begin{tabular}{c||c||c|c|c|c|c||c||c||c|c|c|c|c}")
+        lines[index<-index+1]=paste("\\begin{tabular}{c||c|c||c|c|c|c|c|c||c||c|c||c|c|c|c|c|c}")
 
-        lines[index<-index+1]=paste("\\multicolumn{14}{c}{",season_names[sea]," ",period," $",trendID,"$}\\","\\",sep="")
-        lines[index<-index+1]=paste(" &\\multicolumn{6}{c}{",state_names[1],"}","& &\\multicolumn{6}{c}{",state_names[2],"}\\","\\",sep="")
-        lines[index<-index+1]=paste("reg & $b_{expo}$  & b1 & b2 & thresh & b2-b1 & dBIC & & $b_{expo}$ & b1 & b2 & thresh & b2-b1 & dBIC  ","\\","\\",sep="")
+        lines[index<-index+1]=paste("\\multicolumn{18}{c}{",season_names[sea]," ",period," $",trendID,"$}\\","\\",sep="")
+        lines[index<-index+1]=paste(" &\\multicolumn{8}{c}{",state_names[1],"}","& &\\multicolumn{8}{c}{",state_names[2],"}\\","\\",sep="")
+        lines[index<-index+1]=paste("reg & $b_{expo}$ & ks & b1 & b2 & thresh & b2-b1 & ks & dBIC & & $b_{expo}$ & ks & b1 & b2 & thresh & b2-b1 & ks & dBIC  ","\\","\\",sep="")
         for (reg in ID_select){
             newline=paste(region_names[reg],sep="")
             for (state in 1:2){
                 if (state==2){newline<-paste(newline," &",sep="")}
 
-                for (i in c(2,6,8,9)){
+                for (i in c(2,6,10,12,13)){
                     if (rel_sensitivity[3,sea,reg,state,i]<=0.05){background<-"white!25"}
                     if (rel_sensitivity[3,sea,reg,state,i]>0.05){background<-"violet!25"}
                     if (rel_sensitivity[3,sea,reg,state,i]>0.1){background<-"violet!50"}
                     if (rel_sensitivity[3,sea,reg,state,i]>0.2){background<-"violet!75"}
                     newline<-paste(newline," &{\\cellcolor{",background,"}{",round(fit_stuff[sea,reg,state,i],02),"}}",sep="")
                 }
-                diffb<-round(fit_stuff[sea,reg,state,8]-fit_stuff[sea,reg,state,6],03)
+                diffb<-round(fit_stuff[sea,reg,state,12]-fit_stuff[sea,reg,state,10],03)
                 if (diffb>0){farbe="turkis"}
                 else {farbe="white"}
                 newline<-paste(newline," &{\\cellcolor{",farbe,"}{",round(diffb,03),"}}",sep="")
-                for (i in c(17)){
+                for (i in c(17,19)){
                     if (fit_stuff[sea,reg,state,i]>=0){background<-"white!10"}
                     if (fit_stuff[sea,reg,state,i]<0){background<-"green!25"}
                     if (fit_stuff[sea,reg,state,i]< -10){background<-"green!50"}
