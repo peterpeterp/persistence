@@ -5,7 +5,7 @@ trend_write <- function(filename,trend,ID_length=length(dat$ID),method="2D runni
 
     dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
     dim.def.nc(nc_out,"day",dimlength=365,unlim=FALSE)
-    dim.def.nc(nc_out,"year",dimlength=65,unlim=FALSE)
+    dim.def.nc(nc_out,"year",dimlength=length(dat$year),unlim=FALSE)
 
     var.def.nc(nc_out,"trend","NC_DOUBLE",c(0,1,2))
     att.put.nc(nc_out, "trend", "missing_value", "NC_DOUBLE", -99999.9)
@@ -132,12 +132,12 @@ fit_write <- function(filename,ID_length,ID_name,period,fit_stuff,comment="distr
     dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
     dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
 
-    dim.def.nc(nc_out,"fit_outs",dimlength=20,unlim=FALSE)
+    dim.def.nc(nc_out,"fit_outs",dimlength=30,unlim=FALSE)
 
     var.def.nc(nc_out,"fit_stuff","NC_DOUBLE",c(0,1,2,3))
     att.put.nc(nc_out, "fit_stuff", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "fit_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-...")
-    att.put.nc(nc_out, "fit_stuff", "explanation", "NC_CHAR", "expo: 1-a, 2-b, 4-chi2, 5-R2, 6-ks, 7-BIC, special fit: 9-a1, 10-b1, 11-a2, 12-b2, 13-thresh 15-chi2, 16-R2, 17-ks, 18=BIC  special: 19-BIc_diff, 20-distr-length")
+    att.put.nc(nc_out, "fit_stuff", "explanation", "NC_CHAR", "expo: 1-a, 2-b, 4-chi2, 5-R2, 6-ks, 7-D, 8-BIC, special fit: 10-a1, 11-b1, 12-a2, 13-b2, 14-thresh 16-chi2, 17-R2, 18-ks, 19-D, 20=BIC  special: 24-BIc_diff, 22-distr-length")
         
     var.put.nc(nc_out,"fit_stuff",fit_stuff)      
  

@@ -1,11 +1,25 @@
 library(dgof)
 
+ecdf_pete <- function(dist){
+    # not working and very strange
+    dist[is.na(dist)]=0
+    print(dist)
+    dist<-dist[order(dist)]
+    # calculate cdf
+    cdf<-array(NA,length(dist))
+    for (i in 1:length(dist)){
+        cdf[i]=sum(dist[1:i])
+    }
+    cdf<-cdf/cdf[length(cdf)]
+    return(cdf)
+}
+
 ks_wilcoxon_period <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=paste("/regional/",ID_name,"/",sep=""),ID_select,ID_length=length(ID_select)){
 
     wilcox_test=array(NA,c(5,ID_length,2,3))
     ks_test=array(NA,c(5,ID_length,2,3))
 
-    pdf(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_wilcox_",periods[1],"_vs_",periods[2],"_ecdf.pdf",sep=""),width=3,height=3)
+    #pdf(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_wilcox_",periods[1],"_vs_",periods[2],"_ecdf.pdf",sep=""),width=3,height=3)
     par(mar=c(3, 3, 3, 3) + 0.1)  
 
     for (sea in 1:5){ 
@@ -37,8 +51,8 @@ ks_wilcoxon_period <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=pa
                 plot.ecdf(y1,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col="green",ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
                 par(new=TRUE)
                 plot.ecdf(y2,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col="orange",ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
-                text(40,0.25,paste("wilcox:",round(wilcox_test[sea,q,state,1],02)),cex=1)
-                text(40,0.1,paste("ks:",round(ks_test[sea,q,state,1],02)),cex=1)
+                text(40,0.25,paste("wilcox:",round(wilcox_test[sea,q,state,1],03)),cex=1)
+                text(40,0.1,paste("ks:",round(ks_test[sea,q,state,1],03)),cex=1)
                 text(40,0.6,paste(season_names[sea],q,state_names[state]),cex=1)
             }
         }
@@ -81,6 +95,31 @@ ks_wilcoxon_period <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=pa
     graphics.off()
 }
 
+fit_plot_comparison <- function(distr,fits,sea,q,state,ks){
+    color=c("green","orange",rgb(0.5,0.1,0.5),rgb(0.1,0.7,0.1),rgb(0,0,0))
+
+    par(mar=c(3, 3, 3, 3) + 0.1)  
+
+    # first plot page
+    plot(NA,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
+    text(50,0.18+0.06,paste("ks=",round(ks,03),"\n ",season_names[sea],q,state_names[state]),pos=1,col=color[3])                 
+    for (i in 1:2){
+        nonull<-which(distr[i,3,]>0)
+        points(distr[i,1,nonull],distr[i,2,nonull],pch=20,col=color[i],cex=0.5)
+        lines(distr[i,1,nonull],distr[i,5,nonull],col=color[i],lty=1)
+
+    }  
+
+    # second plot page
+    plot(NA,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5,log="y")
+    text(50,0.22,paste("ks=",round(ks,03),"\n ",season_names[sea],q,state_names[state]),pos=1,col=color[3])                 
+    for (i in 1:2){
+        nonull<-which(distr[i,3,]>0)
+        points(distr[i,1,nonull],distr[i,2,nonull],pch=20,col=color[i],cex=0.5)
+        lines(distr[i,1,nonull],distr[i,5,nonull],col=color[i],lty=1)
+    }              
+}
+
 distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",ID_name,"/",sep=""),ID_select,ID_length=length(ID_select),region_names=1:23,hlines=c(30)){
 
    	filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vs_",periods[2],".nc",sep="") ; print(filename)
@@ -117,7 +156,7 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
                 percentage<-percentage+5
             }
             for (state in 1:2){
-            	fit_plot_comparison(distr=distrs[,sea,q,state,,],fits=fit_params[,sea,q,state,],sea,q,state,wilcox=wilcox_test[sea,q,state,1])
+            	fit_plot_comparison(distr=distrs[,sea,q,state,,],fits=fit_params[,sea,q,state,],sea,q,state,ks=ks_test[sea,q,state,1])
             }
         }
     }
@@ -145,13 +184,13 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
 
         lines[index<-index+1]=paste("\\multicolumn{12}{c}{",season_names[sea]," ",period," $",trendID,"$}\\","\\",sep="")
         lines[index<-index+1]=paste(" &\\multicolumn{5}{c}{",state_names[1],"}","& &\\multicolumn{5}{c}{",state_names[2],"}\\","\\",sep="")
-        lines[index<-index+1]=paste("reg & $b_{expo}$  & b1 & b2 & thresh & dBIC & & $b_{expo}$ & b1 & b2 & thresh & dBIC  ","\\","\\",sep="")
+        lines[index<-index+1]=paste("reg & $b_{expo}$ & b1 & b2 & thresh & dBIC & & $b_{expo}$ & b1 & b2 & thresh & dBIC  ","\\","\\",sep="")
         for (reg in ID_select){
             newline=paste(region_names[reg],sep="")
             for (state in 1:2){
                 if (state==2){newline<-paste(newline," &",sep="")}
 
-                for (i in c(2,6,8,9,17)){
+                for (i in c(2,10,12,13,19)){
                     if (ks_test[sea,reg,state,1]<=0.1){background<-"red!25"}
                     if (ks_test[sea,reg,state,1]<=0.05){background<-"red!50"}
                     if (ks_test[sea,reg,state,1]>0.1){background<-"white!10"}
@@ -275,35 +314,38 @@ ks_wilcoxon_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9")){
         points(tmp5$mids,tmp5$count,col=rgb(1,0.5,0.5,0.5),cex=0.3)
         points(tmp7$mids,tmp7$count,col=rgb(0.5,1,0.5,0.5),cex=0.3)
         points(tmp9$mids,tmp9$count,col=rgb(0.5,0.5,1,0.5),cex=0.3)
-        legend("topright",col=colors,legend=trendIDs)
+        legend("topright",col=colors,pch=c(1,1,1),legend=trendIDs)
 
         plot(NA,xlim=c(0,50),ylim=c(100,500000),main="",ylab="",xlab="",log="y")
         points(tmp5$mids[1:50],tmp5$count[1:50],col=rgb(1,0.5,0.5,0.5),cex=0.3)
         points(tmp7$mids[1:50],tmp7$count[1:50],col=rgb(0.5,1,0.5,0.5),cex=0.3)
         points(tmp9$mids[1:50],tmp9$count[1:50],col=rgb(0.5,0.5,1,0.5),cex=0.3)
-        legend("topright",col=colors,legend=trendIDs)
+        legend("topright",col=colors,pch=c(1,1,1),legend=trendIDs)
 
         plot(NA,xlim=c(0,50),ylim=c(-500,15000),main="",ylab="",xlab="")
         points(tmp5$mids[1:50],tmp5$count[1:50]-tmp7$count[1:50],col=rgb(1,0.5,0.5,0.5),cex=0.3)
         points(tmp7$mids[1:50],tmp5$count[1:50]-tmp9$count[1:50],col=rgb(0.5,1,0.5,0.5),cex=0.3)
         points(tmp9$mids[1:50],tmp7$count[1:50]-tmp9$count[1:50],col=rgb(0.5,0.5,1,0.5),cex=0.3)
-        legend("topright",col=colors,legend=c("5-7","5-9","7-9"))
+        legend("topright",col=colors,pch=c(1,1,1),legend=c("5-7","5-9","7-9"))
 
         plot.ecdf(y5,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[1],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
         par(new=TRUE)
         plot.ecdf(y7,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[2],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
         par(new=TRUE)
         plot.ecdf(y9,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[3],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
+        text(40,0.4,)
 
-        graphics.off()
-
-        adsa
         ks_test[state,1]=ks.test(y5,y7)$p.value
         wilcox_test[state,1]=wilcox.test(y5,y7)$p.value
         ks_test[state,2]=ks.test(y5,y9)$p.value
         wilcox_test[state,2]=wilcox.test(y5,y9)$p.value
         ks_test[state,3]=ks.test(y7,y9)$p.value
         wilcox_test[state,3]=wilcox.test(y5,y7)$p.value
+
+        text(40,0.5,paste("ks 5~7:",round(ks_test[state,1],02)))
+        text(40,0.3,paste("ks 5~9:",round(ks_test[state,2],02)))
+        text(40,0.1,paste("ks 7~9:",round(ks_test[state,3],02)))
+
     }
 
 
@@ -318,4 +360,4 @@ ks_wilcoxon_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9")){
 
 #wilcoxon_period(ID_name="ward23",yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),periods=c("1950-1980","1980-2014"),ID_select=1:23)
 
-distribution_comparision(ID_name="ward23",periods=c("1950-1980","1980-2014"),ID_select=c(3,4,7,11,12,14,16,18,20,22),ID_length=23)
+distribution_comparision(ID_name="ward23",periods=c("1950-1980","1980-2014"),ID_select=c(1,3,4,7,11,12,14,16,18,20,22),ID_length=23)
