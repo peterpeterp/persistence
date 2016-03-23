@@ -419,6 +419,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		    try(plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=land_col,col.water=water_col,mar=margins),silent=TRUE)
 		}
 		#draw over axes
+
 		polygon(x=c(-200,-200,200,200),y=c(yAusschnitt[1]-outer_cut,yAusschnitt[1]+inner_cut,yAusschnitt[1]+inner_cut,yAusschnitt[1]-outer_cut),col="white",border="white")
 		polygon(x=c(-200,-200,200,200),y=c(yAusschnitt[2]-inner_cut,yAusschnitt[2]+outer_cut,yAusschnitt[2]+outer_cut,yAusschnitt[2]-inner_cut),col="white",border="white")
 		polygon(x=c(xAusschnitt[1]-outer_cut,xAusschnitt[1]-outer_cut,xAusschnitt[1]+inner_cut,xAusschnitt[1]+inner_cut),y=c(yAusschnitt[1],yAusschnitt[2],yAusschnitt[2],yAusschnitt[1]),col="white",border="white")
