@@ -155,7 +155,7 @@ put_in_dat_format <- function(){
 	}	
 	pp_neu[,1:197,66]=pp[,23726:23922]
 
-	nc_out <- create.nc(paste("../data/raw_data/eobs-tg/tg_0.50deg_reg_v12.0_end.nc",sep=""))
+	nc_out <- create.nc(paste("../data/_eobsTG/tg_0.50deg_reg_v12.0_end.nc",sep=""))
 	            
 	dim.def.nc(nc_out,"ID",dimlength=ntot, unlim=FALSE)
 	dim.def.nc(nc_out,"days",dimlength=365,unlim=FALSE)
@@ -168,15 +168,15 @@ put_in_dat_format <- function(){
 	var.def.nc(nc_out,"lat","NC_FLOAT",c(0))
 
 
-	var.def.nc(nc_out,"pp","NC_SHORT",c(0,1,2))
-	att.put.nc(nc_out, "pp", "missing_value", "NC_SHORT", -99)
+	var.def.nc(nc_out,"tas","NC_SHORT",c(0,1,2))
+	att.put.nc(nc_out, "tas", "missing_value", "NC_SHORT", -99)
 
 	var.put.nc(nc_out,"ID",ID)    
 	var.put.nc(nc_out,"lon",lon)    
 	var.put.nc(nc_out,"lat",lat) 
 	var.put.nc(nc_out,"day",1:365)      
 	var.put.nc(nc_out,"year",1950:2015)      
-	var.put.nc(nc_out,"pp",pp_neu)              
+	var.put.nc(nc_out,"tas",pp_neu)              
 	close.nc(nc_out) 
 }
 
@@ -225,11 +225,11 @@ pdf_view <- function(q){
 
 ################################
 
-for (i in 1:4){
-	split_original(i)
-	keep_not_empty(i)
-}
-merge_reduced()
+#for (i in 1:4){
+	#split_original(i)
+	#keep_not_empty(i)
+#}
+#merge_reduced()
 put_in_dat_format()
 
 
