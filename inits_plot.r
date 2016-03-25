@@ -24,7 +24,7 @@ plot_init_midlat <- function(){
     name_reg_zusatz<<-""
 
     col_row<<-c(1,1)
-    mat<<-NA
+    color_legend<<-"right"
     layout_mat<<-c(NA)
     subIndex<<-c("a","b")
 }
@@ -53,7 +53,7 @@ plot_init_EU <- function(){
     name_reg_zusatz<<-""
 
     col_row<<-c(1,1)
-    mat<<-NA
+    color_legend<<-"right"
     layout_mat<<-c(NA)
     subIndex<<-c("a","b")
 }
@@ -82,8 +82,36 @@ plot_init_Had <- function(){
     name_reg_zusatz<<-""
 
     col_row<<-c(1,1)
-    mat<<-NA
+    color_legend<<-"right"
     layout_mat<<-c(NA)
     subIndex<<-c("a","b")
 }
 
+plot_init_Had_multiple <- function(){
+    paper<<-c(7.2,3.5)
+    margins<<-c(0,0,0,0)
+
+    outer_cut<<-9
+    inner_cut<<-0.3
+
+    yAusschnitt<<-c(-90,90)
+    xAusschnitt<<-c(-168,192)
+    asp<<-1
+    pointsize<<-1
+    pch_points<<-c(1,NA,1.875,1.25)
+
+    pch_sig<<-4
+    col_sig<<-rgb(0.1,0.1,0.1,0.6)
+    cex_sig<<-0.1
+
+    region<<-NA
+
+    season_auswahl<<-1:5
+    sub_zusatz<<-c("75th","95th","99th")
+    name_reg_zusatz<<-""
+
+    col_row<<-c(1,1)
+    color_legend<<-"seperate"
+    layout_mat<<-c(NA)
+    subIndex<<-c("a","b")
+}

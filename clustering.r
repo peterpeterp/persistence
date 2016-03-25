@@ -221,7 +221,7 @@ cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2
     criteria<<-var.get.nc(nc,"criteria")
 
 
-    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],farb_palette="viele",reihen_sig=attribution_changes[,])
+    #topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],farb_palette="viele",reihen_sig=attribution_changes[,])
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",1,"-",untilGroup,"_map.pdf",sep=""),reihen=attribution[,],farb_palette="viele",pointsize=1.5,ausschnitt=c(35,75),paper=c(7,2)) #,reihen_sig=attribution_changes[,]
 
 
@@ -240,6 +240,10 @@ cluster_view <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2
             plot(criteria[,44],xlab="number of groups",ylab="clustering height")
             points(eva,criteria[eva,44],cex=2,col="red")
         }
+        plot(criteria[,44],xlab="number of groups",ylab="clustering height")
+        eva=c(6,13,19,24,27)
+        points(eva,criteria[eva,44],pch=20,cex=1.1,col="red")
+        abline(v=24,lty=2,col="red")
         graphics.off()
     }
 }
@@ -322,8 +326,8 @@ ID_select=1:1319
 for (method in c("ward.D2")){
     print(method)
     #cluster_evaluation(add_name="_ww",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=35)
-    #cluster_view(add_name="_ww",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=35)
+    cluster_view(add_name="_ww",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=35)
 }
 
 #write_cluster_region_files(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")
-cluster_vis_map(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")
+#cluster_vis_map(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")

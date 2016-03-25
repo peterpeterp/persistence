@@ -209,6 +209,8 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 
 	lon=dat$lon[notna]
 	lat=dat$lat[notna]
+	
+	if (xAusschnitt[2]>180){lon[lon<xAusschnitt[1]]=lon[lon<xAusschnitt[1]]+360}
 
 	#delete out of yAusschnitt
 	ID_select=which(lat >= yAusschnitt[1] & lat <= yAusschnitt[2] & lon >= xAusschnitt[1] & lon <= xAusschnitt[2])
@@ -390,7 +392,13 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	
 	pdf(file=filename_plot,width=paper[1],height=paper[2])	
 
-	if (!is.na(layout_mat[1])){layout(layout_mat)}
+	# use given mat
+	if (!is.na(layout_mat[1])){
+		par(cex=cex)
+		print(length(layout_mat))
+		layout(matrix(layout_mat,col_row[1],col_row[2], byrow = TRUE), heights=c(2,2,2,2,1))#, heights=c(2,2,2,2,1)
+	}
+
 	if (is.na(layout_mat[1])){par(mfrow=c(1,1))}
 	for (i in 1:dim(reihen)[1]){
 	    #mapPlot(coastlineWorld,latitudelim=yAusschnitt,longitudelim=xAusschnitt,proj="stereographic",axes=FALSE, fill='white',mar=c(2,3,2,5),main=titel[i])
@@ -429,10 +437,14 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		#color bar
 		color=tmp$color
 		y=tmp$y
-	    if (is.na(layout_mat[1]) & !is.na(color[1])){image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=FALSE,legend.lab=color_lab)}
+	    if (is.na(layout_mat[1]) & !is.na(color[1]) & color_legend=="right"){image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=FALSE,legend.lab=color_lab)}
+	}
+	if (color_legend=="seperate"){
+		plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+		image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.9,0.8,0.9))
 	}
 	if (!is.na(layout_mat[1]) & !is.na(color[1])){
-		par(new=TRUE)
+		#par(new=TRUE)
 		plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 		image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.9,0.5,0.9))
 	}

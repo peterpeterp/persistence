@@ -164,6 +164,7 @@ master_init <- function(id){
     source("load.r")
     source("plot_master.r")
     source("map_plot.r")
+    source("inits_plot.r")
 
 
     library(moments)
