@@ -60,7 +60,11 @@ plot_init_EU <- function(){
 
 plot_init_Had <- function(){
     paper<<-c(8,3.5)
-    margins<<-c(2,3,2,5)
+    margins<<-c(0,0,0,5)
+
+    outer_cut<<-9
+    inner_cut<<-2
+
     yAusschnitt<<-c(-80,80)
     xAusschnitt<<-c(-180,180)
     asp<<-1
@@ -83,5 +87,3 @@ plot_init_Had <- function(){
     subIndex<<-c("a","b")
 }
 
-
-plot_init_midlat()
