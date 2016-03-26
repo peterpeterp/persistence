@@ -147,7 +147,7 @@ master_gridded_plots <- function(){
         #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(1),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),name_zusatz="qr_sl_75",farb_mitte=c(-0.2,0.2),signi_level=0.05)
         
         #fits
-        plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(10,12,13,20),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
+        #plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(10,12,13,20),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
     }
 }
 
@@ -201,6 +201,18 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
 
 
     }
+}
+
+master_special_plots <- function(){
+
+
+    # results climatology
+    plot_init_Had()
+    plot_state_mean_maps(file="_others",var="other_stuff",period="1950-2014",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="mean_cowa",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
+
+    plot_init_multi_midlat()
+    plot_state_mean_maps(file="_others",var="other_stuff",period="1950-2014",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="mean_cowa_multi",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
+
 }
 
 ###################################################################
@@ -277,6 +289,11 @@ plot_init_Had()
 # regional commands
 ###################################################################
 
-master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
-master_regional_plots(region_name="ward24",ID_select=c(3,4,5,7,11,12,14,16,18,20,22),ID_length=24,region_names=1:24)
+#master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
+#master_regional_plots(region_name="ward24",ID_select=c(3,4,5,7,11,12,14,16,18,20,22),ID_length=24,region_names=1:24)
 
+###################################################################
+# special stuff
+###################################################################
+
+master_special_plots()
