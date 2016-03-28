@@ -44,7 +44,7 @@ plot_maps <- function(period="1950-2014",file="_others",var="other_stuff",sub_au
 	}
 	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
 	if (is.na(pch_points[1])){pch_points=array(15,dim(reihen))}
-	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_trend_",trendID,"_",name_zusatz,name_reg_zusatz,"_",period,additional_style,".pdf",sep="")
+	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_",trendID,"_",name_zusatz,name_reg_zusatz,"_",period,additional_style,".pdf",sep="")
 	print(filename_plot)
 	topo_map_plot(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,signi_level=signi_level) #,reihen_sig=attribution_changes[,]
 }
@@ -214,8 +214,8 @@ plot_state_mean_maps <- function(period="1950-2014",file="_others",var="other_st
 	nc<-open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",dataset,"_",period,file,".nc",sep=""))
 	values<-var.get.nc(nc,var)
 
-	reihen<-array(NA,dim=c(length(season_auswahl)*length(value_auswahl)*length(sub_auswahl)*2,ntot))
-	reihen_sig<-array(NA,dim=c(length(season_auswahl)*length(value_auswahl)*length(sub_auswahl)*2,ntot))
+	reihen<-array(NA,dim=c(length(season_auswahl)*length(value_auswahl)*length(sub_auswahl),ntot))
+	reihen_sig<-array(NA,dim=c(length(season_auswahl)*length(value_auswahl)*length(sub_auswahl),ntot))
 	if (length(farb_mitte)>1){farb_mitte_end<-c(999)}
 	titel<-c("")	
 	index<-0
@@ -225,8 +225,7 @@ plot_state_mean_maps <- function(period="1950-2014",file="_others",var="other_st
 			for (val in 1:length(value_auswahl)){
  				index<-index+1
 				reihen[index,]=(values[sea,,1,value_auswahl[val]]+values[sea,,2,value_auswahl[val]])/2
- 				index<-index+1
-				reihen[index,]=values[sea,,1,value_auswahl[val]]-values[sea,,2,value_auswahl[val]]
+				if (length(farb_mitte)>1){farb_mitte_end[(2+2*(index-1)):(3+2*(index-1))]=farb_mitte[((val-1)*2+1):((val-1)*2+2)]}
 			}
 		}
 		# for quantile plots for example
@@ -235,16 +234,87 @@ plot_state_mean_maps <- function(period="1950-2014",file="_others",var="other_st
 				for (val in 1:length(value_auswahl)){
 					index<-index+1
 					reihen[index,]=(values[sea,,1,sub_auswahl[sub],value_auswahl[val]]+values[sea,,2,sub_auswahl[sub],value_auswahl[val]])/2
-					index<-index+1
-					reihen[index,]=values[sea,,1,sub_auswahl[sub],value_auswahl[val]]-values[sea,,2,sub_auswahl[sub],value_auswahl[val]]
+					if (length(farb_mitte)>1){farb_mitte_end[(2+2*(index-1)):(3+2*(index-1))]=farb_mitte[((val-1)*2+1):((val-1)*2+2)]}
 				}
 			}
 		}
 	}
 	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
-	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_trend_",trendID,"_",name_zusatz,name_reg_zusatz,"_",period,additional_style,".pdf",sep="") ; print(filename_plot)
+	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_",trendID,"_",name_zusatz,name_reg_zusatz,"_",period,additional_style,".pdf",sep="") ; print(filename_plot)
+	topo_map_plot(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,signi_level=signi_level)
+}
+
+plot_state_diff_maps <- function(period="1950-2014",file="_others",var="other_stuff",sub_auswahl=c(NA,NA),value_auswahl=c(1,2),sig_auswahl=c(NA,NA),value_zusatz=c("mean","sd"),name_zusatz="mean_sd",farb_mitte="mean",farb_palette="lila-gruen",signi_level=0.05,ntot=length(dat$ID)){
+
+	print(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",dataset,"_",period,file,".nc",sep=""))
+	nc<-open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",dataset,"_",period,file,".nc",sep=""))
+	values<-var.get.nc(nc,var)
+
+	reihen<-array(NA,dim=c(length(season_auswahl)*length(value_auswahl)*length(sub_auswahl),ntot))
+	reihen_sig<-array(NA,dim=c(length(season_auswahl)*length(value_auswahl)*length(sub_auswahl),ntot))
+	if (length(farb_mitte)>1){farb_mitte_end<-c(999)}
+	titel<-c("")	
+	index<-0
+	for (sea in season_auswahl){
+		season<-season_names[sea]
+		if (is.na(sub_auswahl[1])){
+			for (val in 1:length(value_auswahl)){
+ 				index<-index+1
+				reihen[index,]=values[sea,,1,value_auswahl[val]]-values[sea,,2,value_auswahl[val]]
+				if (length(farb_mitte)>1){farb_mitte_end[(2+2*(index-1)):(3+2*(index-1))]=farb_mitte[((val-1)*2+1):((val-1)*2+2)]}
+
+			}
+		}
+		# for quantile plots for example
+		if (!is.na(sub_auswahl[1])){
+			for (sub in 1:length(sub_auswahl)){
+				for (val in 1:length(value_auswahl)){
+					index<-index+1
+					reihen[index,]=values[sea,,1,sub_auswahl[sub],value_auswahl[val]]-values[sea,,2,sub_auswahl[sub],value_auswahl[val]]
+					if (length(farb_mitte)>1){farb_mitte_end[(2+2*(index-1)):(3+2*(index-1))]=farb_mitte[((val-1)*2+1):((val-1)*2+2)]}
+				}
+			}
+		}
+	}
+	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
+	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_",trendID,"_",name_zusatz,name_reg_zusatz,"_",period,additional_style,".pdf",sep="") ; print(filename_plot)
 	topo_map_plot(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,signi_level=signi_level)
 }
 
 
+plot_seasonal_anomaly_maps <- function(period="1950-2014",file="_others",var="other_stuff",sub_auswahl=c(NA,NA),value_auswahl=c(1,2),sig_auswahl=c(NA,NA),value_zusatz=c("mean","sd"),name_zusatz="mean_sd",farb_mitte="mean",farb_palette="lila-gruen",signi_level=0.05,ntot=length(dat$ID)){
 
+	print(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",dataset,"_",period,file,".nc",sep=""))
+	nc<-open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",dataset,"_",period,file,".nc",sep=""))
+	values<-var.get.nc(nc,var)
+
+	reihen<-array(NA,dim=c(4*length(value_auswahl)*length(sub_auswahl),ntot))
+	reihen_sig<-array(NA,dim=c(length(season_auswahl)*length(value_auswahl)*length(sub_auswahl),ntot))
+	if (length(farb_mitte)>1){farb_mitte_end<-c(999)}
+	titel<-c("")	
+	index<-0
+	for (sea in 1:4){
+		season<-season_names[sea]
+		if (is.na(sub_auswahl[1])){
+			for (val in 1:length(value_auswahl)){
+ 				index<-index+1
+				reihen[index,]=(values[sea,,1,value_auswahl[val]]+values[sea,,2,value_auswahl[val]])/2 - (values[5,,1,value_auswahl[val]]+values[5,,2,value_auswahl[val]])/2
+				if (length(farb_mitte)>1){farb_mitte_end[(2+2*(index-1)):(3+2*(index-1))]=farb_mitte[((val-1)*2+1):((val-1)*2+2)]}
+
+			}
+		}
+		# for quantile plots for example
+		if (!is.na(sub_auswahl[1])){
+			for (sub in 1:length(sub_auswahl)){
+				for (val in 1:length(value_auswahl)){
+					index<-index+1
+					reihen[index,]=(values[sea,,1,sub_auswahl[sub],value_auswahl[val]]+values[sea,,2,sub_auswahl[sub],value_auswahl[val]])/2 - (values[5,,1,sub_auswahl[sub],value_auswahl[val]]+values[5,,2,sub_auswahl[sub],value_auswahl[val]])/2
+					if (length(farb_mitte)>1){farb_mitte_end[(2+2*(index-1)):(3+2*(index-1))]=farb_mitte[((val-1)*2+1):((val-1)*2+2)]}
+				}
+			}
+		}
+	}
+	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
+	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_",trendID,"_",name_zusatz,name_reg_zusatz,"_",period,additional_style,".pdf",sep="") ; print(filename_plot)
+	topo_map_plot(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,signi_level=signi_level)
+}

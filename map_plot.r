@@ -199,11 +199,8 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 		palette=array(c("black","blue","green","yellow","orange","red",rgb(0.5,0.5,0.5,0.5)),nbcol)
 		jet.colors <- colorRampPalette( palette)
 	}
-
 	color <- jet.colors(nbcol)	
-
 	facetcol <- cut(y,nbcol)
-
 
 	farben=color[facetcol[3:(length(notna)+2)]]
 
@@ -436,12 +433,12 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 
 		#color bar
 		color=tmp$color
-		y=tmp$y
+		y=tmp$y[]
 	    if (is.na(layout_mat[1]) & !is.na(color[1]) & color_legend=="right"){image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=FALSE,legend.lab=color_lab)}
 	}
 	if (color_legend=="seperate"){
 		plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-		image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.9,0.8,0.9))
+		image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.9,0.8,0.9),cex=3)
 	}
 	if (!is.na(layout_mat[1]) & !is.na(color[1])){
 		#par(new=TRUE)

@@ -65,8 +65,8 @@ plot_init_Had <- function(){
     outer_cut<<-9
     inner_cut<<-2
 
-    yAusschnitt<<-c(-80,80)
-    xAusschnitt<<-c(-180,180)
+    yAusschnitt<<-c(-90,90)
+    xAusschnitt<<-c(-168,192)
     asp<<-1
     pointsize<<-1
     pch_points<<-c(1,NA,1.875,1.25)
@@ -118,7 +118,7 @@ plot_init_Had_multiple <- function(){
 
 plot_init_multi_midlat <- function(){
     paper<<-c(7,2)
-    margins<<-c(0,0,0,5)
+    margins<<-c(0,0,0,0)
 
     outer_cut<<-9
     inner_cut<<-2
