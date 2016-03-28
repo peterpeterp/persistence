@@ -98,59 +98,48 @@ duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_sel
     lines[index<-index+1]="\\geometry{ a4paper, total={190mm,288mm}, left=10mm, top=10mm, }"
 
     lines[index<-index+1]="\\definecolor{white}{rgb}{1,1,1}"
-    lines[index<-index+1]="\\definecolor{green}{rgb}{0.5,1,0.5}"
-    lines[index<-index+1]="\\definecolor{turkis}{rgb}{0.5,1,1}"
-    lines[index<-index+1]="\\definecolor{violet}{rgb}{1,0.5,1}"
+    lines[index<-index+1]="\\definecolor{red}{rgb}{1,0.3,1}"
+    lines[index<-index+1]="\\definecolor{blue}{rgb}{0.3,1,1}"
 
     lines[index<-index+1]="\\begin{document}"
 
-    for (sea in 1:5){
-        lines[index<-index+1]=paste("\\begin{table}[!h]")
-        lines[index<-index+1]=paste("\\begin{tabular}{c||c|c|c|c||c|c|c|c||}")
-        lines[index<-index+1]=paste("$",trendID,"$ & \\multicolumn{8}{c}{",season_names[sea],"}\\\\")
+    lines[index<-index+1]=paste("\\begin{table}[!h]")
+    lines[index<-index+1]=paste("\\begin{tabular}{c||cccc||cccc||cccc||cccc}")
+    lines[index<-index+1]=paste("& \\multicolumn{4}{c}{MAM} & \\multicolumn{4}{c}{JJA} & \\multicolumn{4}{c}{SON} & \\multicolumn{4}{c}{DJF}","\\\\")
+    lines[index<-index+1]=paste("& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm} & \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}","\\\\")
+    lines[index<-index+1]=paste("& mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95","\\\\") 
+    lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+    lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
 
-        newline<-paste(" ")
-        for (state in 1:2){newline<-paste(newline,"& \\multicolumn{4}{c}{",state_names[state],"}")}
-        lines[index<-index+1]=paste(newline,"\\\\")
-
-        newline<-paste("reg")
-        for (state in 1:2){newline<-paste(newline,"& 75th & 95th & 99th & mean")}
-        lines[index<-index+1]=paste(newline,"\\\\")
-
-        for (reg in ID_select){
-            newline<-paste(region_names[reg])
+    for (reg in ID_select){
+        newline<-paste(reg)
+        for (sea in 1:4){
             for (state in 1:2){
-                for (i in c(1,2,3,5)){
-                    if (MK[sea,reg,state,i,1]>0){background_color<-"violet"}
-                    if (MK[sea,reg,state,i,1]<0){background_color<-"turkis"}
+                for (i in c(5,2)){
+                    if (MK[sea,reg,state,i,1]>0){background_color<-"red"}
+                    if (MK[sea,reg,state,i,1]<0){background_color<-"blue"}
                     if (MK[sea,reg,state,i,2]>0.1){background_intesity<-"!15"}
                     if (MK[sea,reg,state,i,2]<=0.1){background_intesity<-"!50"}
-                    if (MK[sea,reg,state,i,2]<=0.05){background_intesity<-"!75"}
+                    #if (MK[sea,reg,state,i,2]<=0.05){background_intesity<-"!75"}
 
-                    newline<-paste(newline," &{\\cellcolor{",background_color,background_intesity,"}{",round(MK[sea,reg,state,i,1],03),"}}",sep="")
+                    if (MK[sea,reg,state,i,2]>0.1){newline<-paste(newline," &{\\cellcolor{",background_color,"!25}{ }}",sep="")}
+                    if (MK[sea,reg,state,i,2]<=0.1){newline<-paste(newline," &{\\cellcolor{",background_color,"!75}{X}}",sep="")}
+
+                    #newline<-paste(newline," &{\\cellcolor{",background_color,background_intesity,"}{",round(MK[sea,reg,state,i,1],03),"}}",sep="")
                 }              
             }
-            lines[index<-index+1]=paste(newline,"\\\\")
-            if (reg %in% hlines){
-                lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
-                lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
-            }
         }
-        lines[index<-index+1]=paste("\\end{tabular}")
-        lines[index<-index+1]=paste("\\end{table}")
-        lines[index<-index+1]=paste("\\vspace{0cm}")
-        
+        lines[index<-index+1]=paste(newline,"\\\\")
+        if (reg %in% hlines){
+            lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+            lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+        }
     }
+    lines[index<-index+1]=paste("\\end{tabular}")
+    lines[index<-index+1]=paste("\\end{table}")
+    lines[index<-index+1]=paste("\\vspace{0cm}")
 
     lines[index<-index+1]="\\newpage"
-
-    lines[index<-index+1]="\\fcolorbox{violet!75}{violet!75}{p-value$<$0.05 and MK$>$0}\\"
-    lines[index<-index+1]="\\fcolorbox{violet!50}{violet!50}{p-value$<$0.10 and MK$>$0}\\"
-    lines[index<-index+1]="\\fcolorbox{violet!15}{violet!15}{p-value$>$0.10 and MK$>$0}\\"
-
-    lines[index<-index+1]="\\fcolorbox{turkis!75}{turkis!75}{p-value$<$0.05 and MK$<$0}\\"
-    lines[index<-index+1]="\\fcolorbox{turkis!50}{turkis!50}{p-value$<$0.10 and MK$<$0}\\"
-    lines[index<-index+1]="\\fcolorbox{turkis!15}{turkis!15}{p-value$>$0.10 and MK$<$0}\\"
 
     lines[index<-index+1]="\\end{document}"
     writeLines(lines, table)

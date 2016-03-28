@@ -57,7 +57,7 @@ confidence_interval <- function(seasons=1:4){
     close.nc(nc_out)     
 }
 
-write_slope_table <- function(){
+write_slope_table_old <- function(){
     print(paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.tex",sep=""))
     table<-file(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,"_",dataset,"_",ID_name,"_shuffQuant.tex",sep=""))
     options(scipen=100)
@@ -112,6 +112,137 @@ write_slope_table <- function(){
                 lines[index<-index+1]=paste("\\end{table}")
             }
         }
+    }
+    lines[index<-index+1]="\\end{document}"
+    writeLines(lines, table)
+    close(table)
+}
+
+write_slope_table_inter <- function(){
+    print(paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.tex",sep=""))
+    table<-file(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,"_",dataset,"_",ID_name,"_shuffQuant.tex",sep=""))
+    options(scipen=100)
+
+    lines=c()
+    index=0
+
+    lines[index<-index+1]="\\documentclass[a4paper,12pt]{article}"
+    lines[index<-index+1]="\\usepackage{xcolor,colortbl,pgf}"
+    lines[index<-index+1]="\\usepackage{makecell}"
+    lines[index<-index+1]="\\usepackage{geometry}"
+    lines[index<-index+1]="\\geometry{ a4paper, total={190mm,288mm}, left=20mm, top=10mm, }"
+    lines[index<-index+1]="\\definecolor{white}{rgb}{1,1,1}"
+    lines[index<-index+1]="\\definecolor{red}{rgb}{1,0.3,1}"
+    lines[index<-index+1]="\\definecolor{blue}{rgb}{0.3,1,1}"
+    lines[index<-index+1]="\\begin{document}"
+
+    for (period in c("1950-2014","1980-2014")){
+        print(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.nc",sep=""))
+        nc=try(open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.nc",sep="")),silent=TRUE)
+        if (class(nc)!="try-error"){
+            original_slopes=var.get.nc(nc,"original_slopes")
+            lines[index<-index+1]=paste("\\begin{table}[!h]")
+            lines[index<-index+1]=paste("\\begin{tabular}{c||cccc||cccc||cccc||cccc}")
+            lines[index<-index+1]=paste("& \\multicolumn{4}{c}{MAM} & \\multicolumn{4}{c}{JJA} & \\multicolumn{4}{c}{SON} & \\multicolumn{4}{c}{DJF}","\\\\")
+            lines[index<-index+1]=paste("& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm} & \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}","\\\\")
+            lines[index<-index+1]=paste("& lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95","\\\\") 
+            lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+            lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+
+            for (reg in reg_order){
+                newline<-paste(reg)
+                for (sea in 1:4){
+                    for (state in 1:2){
+                        for (out in c(5,3)){
+                            if (original_slopes[sea,reg,state,out,1]>0 & !is.na(original_slopes[sea,reg,state,out,3])){color<-"red!70"}
+                            if (original_slopes[sea,reg,state,out,1]>0 & is.na(original_slopes[sea,reg,state,out,3])){color<-"red!25"}
+                            if (original_slopes[sea,reg,state,out,1]<0 & !is.na(original_slopes[sea,reg,state,out,3])){color<-"blue!70"}
+                            if (original_slopes[sea,reg,state,out,1]<0 & is.na(original_slopes[sea,reg,state,out,3])){color<-"blue!25"}
+                            if (abs(original_slopes[sea,reg,state,out,1])<0.000001){color<-"white!25"}
+               
+                            if (!is.na(original_slopes[sea,reg,state,out,3])){newline<-paste(newline,"&{\\cellcolor{",color,"}{X}}",sep="")}
+                            if (is.na(original_slopes[sea,reg,state,out,3])){newline<-paste(newline,"&{\\cellcolor{",color,"}{ }}",sep="")}
+                        }
+                    }
+                }
+                lines[index<-index+1]=paste(newline,"\\","\\",sep="")
+                if (reg %in% hlines){
+                    lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+                    lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+                }
+            }
+            lines[index<-index+1]=paste("\\end{tabular}")
+            lines[index<-index+1]=paste("\\end{table}")
+        }
+    }
+    lines[index<-index+1]="\\end{document}"
+    writeLines(lines, table)
+    close(table)
+}
+
+write_slope_table <- function(periods=c("1950-2014","1980-2014")){
+    
+    original_slopes=array(NA,c(2,5,regNumb,2,5,5))
+    for (pe in 1:2){
+        period<-periods[pe]
+        print(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.nc",sep=""))
+        nc=try(open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.nc",sep="")),silent=TRUE)
+        if (class(nc)!="try-error"){original_slopes[pe,,,,,]=var.get.nc(nc,"original_slopes")}
+    }
+
+    print(paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.tex",sep=""))
+    table<-file(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,"_",dataset,"_",ID_name,"_shuffQuant.tex",sep=""))
+    options(scipen=100) ; lines=c() ;  index=0
+
+    lines[index<-index+1]="\\documentclass[a4paper,12pt]{article}"
+    lines[index<-index+1]="\\usepackage{xcolor,colortbl,pgf}"
+    lines[index<-index+1]="\\usepackage{makecell}"
+    lines[index<-index+1]="\\usepackage{geometry}"
+    lines[index<-index+1]="\\geometry{ a4paper, total={190mm,288mm}, left=20mm, top=10mm, }"
+    lines[index<-index+1]="\\definecolor{white}{rgb}{1,1,1}"
+    lines[index<-index+1]="\\definecolor{red}{rgb}{1,0.3,1}"
+    lines[index<-index+1]="\\definecolor{blue}{rgb}{0.3,1,1}"
+    lines[index<-index+1]="\\begin{document}"
+
+
+
+
+    for (sea in 1:4){
+        lines[index<-index+1]=paste("\\begin{table}[!h]")
+        lines[index<-index+1]=paste("\\begin{tabular}{c||cccc||cccc||cccc||cccc||}")
+
+        lines[index<-index+1]=paste(season_names[sea],"& \\multicolumn{8}{c}{1950-2014} &\\multicolumn{8}{c}{1980-2014}","\\\\")
+        lines[index<-index+1]=paste(" & \\multicolumn{4}{c}{cold} & \\multicolumn{4}{c}{warm} &\\multicolumn{4}{c}{cold} & \\multicolumn{4}{c}{warm}","\\\\")
+        lines[index<-index+1]=paste(" & 75 & 95 & 99 & lr & 75 & 95 & 99 & lr & 75 & 95 & 99 & lr & 75 & 95 & 99 & lr","\\\\")                 
+        lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+        lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+
+        for (reg in reg_order){
+            newline<-paste(reg)
+            for (pe in 1:2){
+                for (state in 1:2){
+                    for (out in c(2,3,4,5)){
+                        if (original_slopes[pe,sea,reg,state,out,1]>0 & !is.na(original_slopes[pe,sea,reg,state,out,3])){color<-"red!70"}
+                        if (original_slopes[pe,sea,reg,state,out,1]>0 & is.na(original_slopes[pe,sea,reg,state,out,3])){color<-"red!25"}
+                        if (original_slopes[pe,sea,reg,state,out,1]<0 & !is.na(original_slopes[pe,sea,reg,state,out,3])){color<-"blue!70"}
+                        if (original_slopes[pe,sea,reg,state,out,1]<0 & is.na(original_slopes[pe,sea,reg,state,out,3])){color<-"blue!25"}
+                        if (abs(original_slopes[pe,sea,reg,state,out,1])<0.000001){color<-"white!25"}
+               
+                            #newline<-paste(newline,"&{\\cellcolor{",color,"}{",round(original_slopes[pe,sea,reg,state,out,1],03),"}}",sep="") 
+                            
+                        if (!is.na(original_slopes[pe,sea,reg,state,out,3])){newline<-paste(newline,"&{\\cellcolor{",color,"}{X}}",sep="")}
+                        if (is.na(original_slopes[pe,sea,reg,state,out,3])){newline<-paste(newline,"&{\\cellcolor{",color,"}{ }}",sep="")}
+                    }
+                }
+            }
+            lines[index<-index+1]=paste(newline,"\\","\\",sep="")
+            if (reg %in% hlines){
+                lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+                lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+            }
+        }
+        lines[index<-index+1]=paste("\\end{tabular}")
+        lines[index<-index+1]=paste("\\end{table}")
     }
     lines[index<-index+1]="\\end{document}"
     writeLines(lines, table)
@@ -249,20 +380,22 @@ init <- function(){
     region_names<<-1:23
 
     plot_select<<-c(3,4,5,7,11,12,13,14,16,18,20,21)
-    reg_order<<-c(1,2,610,13,19,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,23)
-    reg_order<<-c(3,4,7,11,12,14,16,18,20,22)
+    reg_order<<-c(1,2,6,10,13,19,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,23)
+    #reg_order<<-c(3,4,5,7,11,12,14,16,18,20,22)
+    #reg_order<<-c(3,4,7,12,16,20)
     hlines<<-c(30)
+    hlines<<-c(19,20,22,8)
     #plot_select<<-c(11,12,16,20)
     plotNumb<<-length(plot_select)
 }
 
 init()
 #confidence_interval()
-write_robustness_table()
+#write_robustness_table()
 
 for (trendID in c("91_5","91_7","91_9")){
     #plot_confi_intervals()
-    write_slope_table()
+    write_slope_table_inter()
 }
 
 
