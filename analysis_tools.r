@@ -8,7 +8,7 @@ cdf_onDist <- function(dist){
     return(cdf)
 }
 
-cdf_onData <- function(dist,breaks){
+cdf_onData <- function(dist,breaks=1:max(dist,na.rm=TRUE)){
     dist<-dist[!is.na(dist)]
     cdf=array(NA,length(breaks))
     for (i in 1:length(breaks)){
