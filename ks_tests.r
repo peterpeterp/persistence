@@ -1,18 +1,3 @@
-library(dgof)
-
-ecdf_pete <- function(dist){
-    # not working and very strange
-    dist[is.na(dist)]=0
-    print(dist)
-    dist<-dist[order(dist)]
-    # calculate cdf
-    cdf<-array(NA,length(dist))
-    for (i in 1:length(dist)){
-        cdf[i]=sum(dist[1:i])
-    }
-    cdf<-cdf/cdf[length(cdf)]
-    return(cdf)
-}
 
 ks_wilcoxon_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9")){
     wilcox_test=array(NA,c(2,3))
@@ -83,10 +68,9 @@ ks_wilcoxon_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9")){
     graphics.off()
 }
 
-ks_wilcoxon_period <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=paste("/regional/",ID_name,"/",sep=""),ID_select,ID_length=length(ID_select)){
+ks_wilcoxon_period <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=paste("/regional/",ID_name,"/",sep=""),ID_select,ID_length=length(ID_select),distr_cut=4){
 
-    wilcox_test=array(NA,c(5,ID_length,2,3))
-    ks_test=array(NA,c(5,ID_length,2,3))
+    tests=array(NA,c(5,ID_length,2,10))
 
     pdf(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_wilcox_",periods[1],"_vs_",periods[2],"_ecdf.pdf",sep=""),width=3,height=3)
     par(mar=c(3, 3, 3, 3) + 0.1)  
@@ -118,27 +102,51 @@ ks_wilcoxon_period <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=pa
 
 
 
+                # for whole distribution
+                longest_period<-max(c(y1[!is.na(y1)],y1[!is.na(y1)]))
+                cdf1<-cdf_onData(y1,1:longest_period)
+                cdf2<-cdf_onData(y2,1:longest_period)
+                diffcdf<-abs(cdf1-cdf2)
 
-                ks_test[sea,q,state,1]=ks.test(y1,y2)$p.value
-                wilcox_test[sea,q,state,1]=wilcox.test(x=y1,y=y2,paired=FALSE)$p.value
-                plot.ecdf(y1,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col="green",ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
-                par(new=TRUE)
-                plot.ecdf(y2,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col="orange",ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
-                text(40,0.25,paste("wilcox:",round(wilcox_test[sea,q,state,1],03)),cex=1)
-                text(40,0.1,paste("ks:",round(ks_test[sea,q,state,1],03)),cex=1)
-                text(40,0.6,paste(season_names[sea],q,state_names[state]),cex=1)
+                diff_cdf<-abs(cdf1-cdf2)
+                D_val<-max(diff_cdf)
+                D_pos<-which.max(diff_cdf)
+
+                cdf_plot(1:longest_period,cdf1,cdf2,D_val,D_pos)
+
+                tests[sea,q,state,1]=ks.test(y1,y2)$p.value
+                tests[sea,q,state,2]=D_val
+                tests[sea,q,state,3]=D_pos
+
+                # wilcoxon test
+                tests[sea,q,state,4]=wilcox.test(x=y1,y=y2,paired=FALSE)$p.value
+
+                # for period longer than ...
+                distr_cut<-median(c(y1,y2),na.rm=TRUE)
+                tests[sea,q,state,10]<-distr_cut
+
+                y1<-y1[y1>=distr_cut]
+                y2<-y2[y2>=distr_cut]
+                longest_period<-max(c(y1[!is.na(y1)],y1[!is.na(y1)]))
+                cdf1<-cdf_onData(y1,distr_cut:longest_period)
+                cdf2<-cdf_onData(y2,distr_cut:longest_period)
+                diffcdf<-abs(cdf1-cdf2)
+
+                diff_cdf<-abs(cdf1-cdf2)
+                D_val<-max(diff_cdf)
+                D_pos<-which.max(diff_cdf)
+
+                cdf_plot(distr_cut:longest_period,cdf1,cdf2,D_val,D_pos)
+
+                tests[sea,q,state,6]=ks.test(y1,y2)$p.value
+                tests[sea,q,state,7]=D_val
+                tests[sea,q,state,8]=D_pos
+
+                # wilcoxon test
+                tests[sea,q,state,9]=wilcox.test(x=y1,y=y2,paired=FALSE)$p.value
             }
         }
     }
-    wilcox_test[,,,2][wilcox_test[,,,1]>0.05]=1
-    wilcox_test[,,,2][wilcox_test[,,,1]<0.05]=0
-    wilcox_test[,,,3][wilcox_test[,,,1]>0.1]=1
-    wilcox_test[,,,3][wilcox_test[,,,1]<0.1]=0
-
-    ks_test[,,,2][ks_test[,,,1]>0.05]=1
-    ks_test[,,,2][ks_test[,,,1]<0.05]=0
-    ks_test[,,,3][ks_test[,,,1]>0.1]=1
-    ks_test[,,,3][ks_test[,,,1]<0.1]=0
 
     print(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_wilcox_",yearPeriod1[1],"-",yearPeriod1[2],"_vs_",yearPeriod2[1],"-",yearPeriod2[2],".nc",sep=""))
     nc_out <- create.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_wilcox_",yearPeriod1[1],"-",yearPeriod1[2],"_vs_",yearPeriod2[1],"-",yearPeriod2[2],".nc",sep=""))
@@ -149,20 +157,15 @@ ks_wilcoxon_period <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=pa
     dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
     dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
 
-    dim.def.nc(nc_out,"outs",dimlength=3,unlim=FALSE)
+    dim.def.nc(nc_out,"outs",dimlength=10,unlim=FALSE)
 
-    var.def.nc(nc_out,"wilcox_test","NC_DOUBLE",c(0,1,2,3))
-    att.put.nc(nc_out, "wilcox_test", "missing_value", "NC_DOUBLE", 99999)
-    att.put.nc(nc_out, "wilcox_test", "dim_explanation", "NC_CHAR", "season-ID-states-...")
-    att.put.nc(nc_out, "wilcox_test", "val_explanation", "NC_CHAR", "wilcoxon test p-value, p-value>0.05 = 1, p-value>0.1 = 1")
 
-    var.def.nc(nc_out,"ks_test","NC_DOUBLE",c(0,1,2,3))
-    att.put.nc(nc_out, "ks_test", "missing_value", "NC_DOUBLE", 99999)
-    att.put.nc(nc_out, "ks_test", "dim_explanation", "NC_CHAR", "season-ID-states-...")
-    att.put.nc(nc_out, "ks_test", "val_explanation", "NC_CHAR", "ks test p-value, p-value>0.05 = 1, p-value>0.1 = 1")
+    var.def.nc(nc_out,"tests","NC_DOUBLE",c(0,1,2,3))
+    att.put.nc(nc_out, "tests", "missing_value", "NC_DOUBLE", 99999)
+    att.put.nc(nc_out, "tests", "dim_explanation", "NC_CHAR", "season-ID-states-...")
+    att.put.nc(nc_out, "tests", "val_explanation", "NC_CHAR", "full distr :ks test: 1-p-value, 2-D_val, 3-D_pos, 5-wilcox-p-value ; part distr :ks test: 6-p-value, 7-D_val, 8-D_pos, 9-wilcox-p-value, 10-median c(y1,y2)")
 
-    var.put.nc(nc_out,"wilcox_test",wilcox_test)              
-    var.put.nc(nc_out,"ks_test",ks_test)              
+    var.put.nc(nc_out,"tests",tests)              
 
     close.nc(nc_out) 
     graphics.off()
@@ -195,8 +198,7 @@ fit_plot_comparison <- function(distr,fits,sea,q,state,ks){
 distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",ID_name,"/",sep=""),ID_select,ID_length=length(ID_select),region_names=1:23,hlines=c(30)){
 
    	filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_wilcox_",periods[1],"_vs_",periods[2],".nc",sep="") ; print(filename)
-    wilcox_test <- var.get.nc(open.nc(filename),"wilcox_test")
-    ks_test <- var.get.nc(open.nc(filename),"ks_test")
+    ks_test <<- var.get.nc(open.nc(filename),"tests")
 
     fit_params=array(NA,c(2,6,ID_length,2,20))
     quantiles=array(NA,c(2,6,ID_length,2,5,3))
@@ -234,7 +236,7 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
     }
     graphics.off()
 
-    table<-file(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vx_",periods[2],"_fit_diff.tex",sep=""))
+    table<-file(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_fit_diff.tex",sep=""))
     options(scipen=100)
     lines=c()
     index=0
@@ -263,8 +265,8 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
                 if (state==2){newline<-paste(newline," &",sep="")}
 
                 for (i in c(2,10,12,13,19)){
-                    if (ks_test[sea,reg,state,1]<=0.1){background<-"red!25"}
-                    if (ks_test[sea,reg,state,1]<=0.05){background<-"red!50"}
+                    if (ks_test[sea,reg,state,1]<=0.1 & ks_test[sea,reg,state,3]>7){background<-"red!25"}
+                    if (ks_test[sea,reg,state,1]<=0.05 & ks_test[sea,reg,state,3]>7){background<-"red!50"}
                     if (ks_test[sea,reg,state,1]>0.1){background<-"white!10"}
                     newline<-paste(newline," &{\\cellcolor{",background,"}{",round(fit_params[2,sea,reg,state,i]-fit_params[1,sea,reg,state,i],02),"}}",sep="")
                 }
@@ -290,20 +292,29 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
     close(table)
 
     
+    signis<-ks_test[,,,1]
 
+    signis<-array(signis,c(5,ID_length,2,5))
+    write_tex_table(filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff.tex",sep=""),outs=c(5,2),values=quantiles[2,,,,,1]-quantiles[1,,,,,1],signis=signis)
 
-    write_tex_table(filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vx_",periods[2],"_quantile_diff.tex",sep=""),outs=c(5,2),values=quantiles[2,,,,,1]-quantiles[1,,,,,1],signis=array(ks_test[,,,1],c(5,ID_length,2,5)))
+    signis<-ks_test[,,,1]
+    signis2<-ks_test[,,,6]
+    signis[which(signis-signis2<0)]=signis2[which(signis-signis2<0)]
+
+    signis<-array(signis,c(5,ID_length,2,5))
+    write_tex_table(filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff_doubleTest.tex",sep=""),outs=c(5,2),values=quantiles[2,,,,,1]-quantiles[1,,,,,1],signis=signis)
 }
 
 
 
+library(dgof)
 
 
 #ks_wilcoxon_trenID_sensitivity(trendIDs=c("91_5","91_7","91_9"))
 
 
 
-ks_wilcoxon_period(ID_name="ward23",yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),periods=c("1950-1980","1980-2014"),ID_select=1:23)
+#ks_wilcoxon_period(ID_name="ward23",yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),periods=c("1950-1980","1980-2014"),ID_select=1:23)
 
 ID_select=c(1,2,6,10,13,19,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,23)
 ID_length=23

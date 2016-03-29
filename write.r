@@ -113,7 +113,7 @@ other_write <- function(filename,ID_length,ID_name,period,other_stuff,comment="o
     var.def.nc(nc_out,"other_stuff","NC_DOUBLE",c(0,1,2,3))
     att.put.nc(nc_out, "other_stuff", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "other_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-...")
-    att.put.nc(nc_out, "other_stuff", "explanation", "NC_CHAR", "mean,sd,summary(lm)$coef")
+    att.put.nc(nc_out, "other_stuff", "explanation", "NC_CHAR", "1-mean, 2-sd, 3:10-mean,sd,summary(lm)$coef, 12-length")
         
     var.put.nc(nc_out,"other_stuff",other_stuff)      
  

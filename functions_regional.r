@@ -91,22 +91,23 @@ regional_attribution <- function(region_name,IDregions=c("from file"),regNumb=7,
         }
     }
 
-    for (sea in 1:5){
-        season=season_names[sea]
-        print(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep=""))
-        nc_dur=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep=""))
-        dur=var.get.nc(nc_dur,"dur")
-        dur_mid=var.get.nc(nc_dur,"dur_mid")   
 
-        reg_dur=array(NA,dim=c(regNumb,2,365*years*1000))
-        reg_dur_mid=array(NA,dim=c(regNumb,2,365*years*1000))
-        maxis=array(NA,dim=c(2*regNumb))
+    for (sea in 1:5){
+        season<-season_names[sea]
+        filename<-paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep="")
+        nc_dur<-open.nc(filename)
+        dur<-var.get.nc(nc_dur,"dur")
+        dur_mid<-var.get.nc(nc_dur,"dur_mid")   
+
+        reg_dur<-array(NA,dim=c(regNumb,2,365*years*100))
+        reg_dur_mid<-array(NA,dim=c(regNumb,2,365*years*100))
+        maxis<-array(NA,dim=c(2*regNumb))
 
         for (state in 1:2){
-            for (reg in 1:regNumb){        
-                tmp=duration_region(regions=IDregions[,sea],reg=reg,dur=dur[1:ntot,state,],dur_mid=dur_mid[1:ntot,state,])
-                duration=tmp$duration
-                duration_mid=tmp$duration_mid
+            for (reg in 1:regNumb){   
+                tmp<-duration_region(regions=IDregions[,sea],reg=reg,dur=dur[1:ntot,state,],dur_mid=dur_mid[1:ntot,state,])
+                duration<-tmp$duration
+                duration_mid<-tmp$duration_mid
                 if (length(duration)>100){
                     ord=order(duration_mid)
                     maxis[(state-1)*regNumb+reg]=length(duration)
@@ -122,7 +123,7 @@ regional_attribution <- function(region_name,IDregions=c("from file"),regNumb=7,
         duration_write(filename=filename,dur=reg_dur[,,1:len],dur_mid=reg_dur_mid[,,1:len],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
 
         # create binned duration file
-        binned_dur<-array(NA,dim=c(regNumb,2,365*1000,years))
+        binned_dur<-array(NA,dim=c(regNumb,2,365*100,years))
         periods_in_yr<-array(0,regNumb*2*years)
         index=0
         for (reg in 1:regNumb){

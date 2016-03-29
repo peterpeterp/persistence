@@ -8,16 +8,21 @@ cdf_onDist <- function(dist){
     return(cdf)
 }
 
+cdf_onData <- function(dist,breaks){
+    dist<-dist[!is.na(dist)]
+    cdf=array(NA,length(breaks))
+    for (i in 1:length(breaks)){
+        cdf[i]=length(which(dist<=breaks[i]))
+    }
+    cdf=cdf/cdf[length(cdf)]
+}
+
 quantile_pete <- function(dist,taus,na.rm=TRUE,plot=FALSE){
     # calculates quantiles from empirical cumulative distribution function -> gives out decimal numbers
     if (na.rm==TRUE){dist=dist[which(!is.na(dist))]}
 
-    # calculate cdf
-    cdf=array(NA,max(dist))
-    for (i in 1:max(dist)){
-        cdf[i]=length(which(dist<=i))
-    }
-    cdf=cdf/cdf[length(cdf)]
+    # get cdf
+    cdf<-cdf_onData(dist)
 
     # get quantiles
     out=taus*NA
@@ -200,7 +205,7 @@ exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-I
             cdf_Fit<-cdf_onDist(exp_fit)
             diff_cdf<-abs(cdf_Data-cdf_Fit)
             D_val<-max(diff_cdf)
-            D_pos<-which.max(diff_cdf)
+            D_pos<-X_toFit[which.max(diff_cdf)]
 
             if (plot_cdf==TRUE){cdf_plot(X_toFit,cdf_Data,cdf_Fit,D_val,D_pos)}
 
@@ -266,7 +271,7 @@ two_exp_fit <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=
             cdf_Fit<-cdf_onDist(comb_fit)
             diff_cdf<-abs(cdf_Data-cdf_Fit)
             D_val<-max(diff_cdf)
-            D_pos<-which.max(diff_cdf)
+            D_pos<-X_toFit[which.max(diff_cdf)]
 
             if (plot_cdf==TRUE){cdf_plot(X_toFit,cdf_Data,cdf_Fit,D_val,D_pos)}
 

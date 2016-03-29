@@ -57,7 +57,7 @@ confidence_interval <- function(seasons=1:4){
     close.nc(nc_out)     
 }
 
-write_slope_table_inter <- function(){
+write_slope_table <- function(signi){
     print(paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.tex",sep=""))
     table<-file(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,"_",dataset,"_",ID_name,"_shuffQuant.tex",sep=""))
     options(scipen=100)
@@ -93,14 +93,14 @@ write_slope_table_inter <- function(){
                 for (sea in 1:4){
                     for (state in 1:2){
                         for (out in c(5,3)){
-                            if (original_slopes[sea,reg,state,out,1]>0 & !is.na(original_slopes[sea,reg,state,out,3])){color<-"red!70"}
-                            if (original_slopes[sea,reg,state,out,1]>0 & is.na(original_slopes[sea,reg,state,out,3])){color<-"red!25"}
-                            if (original_slopes[sea,reg,state,out,1]<0 & !is.na(original_slopes[sea,reg,state,out,3])){color<-"blue!70"}
-                            if (original_slopes[sea,reg,state,out,1]<0 & is.na(original_slopes[sea,reg,state,out,3])){color<-"blue!25"}
+                            if (original_slopes[sea,reg,state,out,1]>0 & !is.na(original_slopes[sea,reg,state,out,signi])){color<-"red!70"}
+                            if (original_slopes[sea,reg,state,out,1]>0 & is.na(original_slopes[sea,reg,state,out,signi])){color<-"red!25"}
+                            if (original_slopes[sea,reg,state,out,1]<0 & !is.na(original_slopes[sea,reg,state,out,signi])){color<-"blue!70"}
+                            if (original_slopes[sea,reg,state,out,1]<0 & is.na(original_slopes[sea,reg,state,out,signi])){color<-"blue!25"}
                             if (abs(original_slopes[sea,reg,state,out,1])<0.000001){color<-"white!25"}
                
-                            if (!is.na(original_slopes[sea,reg,state,out,3])){newline<-paste(newline,"&{\\cellcolor{",color,"}{X}}",sep="")}
-                            if (is.na(original_slopes[sea,reg,state,out,3])){newline<-paste(newline,"&{\\cellcolor{",color,"}{ }}",sep="")}
+                            if (!is.na(original_slopes[sea,reg,state,out,signi])){newline<-paste(newline,"&{\\cellcolor{",color,"}{X}}",sep="")}
+                            if (is.na(original_slopes[sea,reg,state,out,signi])){newline<-paste(newline,"&{\\cellcolor{",color,"}{ }}",sep="")}
                         }
                     }
                 }
@@ -265,7 +265,7 @@ init()
 
 for (trendID in c("91_5","91_7","91_9")){
     #plot_confi_intervals()
-    write_slope_table()
+    write_slope_table(signi=2)
 }
 
 
