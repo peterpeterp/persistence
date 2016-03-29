@@ -152,8 +152,8 @@ master_gridded_plots <- function(){
 }
 
 master_regional_analysis <- function(region_name="7rect",ID_length=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:ID_length,plot_select=1:ID_length){
-    regional_attribution(region_name=region_name)
-    duration_yearly_values(folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length)
+    #regional_attribution(region_name=region_name)
+    #duration_yearly_values(folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length)
     ID_name=paste("_",region_name,sep="")
     for (i in 1:(length(yearLimits)/2)){
         yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
@@ -161,10 +161,10 @@ master_regional_analysis <- function(region_name="7rect",ID_length=7,region_name
         print(yearPeriod)
 
         print("others")
-        #duration_analysis(yearPeriod=yearPeriod,option=c(1,0,0,0,0,0,0,0),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
+        duration_analysis(yearPeriod=yearPeriod,option=c(1,0,0,0,0,0,0,0),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
 
         print("quant")
-        #duration_analysis(yearPeriod=yearPeriod,option=c(0,0,1,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
+        duration_analysis(yearPeriod=yearPeriod,option=c(0,0,1,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
         
         print("fit")
         duration_analysis(yearPeriod=yearPeriod,option=c(0,0,0,1,0,0,0,0),add_name="2expo_4:100",xStart=4,ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))

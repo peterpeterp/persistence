@@ -295,14 +295,20 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
     signis<-ks_test[,,,1]
 
     signis<-array(signis,c(5,ID_length,2,5))
-    write_tex_table(filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff.tex",sep=""),outs=c(5,2),values=quantiles[2,,,,,1]-quantiles[1,,,,,1],signis=signis)
+    write_tex_table(filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff.tex",sep=""),outs=c(5,2),values=quantiles[2,,,,,1]-quantiles[1,,,,,1],signis=signis,header=paste("& mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95","\\\\"))
 
     signis<-ks_test[,,,1]
     signis2<-ks_test[,,,6]
     signis[which(signis-signis2<0)]=signis2[which(signis-signis2<0)]
-
     signis<-array(signis,c(5,ID_length,2,5))
-    write_tex_table(filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff_doubleTest.tex",sep=""),outs=c(5,2),values=quantiles[2,,,,,1]-quantiles[1,,,,,1],signis=signis)
+
+    write_tex_table(filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff_doubleTest.tex",sep=""),outs=c(5,2),values=quantiles[2,,,,,1]-quantiles[1,,,,,1],signis=signis,header=paste("& mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95","\\\\"))
+
+    values<-array(NA,c(6,ID_length,2,2))
+    fit_params<<-fit_params
+    values[,,,1]=exp(-fit_params[2,,,,10])*100-exp(-fit_params[1,,,,10])*100
+    values[,,,2]=exp(-fit_params[2,,,,12])*100-exp(-fit_params[1,,,,12])*100
+    write_tex_table(filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_fit_diff_doubleTest.tex",sep=""),outs=c(1,2),values=values,signis=signis,header=paste("&P1&P2&P1&P2&P1&P2&P1&P2&P1&P2&P1&P2&P1&P2&P1&P2","\\\\"))
 }
 
 

@@ -243,7 +243,6 @@ duration_analysis <- function(yearPeriod,season_auswahl=c(1,2,3,4,5),option=c(1,
                         fit_plot_combi(X=X,Y=Y,counts=counts,expfit=expfit,fit=fit,fitstuff=fit_stuff[sea,q,state,],sea=season_names[sea],q=ID_names[q],state=state)
                     }
                 }
-                adasd
             }
         }
     }
