@@ -168,73 +168,6 @@ ks_wilcoxon_period <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=pa
     graphics.off()
 }
 
-ks_wilcoxon_period_on_distr <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=paste("/regional/",ID_name,"/",sep=""),ID_select,ID_length=length(ID_select)){
-
-    wilcox_test=array(NA,c(5,ID_length,2,3))
-    ks_test=array(NA,c(5,ID_length,2,3))
-
-    pdf(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_wilcox_",periods[1],"_vs_",periods[2],"_ecdf_onDistr.pdf",sep=""),width=3,height=3) ; par(mar=c(3, 3, 3, 3) + 0.1) 
-    filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,periods[1],"/",trendID,"_",dataset,"_",ID_name,"_",periods[1],"_distributions.nc",sep="") ; print(filename)
-    distr_before<-var.get.nc(open.nc(filename),"distr_stuff")
-    filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,periods[2],"/",trendID,"_",dataset,"_",ID_name,"_",periods[2],"_distributions.nc",sep="") ; print(filename)
-    distr_after<-var.get.nc(open.nc(filename),"distr_stuff")
-    for (sea in 1:5){ 
-        percentage<-0
-        cat(paste("\n0 -> -> -> -> -> 100\n"))
-        for (q in ID_select){
-            if (q/ID_length*100 > percentage){
-                cat("-")
-                percentage<-percentage+5
-            }
-            for (state in 1:2){
-                ks_test[sea,q,state,1]=ks.test(distr_before[sea,q,state,3,],distr_after[sea,q,state,3,])$p.value
-                wilcox_test[sea,q,state,1]=wilcox.test(x=distr_before[sea,q,state,3,],y=distr_after[sea,q,state,3,],paired=FALSE)$p.value
-                plot.ecdf(distr_before[sea,q,state,3,],xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col="green",ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
-                par(new=TRUE)
-                plot.ecdf(distr_after[sea,q,state,3,],xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col="orange",ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
-                text(40,0.25,paste("wilcox:",round(wilcox_test[sea,q,state,1],03)),cex=1)
-                text(40,0.1,paste("ks:",round(ks_test[sea,q,state,1],03)),cex=1)
-                text(40,0.6,paste(season_names[sea],q,state_names[state]),cex=1)
-            }
-        }
-    }
-    wilcox_test[,,,2][wilcox_test[,,,1]>0.05]=1
-    wilcox_test[,,,2][wilcox_test[,,,1]<0.05]=0
-    wilcox_test[,,,3][wilcox_test[,,,1]>0.1]=1
-    wilcox_test[,,,3][wilcox_test[,,,1]<0.1]=0
-
-    ks_test[,,,2][ks_test[,,,1]>0.05]=1
-    ks_test[,,,2][ks_test[,,,1]<0.05]=0
-    ks_test[,,,3][ks_test[,,,1]>0.1]=1
-    ks_test[,,,3][ks_test[,,,1]<0.1]=0
-
-    filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_wilcox_",yearPeriod1[1],"-",yearPeriod1[2],"_vs_",yearPeriod2[1],"-",yearPeriod2[2],"_onDistr.nc",sep="")
-    nc_out <- create.nc(filename)
-    att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)
-    att.put.nc(nc_out, "NC_GLOBAL", "comment", "NC_CHAR", "wilcoxon test to identify changes in distribution")
-    
-    dim.def.nc(nc_out,"seasons",dimlength=5, unlim=FALSE)
-    dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
-    dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
-
-    dim.def.nc(nc_out,"outs",dimlength=3,unlim=FALSE)
-
-    var.def.nc(nc_out,"wilcox_test","NC_DOUBLE",c(0,1,2,3))
-    att.put.nc(nc_out, "wilcox_test", "missing_value", "NC_DOUBLE", 99999)
-    att.put.nc(nc_out, "wilcox_test", "dim_explanation", "NC_CHAR", "season-ID-states-...")
-    att.put.nc(nc_out, "wilcox_test", "val_explanation", "NC_CHAR", "wilcoxon test p-value, p-value>0.05 = 1, p-value>0.1 = 1")
-
-    var.def.nc(nc_out,"ks_test","NC_DOUBLE",c(0,1,2,3))
-    att.put.nc(nc_out, "ks_test", "missing_value", "NC_DOUBLE", 99999)
-    att.put.nc(nc_out, "ks_test", "dim_explanation", "NC_CHAR", "season-ID-states-...")
-    att.put.nc(nc_out, "ks_test", "val_explanation", "NC_CHAR", "ks test p-value, p-value>0.05 = 1, p-value>0.1 = 1")
-
-    var.put.nc(nc_out,"wilcox_test",wilcox_test)              
-    var.put.nc(nc_out,"ks_test",ks_test)              
-
-    close.nc(nc_out) 
-    graphics.off()
-}
 
 fit_plot_comparison <- function(distr,fits,sea,q,state,ks){
     color=c("green","orange",rgb(0.5,0.1,0.5),rgb(0.1,0.7,0.1),rgb(0,0,0))
@@ -370,7 +303,6 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
 
 
 
-#ks_wilcoxon_period_on_distr(ID_name="ward23",yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),periods=c("1950-1980","1980-2014"),ID_select=1:23)
 ks_wilcoxon_period(ID_name="ward23",yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),periods=c("1950-1980","1980-2014"),ID_select=1:23)
 
 ID_select=c(1,2,6,10,13,19,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,23)
