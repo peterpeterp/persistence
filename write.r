@@ -137,7 +137,7 @@ fit_write <- function(filename,ID_length,ID_name,period,fit_stuff,comment="distr
     var.def.nc(nc_out,"fit_stuff","NC_DOUBLE",c(0,1,2,3))
     att.put.nc(nc_out, "fit_stuff", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "fit_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-...")
-    att.put.nc(nc_out, "fit_stuff", "explanation", "NC_CHAR", "expo: 1-a, 2-b, 4-chi2, 5-R2, 6-ks, 7-D, 8-BIC, special fit: 10-a1, 11-b1, 12-a2, 13-b2, 14-thresh 16-chi2, 17-R2, 18-ks, 19-D, 20=BIC  special: 24-BIc_diff, 22-distr-length")
+    att.put.nc(nc_out, "fit_stuff", "explanation", "NC_CHAR", "expo: 1-a, 2-b, 4-chi2, 5-R2, 6-D_val, 7-D_pos, 8-BIC, special fit: 10-a1, 11-b1, 12-a2, 13-b2, 14-thresh 16-chi2, 17-R2, 18-ks, 19-D, 20=BIC  special: 24-BIc_diff, 22-distr-length")
         
     var.put.nc(nc_out,"fit_stuff",fit_stuff)      
  

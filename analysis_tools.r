@@ -1,5 +1,13 @@
 library(dgof)
 
+cdf_onDist <- function(dist){
+    dist[is.na(dist)]=0
+    cdf<-dist*NA
+    for (i in 1:length(dist)){cdf[i]<-sum(dist[1:i])}
+    cdf<-cdf/max(cdf)
+    return(cdf)
+}
+
 quantile_pete <- function(dist,taus,na.rm=TRUE,plot=FALSE){
     # calculates quantiles from empirical cumulative distribution function -> gives out decimal numbers
     if (na.rm==TRUE){dist=dist[which(!is.na(dist))]}
@@ -128,8 +136,8 @@ fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state)
     # second plot page
     par(mar=c(3, 3, 3, 3) + 0.1)                
     plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
-    if (!is.na(fitstuff[13])){
-        abline(v=fitstuff[13],col="grey")
+    if (!is.na(fitstuff[14])){
+        abline(v=fitstuff[14],col="grey")
         #text(thresh,0.22,label=round(thresh,02),col="grey")
     }
     lines(expfit,col=color[3],lty=2)
@@ -143,9 +151,9 @@ fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state)
 
     # third version
     plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
-    if (!is.na(fitstuff[13])){
-        abline(v=fitstuff[13],col="grey")
-        text(fitstuff[13],0.00002,label=round(fitstuff[13],02),col=rgb(0,0,0))
+    if (!is.na(fitstuff[14])){
+        abline(v=fitstuff[14],col="grey")
+        text(fitstuff[14],0.00002,label=round(fitstuff[14],02),col=rgb(0,0,0))
     }    
     lines(expfit,col=color[3],lty=2)
     lines(fit,col=color[4],lty=1)
@@ -154,44 +162,27 @@ fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state)
     text(50,0.02,paste("b2=",round(fitstuff[12],03)),pos=1,col=color[4])                
 }
 
-fit_plot <- function(X,Y,fit,legend,fit_style,sea,q,state,thresh=NA){
-    state_names=c("cold","warm")
-    color=c("blue","red")
 
-    #first plot page
-    par(mar=c(3, 3, 3, 3) + 0.1)                
-    plot(X,Y,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
-    if (!is.na(thresh)){
-        abline(v=thresh,col="grey")
-        #text(thresh,0.22,label=round(thresh,02),col="grey")
-    }
-    lines(fit,col="black")
-    text(50,0.24,legend[1],pos=1)                 
-
-    # second version
-    plot(X,Y,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
-
-    lines(fit,col="black")
-    if (!is.na(thresh)){
-        abline(v=thresh,col="grey")
-        text(thresh,0.00002,label=round(thresh,02),col=rgb(0,0,0))
-    }    
-    text(50,0.24,legend[2],pos=1)                 
+cdf_plot <- function(X_toFit,cdf_Data,cdf_Fit,D_val,D_pos){
+    plot(NA,xlim=c(0,70),ylim=c(0,1),xlab="days",ylab="",axes=FALSE,frame.plot=TRUE)
+    points(X_toFit,cdf_Fit,col="violet",pch=3,cex=0.2)
+    points(X_toFit,cdf_Data,col="green",pch=3,cex=0.2)
+    lines(c(X_toFit[D_pos],X_toFit[D_pos]),c(cdf_Data[D_pos],cdf_Fit[D_pos]),lwd=2)
+    text(X_toFit[D_pos]+2,min(c(cdf_Data[D_pos],cdf_Fit[D_pos]))-0.07,paste("D=",round(D_val,03)),pos=4)              
 }
 
-exponential_fit <- function(X,Y,y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-Inf),upper_limit=c(Inf,Inf),xStart=1,xStop=100){
-    # required for data storage later on
-    X_full<-X
 
-    # only data points which are not zero     
-    Y<-Y[xStart:xStop]
-    X<-X[xStart:xStop]
-    nona<-which(Y>0)
-    Y<-Y[nona]
-    X<-X[nona]
+
+
+exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-Inf),upper_limit=c(Inf,Inf),xStart=1,plot_cdf=FALSE){
+
+    # only data points until longest period 
+    longestPeriod<-max(X[Y>0])   
+    Y_toFit<-Y[xStart:longestPeriod]
+    X_toFit<-X[xStart:longestPeriod]
 
     # perform fit
-    xy<-data.frame(y=Y,x=X)
+    xy<-data.frame(y=Y_toFit,x=X_toFit)
     nls_fit<-try(nls(y~(a*exp(-b*x)),data=xy,algorithm="port",start=start_guess,lower=lower_limit,upper=upper_limit,na.action=na.exclude),silent=TRUE) 
     if (class(nls_fit)!="try-error"){
         summ_nls<-try(summary(nls_fit))
@@ -200,17 +191,24 @@ exponential_fit <- function(X,Y,y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,
             b<-summ_nls$parameters[2]
 
             # goodness analysis
-            exp_fit<-a*exp(-X*b)
+            exp_fit<-a*exp(-X_toFit*b)
 
-            chi2<-chisq.test(Y[which(!is.na(Y))],p=exp_fit[which(!is.na(Y))],rescale=TRUE)$p.value
-            R2<-1-sum(((Y-exp_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-            ks<-ks.test(Y,exp_fit)$p.value
-            D<-ks.test(Y,exp_fit)$statistic
+            chi2<-chisq.test(Y_toFit[which(!is.na(Y_toFit))],p=exp_fit[which(!is.na(Y_toFit))],rescale=TRUE)$p.value
+            R2<-1-sum(((Y_toFit-exp_fit)^2),na.rm=TRUE)/sum(((Y_toFit-mean(Y_toFit,na.rm=TRUE))^2),na.rm=TRUE)
+
+            cdf_Data<-cdf_onDist(Y_toFit)
+            cdf_Fit<-cdf_onDist(exp_fit)
+            diff_cdf<-abs(cdf_Data-cdf_Fit)
+            D_val<-max(diff_cdf)
+            D_pos<-which.max(diff_cdf)
+
+            if (plot_cdf==TRUE){cdf_plot(X_toFit,cdf_Data,cdf_Fit,D_val,D_pos)}
+
             BIC<-try(BIC(nls_fit),silent=TRUE)
             if (class(BIC)=="try-error"){BIC=NA}
 
-            exp_fit<-a*exp(-X_full*b)
-            return(list(pars=c(a,b),ana=c(chi2,R2,ks,D,BIC),fit=exp_fit))
+            exp_fit<-a*exp(-X*b)
+            return(list(pars=c(a,b),ana=c(chi2,R2,D_val,D_pos,BIC),fit=exp_fit))
         }
         if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA,NA),fit=X_full*NA))}
     }
@@ -224,16 +222,11 @@ combi_expo <-function(x,a1,b1,b2,thresh){
     return(y)
 }
 
-two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15,xStart=1,xStop=100){
-    # required for data storage later on
-    X_full<-X
-
-    # only data points which are not zero 
-    Y<-Y[xStart:xStop]
-    X<-X[xStart:xStop]
-    nona<-which(Y>0)
-    Y<-Y[nona]
-    X<-X[nona]
+two_exp_fit <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15,xStart=1,xStop=100,plot_cdf=FALSE){
+    # only data points until longest period 
+    longestPeriod<-max(X[Y>0])   
+    Y_toFit<-Y[xStart:longestPeriod]
+    X_toFit<-X[xStart:longestPeriod]
 
     # prepare guesses for the parameters
     xy<-data.frame(y=Y[which(X>=xStart & X<=thresh_guess)],x=X[which(X>=xStart & X<=thresh_guess)])
@@ -251,7 +244,7 @@ two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_gues
     }
 
     # perform actual fit
-    xy<-data.frame(y=Y,x=X)
+    xy<-data.frame(y=Y_toFit,x=X_toFit)
     nls_fit<-try(nls(y~combi_expo(x,a1,b1,b2,thresh),data=xy,start=c(a1=a1_guess,b1=b1_guess,b2=b2_guess,thresh=thresh_guess),algorithm="port",lower=c(0,0,0,thresh_down),upper=c(Inf,Inf,Inf,thresh_up),na.action=na.exclude,nls.control(maxiter = 10000, tol = 1e-04, minFactor=1/10024, warnOnly=TRUE)),silent=TRUE)
     if (class(nls_fit)!="try-error"){
         summ_nls<-try(summary(nls_fit))
@@ -264,18 +257,25 @@ two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_gues
             a2<-a1*exp((b2-b1)*thresh)
 
             # goodness analysis
-            comb_fit<-combi_expo(X,a1,b1,b2,thresh)
+            comb_fit<-combi_expo(X_toFit,a1,b1,b2,thresh)
 
-            chi2<-chisq.test(Y[which(!is.na(Y))],p=comb_fit[which(!is.na(Y))],rescale=TRUE)$p.value
-            R2<-1-sum(((Y-comb_fit)^2),na.rm=TRUE)/sum(((Y-mean(Y,na.rm=TRUE))^2),na.rm=TRUE)
-            ks<-ks.test(Y,comb_fit)$p.value
-            D<-ks.test(Y,comb_fit)$statistic
+            chi2<-chisq.test(Y_toFit[which(!is.na(Y_toFit))],p=comb_fit[which(!is.na(Y_toFit))],rescale=TRUE)$p.value
+            R2<-1-sum(((Y_toFit-comb_fit)^2),na.rm=TRUE)/sum(((Y_toFit-mean(Y_toFit,na.rm=TRUE))^2),na.rm=TRUE)
+
+            cdf_Data<-cdf_onDist(Y_toFit)
+            cdf_Fit<-cdf_onDist(comb_fit)
+            diff_cdf<-abs(cdf_Data-cdf_Fit)
+            D_val<-max(diff_cdf)
+            D_pos<-which.max(diff_cdf)
+
+            if (plot_cdf==TRUE){cdf_plot(X_toFit,cdf_Data,cdf_Fit,D_val,D_pos)}
+
             BIC<-try(BIC(nls_fit),silent=TRUE)
             if (class(BIC)=="try-error"){BIC=NA}
 
             # store the fit for complete X in order to plot it later on
-            comb_fit<-combi_expo(X_full,a1,b1,b2,thresh)
-            return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(chi2,R2,ks,D,BIC),fit=comb_fit))
+            comb_fit<-combi_expo(X,a1,b1,b2,thresh)
+            return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(chi2,R2,D_val,D_pos,BIC),fit=comb_fit))
         }
         if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA,NA),fit=X_full*NA))}
     }
