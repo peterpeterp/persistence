@@ -161,10 +161,10 @@ master_regional_analysis <- function(region_name="7rect",ID_length=7,region_name
         print(yearPeriod)
 
         print("others")
-        duration_analysis(yearPeriod=yearPeriod,option=c(1,0,0,0,0,0,0,0),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
+        #duration_analysis(yearPeriod=yearPeriod,option=c(1,0,0,0,0,0,0,0),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
 
         print("quant")
-        duration_analysis(yearPeriod=yearPeriod,option=c(0,0,1,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
+        #duration_analysis(yearPeriod=yearPeriod,option=c(0,0,1,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
         
         print("fit")
         duration_analysis(yearPeriod=yearPeriod,option=c(0,0,0,1,0,0,0,0),add_name="2expo_4:100",xStart=4,ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
@@ -189,15 +189,16 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
         #plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),name_zusatz="quantile",farb_mitte=c(8,28),farb_palette="regenbogen")
         #plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
         #plot_reg_maps(region_name=region_name,file="_shuffQuant",var="original_slopes",sub_auswahl=c(3),value_auswahl=c(1),sig_auswahl=c(2),value_zusatz=c("qr slope"),name_zusatz="qr_slopeSig",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+        plot_reg_table(region_name=region_name,file="_quantiles",var="quantile_stuff",name_zusatz="quanzs",sub_auswahl=c(1,2,3,4),value_auswahl=c(1),sig_auswahl=c(NA),ID_select=ID_select,hlines=hlines)
 
         #fits
         #plot_reg_maps(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(10,12,13,20),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),name_zusatz="fit_2expo_4:100",signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="regenbogen")
    
 
-        #write_regional_fit_table(region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style="2expo_4:100",ID_length=ID_length)
+        #write_regional_fit_table(region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style="2expo_4:100",ID_length=ID_length,hlines=hlines)
 
         print("MannKendall")
-        duration_MannKendall(yearPeriod=yearPeriod,folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length,hlines=hlines)
+        #duration_MannKendall(yearPeriod=yearPeriod,folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length,hlines=hlines)
 
 
     }
@@ -249,7 +250,7 @@ master_init <- function(id){
     dataset<<-"_TMean"
     trend_style<<-"_mean"
     additional_style<<-""
-    dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    #dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
     ntot<<-length(dat$ID)
     yearLimits<<-c(1980,2014,1950,2014,1950,1980)
 
@@ -291,8 +292,8 @@ plot_init_Had()
 # regional commands
 ###################################################################
 
-master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
-master_regional_plots(region_name="ward24",ID_select=c(3,4,5,7,11,12,14,16,18,20,22),ID_length=24,region_names=1:24)
+#master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
+master_regional_plots(region_name="ward24",ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),ID_length=24,region_names=1:24,hlines=c(23,20,22,8))
 
 #master_regional_analysis(region_name="ward23",ID_length=23,region_names=1:23)
 #master_regional_plots(region_name="ward23",ID_select=c(1,2,6,10,13,19,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,23),ID_length=23,region_names=1:23,hlines=c(19,20,22,8))

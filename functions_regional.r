@@ -232,7 +232,7 @@ plot_regional_fit_parameters <- function(period,trendID,additional_style,dataset
 }
 
 
-write_regional_fit_table <- function(region_name="srex",period,fit_style,region_names,ID_select,ID_length=length(ID_select),hlines=c(30)){
+write_regional_fit_table_old <- function(region_name="srex",fit_style,region_names,ID_select,ID_length=length(ID_select),hlines=c(30)){
 
     rel_sensitivity=array(0,c(3,5,ID_length,2,20))
     fit_mass=array(0,c(3,6,ID_length,2,20))
@@ -342,8 +342,6 @@ write_regional_fit_table <- function(region_name="srex",period,fit_style,region_
     writeLines(lines, table)
     close(table)
 }
-
-
 
 
 

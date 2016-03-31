@@ -17,6 +17,27 @@ cdf_onData <- function(dist,breaks=1:max(dist,na.rm=TRUE)){
     cdf=cdf/cdf[length(cdf)]
 }
 
+ks_distribution <- function(t){
+    sum<-0
+    for (i in 1:100){sum<-sum+(-1)^(i-1)*exp(-2*i^2*t)}
+    return(1-2*sum)
+}
+
+
+
+ks_test_manual <- function(X_toFit,cdf1,cdf2,n=length(X_toFit)){
+    diff_cdf<-abs(cdf1-cdf2)
+    D_val<-max(diff_cdf)
+    D_pos<-X_toFit[which.max(diff_cdf)]
+    
+    ks<-0
+    for (alpha in c(0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99)){
+        #if (D_val<sqrt(-0.5*log(alpha/2)*2/n)){ks<-alpha} # statistics book from sonja for 2 distrs
+        if (D_val<sqrt(-0.5*log(alpha/2)/n)){ks<-alpha} # table for one distr
+    }
+    return(list(D_val=D_val,D_pos=D_pos,ks=ks))
+}
+
 quantile_pete <- function(dist,taus,na.rm=TRUE,plot=FALSE){
     # calculates quantiles from empirical cumulative distribution function -> gives out decimal numbers
     if (na.rm==TRUE){dist=dist[which(!is.na(dist))]}
@@ -70,41 +91,53 @@ quantile_analysis <- function(x,y,taus,noise_level=0){
 }
 
 
-fit_plot_empty <- function(){
+fit_plot_empty <- function(xUntil=60){
     # creates empty plots with x-axis and y-axis
     par(mar=c(3, 3, 3, 3) + 0.1)
     # x
-    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
+    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,xUntil),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
     at_=axis(1,labels=FALSE,col="black")
     if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
     axis(1,at=at_)
 
     # x
-    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
+    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,xUntil),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
     at_=axis(3,labels=FALSE,col="black")
     if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
     axis(3,at=at_)
 
     # y
-    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
+    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,xUntil),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
     at_=axis(2,labels=FALSE,col="black")
     if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
     axis(2,at=at_)
 
     # y
-    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
+    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,xUntil),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
     at_=axis(4,labels=FALSE,col="black")
     if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
     axis(4,at=at_)
 
     # y
-    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,log="y",cex=0.5)
+    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,xUntil),ylab="",axes=FALSE,frame.plot=FALSE,log="y",cex=0.5)
     at_=axis(2,labels=FALSE,col="black")
     if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
     axis(2,at=at_)
 
     # y
-    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=FALSE,log="y",cex=0.5)
+    plot(NA,xlab="",ylim=c(0.00001,0.25),xlim=c(0,xUntil),ylab="",axes=FALSE,frame.plot=FALSE,log="y",cex=0.5)
+    at_=axis(4,labels=FALSE,col="black")
+    if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+    axis(4,at=at_)
+
+    # ecdf y 
+    plot(NA,xlab="",ylim=c(0,1),xlim=c(0,xUntil),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
+    at_=axis(2,labels=FALSE,col="black")
+    if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+    axis(2,at=at_)
+
+    # ecdf y
+    plot(NA,xlab="",ylim=c(0,1),xlim=c(0,xUntil),ylab="",axes=FALSE,frame.plot=FALSE,cex=0.5)
     at_=axis(4,labels=FALSE,col="black")
     if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
     axis(4,at=at_)
@@ -127,56 +160,58 @@ fit_plot_reference <- function(x,y,sea,q,state){
     }
 }
 
-fit_plot_combi <- function(X,Y,counts,expfit,fit,fitstuff,fit_style,sea,q,state){
+fit_plot_combi <- function(distrs,fitstuff,fit_style,sea,q,state,xUntil=60){
     color=c("blue","red",rgb(0.5,0.1,0.5),rgb(0.1,0.7,0.1),rgb(0,0,0))
 
     par(mar=c(3, 3, 3, 3) + 0.1)  
 
     # second plot page
-    nonull=which(counts>0)              
-    plot(X[nonull],counts[nonull],xlab="days",xlim=c(0,70),ylab="counts",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
+    nonull=which(distrs[3,]>0)              
+    plot(distrs[1,nonull],distrs[3,nonull],xlab="days",xlim=c(0,xUntil),ylab="counts",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
     axis(2)
-    legend("topright",legend=c(paste("     ID=",q,sep=""),paste("dBIC=",round(fitstuff[17],01),sep="")),bty="n")
+    legend("topright",legend=c(paste("     ID=",q,sep=""),paste("dBIC=",round(fitstuff[24],01),sep="")),bty="n")
 
     # second plot page
     par(mar=c(3, 3, 3, 3) + 0.1)                
-    plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
-    if (!is.na(fitstuff[14])){
-        abline(v=fitstuff[14],col="grey")
+    plot(distrs[1,nonull],distrs[2,nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,xUntil),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
+    if (!is.na(fitstuff[15])){
+        abline(v=fitstuff[15],col="grey")
         #text(thresh,0.22,label=round(thresh,02),col="grey")
     }
-    lines(expfit,col=color[3],lty=2)
-    lines(fit,col=color[4],lty=1)               
+    lines(distrs[4,],col=color[3],lty=2)
+    lines(distrs[8,],col=color[4],lty=1)               
  
-    text(50,0.18+0.06,paste("BIC=",round(fitstuff[7],01)),pos=1,col=color[3])                 
-    text(50,0.155+0.06,paste("BIC=",round(fitstuff[18],01)),pos=1,col=color[4])      
+    text(40,0.18+0.06,paste("BIC=",round(fitstuff[9],01)),pos=1,col=color[3])                 
+    text(40,0.155+0.06,paste("BIC=",round(fitstuff[22],01)),pos=1,col=color[4])      
 
-    text(50,0.11+0.06,paste("KS=",round(fitstuff[6],03)),pos=1,col=color[3])                 
-    text(50,0.085+0.06,paste("KS=",round(fitstuff[17],03)),pos=1,col=color[4])            
+    text(40,0.11+0.06,paste("KS=",round(fitstuff[8],03)),pos=1,col=color[3])                 
+    text(40,0.085+0.06,paste("KS=",round(fitstuff[21],03)),pos=1,col=color[4])            
 
     # third version
-    plot(X[nonull],Y[nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
-    if (!is.na(fitstuff[14])){
-        abline(v=fitstuff[14],col="grey")
-        text(fitstuff[14],0.00002,label=round(fitstuff[14],02),col=rgb(0,0,0))
+    plot(distrs[1,nonull],distrs[2,nonull],xlab="days",ylim=c(0.00001,0.25),xlim=c(0,xUntil),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],log="y",cex=0.5)
+    if (!is.na(fitstuff[15])){
+        abline(v=fitstuff[15],col="grey")
+        text(fitstuff[15],0.00002,label=round(fitstuff[15],02),col=rgb(0,0,0))
     }    
-    lines(expfit,col=color[3],lty=2)
-    lines(fit,col=color[4],lty=1)
-    text(50,0.22,paste("b=",round(fitstuff[2],03)),pos=1,col=color[3])                 
-    text(50,0.05,paste("b1=",round(fitstuff[10],03)),pos=1,col=color[4])                 
-    text(50,0.02,paste("b2=",round(fitstuff[12],03)),pos=1,col=color[4])                
+    lines(distrs[4,],col=color[3],lty=2)
+    lines(distrs[8,],col=color[4],lty=1)  
+
+    text(50,0.22,paste("b=",round(fitstuff[2],02)),pos=1,col=color[3])                 
+    text(50,0.05,paste("b1=",round(fitstuff[11],02)),pos=1,col=color[4])                 
+    text(50,0.02,paste("b2=",round(fitstuff[13],02)),pos=1,col=color[4])                
+
+    plot(NA,xlim=c(0,xUntil),ylim=c(0,1),xlab="days",ylab="",axes=FALSE,frame.plot=TRUE)
+    points(distrs[5,],col=color[state],pch=20,cex=0.4)
+
+    x<-fitstuff[7] ; lines(c(x,x),c(distrs[6,x],distrs[5,x]),col=color[3],lwd=2)
+    x<-fitstuff[20] ; lines(c(x,x),c(distrs[10,x],distrs[9,x]),col=color[4],lwd=2)
+
+    lines(distrs[6,],col=color[3])
+    lines(distrs[10,],col=color[4])
+    
+    text(40,0.4,paste("D=",round(fitstuff[6],03)),col=color[3],pos=1)                 
+    text(40,0.25,paste("D=",round(fitstuff[19],03)),col=color[4],pos=1)               
 }
-
-
-cdf_plot <- function(X_toFit,cdf_Data,cdf_Fit,D_val,D_pos){
-    plot(NA,xlim=c(0,70),ylim=c(0,1),xlab="days",ylab="",axes=FALSE,frame.plot=TRUE)
-    points(X_toFit,cdf_Fit,col="violet",pch=3,cex=0.2)
-    points(X_toFit,cdf_Data,col="green",pch=3,cex=0.2)
-    lines(c(X_toFit[D_pos],X_toFit[D_pos]),c(cdf_Data[D_pos],cdf_Fit[D_pos]),lwd=2)
-    text(X_toFit[D_pos]+2,min(c(cdf_Data[D_pos],cdf_Fit[D_pos]))-0.07,paste("D=",round(D_val,03)),pos=4)              
-}
-
-
 
 
 exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-Inf),upper_limit=c(Inf,Inf),xStart=1,plot_cdf=FALSE){
@@ -198,26 +233,25 @@ exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-I
             # goodness analysis
             exp_fit<-a*exp(-X_toFit*b)
 
-            chi2<-chisq.test(Y_toFit[which(!is.na(Y_toFit))],p=exp_fit[which(!is.na(Y_toFit))],rescale=TRUE)$p.value
+            chi2<-chisq.test(Y_toFit,p=exp_fit,rescale=TRUE)$p.value
             R2<-1-sum(((Y_toFit-exp_fit)^2),na.rm=TRUE)/sum(((Y_toFit-mean(Y_toFit,na.rm=TRUE))^2),na.rm=TRUE)
 
+
+            # ks test
             cdf_Data<-cdf_onDist(Y_toFit)
             cdf_Fit<-cdf_onDist(exp_fit)
-            diff_cdf<-abs(cdf_Data-cdf_Fit)
-            D_val<-max(diff_cdf)
-            D_pos<-X_toFit[which.max(diff_cdf)]
+            tmpks<-ks_test_manual(X_toFit,cdf_Data,cdf_Fit)
 
-            if (plot_cdf==TRUE){cdf_plot(X_toFit,cdf_Data,cdf_Fit,D_val,D_pos)}
-
+            # BIC
             BIC<-try(BIC(nls_fit),silent=TRUE)
             if (class(BIC)=="try-error"){BIC=NA}
 
             exp_fit<-a*exp(-X*b)
-            return(list(pars=c(a,b),ana=c(chi2,R2,D_val,D_pos,BIC),fit=exp_fit))
+            return(list(pars=c(a,b),ana=c(chi2,R2,tmpks$D_val,tmpks$D_pos,tmpks$ks,BIC),fit=exp_fit,cdf_Data=cdf_Data,cdf_Fit=cdf_Fit))
         }
-        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA,NA),fit=X_full*NA))}
+        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_full*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
     }
-    if (class(nls_fit)=="try-error"){return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA,NA),fit=X_full*NA))}
+    if (class(nls_fit)=="try-error"){return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_full*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
 }
 
 combi_expo <-function(x,a1,b1,b2,thresh){
@@ -227,7 +261,7 @@ combi_expo <-function(x,a1,b1,b2,thresh){
     return(y)
 }
 
-two_exp_fit <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15,xStart=1,xStop=100,plot_cdf=FALSE){
+two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=8,thresh_down=5,thresh_up=15,xStart=1,xStop=100,plot_cdf=FALSE){
     # only data points until longest period 
     longestPeriod<-max(X[Y>0])   
     Y_toFit<-Y[xStart:longestPeriod]
@@ -264,26 +298,24 @@ two_exp_fit <- function(X,Y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_guess=
             # goodness analysis
             comb_fit<-combi_expo(X_toFit,a1,b1,b2,thresh)
 
-            chi2<-chisq.test(Y_toFit[which(!is.na(Y_toFit))],p=comb_fit[which(!is.na(Y_toFit))],rescale=TRUE)$p.value
+            chi2<-chisq.test(Y_toFit,p=comb_fit,rescale=TRUE)$p.value
             R2<-1-sum(((Y_toFit-comb_fit)^2),na.rm=TRUE)/sum(((Y_toFit-mean(Y_toFit,na.rm=TRUE))^2),na.rm=TRUE)
 
+            # ks test
             cdf_Data<-cdf_onDist(Y_toFit)
             cdf_Fit<-cdf_onDist(comb_fit)
-            diff_cdf<-abs(cdf_Data-cdf_Fit)
-            D_val<-max(diff_cdf)
-            D_pos<-X_toFit[which.max(diff_cdf)]
+            tmpks<-ks_test_manual(X_toFit,cdf_Data,cdf_Fit)
 
-            if (plot_cdf==TRUE){cdf_plot(X_toFit,cdf_Data,cdf_Fit,D_val,D_pos)}
-
+            # BIC
             BIC<-try(BIC(nls_fit),silent=TRUE)
             if (class(BIC)=="try-error"){BIC=NA}
 
             # store the fit for complete X in order to plot it later on
             comb_fit<-combi_expo(X,a1,b1,b2,thresh)
-            return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(chi2,R2,D_val,D_pos,BIC),fit=comb_fit))
+            return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(chi2,R2,tmpks$D_val,tmpks$D_pos,tmpks$ks,BIC),fit=comb_fit,cdf_Data=cdf_Data,cdf_Fit=cdf_Fit))
         }
-        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA,NA),fit=X_full*NA))}
+        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_full*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
     }
-    if (class(combi_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA,NA),fit=X_full*NA))}
+    if (class(combi_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_full*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
 }
 

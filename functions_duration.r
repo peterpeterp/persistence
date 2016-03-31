@@ -123,7 +123,7 @@ duration_seasons <- function(dur,dur_mid,season,filename,years=length(dat$year))
 duration_analysis <- function(yearPeriod,season_auswahl=c(1,2,3,4,5),option=c(1,0,0,0,0,0,0),ID_select=1:length(dat$ID),write=TRUE,add_name="quant_other",folder="/gridded/",ID_name="",plot_select=c(NA),ID_names=1:length(dat$ID),ID_length=length(ID_select),noise_level=0,xStart=1,xStop=100){    
 
     if (!is.na(plot_select[1])){
-        pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,folder,ID_name,"_dist_diff_fit_plot_",dataset,"_",period,"_",add_name,".pdf",sep=""),width=3,height=3)
+        pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",ID_name,"_dist_diff_fit_plot_",dataset,"_",period,"_",add_name,".pdf",sep=""),width=3,height=3)
         par(mfrow=c(1,1))
         fit_plot_empty()
     }
@@ -131,7 +131,7 @@ duration_analysis <- function(yearPeriod,season_auswahl=c(1,2,3,4,5),option=c(1,
     quantile_stuff=array(NA,dim=c(length(season_names),ID_length,2,length(taus),3))
     fit_stuff=array(NA,dim=c(length(season_names),ID_length,2,30))
     other_stuff=array(NA,dim=c(length(season_names),ID_length,2,12))
-    distr_stuff=array(NA,dim=c(length(season_names),ID_length,2,5,100))
+    distr_stuff=array(NA,dim=c(length(season_names),ID_length,2,10,100))
 
     for (sea in season_auswahl){ 
         season=season_names[sea]
@@ -194,6 +194,7 @@ duration_analysis <- function(yearPeriod,season_auswahl=c(1,2,3,4,5),option=c(1,
                     Y<-histo$density
                     X<-histo$mids
 
+                    # ignore really long periods!!! really????
                     if (length(X)>100){stop<-100}
                     else {stop<-length(X)}
 
@@ -203,27 +204,30 @@ duration_analysis <- function(yearPeriod,season_auswahl=c(1,2,3,4,5),option=c(1,
 
 
 
-                    fit_stuff[sea,q,state,22]=length(which(histo$counts>0))
+                    fit_stuff[sea,q,state,26]=length(which(histo$counts>0))
             
                     if (length(which(!is.na(Y)))>15){ 
                         if (option[4]==1){
                             # exponential fit as starting point
-                            
-                            tmp_exp=exponential_fit(X,Y,xStart=xStart,plot_cdf=!is.na(plot_select[1]))
+                            tmp_exp=exponential_fit(X,Y,xStart=xStart,plot_cdf=(q %in% plot_select))
                             fit_stuff[sea,q,state,1:2]=tmp_exp$pars
-                            fit_stuff[sea,q,state,4:8]=tmp_exp$ana
-                            expfit=tmp_exp$fit
-                            distr_stuff[sea,q,state,4,1:stop]=expfit[1:stop]
+                            fit_stuff[sea,q,state,4:9]=tmp_exp$ana
+                            distr_stuff[sea,q,state,4,1:stop]=tmp_exp$fit[1:stop]
+                            distr_stuff[sea,q,state,5,xStart:stop]=tmp_exp$cdf_Data[1:(stop-xStart+1)]
+                            distr_stuff[sea,q,state,6,xStart:stop]=tmp_exp$cdf_Fit[1:(stop-xStart+1)]
 
                             # combination of 2 exponentials seperated by threshold (restricted threshold range)
                         
-                            tmp=two_exp_fit(X,Y,xStart=xStart,xStop=100,plot_cdf=!is.na(plot_select[1]))
-                            fit_stuff[sea,q,state,10:14]=tmp$pars
-                            fit_stuff[sea,q,state,16:20]=tmp$ana
-                            fit=tmp$fit
-                            distr_stuff[sea,q,state,5,1:stop]=fit[1:stop]
+                            tmp=two_exp_fit(X,Y,y,xStart=xStart,xStop=100,plot_cdf=(q %in% plot_select))
+                            fit_stuff[sea,q,state,11:15]=tmp$pars
+                            fit_stuff[sea,q,state,17:22]=tmp$ana
+                            distr_stuff[sea,q,state,8,1:stop]=tmp$fit[1:stop]
+                            distr_stuff[sea,q,state,9,xStart:stop]=tmp$cdf_Data[1:(stop-xStart+1)]
+                            distr_stuff[sea,q,state,10,xStart:stop]=tmp$cdf_Fit[1:(stop-xStart+1)]
+
+                            distr_stuff[sea,q,state,7,xStart:stop]=xStart:stop
                         }
-                        fit_stuff[sea,q,state,24]=fit_stuff[sea,q,state,20]-fit_stuff[sea,q,state,8]
+                        fit_stuff[sea,q,state,24]=fit_stuff[sea,q,state,22]-fit_stuff[sea,q,state,9]
                     }
 
                 }
@@ -240,7 +244,7 @@ duration_analysis <- function(yearPeriod,season_auswahl=c(1,2,3,4,5),option=c(1,
                             fit=X*NA
                         }
                         fit_plot_reference(x=x,y=y,sea=season_names[sea],q=ID_names[q],state=state)
-                        fit_plot_combi(X=X,Y=Y,counts=counts,expfit=expfit,fit=fit,fitstuff=fit_stuff[sea,q,state,],sea=season_names[sea],q=ID_names[q],state=state)
+                        fit_plot_combi(distrs=distr_stuff[sea,q,state,,],fitstuff=fit_stuff[sea,q,state,],sea=season_names[sea],q=ID_names[q],state=state)
                     }
                 }
             }

@@ -88,7 +88,7 @@ quantiles_write <- function(filename,ID_length,ID_name,period,taus,quantile_stuf
     var.def.nc(nc_out,"quantile_stuff","NC_DOUBLE",c(0,1,2,3,4))
     att.put.nc(nc_out, "quantile_stuff", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "quantile_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-...")
-    att.put.nc(nc_out, "quantile_stuff", "explanation", "NC_CHAR", "(0.75,0.95,0.99) x (quantiles, slopes, slope_sigs)")
+    att.put.nc(nc_out, "quantile_stuff", "explanation", "NC_CHAR", "(0.5,0.75,0.95,0.99) x (quantiles, slopes, slope_sigs)")
         
     var.put.nc(nc_out,"quantile_stuff",quantile_stuff) 
 
@@ -137,7 +137,7 @@ fit_write <- function(filename,ID_length,ID_name,period,fit_stuff,comment="distr
     var.def.nc(nc_out,"fit_stuff","NC_DOUBLE",c(0,1,2,3))
     att.put.nc(nc_out, "fit_stuff", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "fit_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-...")
-    att.put.nc(nc_out, "fit_stuff", "explanation", "NC_CHAR", "expo: 1-a, 2-b, 4-chi2, 5-R2, 6-D_val, 7-D_pos, 8-BIC, special fit: 10-a1, 11-b1, 12-a2, 13-b2, 14-thresh 16-chi2, 17-R2, 18-ks, 19-D, 20=BIC  special: 24-BIc_diff, 22-distr-length")
+    att.put.nc(nc_out, "fit_stuff", "explanation", "NC_CHAR", "expo: 1-a, 2-b, 4-chi2, 5-R2, 6-D_val, 7-D_pos, 8-ks-level, 9-BIC, special fit: 11-a1, 12-b1, 13-a2, 14-b2, 15-thresh 17-chi2, 18-R2, 19-D_val, 20-D_pos, 21-ks-level, 22=BIC  special: 24-BIc_diff, 26-distr-length")
         
     var.put.nc(nc_out,"fit_stuff",fit_stuff)      
  
@@ -156,13 +156,13 @@ distr_write <- function(distr_stuff,filename,ID_length,ID_name,period,comment="d
     dim.def.nc(nc_out,"ID",dimlength=ID_length, unlim=FALSE)
     dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
 
-    dim.def.nc(nc_out,"distr_outs",dimlength=5,unlim=FALSE)
+    dim.def.nc(nc_out,"distr_outs",dimlength=10,unlim=FALSE)
     dim.def.nc(nc_out,"distr_length",dimlength=100,unlim=FALSE)
 
     var.def.nc(nc_out,"distr_stuff","NC_DOUBLE",c(0,1,2,3,4))
     att.put.nc(nc_out, "distr_stuff", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "distr_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-(X,Y,counts,expifit,specialfit)-...")
-    att.put.nc(nc_out, "distr_stuff", "explanation", "NC_CHAR", "distribution values: X, Y, counts, exponential fit, special fit")
+    att.put.nc(nc_out, "distr_stuff", "explanation", "NC_CHAR", "distribution values: X, Y, counts, 4-exponential fit, 5-cdf_data, 6-cdf_expiFit, 8-special fit, 9-cdf_data, 10-cdf_combiFit")
         
     var.put.nc(nc_out,"distr_stuff",distr_stuff)      
  
