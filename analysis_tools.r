@@ -197,8 +197,8 @@ fit_plot_combi <- function(distrs,fitstuff,fit_style,sea,q,state,xUntil=60){
     lines(distrs[8,],col=color[4],lty=1)  
 
     text(50,0.22,paste("b=",round(fitstuff[2],02)),pos=1,col=color[3])                 
-    text(50,0.05,paste("b1=",round(fitstuff[11],02)),pos=1,col=color[4])                 
-    text(50,0.02,paste("b2=",round(fitstuff[13],02)),pos=1,col=color[4])                
+    text(50,0.05,paste("b1=",round(fitstuff[12],02)),pos=1,col=color[4])                 
+    text(50,0.02,paste("b2=",round(fitstuff[14],02)),pos=1,col=color[4])                
 
     plot(NA,xlim=c(0,xUntil),ylim=c(0,1),xlab="days",ylab="",axes=FALSE,frame.plot=TRUE)
     points(distrs[5,],col=color[state],pch=20,cex=0.4)
@@ -210,7 +210,7 @@ fit_plot_combi <- function(distrs,fitstuff,fit_style,sea,q,state,xUntil=60){
     lines(distrs[10,],col=color[4])
     
     text(40,0.4,paste("D=",round(fitstuff[6],03)),col=color[3],pos=1)                 
-    text(40,0.25,paste("D=",round(fitstuff[19],03)),col=color[4],pos=1)               
+    text(40,0.3,paste("D=",round(fitstuff[19],03)),col=color[4],pos=1)               
 }
 
 

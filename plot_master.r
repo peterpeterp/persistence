@@ -44,7 +44,7 @@ plot_maps <- function(period="1950-2014",file="_others",var="other_stuff",sub_au
 	}
 	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
 	if (is.na(pch_points[1])){pch_points=array(15,dim(reihen))}
-	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/","duration_",trendID,"_",name_zusatz,name_reg_zusatz,"_",period,additional_style,".pdf",sep="")
+	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",name_zusatz,name_reg_zusatz,"_",period,additional_style,".pdf",sep="")
 	print(filename_plot)
 	topo_map_plot(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,signi_level=signi_level) #,reihen_sig=attribution_changes[,]
 }
@@ -320,7 +320,6 @@ plot_seasonal_anomaly_maps <- function(period="1950-2014",file="_others",var="ot
 }
 
 plot_reg_table <- function(region_name="ward24",file="_quantiles",var="quantile_stuff",name_zusatz="quanzs",sub_auswahl=c(NA,NA),value_auswahl=c(1,2),sig_auswahl=c(NA,NA),colorRange=c(2,4.5,4,9,10,22,15,35),ID_select=1:24,hlines=c(30)){
-
     attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
     regNumb<-length(unique(attribution[!is.na(attribution)]))
 
@@ -337,7 +336,8 @@ plot_reg_table <- function(region_name="ward24",file="_quantiles",var="quantile_
 	jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
 	color <- jet.colors(101)	
 
-	for (sub in 1:length(sub_auswahl)){
+	for (s in 1:length(sub_auswahl)){
+		sub<-sub_auswahl[s]
 		plot(NA,xlim=c(0,11),ylim=c(0,29),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
 		for (i in 1:length(ID_select)){text(x=0.5,y=i+1.5,label=ID_select[i])}
 		for (sea in season_auswahl){
@@ -346,9 +346,9 @@ plot_reg_table <- function(region_name="ward24",file="_quantiles",var="quantile_
 				for (val in 1:length(value_auswahl)){
 					for (state in 1:2){
 						text(x=(sea-1)*2+state+0.5,y=length(ID_select)+2.5,label=state_names[state])
-						y<-c(values[sea,,state,sub,val],colorRange[(sub-1)*2+1],colorRange[(sub-1)*2+2])
-						y[y>colorRange[(sub-1)*2+2]]=colorRange[(sub-1)*2+2]
-						y[y<colorRange[(sub-1)*2+1]]=colorRange[(sub-1)*2+1]
+						y<-c(values[sea,,state,sub,val],colorRange[(s-1)*2+1],colorRange[(s-1)*2+2])
+						y[y>colorRange[(s-1)*2+2]]=colorRange[(s-1)*2+2]
+						y[y<colorRange[(s-1)*2+1]]=colorRange[(s-1)*2+1]
 						facetcol <- cut(y,101)
 						farben<-color[facetcol]
 			            for (i in 1:length(ID_select)){
@@ -369,6 +369,116 @@ plot_reg_table <- function(region_name="ward24",file="_quantiles",var="quantile_
 		plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 		#image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.9,0.5,0.9))
 		image.plot(legend.only=T,horizontal=TRUE, zlim=range(y[1:length(y)]), col=color,add=FALSE,fill=TRUE,smallplot=c(0.15,0.93,0.1,0.15))
+	}
+	graphics.off()
+}
+
+plot_reg_fit_table <- function(region_name="ward24",file="_quantiles",var="quantile_stuff",name_zusatz="quanzs",value_auswahl=c(12,14,15),val_names=c("1",2),colorRange=c(0,0.4),ID_select=1:24,hlines=c(30)){
+    attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
+    regNumb<-length(unique(attribution[!is.na(attribution)]))
+	valNumb<-length(value_auswahl)
+
+	print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,file,".nc",sep=""))
+	nc<-open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,file,".nc",sep=""))
+	values<-var.get.nc(nc,var)
+	print(dim(values))
+
+	filename_plot<-paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",region_name,"_",name_zusatz,name_reg_zusatz,"_",period,"_",file,"_table.pdf",sep="") ; print(filename_plot)
+	pdf(file=filename_plot,width=valNumb*3,height=6)
+	par(mar=c(3,0,0,0))
+
+	ID_select<-ID_select[length(ID_select):1]
+
+	jet.colors <- colorRampPalette( c("red","yellow","green","blue") )
+	color <- jet.colors(101)	
+
+	if (TRUE){
+		plot(NA,xlim=c(0,valNumb*10+1),ylim=c(0,29),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
+		for (i in 1:length(ID_select)){text(x=0.5,y=i+1.5,label=ID_select[i])}
+		for (sea in season_auswahl){
+			if (valNumb>1){text(x=(sea-1)*2*valNumb+3,y=length(ID_select)+4.5,label=season_names[sea])}
+			if (valNumb==1){text(x=(sea-1)*2*valNumb+2,y=length(ID_select)+3.5,label=season_names[sea])}
+			if (TRUE){
+				for (state in 1:2){
+					if (valNumb>1){text(x=(sea-1)*2*valNumb+(state-1)*valNumb+2,y=length(ID_select)+3.5,label=state_names[state])}
+					if (valNumb==1){text(x=(sea-1)*2*valNumb+(state-1)*valNumb+1.5,y=length(ID_select)+2.5,label=c("c","w")[state])}
+					for (v in 1:valNumb){
+						text(x=(sea-1)*2*valNumb+(state-1)*valNumb+v+0.5,y=length(ID_select)+2.5,label=val_names[v])
+						val<-value_auswahl[v]
+						y<-c(values[sea,,state,val],colorRange[1],colorRange[2])
+						y[y>colorRange[2]]=colorRange[2]
+						y[y<colorRange[1]]=colorRange[1]
+						facetcol <- cut(y,101)
+						farben<-color[facetcol]
+			            for (i in 1:length(ID_select)){
+			            	xPos<-(sea-1)*2*valNumb+(state-1)*valNumb+v
+			            	yPos<-1+i
+			                polygon(x=c(xPos,xPos+1,xPos+1,xPos),y=c(yPos,yPos,yPos+1,yPos+1),border=rgb(1,1,1,0.0),col=farben[ID_select[i]])
+			                if(values[sea,ID_select[i],state,24]>0){polygon(x=c(xPos,xPos+1,xPos+1,xPos),y=c(yPos,yPos,yPos+1,yPos+1),border=rgb(1,1,1,0.0),col="black",density=30)}
+			                if(values[sea,ID_select[i],state,12]<values[sea,ID_select[i],state,14]){points(xPos+0.5,yPos+0.5,pch=17,col="white",cex=1.5)}	     
+			                if(values[sea,ID_select[i],state,21]<0.99){polygon(x=c(xPos,xPos+1,xPos+1,xPos),y=c(yPos,yPos,yPos+1,yPos+1),border="white",col="white")}			                
+			            }
+					}
+				}
+			}
+		}
+
+		# border lines
+		for (sea in 1:4){lines(c(sea*2*valNumb+1,sea*2*valNumb+1),c(2,length(ID_select)+2),lwd=2)}
+		for (i in 1:length(ID_select)){if (ID_select[i] %in% hlines){lines(c(1,valNumb*10+1),c(i+1,i+1),lwd=2)}}
+		lines(c(1,valNumb*10+1),c(length(ID_select)+2,length(ID_select)+2),lwd=2)
+		lines(c(1,valNumb*10+1),c(2,2),lwd=2)
+		lines(c(1,1),c(2,length(ID_select)+2),lwd=2)
+		lines(c(valNumb*10+1,valNumb*10+1),c(2,length(ID_select)+2),lwd=2)
+		par(new=TRUE)
+		plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+		#image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.9,0.5,0.9))
+		image.plot(legend.only=T,horizontal=TRUE, zlim=range(y[1:length(y)]), col=color,add=FALSE,fill=TRUE,smallplot=c(0.15,0.93,0.1,0.15))
+	}
+	graphics.off()
+}
+
+plot_boxplot <- function(quans,x,width,color="white",border="black",density=NA){
+
+    links=x-width/2
+    rechts=x+width/2
+    polygon(x=c(rechts,links,links,rechts),y=c(quans[2],quans[2],quans[4],quans[4]),col=color,border=border,density=density)    
+    #polygon(x=c(rechts,links,links,rechts),y=c(quans[2],quans[2],quans[4],quans[4]),col=color,border=border,density=density)    
+    for (qu in quans[1:5]){
+        lines(c(links,rechts),c(qu,qu),col=border)
+    }
+    lines(c(links,links),quans[c(2,4)],col=border)
+    lines(c(rechts,rechts),quans[c(2,4)],col=border)
+    lines(c(x,x),quans[c(1,2)],lty=2,col=border)
+    lines(c(x,x),quans[c(4,5)],lty=2,col=border)
+}
+
+plot_reg_boxplots <- function(region_name="ward24",file="_quantiles",var="quantile_stuff",name_zusatz="quans",ID_select=1:24,hlines=c(30),ID_length=length(ID_select)){
+
+    attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
+    regNumb<-length(unique(attribution[!is.na(attribution)]))
+
+	print(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,file,".nc",sep=""))
+	nc<-open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,file,".nc",sep=""))
+	values<-var.get.nc(nc,var)
+
+	filename_plot<-paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/","duration_trend_",trendID,"_",region_name,"_",name_zusatz,name_reg_zusatz,"_",period,additional_style,"_boxplot.pdf",sep="") ; print(filename_plot)
+	pdf(file=filename_plot,width=6,height=3)
+	par(mar=c(1,3,1,1))
+
+	colors<-c("blue","red")
+
+		
+	for (sea in season_auswahl){
+		plot(NA,xlim=c(0.5,ID_length),ylim=c(-1,25),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
+		axis(2)
+		for (i in 1:ID_length){
+			for (state in 1:2){
+				plot_boxplot(values[sea,ID_select[i],state,,1],i+0.2*(-1)^state,0.3,color=colors[state])
+			}
+			text(i,0,ID_select[i])
+		}
+		for (i in 1:length(ID_select)){if (ID_select[i] %in% hlines){abline(v=i+0.5,col="gray",lty=2,lwd=2)}}
 	}
 	graphics.off()
 }

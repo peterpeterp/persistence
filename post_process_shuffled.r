@@ -58,8 +58,8 @@ confidence_interval <- function(seasons=1:4){
 }
 
 write_slope_table <- function(signi){
-    print(paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.tex",sep=""))
-    table<-file(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,"_",dataset,"_",ID_name,"_shuffQuant.tex",sep=""))
+    filename<-paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.tex",sep="")
+    table<-file(filename)
     options(scipen=100)
 
     lines=c()
@@ -76,8 +76,8 @@ write_slope_table <- function(signi){
     lines[index<-index+1]="\\begin{document}"
 
     for (period in c("1950-2014","1980-2014")){
-        print(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.nc",sep=""))
-        nc=try(open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.nc",sep="")),silent=TRUE)
+        filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.nc",sep="")
+        nc=try(open.nc(filename),silent=TRUE)
         if (class(nc)!="try-error"){
             original_slopes=var.get.nc(nc,"original_slopes")
             lines[index<-index+1]=paste("\\begin{table}[!h]")
@@ -234,7 +234,7 @@ init <- function(){
     library(quantreg)
     library(RNetCDF)
 
-    period<<-"1980-2014"
+    period<<-"1950-2014"
     trendID<<-"91_7"
 
     dataset<<-"_TMean"
@@ -244,7 +244,7 @@ init <- function(){
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     out_names<<-c(0.5,0.75,0.95,0.99,"mean")
 
-    ID_name<<-"ward23"
+    ID_name<<-"ward24"
     folder<<-paste("/regional/",ID_name,"/",sep="")
     regNumb<<-23
     region_names<<-1:23
@@ -260,12 +260,13 @@ init <- function(){
 }
 
 init()
-#confidence_interval()
+confidence_interval()
 #write_robustness_table()
+write_slope_table(signi=2)
 
-for (trendID in c("91_5","91_7","91_9")){
+for (trendID in c("91_7","91_5","91_9")){
     #plot_confi_intervals()
-    write_slope_table(signi=2)
+    #write_slope_table(signi=2)
 }
 
 

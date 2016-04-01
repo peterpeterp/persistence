@@ -182,7 +182,7 @@ duration_analysis <- function(yearPeriod,season_auswahl=c(1,2,3,4,5),option=c(1,
                     # quantile values and regressions for regions
                     if (option[3]==1){
                         quantile_stuff[sea,q,state,,1]=quantile_pete(y,taus=taus,na.rm=TRUE)
-                        quantile_stuff[sea,q,state,,2]=rq(y~x,taus)$coef[2,]
+                        #quantile_stuff[sea,q,state,,2]=rq(y~x,taus)$coef[2,]
                     }
 
                     # data to be fitted

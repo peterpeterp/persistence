@@ -101,17 +101,17 @@ write_regional_fit_table <- function(region_name="srex",fit_style,region_names,I
                     if (fit_stuff[sea,reg,state,8]<0.99){newline<-paste(newline," &{\\cellcolor{",background_color,"!25}{ }}",sep="")}
                     if (fit_stuff[sea,reg,state,8]>=0.99){newline<-paste(newline," &{\\cellcolor{",background_color,"!75}{",round(fit_stuff[sea,reg,state,i],02),"}}",sep="")}
                 }
-                for (i in c(11,13,15)){
+                for (i in c(12,14,15)){
                     if (fit_stuff[sea,reg,state,24]>0){background_color<-"white"}
                     if (fit_stuff[sea,reg,state,24]<0){background_color<-"green"}
                     if (fit_stuff[sea,reg,state,21]<0.99){newline<-paste(newline," &{\\cellcolor{",background_color,"!25}{ }}",sep="")}
                     if (fit_stuff[sea,reg,state,21]>=0.99){newline<-paste(newline," &{\\cellcolor{",background_color,"!75}{",round(fit_stuff[sea,reg,state,i],02),"}}",sep="")}
                 }
                 for (i in 1){
-                    if (fit_stuff[sea,reg,state,11]>fit_stuff[sea,reg,state,13]){background_color<-"red"}
-                    if (fit_stuff[sea,reg,state,11]<fit_stuff[sea,reg,state,13]){background_color<-"blue"}
+                    if (fit_stuff[sea,reg,state,12]>fit_stuff[sea,reg,state,14]){background_color<-"red"}
+                    if (fit_stuff[sea,reg,state,12]<fit_stuff[sea,reg,state,14]){background_color<-"blue"}
                     if (fit_stuff[sea,reg,state,21]<0.99){newline<-paste(newline," &{\\cellcolor{",background_color,"!25}{ }}",sep="")}
-                    if (fit_stuff[sea,reg,state,21]>=0.99){newline<-paste(newline," &{\\cellcolor{",background_color,"!75}{",round(fit_stuff[sea,reg,state,11]-fit_stuff[sea,reg,state,13],02),"}}",sep="")}
+                    if (fit_stuff[sea,reg,state,21]>=0.99){newline<-paste(newline," &{\\cellcolor{",background_color,"!75}{",round(fit_stuff[sea,reg,state,12]-fit_stuff[sea,reg,state,14],02),"}}",sep="")}
                 }
             }
             newline<-paste(newline,paste("\\","\\",sep=""))
@@ -161,7 +161,7 @@ write_regional_fit_table <- function(region_name="srex",fit_style,region_names,I
         newline<-paste(reg)
         for (sea in 1:4){
             for (state in 1:2){
-                for (i in c(11,13,15)){
+                for (i in c(12,14,15)){
                     if (fit_stuff[sea,reg,state,24]>0){background_intensity<-"!25"}
                     if (fit_stuff[sea,reg,state,24]<0){background_intensity<-"!75"}
                     if (fit_stuff[sea,reg,state,11]>fit_stuff[sea,reg,state,13]){background_color<-"green"}
@@ -193,7 +193,6 @@ write_regional_fit_table <- function(region_name="srex",fit_style,region_names,I
 
 
 write_multi_plot_tex <- function(filename,ID_select=c(20,14)){
-
     scale<-0.7
     types<-c(6,4,5)
 
