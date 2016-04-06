@@ -1,5 +1,5 @@
 
-confidence_interval <- function(seasons=1:4){
+confidence_interval <- function(seasons=1:5){
 	confi_quantiles<-array(NA,dim=c(5,regNumb,2,5,5))
     original_slopes<-array(NA,dim=c(5,regNumb,2,5,5))
     for (sea in seasons){
@@ -8,7 +8,8 @@ confidence_interval <- function(seasons=1:4){
         original_mass<-array(NA,dim=c(100,regNumb,2,5))
         for (id in 1:100){
         	nc <- try(open.nc(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/shuffled/",trendID,dataset,"_",ID_name,"_",period,"_shuffled_trends_",season,"_",id,".nc",sep="")))
-        	if (class(nc)!="try-error"){
+            if (class(nc)=="try-error"){print(paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/shuffled/",trendID,dataset,"_",ID_name,"_",period,"_shuffled_trends_",season,"_",id,".nc",sep=""))}
+            if (class(nc)!="try-error"){
 	        	shuffled<-var.get.nc(nc,"shuffled")
 	        	original<-var.get.nc(nc,"original")
 	        	shuffled_mass[((id-1)*100+1):(id*100),,,]=shuffled
@@ -74,6 +75,7 @@ write_slope_table <- function(signi){
     lines[index<-index+1]="\\definecolor{red}{rgb}{1,0.3,1}"
     lines[index<-index+1]="\\definecolor{blue}{rgb}{0.3,1,1}"
     lines[index<-index+1]="\\begin{document}"
+    lines[index<-index+1]="\\setlength{\\tabcolsep}{4pt}"
 
     for (period in c("1950-2014","1980-2014")){
         filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.nc",sep="")
@@ -81,23 +83,23 @@ write_slope_table <- function(signi){
         if (class(nc)!="try-error"){
             original_slopes=var.get.nc(nc,"original_slopes")
             lines[index<-index+1]=paste("\\begin{table}[!h]")
-            lines[index<-index+1]=paste("\\begin{tabular}{c||cccc||cccc||cccc||cccc}")
-            lines[index<-index+1]=paste("& \\multicolumn{4}{c}{MAM} & \\multicolumn{4}{c}{JJA} & \\multicolumn{4}{c}{SON} & \\multicolumn{4}{c}{DJF}","\\\\")
-            lines[index<-index+1]=paste("& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm} & \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}","\\\\")
-            lines[index<-index+1]=paste("& lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95","\\\\") 
+            lines[index<-index+1]=paste("\\begin{tabular}{c||cccc||cccc||cccc||cccc||cccc}")
+            lines[index<-index+1]=paste("& \\multicolumn{4}{c}{MAM} & \\multicolumn{4}{c}{JJA} & \\multicolumn{4}{c}{SON} & \\multicolumn{4}{c}{DJF} & \\multicolumn{4}{c}{Annual}","\\\\")
+            lines[index<-index+1]=paste("& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm} & \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}","\\\\")
+            lines[index<-index+1]=paste("& lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95 & lr & 95","\\\\") 
             lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
             lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
 
             for (reg in reg_order){
                 newline<-paste(reg)
-                for (sea in 1:4){
+                for (sea in 1:5){
                     for (state in 1:2){
                         for (out in c(5,3)){
                             if (original_slopes[sea,reg,state,out,1]>0 & !is.na(original_slopes[sea,reg,state,out,signi])){color<-"red!70"}
                             if (original_slopes[sea,reg,state,out,1]>0 & is.na(original_slopes[sea,reg,state,out,signi])){color<-"red!25"}
                             if (original_slopes[sea,reg,state,out,1]<0 & !is.na(original_slopes[sea,reg,state,out,signi])){color<-"blue!70"}
                             if (original_slopes[sea,reg,state,out,1]<0 & is.na(original_slopes[sea,reg,state,out,signi])){color<-"blue!25"}
-                            if (abs(original_slopes[sea,reg,state,out,1])<0.000001){color<-"white!25"}
+                            #if (abs(original_slopes[sea,reg,state,out,1])<0.000001){color<-"white!25"}
                
                             if (!is.na(original_slopes[sea,reg,state,out,signi])){newline<-paste(newline,"&{\\cellcolor{",color,"}{X}}",sep="")}
                             if (is.na(original_slopes[sea,reg,state,out,signi])){newline<-paste(newline,"&{\\cellcolor{",color,"}{ }}",sep="")}
@@ -246,8 +248,8 @@ init <- function(){
 
     ID_name<<-"ward24"
     folder<<-paste("/regional/",ID_name,"/",sep="")
-    regNumb<<-23
-    region_names<<-1:23
+    regNumb<<-24
+    region_names<<-1:24
 
     plot_select<<-c(3,4,5,7,11,12,13,14,16,18,20,21)
     reg_order<<-c(1,2,6,10,13,19,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,23)
@@ -262,7 +264,7 @@ init <- function(){
 init()
 confidence_interval()
 #write_robustness_table()
-write_slope_table(signi=2)
+write_slope_table(signi=3)
 
 for (trendID in c("91_7","91_5","91_9")){
     #plot_confi_intervals()

@@ -201,10 +201,9 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
         write_regional_fit_table(region_name=region_name,region_names=region_names,ID_select=ID_select,fit_style="2expo_4:100",ID_length=ID_length,hlines=hlines)
         plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="slopeTab",value_auswahl=c(12,14),val_names=c("b1","b2"),colorRange=c(0.1,0.4),ID_select=ID_select,hlines=hlines)
         plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="threshTab",value_auswahl=c(15),val_names=c(""),colorRange=c(4,15),ID_select=ID_select,hlines=hlines)
-        plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="dBICTab",value_auswahl=c(24),val_names=c(""),colorRange=c(-100,10),ID_select=ID_select,hlines=hlines)
 
         print("MannKendall")
-        #duration_MannKendall(yearPeriod=yearPeriod,folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length,hlines=hlines)
+        duration_MannKendall(yearPeriod=yearPeriod,folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length,hlines=hlines)
 
 
     }
@@ -256,13 +255,13 @@ master_init <- function(id){
     dataset<<-"_TMean"
     trend_style<<-"_mean"
     additional_style<<-""
-    #dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
     ntot<<-length(dat$ID)
     yearLimits<<-c(1980,2014,1950,2014,1950,1980)
     yearLimits<<-c(1950,2014)
 
 
-    season_names<<-c("MAM","JJA","SON","DJF","Annual")
+    season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     state_names<<-c("cold","warm")
 
     taus<<-c(0.05,0.25,0.5,0.75,0.95,0.99)
@@ -293,7 +292,7 @@ plot_init_Had_multiple()
 ###################################################################
 
 #master_gridded_analysis()
-master_gridded_plots()
+#master_gridded_plots()
 
 
 ###################################################################
@@ -311,3 +310,5 @@ master_gridded_plots()
 ###################################################################
 
 #master_special_plots()
+
+plot_all_changes_table(ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),hlines=c(23,20,22,8))

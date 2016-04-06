@@ -102,18 +102,19 @@ duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_sel
     lines[index<-index+1]="\\definecolor{blue}{rgb}{0.3,1,1}"
 
     lines[index<-index+1]="\\begin{document}"
+    lines[index<-index+1]="\\setlength{\\tabcolsep}{4pt}"
 
     lines[index<-index+1]=paste("\\begin{table}[!h]")
-    lines[index<-index+1]=paste("\\begin{tabular}{c||cccc||cccc||cccc||cccc}")
-    lines[index<-index+1]=paste("& \\multicolumn{4}{c}{MAM} & \\multicolumn{4}{c}{JJA} & \\multicolumn{4}{c}{SON} & \\multicolumn{4}{c}{DJF}","\\\\")
-    lines[index<-index+1]=paste("& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm} & \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}","\\\\")
-    lines[index<-index+1]=paste("& mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95","\\\\") 
+    lines[index<-index+1]=paste("\\begin{tabular}{c||cccc||cccc||cccc||cccc||cccc}")
+    lines[index<-index+1]=paste("& \\multicolumn{4}{c}{MAM} & \\multicolumn{4}{c}{JJA} & \\multicolumn{4}{c}{SON} & \\multicolumn{4}{c}{DJF} & \\multicolumn{4}{c}{Annual}","\\\\")
+    lines[index<-index+1]=paste("& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm} & \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm} & \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}","\\\\")
+    lines[index<-index+1]=paste("& m & 95 & m & 95 & m & 95 & m & 95 & m & 95 & m & 95 & m & 95 & m & 95 & m & 95 & m & 95","\\\\") 
     lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
     lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
 
     for (reg in ID_select){
         newline<-paste(reg)
-        for (sea in 1:4){
+        for (sea in 1:5){
             for (state in 1:2){
                 for (i in c(5,2)){
                     if (MK[sea,reg,state,i,1]>0){background_color<-"red"}

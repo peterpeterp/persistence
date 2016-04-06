@@ -3,7 +3,7 @@ shuffle_mat <- function(durMat,years){
     return(durMat[,,,sample(years,years,replace=FALSE)])
 }
 
-trend_analysis <- function(seasons=1,id=2,yearPeriod=c(1950,2014)){
+trend_analysis <- function(seasons=1,id=2,yearPeriod=c(1950,2014),nShuffle=100,actual_nShuffle=100){
     print(id)
     for (sea in seasons){
         season<-season_names[sea]
@@ -21,9 +21,9 @@ trend_analysis <- function(seasons=1,id=2,yearPeriod=c(1950,2014)){
 
         original<-trend_evaluation(durMat=array(binned_dur,c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
 
-        nShuffle<-100
+        
         shuffled<-array(NA,c(nShuffle,ID_length,2,5))
-        for (shuff in 1:nShuffle){
+        for (shuff in 1:actual_nShuffle){
         	cat(paste("--",shuff))
         	shuffled[shuff,,,]<-trend_evaluation(durMat=array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*years)),time_vec=time_vec,ID_select=1:ID_length)
         }
@@ -88,12 +88,16 @@ shuffle_check <- function(seasons=1:2,id=2,yearPeriod=c(1952,2012)){
         time_vec<-rep(1:years,each=periodsInYr)
         binned_dur<-binned_dur[,,,(yearPeriod[1]-1949):(yearPeriod[2]-1949)]
 
-        pdf(paste("../plots/_TMean/shuff_test_",season,".pdf",sep=""))
+        pdf(paste("../plots/_TMean/shuff_test_",season,".pdf",sep=""),width=5,height=3)
+        par(mar=c(3,3,2,2))
         reg<-16
         print(dim(binned_dur))
-        plot(time_vec,array(binned_dur,c(ID_length,2,periodsInYr*years))[reg,2,],pch=20,cex=0.5,col=rgb(0.5,0.5,0.5,0.2))
+        #plot(time_vec,array(binned_dur,c(ID_length,2,periodsInYr*years))[reg,2,],pch=20,cex=0.5,col=rgb(0.5,0.5,0.5,0.2),xlab="",ylab="",frame.plot=TRUE,axes=FALSE)
+        plot(1:60,1:60,pch=20,cex=0.5,col=rgb(0.5,0.5,0.5,0.2),xlab="",ylab="",frame.plot=TRUE,axes=FALSE)
+        axis(2)
+        axis(1,at=c(0,20,40,60),label=c(1950,1970,1990,2010))
 
-        nShuffle<-20
+        nShuffle<-1
         for (shuff in 1:nShuffle){
             cat(paste("--",shuff))
             durMat<-array(shuffle_mat(binned_dur,years),c(ID_length,2,periodsInYr*years))
@@ -125,7 +129,7 @@ ID_name<-"ward24"
 folder<-paste("/regional/",ID_name,"/",sep="")
 period<-"1950-2014"
 
-#shuffle_check(seasons=1:2,id=2,yearPeriod=c(1952,2012))
+#shuffle_check(seasons=2,id=2,yearPeriod=c(1952,2012))
 #shuffle_check(seasons=3:4,id=2,yearPeriod=c(1952,2011))
 #asda
 
@@ -136,7 +140,7 @@ print(id)
 
 
 # MAM, JJA, SON, DJF
-if (TRUE){
+if (FALSE){
     name_id<-0
     for (i in 1:10){
         if (id>50){
@@ -153,6 +157,6 @@ if (TRUE){
 }
 
 # 4seasons
-if (FALSE){
-    trend_analysis(seasons=5,id=id,yearPeriod=c(1953,2010))
+if (TRUE){
+    trend_analysis(seasons=5,id=id,yearPeriod=c(1953,2010),actual_nShuffle=50)
 }

@@ -27,14 +27,17 @@ plot_init_midlat <- function(){
     color_legend<<-"right"
     layout_mat<<-c(NA)
     subIndex<<-c("a","b")
+
+    nbcol<<-101
+
 }
 
 plot_init_EU <- function(){
     paper<<-c(8,5)
-    margins<<-c(2,3,2,5)
+    margins<<-c(0,0,0,0)
 
-    outer_cut<<-0
-    inner_cut<<-0
+    outer_cut<<-10
+    inner_cut<<-1
     
     yAusschnitt<<-c(20,80)
     xAusschnitt<<-c(-30,80)
@@ -53,9 +56,11 @@ plot_init_EU <- function(){
     name_reg_zusatz<<-""
 
     col_row<<-c(1,1)
-    color_legend<<-"right"
+    color_legend<<-"seperate"
     layout_mat<<-c(NA)
     subIndex<<-c("a","b")
+
+    nbcol<<-101
 }
 
 plot_init_Had <- function(){
@@ -85,6 +90,8 @@ plot_init_Had <- function(){
     color_legend<<-"right"
     layout_mat<<-c(NA)
     subIndex<<-c("a","b")
+
+    nbcol<<-101
 }
 
 plot_init_Had_multiple <- function(){
@@ -114,6 +121,8 @@ plot_init_Had_multiple <- function(){
     color_legend<<-"seperate"
     layout_mat<<-c(NA)
     subIndex<<-c("a","b")
+
+    nbcol<<-101
 }
 
 plot_init_multi_midlat <- function(){
@@ -143,4 +152,7 @@ plot_init_multi_midlat <- function(){
     color_legend<<-"seperate"
     layout_mat<<-c(NA)
     subIndex<<-c("a","b")
+
+    nbcol<<-101
 }
+

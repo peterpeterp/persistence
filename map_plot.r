@@ -85,7 +85,6 @@ region_border <- function(ID_select=1:1319,region_name="ward22",border_col="whit
 
 
 put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palette="regenbogen",signi_level=0,i=1,ID_select=1:1319){
-
 	if (length(which(!is.na(points[ID_select])))<3){return(list(y=c(NA),color=c(NA)))}
 	if (length(unique(points[ID_select]))<3){return(list(y=c(NA),color=c(NA)))}
 
@@ -155,7 +154,6 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 		}
 	}
 
-	nbcol <- 101
 
 	if ((length(farb_palette)>1 & farb_palette[1]=="mixed")){
 		farb_palette_loc=farb_palette[3]
@@ -189,7 +187,10 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 	if (farb_palette_loc=="niederschlag"){
 		jet.colors <- colorRampPalette( c( "orange","yellow","green","blue") )
 	}
-	
+
+	if (farb_palette_loc=="dry-wet"){
+		jet.colors <- colorRampPalette( c( "orange","yellow","white","green","blue") )
+	}
 
 	if (farb_palette_loc=="viele"){
 		jet.colors <- colorRampPalette(c(rgb(0.5,0.5,0.5),rgb(1,0.5,0.5,0.5),"black",rgb(0.8,0.5,1),rgb(1,0,0),rgb(0.2,1,0.5),"yellow",rgb(0.5,0.5,1),rgb(1,0.6,1),rgb(0.5,1,1),rgb(0.2,0.5,1)))
@@ -199,6 +200,7 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 		palette=array(c("black","blue","green","yellow","orange","red",rgb(0.5,0.5,0.5,0.5)),nbcol)
 		jet.colors <- colorRampPalette( palette)
 	}
+	print(y)
 	color <- jet.colors(nbcol)	
 	facetcol <- cut(y,nbcol)
 
