@@ -88,61 +88,21 @@ duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_sel
     close.nc(nc_out) 
 
     filename<-paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_MK.tex",sep="") ; print(filename)
-    table<-file(filename)
-    options(scipen=100) ; lines=c() ; index=0
-    
-    lines[index<-index+1]="\\documentclass[a4paper,12pt]{article}"
-    lines[index<-index+1]="\\usepackage{xcolor,colortbl,pgf}"
-    lines[index<-index+1]="\\usepackage{makecell}"
-    lines[index<-index+1]="\\usepackage{geometry}"
-    lines[index<-index+1]="\\geometry{ a4paper, total={190mm,288mm}, left=10mm, top=10mm, }"
+ 
+    signis<-array(NA,c(5,ID_length,2,5,2))
+    signis[,,,1,1][which(MK[,,,2,2]>0.1)]=1
+    signis[,,,4,1][which(MK[,,,2,2]<=0.1)]=1
 
-    lines[index<-index+1]="\\definecolor{white}{rgb}{1,1,1}"
-    lines[index<-index+1]="\\definecolor{red}{rgb}{1,0.3,1}"
-    lines[index<-index+1]="\\definecolor{blue}{rgb}{0.3,1,1}"
+    signis[,,,1,2][which(MK[,,,5,2]>0.1)]=1
+    signis[,,,4,2][which(MK[,,,5,2]<=0.1)]=1
 
-    lines[index<-index+1]="\\begin{document}"
-    lines[index<-index+1]="\\setlength{\\tabcolsep}{4pt}"
 
-    lines[index<-index+1]=paste("\\begin{table}[!h]")
-    lines[index<-index+1]=paste("\\begin{tabular}{c||cccc||cccc||cccc||cccc||cccc}")
-    lines[index<-index+1]=paste("& \\multicolumn{4}{c}{MAM} & \\multicolumn{4}{c}{JJA} & \\multicolumn{4}{c}{SON} & \\multicolumn{4}{c}{DJF} & \\multicolumn{4}{c}{Annual}","\\\\")
-    lines[index<-index+1]=paste("& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm} & \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}& \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm} & \\multicolumn{2}{c}{cold} & \\multicolumn{2}{c}{warm}","\\\\")
-    lines[index<-index+1]=paste("& m & 95 & m & 95 & m & 95 & m & 95 & m & 95 & m & 95 & m & 95 & m & 95 & m & 95 & m & 95","\\\\") 
-    lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
-    lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
+    values<-array(NA,c(5,ID_length,2,2))
+    values[,,,1][which(MK[,,,5,1]>0)]=1
+    values[,,,1][which(MK[,,,5,1]<0)]=-1
+    values[,,,2][which(MK[,,,3,1]>0)]=1
+    values[,,,2][which(MK[,,,3,1]<0)]=-1
 
-    for (reg in ID_select){
-        newline<-paste(reg)
-        for (sea in 1:5){
-            for (state in 1:2){
-                for (i in c(5,2)){
-                    if (MK[sea,reg,state,i,1]>0){background_color<-"red"}
-                    if (MK[sea,reg,state,i,1]<0){background_color<-"blue"}
-                    if (MK[sea,reg,state,i,2]>0.1){background_intesity<-"!15"}
-                    if (MK[sea,reg,state,i,2]<=0.1){background_intesity<-"!50"}
-                    #if (MK[sea,reg,state,i,2]<=0.05){background_intesity<-"!75"}
-
-                    if (MK[sea,reg,state,i,2]>0.1){newline<-paste(newline," &{\\cellcolor{",background_color,"!25}{ }}",sep="")}
-                    if (MK[sea,reg,state,i,2]<=0.1){newline<-paste(newline," &{\\cellcolor{",background_color,"!75}{X}}",sep="")}
-
-                    #newline<-paste(newline," &{\\cellcolor{",background_color,background_intesity,"}{",round(MK[sea,reg,state,i,1],03),"}}",sep="")
-                }              
-            }
-        }
-        lines[index<-index+1]=paste(newline,"\\\\")
-        if (reg %in% hlines){
-            lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
-            lines[index<-index+1]="\\Xhline{2\\arrayrulewidth}"
-        }
-    }
-    lines[index<-index+1]=paste("\\end{tabular}")
-    lines[index<-index+1]=paste("\\end{table}")
-    lines[index<-index+1]=paste("\\vspace{0cm}")
-
-    lines[index<-index+1]="\\newpage"
-
-    lines[index<-index+1]="\\end{document}"
-    writeLines(lines, table)
-    close(table)
+    nbcol<<-2
+    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_MK.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen",ID_select=ID_select,hlines=hlines,style="yn")
 }

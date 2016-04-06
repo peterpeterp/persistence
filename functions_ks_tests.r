@@ -258,34 +258,28 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
     }
     graphics.off()
 
-    signis<-ks_test[,,,1]
-    signis<-array(signis,c(5,ID_length,2,5))
-    write_tex_table(filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff.tex",sep=""),outs=c(5,2),values=quantiles[2,,,,,1]-quantiles[1,,,,,1],signis=signis,header=paste("& mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95","\\\\"))
+    signis<-array(NA,c(5,ID_length,2,5))
+    signis[,,,1][which(ks_test[,,,6]>0.1)]=1
 
-    signis<-ks_test[,,,1]
-    signis2<-ks_test[,,,6]
-    signis[which(signis-signis2<0)]=signis2[which(signis-signis2<0)]
-    signis<-array(signis,c(5,ID_length,2,5))
+    values<-array(NA,c(5,ID_length,2,2))
+    values[,,,1]=quantiles[2,1:5,,,7,1]-quantiles[1,1:5,,,7,1]
+    values[,,,2]=quantiles[2,1:5,,,5,1]-quantiles[1,1:5,,,5,1]
 
-    write_tex_table(filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff_doubleTest.tex",sep=""),outs=c(5,2),values=quantiles[2,,,,,1]-quantiles[1,,,,,1],signis=signis,header=paste("& mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95 & mn & 95","\\\\"))
+    plot_reg_table_general(values=values,signis=array(signis,c(5,ID_length,2,5,2)),filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-2,2),farb_palette="lila-gruen",ID_select=ID_select,hlines=hlines)
 
-    values<-array(NA,c(6,ID_length,2,2))
-    values[,,,1]=fit_params[2,,,,12]-fit_params[1,,,,12]
-    values[,,,2]=fit_params[2,,,,14]-fit_params[1,,,,14]
+    signis[,,,3][which(fit_params[1,1:5,,,21]<0.99)]=1
+    signis[,,,3][which(fit_params[2,1:5,,,21]<0.99)]=1
 
-    notAccepted<-array(NA,c(6,ID_length,2))
-    #notAccepted[which(fit_params[1,,,,24]>0)]=1
-    #notAccepted[which(fit_params[2,,,,24]>0)]=1
-    notAccepted[which(fit_params[1,,,,21]<0.99)]=1
-    notAccepted[which(fit_params[2,,,,21]<0.99)]=1
-    notAccepted<-array(notAccepted,c(6,ID_length,2,2))
+    values<-array(NA,c(5,ID_length,2,2))
+    values[,,,1]=fit_params[2,1:5,,,12]-fit_params[1,1:5,,,12]
+    values[,,,2]=fit_params[2,1:5,,,14]-fit_params[1,1:5,,,14]
 
-    write_tex_table(filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_fit_diff_doubleTest.tex",sep=""),outs=c(1,2),values=values,signis=signis,header=paste("&b1&b2&b1&b2&b1&b2&b1&b2&b1&b2&b1&b2&b1&b2&b1&b2","\\\\"))
-    plot_reg_table_general(values=values,signis=signis,notAccepted=notAccepted,filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_slopeDiff.pdf",sep=""),val_names=c("b1","b2"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen-inv",ID_select=ID_select,hlines=hlines)
+    plot_reg_table_general(values=values,signis=array(signis,c(5,ID_length,2,5,2)),filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_slopeDiff.pdf",sep=""),val_names=c("b1","b2"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen-inv",ID_select=ID_select,hlines=hlines)
 
-    values<-array(NA,c(6,ID_length,2,1))
-    values[,,,1]=fit_params[2,,,,15]-fit_params[1,,,,15]    
-    plot_reg_table_general(values=values,signis=signis,notAccepted=notAccepted,filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_threshDiff.pdf",sep=""),val_names=c(""),region_name="ward24",colorRange=c(-4,4),farb_palette="lila-gruen-inv",ID_select=ID_select,hlines=hlines)
+    values<-array(NA,c(5,ID_length,2,1))
+    values[,,,1]=fit_params[2,1:5,,,15]-fit_params[1,1:5,,,15]    
+
+    plot_reg_table_general(values=values,signis=array(signis,c(5,ID_length,2,5,1)),filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_threshDiff.pdf",sep=""),val_names=c(""),region_name="ward24",colorRange=c(-4,4),farb_palette="lila-gruen-inv",ID_select=ID_select,hlines=hlines)
 
 }
 
