@@ -254,7 +254,7 @@ master_init <- function(id){
     dataset<<-"_TMean"
     trend_style<<-"_mean"
     additional_style<<-""
-    #dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
     ntot<<-length(dat$ID)
     yearLimits<<-c(1980,2014,1950,2014,1950,1980)
     yearLimits<<-c(1950,2014)

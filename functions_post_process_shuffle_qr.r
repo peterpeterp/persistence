@@ -169,22 +169,25 @@ confidence_interval <- function(seasons=1:5){
     close.nc(nc_out)     
 }
 
-write_slope_table <- function(signi){
+write_slope_table <- function(){
     filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuffQuant.nc",sep="")
     original_slopes<-var.get.nc(open.nc(filename),"original_slopes")
 
-    signis<-array(NA,c(5,ID_length,2,5,2))
-    signis[,,,1,1][which(is.na(original_slopes[,,,5,signi]))]=1
-    signis[,,,4,1][which(!is.na(original_slopes[,,,5,signi]))]=1
-    signis[,,,1,2][which(is.na(original_slopes[,,,3,signi]))]=1
-    signis[,,,4,2][which(!is.na(original_slopes[,,,3,signi]))]=1
+    signis<-array(NA,c(5,regNumb,2,5,2))
+    #signis[,,,1,1][which(is.na(original_slopes[,,,5,signi]))]=1
+    signis[,,,4,1][which(!is.na(original_slopes[,,,5,3]))]=1
+    signis[,,,5,1][which(!is.na(original_slopes[,,,5,2]))]=1
 
-    values<-array(NA,c(5,ID_length,2,2))
+    #signis[,,,1,2][which(is.na(original_slopes[,,,3,signi]))]=1
+    signis[,,,4,2][which(!is.na(original_slopes[,,,3,3]))]=1
+    signis[,,,5,2][which(!is.na(original_slopes[,,,3,2]))]=1
+
+    values<-array(NA,c(5,regNumb,2,2))
     values[,,,1]=original_slopes[,,,5,1]
     values[,,,2]=original_slopes[,,,3,1]
 
     nbcol<<-101
-    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_slope.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen",ID_select=ID_select,hlines=hlines)
+    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_slope.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen",ID_select=reg_order,hlines=hlines)
 }
 
 
@@ -220,7 +223,7 @@ init <- function(){
 init()
 #confidence_interval()
 #write_robustness_table()
-write_slope_table(signi=3)
+write_slope_table()
 
 for (trendID in c("91_7","91_5","91_9")){
     #plot_confi_intervals()

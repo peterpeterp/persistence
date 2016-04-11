@@ -90,11 +90,13 @@ duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_sel
     filename<-paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_MK.tex",sep="") ; print(filename)
  
     signis<-array(NA,c(5,ID_length,2,5,2))
-    signis[,,,1,1][which(MK[,,,2,2]>0.1)]=1
+    #signis[,,,1,1][which(MK[,,,2,2]>0.1)]=1
     signis[,,,4,1][which(MK[,,,2,2]<=0.1)]=1
+    signis[,,,5,1][which(MK[,,,2,2]<=0.05)]=5
 
-    signis[,,,1,2][which(MK[,,,5,2]>0.1)]=1
+    #signis[,,,1,2][which(MK[,,,5,2]>0.1)]=1
     signis[,,,4,2][which(MK[,,,5,2]<=0.1)]=1
+    signis[,,,5,2][which(MK[,,,5,2]<=0.05)]=1
 
 
     values<-array(NA,c(5,ID_length,2,2))

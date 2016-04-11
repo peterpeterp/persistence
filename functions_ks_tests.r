@@ -257,30 +257,6 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
         }
     }
     graphics.off()
-
-    signis<-array(NA,c(5,ID_length,2,5))
-    signis[,,,1][which(ks_test[,,,6]>0.1)]=1
-
-    values<-array(NA,c(5,ID_length,2,2))
-    values[,,,1]=quantiles[2,1:5,,,7,1]-quantiles[1,1:5,,,7,1]
-    values[,,,2]=quantiles[2,1:5,,,5,1]-quantiles[1,1:5,,,5,1]
-
-    plot_reg_table_general(values=values,signis=array(signis,c(5,ID_length,2,5,2)),filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-2,2),farb_palette="lila-gruen",ID_select=ID_select,hlines=hlines)
-
-    signis[,,,3][which(fit_params[1,1:5,,,21]<0.99)]=1
-    signis[,,,3][which(fit_params[2,1:5,,,21]<0.99)]=1
-
-    values<-array(NA,c(5,ID_length,2,2))
-    values[,,,1]=fit_params[2,1:5,,,12]-fit_params[1,1:5,,,12]
-    values[,,,2]=fit_params[2,1:5,,,14]-fit_params[1,1:5,,,14]
-
-    plot_reg_table_general(values=values,signis=array(signis,c(5,ID_length,2,5,2)),filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_slopeDiff.pdf",sep=""),val_names=c("b1","b2"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen-inv",ID_select=ID_select,hlines=hlines)
-
-    values<-array(NA,c(5,ID_length,2,1))
-    values[,,,1]=fit_params[2,1:5,,,15]-fit_params[1,1:5,,,15]    
-
-    plot_reg_table_general(values=values,signis=array(signis,c(5,ID_length,2,5,1)),filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_threshDiff.pdf",sep=""),val_names=c(""),region_name="ward24",colorRange=c(-4,4),farb_palette="lila-gruen-inv",ID_select=ID_select,hlines=hlines)
-
 }
 
 
@@ -295,5 +271,7 @@ library(dgof)
 ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24)
 ID_length=24
 hlines=c(23,20,22,8)
+
+
 
 distribution_comparision(ID_name="ward24",periods=c("1950-1980","1980-2014"),ID_select=ID_select,ID_length=ID_length,hlines=hlines)

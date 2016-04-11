@@ -79,7 +79,6 @@ plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_
 	if (farb_palette=="lila-gruen"){jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(1,1,1),rgb(1,0.7,0.7),rgb(1,0.5,1)))}
 	if (farb_palette=="lila-gruen-inv"){jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(1,1,1),rgb(1,0.7,0.7),rgb(1,0.5,1))[5:1])}
 	color <- jet.colors(nbcol)	
-	print(color)
 
 	plot(NA,xlim=c(0,valNumb*10+1),ylim=c(0,29),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
 	for (i in 1:length(ID_select)){text(x=0.5,y=i+1.5,label=ID_select[i])}
@@ -98,7 +97,6 @@ plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_
 				facetcol <- cut(y,nbcol)
 				#print(facetcol)
 				farben<-color[facetcol]
-				print(farben)
 			    for (i in 1:length(ID_select)){
 			        xPos<-(sea-1)*2*valNumb+(state-1)*valNumb+v
 			        yPos<-1+i
@@ -112,6 +110,9 @@ plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_
 			            points(xPos+0.5,yPos+0.5,pch=17,cex=1.5,col="white")	     
 					}
 			        if(!is.na(signis[sea,ID_select[i],state,4,val])){
+			            points(xPos+0.5,yPos+0.5,pch=20,cex=1.5,col="black")	     
+					}			        
+					if(!is.na(signis[sea,ID_select[i],state,5,val])){
 			            points(xPos+0.5,yPos+0.5,pch=17,cex=1.5,col="black")	     
 					}
 				}
@@ -129,7 +130,7 @@ plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_
 	par(new=TRUE)
 	plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 
-	#image.plot(legend.only=T,horizontal=TRUE, zlim=range(y[1:length(y)]), col=color,add=FALSE,fill=TRUE,smallplot=c(0.15,0.93,0.1,0.15))
+	if (nbcol>5){image.plot(legend.only=T,horizontal=TRUE, zlim=range(y[1:length(y)]), col=color,add=FALSE,fill=TRUE,smallplot=c(0.15,0.93,0.1,0.15))}
 
 	graphics.off()
 }
