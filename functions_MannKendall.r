@@ -55,11 +55,15 @@ duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_sel
     filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_yearly_values.nc",sep="") ; print(filename)
     yearly_values<-var.get.nc(open.nc(filename),"yearly_values")
 
+    pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_yearlyAverages.pdf",sep=""),width=6,height=4)
+    color=c(rgb(0,1,0),rgb(1,0.5,0),rgb(1,0,0),"black","blue")
     MK=array(NA,c(5,ID_length,2,5,2))
     for (sea in 1:5){
     	for (q in ID_select){
     		for (state in 1:2){
+                plot(NA,xlim=c(0,65),ylim=c(0,60),xlab="",ylab="",main=paste(sea,q,state))
     			for (out in c(1,2,3,5)){
+                    lines(1:65,yearly_values[sea,q,state,,out],col=color[out])
     				tmp<-MannKendall(yearly_values[sea,q,state,(yearPeriod[1]-dat$year[1]+1):(yearPeriod[2]-dat$year[1]+1),out])
     				MK[sea,q,state,out,1]=tmp$tau
     				MK[sea,q,state,out,2]=tmp$sl
@@ -67,6 +71,7 @@ duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_sel
     		}
     	}
     }
+    graphics.off()
 
     filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_MK.nc",sep="") ; print(filename)
     nc_out <- create.nc(filename)

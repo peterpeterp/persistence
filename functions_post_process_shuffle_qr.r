@@ -195,7 +195,7 @@ init <- function(){
     library(quantreg)
     library(RNetCDF)
 
-    period<<-"1950-2014"
+    period<<-"1980-2014"
     trendID<<-"91_7"
 
     dataset<<-"_TMean"
@@ -221,7 +221,7 @@ init <- function(){
 }
 
 init()
-#confidence_interval()
+confidence_interval()
 #write_robustness_table()
 write_slope_table()
 

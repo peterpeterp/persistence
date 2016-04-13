@@ -103,8 +103,9 @@ plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_
 			        polygon(x=c(xPos,xPos+1,xPos+1,xPos),y=c(yPos,yPos,yPos+1,yPos+1),border=rgb(1,1,1,0.0),col=farben[ID_select[i]])
 			        if(!is.na(signis[sea,ID_select[i],state,1,val])){polygon(x=c(xPos,xPos+1,xPos+1,xPos),y=c(yPos,yPos,yPos+1,yPos+1),border=rgb(1,1,1,0.0),col="white",density=30)}	     
 			        if(!is.na(signis[sea,ID_select[i],state,2,val])){
-			            polygon(x=c(xPos,xPos+1,xPos+1,xPos),y=c(yPos,yPos,yPos+1,yPos+1),border=rgb(1,1,1,0.0),col="white")
-			            points(xPos+0.5,yPos+0.5,pch=8,cex=1.5)	     
+			            #polygon(x=c(xPos,xPos+1,xPos+1,xPos),y=c(yPos,yPos,yPos+1,yPos+1),border=rgb(1,1,1,0.0),col="white")
+			            polygon(x=c(xPos,xPos+1,xPos+1,xPos),y=c(yPos,yPos,yPos+1,yPos+1),border=rgb(1,1,1,0.0),col="black",density=30)
+			            #points(xPos+0.5,yPos+0.5,pch=8,cex=1.5)	     
 					}
 			        if(!is.na(signis[sea,ID_select[i],state,3,val])){
 			            points(xPos+0.5,yPos+0.5,pch=17,cex=1.5,col="white")	     
@@ -113,7 +114,7 @@ plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_
 			            points(xPos+0.5,yPos+0.5,pch=20,cex=1.5,col="black")	     
 					}			        
 					if(!is.na(signis[sea,ID_select[i],state,5,val])){
-			            points(xPos+0.5,yPos+0.5,pch=17,cex=1.5,col="black")	     
+			            points(xPos+0.5,yPos+0.5,pch=6,cex=1.5,col="black")	     
 					}
 				}
 			}

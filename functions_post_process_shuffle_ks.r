@@ -2,6 +2,16 @@
 confidence_interval <- function(seasons=1:5){
     confi_quantiles<-array(NA,dim=c(5,regNumb,2,2,5))
     original_ks<-array(NA,dim=c(5,regNumb,2,2,5))
+
+    pdf(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_KS.pdf",sep=""),width=3,height=3)
+    par(mar=c(3, 3, 3, 3) + 0.1)  
+    color=c(rgb(0.7,0.2,0.7),rgb(0.5,0.7,0.5))
+    ymax<-2000
+    plot(NA,xlab="",ylim=c(0,ymax),xlim=c(0,0.2),ylab="",axes=FALSE,frame.plot=TRUE,cex=0.5) ; at_=axis(1,labels=FALSE,col="black") ; if (length(at_)>4){at_=at_[2:(length(at_)-1)]} ; axis(1,at=at_)
+    plot(NA,xlab="",ylim=c(0,ymax),xlim=c(0,0.2),ylab="",axes=FALSE,frame.plot=TRUE,cex=0.5) ; at_=axis(3,labels=FALSE,col="black") ; if (length(at_)>4){at_=at_[2:(length(at_)-1)]} ; axis(3,at=at_)
+    plot(NA,xlab="",ylim=c(0,ymax),xlim=c(0,0.2),ylab="",axes=FALSE,frame.plot=TRUE,cex=0.5) ; at_=axis(2,labels=FALSE,col="black") ; if (length(at_)>4){at_=at_[2:(length(at_)-1)]} ; axis(2,at=at_)
+    plot(NA,xlab="",ylim=c(0,ymax),xlim=c(0,0.2),ylab="",axes=FALSE,frame.plot=TRUE,cex=0.5) ; at_=axis(4,labels=FALSE,col="black") ; if (length(at_)>4){at_=at_[2:(length(at_)-1)]} ; axis(4,at=at_)
+
     for (sea in seasons){
         season<-season_names[sea]
         shuffled_mass<-array(NA,dim=c(10000,regNumb,2,2))
@@ -19,10 +29,23 @@ confidence_interval <- function(seasons=1:5){
 
         for (q in 1:regNumb){
             for (state in 1:2){
+                plot(NA,xlim=c(0,1),ylim=c(0,1),xlab="",ylab="",axes=FALSE,frame.plot=FALSE) ; text(0.5,0.5,paste(season_names[sea],q,state_names[state]))
                 for (out in c(1,2)){
                     confi_quantiles[sea,q,state,out,]=quantile(shuffled_mass[,q,state,out],c(0.5,0.75,0.9,0.95,0.99),na.rm=TRUE)
                     if (original_ks[sea,q,state,out,1]>confi_quantiles[sea,q,state,out,3]){original_ks[sea,q,state,out,3]=-0.1}
                     if (original_ks[sea,q,state,out,1]>confi_quantiles[sea,q,state,out,4]){original_ks[sea,q,state,out,2]=-0.05}
+                    
+                    hist(shuffled_mass[,q,state,out],br=seq(0,0.2,0.005),ylim=c(0,ymax),xlim=c(0,0.2),main="",ylab="",xlab="",axes=FALSE,col=color[out],border=color[out])
+                    abline(v=confi_quantiles[sea,q,state,out,3],lty=3,col="gray")
+                    abline(v=confi_quantiles[sea,q,state,out,4],lty=2,col="gray")
+                    abline(v=original_ks[sea,q,state,out,1],lty=1,col="black")
+
+                    if (out==1){text(0.085,1800,expression('KS'['full']),col="black",pos=4)}
+                    if (out==2){text(0.07,1800,expression('KS'['upper']),col="black",pos=4)}
+                    if (original_ks[sea,q,state,out,1]<confi_quantiles[sea,q,state,out,3]){text(0.135,1800,"<90%",pos=4)}
+  
+                    if (original_ks[sea,q,state,out,1]>confi_quantiles[sea,q,state,out,3] & original_ks[sea,q,state,out,1]<confi_quantiles[sea,q,state,out,4]){text(0.135,1800,">90%",pos=4)}
+                    if (original_ks[sea,q,state,out,1]>confi_quantiles[sea,q,state,out,4]){text(0.135,1800,">95%",pos=4)}
                 }
             }
         }
@@ -57,10 +80,11 @@ confidence_interval <- function(seasons=1:5){
     var.put.nc(nc_out,"original_ks",original_ks) 
     var.put.nc(nc_out,"confi_quantiles",confi_quantiles) 
 
-    close.nc(nc_out)     
+    close.nc(nc_out)
+    graphics.off()     
 }
 
-plot_distr_compa_table <- function(signi){
+plot_distr_compa_table <- function(){
 
     filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuff_ks.nc",sep="")
     original_ks<-var.get.nc(open.nc(filename),"original_ks")
@@ -83,24 +107,44 @@ plot_distr_compa_table <- function(signi){
         distrs[i,,,,,]=var.get.nc(open.nc(filename),"distr_stuff")
     }
 
-    signis<-array(NA,c(5,ID_length,2,5))
-    signis[,,,1][which(is.na(original_ks[,,,2,signi]))]=1
-    signis[,,,4][which(!is.na(original_ks[,,,2,signi]))]=1
-    signis[,,,3][which(!is.na(original_ks[,,,1,signi]))]=1
-    print(signis)
+    signis<-array(NA,c(5,ID_length,2,5,2))
+    #signis[,,,1][which(is.na(original_ks[,,,2,signi]))]=1
+    signis[,,,4,2][which(!is.na(original_ks[,,,2,3]))]=1
+    signis[,,,5,2][which(!is.na(original_ks[,,,2,2]))]=1
+
+    signis[,,,4,1][which(!is.na(original_ks[,,,1,3]))]=1
+    signis[,,,5,1][which(!is.na(original_ks[,,,1,2]))]=1
+
+    print(length(which(signis[,,,4,]==1)))
 
     values<-array(NA,c(5,ID_length,2,2))
     values[,,,1]=quantiles[2,1:5,,,7,1]-quantiles[1,1:5,,,7,1]
     values[,,,2]=quantiles[2,1:5,,,5,1]-quantiles[1,1:5,,,5,1]
 
-    plot_reg_table_general(values=values,signis=array(signis,c(5,ID_length,2,5,2)),filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-2,2),farb_palette="lila-gruen",ID_select=ID_select,hlines=hlines)
+    nbcol<<-101
+    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-2,2),farb_palette="lila-gruen",ID_select=ID_select,hlines=hlines)
 
-    signis[,,,3][which(fit_params[1,1:5,,,21]<0.99)]=1
-    signis[,,,3][which(fit_params[2,1:5,,,21]<0.99)]=1
+    signis[,,,3,1][which(fit_params[1,1:5,,,21]<0.99)]=1
+    signis[,,,3,2][which(fit_params[1,1:5,,,21]<0.99)]=1
+    signis[,,,3,1][which(fit_params[2,1:5,,,21]<0.99)]=1
+    signis[,,,3,2][which(fit_params[2,1:5,,,21]<0.99)]=1
+
+    signis[,,,2,1][which(fit_params[1,1:5,,,24]>0)]=1
+    signis[,,,2,2][which(fit_params[1,1:5,,,24]>0)]=1
+    signis[,,,2,1][which(fit_params[2,1:5,,,24]>0)]=1
+    signis[,,,2,2][which(fit_params[2,1:5,,,24]>0)]=1
+
+    #nur noch upper
+    signis[,,,4,1]=NA
+    signis[,,,5,1]=NA
+    signis[,,,4,1][which(!is.na(original_ks[,,,2,3]))]=1
+    signis[,,,5,1][which(!is.na(original_ks[,,,2,2]))]=1
 
     values<-array(NA,c(5,ID_length,2,2))
     values[,,,1]=fit_params[2,1:5,,,12]-fit_params[1,1:5,,,12]
     values[,,,2]=fit_params[2,1:5,,,14]-fit_params[1,1:5,,,14]
+
+    fit_params<<-fit_params
 
     plot_reg_table_general(values=values,signis=array(signis,c(5,ID_length,2,5,2)),filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_slopeDiff.pdf",sep=""),val_names=c("b1","b2"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen-inv",ID_select=ID_select,hlines=hlines)
 
@@ -146,9 +190,9 @@ init <- function(){
 }
 
 init()
-#confidence_interval()
+confidence_interval()
 #write_robustness_table()
-plot_distr_compa_table(signi=3)
+plot_distr_compa_table()
 
 for (trendID in c("91_7","91_5","91_9")){
     #plot_confi_intervals()

@@ -200,7 +200,6 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 		palette=array(c("black","blue","green","yellow","orange","red",rgb(0.5,0.5,0.5,0.5)),nbcol)
 		jet.colors <- colorRampPalette( palette)
 	}
-	print(y)
 	color <- jet.colors(nbcol)	
 	facetcol <- cut(y,nbcol)
 
