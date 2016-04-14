@@ -10,9 +10,11 @@ detrend <- function(y,x){
 	return(list(detrended=detrend,lr=lr))
 }
 
+
+
 create_eke <- function(){
 	dat=dat_load("../data/HadGHCND_TX_data3D.day1-365.1950-2014.nc")
-	nc=open.ncdf("../data/sonstiges/eke/EKE_ERA_Interim_1979-2014_calendar96x72.nc")
+	nc=open.ncdf("../data/sonstiges/eke/EKE_ERA_Interim_1979-2014_calendar96x73.nc")
 	pressure_level=get.var.ncdf(nc,"levelist")
 
 	lvls=length(pressure_level)
@@ -121,12 +123,57 @@ analyse_eke <- function(yearPeriod=c(1979,2014),yearshift=1978){
 }
 
 
+plot_ekes <- function(){
+	reihen<-array(NA,c(5,ntot))
+	reihen_sig<-array(NA,c(5,ntot))
+	for (sea in 1:5){
+		season<-season_names[sea]
+		nc<-open.nc(paste("../data/eke/eke_analysis_",season,".nc",sep=""))
+		reihen[sea,]=var.get.nc(nc,"LR")[,1]
+		reihen_sig[sea,]=var.get.nc(nc,"LR_sig")[,1]
+	}
+	topo_map_plot(filename=paste("../plots/eke/eke_1979-2014_LR.pdf",sep=""),reihen=reihen,reihen_sig=reihen_sig,farb_mitte=c(-0.04,0.04),farb_palette="lila-gruen",titel=c(""))
+
+	for (sea in 1:5){
+		season<-season_names[sea]
+		nc<-open.nc(paste("../data/eke/eke_analysis_",season,".nc",sep=""))
+		reihen[sea,]=var.get.nc(nc,"MK")[,1]
+		reihen_sig[sea,]=var.get.nc(nc,"MK_sig")[,1]
+	}
+	topo_map_plot(filename=paste("../plots/eke/eke_1979-2014_MK.pdf",sep=""),reihen=reihen,reihen_sig=reihen_sig,farb_mitte="0",farb_palette="lila-gruen",titel=c(""))
+}
+
+
+
+
+
+
+master_init <- function(id=7){
+    source("map_plot.r")
+    source("inits_plot.r")
+
+    library(RNetCDF)
+    library(SDMTools)
+    library(fields)
+
+    dataset<<-"_TMean"
+    #dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    ntot<<-length(dat$ID)
+
+    season_names<<-c("MAM","JJA","SON","DJF","4seasons")
+}
+
+master_init(id)
+plot_init_multi_SH()
+#plot_init_Had_multiple()
+
+plot_ekes()
 
 #create_eke()
 #analyse_eke()
 
 #eke_markov_correl("91_5",states=3,transition_names="cc nc wc cn nn wn cw nw ww")
-eke_markov_correl("91_5",states=2,transition_names="cc wc cw ww",stations=488,plot=TRUE)
+#eke_markov_correl("91_5",states=2,transition_names="cc wc cw ww",stations=488,plot=TRUE)
 
 
 #eke_duration_correl("91_5",states=3,stations=488,plot=TRUE)
