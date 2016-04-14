@@ -44,7 +44,7 @@ plot_maps <- function(period="1950-2014",file="_others",var="other_stuff",sub_au
 	}
 	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
 	if (is.na(pch_points[1])){pch_points=array(15,dim(reihen))}
-	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",name_zusatz,name_reg_zusatz,"_",period,additional_style,".pdf",sep="")
+	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",name_zusatz,name_reg_zusatz,"_",period,"_",name_style,".pdf",sep="")
 	print(filename_plot)
 	topo_map_plot(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,signi_level=signi_level) #,reihen_sig=attribution_changes[,]
 }
@@ -203,7 +203,7 @@ plot_reg_maps <- function(region_name="ward23",file="_others",var="other_stuff",
 		}
 	}
 	if (length(farb_mitte)==1){farb_mitte_end=farb_mitte}
-	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/","duration_trend_",trendID,"_",region_name,"_",name_zusatz,name_reg_zusatz,"_",period,additional_style,".pdf",sep="")
+	filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/","duration_trend_",trendID,"_",region_name,"_",name_zusatz,name_reg_zusatz,"_",period,name_style,".pdf",sep="")
 	print(filename_plot)
 	topo_map_plot(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen_sig,titel=titel,farb_mitte=farb_mitte_end,farb_palette=farb_palette,signi_level=signi_level)
 }

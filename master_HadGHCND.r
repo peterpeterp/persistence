@@ -8,7 +8,7 @@
 ###################################################################
 
 master_nas <- function(){
-    if (FALSE){
+    if (TRUE){
         # count nas
         naRatio=array(NA,c(5,ntot))
         for (q in 1:ntot){naRatio[1,q]<-length(which(is.na(dat$tas[q,,])))/(365*length(dat$year))}
@@ -17,7 +17,7 @@ master_nas <- function(){
         naRatio[4,which(naRatio[1,]<0.1)]=naRatio[1,which(naRatio[1,]<0.1)]
         naRatio[5,which(naRatio[1,]<0.01)]=naRatio[1,which(naRatio[1,]<0.01)]
         
-        topo_map_plot(filename=paste("../plots/",dataset,"/na_ratio.pdf",sep=""),reihen=array(naRatio[1,],c(1,ntot)),farb_mitte="mean",farb_palette="regenbogen",titel=c(""))
+        topo_map_plot(filename=paste("../plots/",dataset,"/na_ratio.pdf",sep=""),reihen=array(naRatio[1,],c(1,ntot)),farb_mitte=c(0,0.7),farb_palette="weiss-rot",titel=c(""))
     }
 
     if (FALSE){
@@ -36,7 +36,7 @@ master_nas <- function(){
         calc_global_dur(ind=naseries,states=c(0,1),filename=paste("../data/",dataset,"/na_duration.nc",sep=""))
     }
 
-    if (FALSE){
+    if (TRUE){
         if (FALSE){
             nc=open.nc(paste("../data/",dataset,"/na_duration.nc",sep=""))
             dur<<-var.get.nc(nc,"dur")
@@ -61,7 +61,7 @@ master_nas <- function(){
 
 
         topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect_increase.pdf",sep=""),reihen=array(intersect_increase[2,],c(1,ntot)),farb_mitte="0",farb_palette="lila-gruen")
-        topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect.pdf",sep=""),reihen=array(intersect_increase[1,],c(1,ntot)),farb_mitte="mean",farb_palette="regenbogen")
+        topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect.pdf",sep=""),reihen=array(intersect_increase[1,],c(1,ntot)),farb_mitte=c(0,1500),farb_palette="weiss-rot")
 
     }
 
@@ -199,11 +199,11 @@ master_gridded_plots <- function(){
 
         #others
         #plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
-        #plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c(""),name_zusatz="lr",period=period,signi_level=0.05,farb_mitte=c(-0.05,0.05),farb_palette="lila-gruen")
+        plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c(""),name_zusatz="lr",period=period,signi_level=0.05,farb_mitte=c(-0.1,0.1),farb_palette="lila-gruen")
 
         # quantiles
         #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),name_zusatz="qu_95",farb_mitte=c(8,28),farb_palette="regenbogen")
-        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_95",farb_mitte=c(-0.3,0.3),signi_level=0.05)
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_95",farb_mitte=c(-0.4,0.4),signi_level=0.05)
         plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(1),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_75",farb_mitte=c(-0.2,0.2),signi_level=0.05)
         
         #fits
@@ -316,7 +316,7 @@ master_init <- function(id){
     #dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
     ntot<<-length(dat$ID)
     yearLimits<<-c(1980,2014,1950,2014,1950,1980)
-    #yearLimits<<-c(1950,2014)
+    yearLimits<<-c(1980,2014)
 
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
@@ -337,8 +337,9 @@ if (is.na(id)){id<-7}
 # basic analysis
 ###################################################################
 master_init(id)
-plot_init_Had()
+#plot_init_Had()
 #plot_init_Had_multiple()
+plot_init_multi_SH()
 
 #master_trend()
 #master_seasonal_median_on_detrended()
@@ -350,7 +351,7 @@ plot_init_Had()
 ###################################################################
 
 #master_gridded_analysis()
-#master_gridded_plots()
+master_gridded_plots()
 
 
 ###################################################################
@@ -371,4 +372,4 @@ plot_init_Had()
 
 #plot_all_changes_table(ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),hlines=c(23,20,22,8))
 
-master_nas()
+#master_nas()
