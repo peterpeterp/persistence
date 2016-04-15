@@ -169,14 +169,14 @@ plot_init_multi_midlat <- function(){
 plot_init_multi_SH <- function(){
     name_style<<-"SH"
 
-    paper<<-c(7,1.3)
+    paper<<-c(8,1.6)
     margins<<-c(0,0,0,5)
 
-    outer_cut<<-9
-    inner_cut<<-2
+    outer_cut<<-5
+    inner_cut<<-1
 
-    yAusschnitt<<-c(-60,0)
-    xAusschnitt<<-c(-130,192)
+    yAusschnitt<<-c(-70,0)
+    xAusschnitt<<-c(-158,192)
     asp<<-1
     pointsize<<-1
     pch_points<<-c(1,NA,1.875,1.25)
