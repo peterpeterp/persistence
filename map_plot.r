@@ -215,7 +215,6 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 
 	#delete out of yAusschnitt
 	ID_select=which(lat >= yAusschnitt[1] & lat <= yAusschnitt[2] & lon >= xAusschnitt[1] & lon <= xAusschnitt[2])
-	print(length(ID_select))
 
 	if (!is.na(pch_points[2])){
 		points(lon[ID_select],lat[ID_select],pch=pch[ID_select],col=farben[ID_select],cex=pointsize)#
@@ -413,7 +412,6 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	    axis(2,at=seq(yAusschnitt[1],yAusschnitt[2],10))
 
 	    #data points
-	    print(reihen[i,])
 	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,ID_select=ID_select)
 	    #highlight points
 		for (rad in c(1,1.5,2,2.5)){

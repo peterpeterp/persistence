@@ -1,7 +1,6 @@
 #!/home/pepflei/R/bin/Rscript
 
-duration_correl <- function(dat,trendID,states,toCor,toCor_name,toCor_short,toCor_shortZu,dataset,additional_style,
-	toCor_startYear=1950,season_names=c("MAM","JJA","SON","DJF","year"),taus=c(0.25,0.5,0.75,0.9,0.95,0.98),stations=seq(1,1319,1),plot=FALSE){
+duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,toCor_startYear=1950,season_names=c("MAM","JJA","SON","DJF","year"),taus=c(0.25,0.5,0.75,0.9,0.95,0.99),ID_select=seq(1,1319,1),plot=FALSE,noise_level=0.00001){
 	# toCor is array with dim=c(ntot,seasons,years) or dim=c(seasons,years) 
 	# function will follow different procedures depending on dim(toCor)
 
@@ -13,7 +12,7 @@ duration_correl <- function(dat,trendID,states,toCor,toCor_name,toCor_short,toCo
 
 	toCor_years=dim(toCor)[length(dim(toCor))]
 
-	library(quantreg)
+
 	ntot=1319
 	correlation=array(NA,dim=c(ntot,5,2,7,3))
 
@@ -26,13 +25,13 @@ duration_correl <- function(dat,trendID,states,toCor,toCor_name,toCor_short,toCo
 	# ---------------------------------------------------------
 
 	for (sea in 1:length(season_names)){
-		print(season_names[sea])
-        nc=open.ncdf(paste("../data/",trendID,"/",dataset,additional_style,"/duration/",trendID,dataset,"_duration_",season_names[sea],".nc",sep=""))
-		duration=get.var.ncdf(nc,"dur")
-		duration_mid=get.var.ncdf(nc,"dur_mid")
+		season<-season_names[sea]
+        nc_dur=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep=""))
+        dur=var.get.nc(nc_dur,"dur")
+        dur_mid=var.get.nc(nc_dur,"dur_mid")
 
 		x=seq(1,toCor_years,1)
-		for (q in stations){
+		for (q in ID_select){
 			if (length(dim(toCor))==2){
 				toCor_loc=toCor
 			}
@@ -40,8 +39,8 @@ duration_correl <- function(dat,trendID,states,toCor,toCor_name,toCor_short,toCo
 				toCor_loc=toCor[q,,]
 			}
 			cat(paste("-",q))
-			for (state in 1:states){
-				size=length(which(duration_mid[q,state,]>toCor_startYear & duration_mid[q,state,]<2014))
+			for (state in 1:2){
+				size=length(which(dur_mid[q,state,]>toCor_startYear & dur_mid[q,state,]<2014))
 				if (size>30 & length(which(!is.na(toCor_loc[sea,])))>10){
 					durQu=array(NA,dim=c(toCor_years,length(taus)))
 					durMean=array(NA,dim=c(toCor_years))
@@ -53,13 +52,13 @@ duration_correl <- function(dat,trendID,states,toCor,toCor_name,toCor_short,toCo
 							year=i+toCor_startYear-1
 							# find durations in the selected year (and season)
 							# determine quantile "postions" durQu
-							inside=which(duration_mid[q,state,]>year & duration_mid[q,state,]<(year+1))
+							inside=which(dur_mid[q,state,]>year & dur_mid[q,state,]<(year+1))
 							if (length(inside)>0){
-								durQu[i,]=quantile(duration[q,state,inside],taus,na.rm=TRUE)
-								durMean[i]=mean(duration[q,state,inside],na.rm=TRUE)
+								durQu[i,]=quantile(dur[q,state,inside],taus,na.rm=TRUE)
+								durMean[i]=mean(dur[q,state,inside],na.rm=TRUE)
 								# this is just needed for plots
 								toCor_ext[(count+1):(count+length(inside))]=toCor_loc[sea,i]
-								dur_ext[(count+1):(count+length(inside))]=duration[q,state,inside]
+								dur_ext[(count+1):(count+length(inside))]=dur[q,state,inside]
 								count=count+length(inside)
 							}
 						}
@@ -75,21 +74,9 @@ duration_correl <- function(dat,trendID,states,toCor,toCor_name,toCor_short,toCo
 					}
 					# quantile regression ------------------------------------------------------------
 					#there is a really strange bug here! unclear what the problem is. maybe if there are to many points associated to the same point.....
-					if (1==2){
-						sf=try(summary(rq(as.vector(dur_ext)~as.vector(toCor_ext),taus),se="nid"))
-		                if (class(sf)=="try-error"){
-		                    for (qu in 1:length(taus)){
-		                        sf=try(summary(rq(as.vector(dur_ext)~as.vector(toCor_ext),taus[qu]),se="nid"))
-		                        if (class(sf)=="try-error"){
-		                            correlation[q,sea,state,qu,1:2]=array(NA,2)
-		                        }
-		                        else {
-		                            correlation[q,sea,state,qu,1]=sf$coefficients[2,1]
-		                            correlation[q,sea,state,qu,2]=sf$coefficients[2,4]
-		                        }
-		                    }
-		                }
-		                else {
+					if (1==1){
+						sf=try(summary(rq(dither(as.vector(dur_ext),value=noise_level)~as.vector(toCor_ext),taus),se="nid"),silent=TRUE)
+		                if (class(sf)!="try-error"){
 		                    slope=sapply(sf, function(x) c(tau=x$tau, x$coefficients[-1,]))
 		                    correlation[q,sea,state,1:length(taus),1]=slope[2,1:length(taus)]
 		                    correlation[q,sea,state,1:length(taus),2]=slope[5,1:length(taus)]
@@ -100,7 +87,7 @@ duration_correl <- function(dat,trendID,states,toCor,toCor_name,toCor_short,toCo
 
 					# home made quantile regression ------------------------------------------------------------
 					#there is a really strange bug here! unclear what the problem is. maybe if there are to many points associated to the same point.....
-					if (1==1){
+					if (1==2){
 						for (qu in 1:length(taus)){
 							if (sd(as.vector(toCor_loc[sea,]),na.rm=TRUE)!=0 & sd(as.vector(durQu[1:toCor_years,qu]),na.rm=TRUE)!=0){
 								lr=summary(lm(as.vector(durQu[1:toCor_years,qu])~as.vector(toCor_loc[sea,])))
@@ -120,6 +107,7 @@ duration_correl <- function(dat,trendID,states,toCor,toCor_name,toCor_short,toCo
 						correlation[q,sea,state,7,2]=lr$coefficients[2,4]
 						correlation[q,sea,state,7,3]=cor(x=as.vector(toCor_loc[sea,]),y=as.vector(durMean[1:toCor_years]),use="complete")
 					}
+
 
 					# make little explanatory plot ---------------------------------
 					if (plot==TRUE){
@@ -202,12 +190,12 @@ dur_correlation_plot <- function(dat,trendID="91_5",dataset="_TX",additional_sty
 }
 
 
-eke_dur_correl <- function(dat,trendID="91_5",dataset="_TX",additional_style="",states=2,level=1,stations=seq(1,1319,1),plot=FALSE){
-	nc=open.ncdf("../data/eke/eke_ID.nc")
-	eke=get.var.ncdf(nc,"eke_sea")
-	pressure=get.var.ncdf(nc,"levelist")
+eke_dur_correl <- function(level=1,ID_select=seq(1,1319,1),plot=FALSE){
+	nc=open.nc("../data/eke/eke_ID.nc")
+	eke=var.get.nc(nc,"eke_sea")
+	pressure=var.get.nc(nc,"levelist")
 
-	duration_correl(dat=dat,dataset=dataset,additional_style=additional_style,trendID=trendID,states=states,stations=stations,plot=plot,toCor=eke[,level,,],toCor_name="eddy kynetic energy",toCor_short="eke",toCor_shortZu=paste(pressure[1],"mbar",sep=""),toCor_startYear=1979)
+	duration_correl(ID_select=ID_select,plot=plot,toCor=eke[,level,,],toCor_name="eddy kynetic energy",toCor_short="eke",toCor_shortZu=paste(pressure[1],"mbar",sep=""),toCor_startYear=1979)
 }
 
 
@@ -227,15 +215,18 @@ if (1==1){
 	source("map_plot.r")
 	library(rworldmap)
 	library(fields)
+	library(quantreg)
+
 	worldmap = getMap(resolution = "low")
-	ntot=1319
-	dataset="_TMean"
-	additional_style=""
-	dat=dat_load(paste("../data/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+	ntot<<-1319
+	trendID<<-"91_7"
+	dataset<<-"_TMean"
+	additional_style<<-""
+    #dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 }
 
 
-if (1==1){
+if (1==2){
 	source("load.r")
 
 	#eke_mar_correl(level=1)
@@ -251,6 +242,6 @@ if (1==1){
 }
 
 
-eke_dur_correl(dat,dataset=dataset,additional_style=additional_style)
+eke_dur_correl()
 dur_correlation_plot(dat,dataset=dataset,additional_style=additional_style,toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",quA=0.95,farb_mitte=c(-2,2))
 
