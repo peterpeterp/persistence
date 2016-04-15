@@ -16,13 +16,27 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 
 	# needed for the plots ------------------------------------
 	if (plot==TRUE){
-		pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,"/gridpoints/dur_",toCor_short,"_",toCor_shortZu,"_",ID_select,".pdf",sep=""))
-		color=c("lightblue","blue","green","yellow","red","violet")
+		pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,"/gridpoints/dur_",toCor_short,"_",toCor_shortZu,"_",ID_select,".pdf",sep=""),width=4,height=4)
+	    par(mar=c(3, 3, 3, 3) + 0.1)
+		plot(NA,xlim=c(1,10),ylim=c(1,10),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
+		
+
+		plot(NA,xlab="",ylab="",ylim=c(-10,50),main="",frame.plot=FALSE,axes=FALSE)
+	    at_=axis(1,labels=FALSE,col="black")
+	    if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+	    axis(1,at=at_)
+
+		plot(NA,xlab="",ylab="",ylim=c(-10,50),main="",frame.plot=FALSE,axes=FALSE)
+	    at_=axis(2,labels=FALSE,col="black")
+	    if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
+	    axis(2,at=at_)
+
+		color=c("blue","green","red","violet",NA,"blue")
 		state_names=c("cold","warm")
 	}
 	# ---------------------------------------------------------
 
-	for (sea in 1:length(season_names)){
+	for (sea in 1:5){
 		season<-season_names[sea]
         nc_dur=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep=""))
         dur=var.get.nc(nc_dur,"dur")
@@ -50,8 +64,7 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 			for (state in 1:2){
 				size<-length(which(dur_mid[q,state,]>toCor_startYear & dur_mid[q,state,]<2014))
 				if (size>30 & length(which(!is.na(toCor_loc)))>10){
-					durQu<-array(NA,dim=c(toCor_years,length(taus)))
-					durMean<-array(NA,dim=c(toCor_years))
+					durQu<-array(NA,dim=c(toCor_years,(length(taus)+2)))
 					toCor_ext<-array(NA,dim=c(size))
 					dur_ext<-array(NA,size)
 					count=0
@@ -62,8 +75,8 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 							# determine quantile "postions" durQu
 							inside=which(dur_mid[q,state,]>year & dur_mid[q,state,]<(year+1))
 							if (length(inside)>0){
-								durQu[i,]=quantile(dur[q,state,inside],taus,na.rm=TRUE)
-								durMean[i]=mean(dur[q,state,inside],na.rm=TRUE)
+								durQu[i,1:length(taus)]=quantile(dur[q,state,inside],taus,na.rm=TRUE)
+								durQu[i,(length(taus)+2)]=mean(dur[q,state,inside],na.rm=TRUE)
 								# this is just needed for plots
 								toCor_ext[(count+1):(count+length(inside))]=toCor_loc[i]
 								dur_ext[(count+1):(count+length(inside))]=dur[q,state,inside]
@@ -80,16 +93,16 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 		                slope=sapply(sf, function(x) c(tau=x$tau, x$coefficients[-1,]))
 		                correlation[sea,q,state,1:length(taus),1]=slope[2,1:length(taus)]
 		                correlation[sea,q,state,1:length(taus),2]=slope[5,1:length(taus)]
-		                correlation[sea,q,state,1:length(taus),3]=slope[1,1:length(taus)]
+		                correlation[sea,q,state,1:length(taus),3]=sapply(sf, function(x) c(tau=x$tau, x$coefficients[1,1]))[2,]
 		            }					
 
 					# calculate correlation between mean duration and toCor
-					if (sd(as.vector(toCor_loc),na.rm=TRUE)!=0 & sd(as.vector(durMean),na.rm=TRUE)!=0){
+					if (sd(as.vector(toCor_loc),na.rm=TRUE)!=0 & sd(durQu[,(length(taus)+2)],na.rm=TRUE)!=0){
 						lr<-summary(lm(as.vector(dur_ext)~dither(as.vector(toCor_ext),value=noise_level)))
 						correlation[sea,q,state,(length(taus)+2),1]=lr$coefficients[2,1]
 						correlation[sea,q,state,(length(taus)+2),2]=lr$coefficients[2,4]
 						correlation[sea,q,state,(length(taus)+2),3]=lr$coefficients[1,1]
-						correlation[sea,q,state,(length(taus)+2),4]=cor(x=toCor_loc,y=durMean,use="complete")
+						correlation[sea,q,state,(length(taus)+2),4]=cor(x=as.vector(toCor_ext),y=as.vector(dur_ext),use="complete")
 					}
 
 					# make little explanatory plot ---------------------------------
@@ -99,19 +112,21 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 						year=toCor_startYear:2014
 						year=year[order]
 						title=c()
-						plot(as.vector(toCor_ext),dur_ext,xlab=toCor_name,ylab="duration length",ylim=c(-2,max(dur_ext,na.rm=TRUE)),
-							main=paste(season_names[sea],state_names[state],"durations"))
+						plot(NA,xlim=c(1,10),ylim=c(1,10),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
+						text(5,5,paste(season_names[sea],state_names[state],"durations"))
+
+						plot(as.vector(toCor_ext),dur_ext,xlab="",ylab="",ylim=c(-10,50),main="",pch=20,col="gray",frame.plot=TRUE,axes=FALSE)
 						for (y in 1:toCor_years){
 							abline(v=as.vector(toCor_loc[order])[y],col="grey",lty=2)
-							text(as.vector(toCor_loc[order])[y],(-1.5+0.7*(-1)^y),label=year[y],srt=90,cex=0.5)
+							text(as.vector(toCor_loc[order])[y],(-6+3*(-1)^y),label=year[y],srt=90,cex=0.5)
 						}
-						for (qu in 1:length(taus)){
-							title[qu]=paste(taus[qu],"quantile cor -",toCor_name,"=",correlation[sea,q,state,qu,1])
-							lines(as.vector(toCor_loc[noNa][order]),as.vector(durQu[noNa,qu][order]),col=color[qu])
-							lines(as.vector(toCor_loc[noNa][order]),as.vector(toCor_loc[noNa][order])*correlation[sea,q,state,qu,1]+correlation[sea,q,state,qu,3])
+						for (qu in c(3,6)){
+							#title[qu]=paste(taus[qu],"quantile cor -",toCor_name,"=",correlation[sea,q,state,qu,1])
+							#lines(as.vector(toCor_loc[noNa][order]),as.vector(durQu[noNa,qu][order]),col=color[qu])
+							lines(as.vector(toCor_loc[noNa][order]),(as.vector(toCor_loc[noNa][order])*correlation[sea,q,state,qu,1]+correlation[sea,q,state,qu,3]),col=color[qu])
 
 						}
-						legend("topright",col=color,lty=array(1,length(taus)),legend=title)
+						#legend("topright",col=color[c(3,6)],lty=array(1,2),legend=c("95th percentile","mean"))
 					}
 					# ------------------------------------------------------------
 				}
@@ -220,7 +235,7 @@ if (1==2){
 }
 
 correl_init()
-ID_select<<-c(488,515,666)
+ID_select<<-c(488,631,332)
 eke_dur_correl(plot=TRUE)
 
 adas
