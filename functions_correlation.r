@@ -1,6 +1,6 @@
 #!/home/pepflei/R/bin/Rscript
 
-duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALSE,toCor_startYear=1950){
+duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALSE,toCor_startYear=1950,detrending=TRUE){
 	# toCor is array with dim=c(ntot,seasons,years) or dim=c(seasons,years) 
 	# function will follow different procedures depending on dim(toCor)
 
@@ -16,23 +16,29 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 
 	# needed for the plots ------------------------------------
 	if (plot==TRUE){
-		pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,"/gridpoints/dur_",toCor_short,"_",toCor_shortZu,"_",ID_select,".pdf",sep=""),width=4,height=4)
+		pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,"/gridpoints/dur_",toCor_short,"_",toCor_shortZu,"_",ID_select,"_detrended.pdf",sep=""),width=4,height=4)
 	    par(mar=c(3, 3, 3, 3) + 0.1)
-		plot(NA,xlim=c(1,10),ylim=c(1,10),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
-		
+		color=c("blue","green","red","violet",NA,"blue")
+		state_names=c("cold","warm")
 
-		plot(NA,xlab="",ylab="",ylim=c(-10,50),main="",frame.plot=FALSE,axes=FALSE)
+		plot(NA,xlim=c(1,10),ylim=c(1,10),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
+		legend("bottomright",lty=c(1,1),col=color[c(3,6)],legend=c("95th perc.","mean"),box.lwd=0,box.col=rgb(1,1,1,0),bg=rgb(1,1,1,0))
+
+		q<-ID_select[1]
+		plot(worldmap,xlim=c(dat$lon[q]-10,dat$lon[q]+10),ylim=c(dat$lat[q]-10,dat$lat[q]+10))
+		polygon(x=c(dat$lon[q]-pch_points[3],dat$lon[q]+pch_points[3],dat$lon[q]+pch_points[3],dat$lon[q]-pch_points[3]),y=c(dat$lat[q]-pch_points[4],dat$lat[q]-pch_points[4],dat$lat[q]+pch_points[4],dat$lat[q]+pch_points[4]),border=rgb(1,1,1,0.0),col="red")		
+		ylim_=c(-10,50)
+		plot(NA,xlab="",ylab="",ylim=ylim_,main="",frame.plot=FALSE,axes=FALSE)
 	    at_=axis(1,labels=FALSE,col="black")
 	    if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
 	    axis(1,at=at_)
 
-		plot(NA,xlab="",ylab="",ylim=c(-10,50),main="",frame.plot=FALSE,axes=FALSE)
+		plot(NA,xlab="",ylab="",ylim=ylim_,main="",frame.plot=FALSE,axes=FALSE)
 	    at_=axis(2,labels=FALSE,col="black")
 	    if (length(at_)>4){at_=at_[2:(length(at_)-1)]}
 	    axis(2,at=at_)
 
-		color=c("blue","green","red","violet",NA,"blue")
-		state_names=c("cold","warm")
+
 	}
 	# ---------------------------------------------------------
 
@@ -56,7 +62,10 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 			}
 			if (length(dim(toCor))==3){
 				toCor_loc=toCor[q,sea,]
-				order=order(toCor_loc)
+				if (detrending==TRUE){
+					lr<-lm(toCor_loc~x)
+					toCor_loc<-toCor_loc-(lr$coef[2]*x)
+				}
 			}
 
 
@@ -67,6 +76,7 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 					durQu<-array(NA,dim=c(toCor_years,(length(taus)+2)))
 					toCor_ext<-array(NA,dim=c(size))
 					dur_ext<-array(NA,size)
+					dur_yearly<-array(NA,c(toCor_years,100))
 					count=0
 					for (i in 1:(toCor_years-1)){
 						if (count!=size){
@@ -81,14 +91,22 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 								toCor_ext[(count+1):(count+length(inside))]=toCor_loc[i]
 								dur_ext[(count+1):(count+length(inside))]=dur[q,state,inside]
 								count<-count+length(inside)
+								dur_yearly[i,1:length(inside)]=dur[q,state,inside]
 							}
 						}
 					}
+					# detrending
+					if (detrending==TRUE){
+						X<-dur_mid[q,state,which(dur_mid[q,state,]>toCor_startYear & dur_mid[q,state,]<2014)]-toCor_startYear
+						lr<-lm(as.vector(dur_ext)~X)
+						dur_ext<-as.vector(dur_ext)-(lr$coef[2]*X)
+					}
+
 					# for regressions lm and rq order of the series makes no difference
 
 					# quantile regression ------------------------------------------------------------
 					#there was a really strange bug here! problem solved with dither
-					sf=try(summary(rq(dither(as.vector(dur_ext),value=noise_level)~dither(as.vector(toCor_ext),value=noise_level),taus),se="boot"))
+					sf=try(summary(rq(dither(dur_ext,value=noise_level)~dither(toCor_ext,value=noise_level),taus),se="boot"))
 		               if (class(sf)!="try-error"){
 		                slope=sapply(sf, function(x) c(tau=x$tau, x$coefficients[-1,]))
 		                correlation[sea,q,state,1:length(taus),1]=slope[2,1:length(taus)]
@@ -97,15 +115,18 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 		            }					
 
 					# calculate correlation between mean duration and toCor
-					if (sd(as.vector(toCor_loc),na.rm=TRUE)!=0 & sd(durQu[,(length(taus)+2)],na.rm=TRUE)!=0){
-						lr<-summary(lm(as.vector(dur_ext)~dither(as.vector(toCor_ext),value=noise_level)))
+					if (sd(toCor_ext,na.rm=TRUE)!=0 & sd(durQu[,(length(taus)+2)],na.rm=TRUE)!=0){
+						lr<-summary(lm(dur_ext~dither(toCor_ext,value=noise_level)))
 						correlation[sea,q,state,(length(taus)+2),1]=lr$coefficients[2,1]
 						correlation[sea,q,state,(length(taus)+2),2]=lr$coefficients[2,4]
 						correlation[sea,q,state,(length(taus)+2),3]=lr$coefficients[1,1]
-						correlation[sea,q,state,(length(taus)+2),4]=cor(x=as.vector(toCor_ext),y=as.vector(dur_ext),use="complete")
+						correlation[sea,q,state,(length(taus)+2),4]=cor(x=toCor_ext,y=dur_ext,use="complete")
 					}
 
+					#print(correlation[sea,q,state,,])
+
 					# make little explanatory plot ---------------------------------
+					# plot is whithout detrending
 					if (plot==TRUE){
 						noNa=which(!is.na(durQu[,4]))
 						order=order(toCor_loc[noNa])
@@ -115,18 +136,24 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 						plot(NA,xlim=c(1,10),ylim=c(1,10),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
 						text(5,5,paste(season_names[sea],state_names[state],"durations"))
 
-						plot(as.vector(toCor_ext),dur_ext,xlab="",ylab="",ylim=c(-10,50),main="",pch=20,col="gray",frame.plot=TRUE,axes=FALSE)
+						plot(toCor_ext,dur_ext,xlab="",ylab="",ylim=ylim_,main="",pch=20,col="gray",frame.plot=TRUE,axes=FALSE)
 						for (y in 1:toCor_years){
-							abline(v=as.vector(toCor_loc[order])[y],col="grey",lty=2)
-							text(as.vector(toCor_loc[order])[y],(-6+3*(-1)^y),label=year[y],srt=90,cex=0.5)
+							#abline(v=as.vector(toCor_loc[order])[y],col="grey",lty=2)
+							lines(c(toCor_loc[order][y],toCor_loc[order][y]),c(-10,max(dur_ext[which(toCor_ext==toCor_loc[order][y])],na.rm=TRUE)),col="grey",lty=2)
+							text(toCor_loc[order][y],(-6+3*(-1)^y),label=year[y],srt=90,cex=0.5)
 						}
 						for (qu in c(3,6)){
-							#title[qu]=paste(taus[qu],"quantile cor -",toCor_name,"=",correlation[sea,q,state,qu,1])
+							title[qu]=paste(round(correlation[sea,q,state,qu,1],03),sep="")
+							if (correlation[sea,q,state,qu,2]<0.1){title[qu]=paste(title[qu],"*",sep="")}
+							if (correlation[sea,q,state,qu,2]<0.05){title[qu]=paste(title[qu],"*",sep="")}
 							#lines(as.vector(toCor_loc[noNa][order]),as.vector(durQu[noNa,qu][order]),col=color[qu])
 							lines(as.vector(toCor_loc[noNa][order]),(as.vector(toCor_loc[noNa][order])*correlation[sea,q,state,qu,1]+correlation[sea,q,state,qu,3]),col=color[qu])
 
 						}
-						#legend("topright",col=color[c(3,6)],lty=array(1,2),legend=c("95th percentile","mean"))
+						#legend("topright",col=color[c(3,6)],lty=array(1,2),legend=c(paste("95th perc.",round(correlation[sea,q,state,3,1],0.1)),paste("mean",round(correlation[sea,q,state,3,1],0.1))),box.lwd=0,box.col=rgb(1,1,1,0),bg=rgb(1,1,1,0))
+						legend("topright",col=color[c(3,6)],lty=array(1,2),legend=title[c(3,6)],box.lwd=0,box.col=rgb(1,1,1,0),bg=rgb(1,1,1,0))
+						legend("topleft",legend=c(season_names[sea],state_names[state]),box.lwd=0,box.col=rgb(1,1,1,0),bg=rgb(1,1,1,0))
+						
 					}
 					# ------------------------------------------------------------
 				}
@@ -180,12 +207,12 @@ dur_correlation_plot <- function(toCor_short="nao",toCor_name="NAO",toCor_shortZ
 }
 
 
-eke_dur_correl <- function(level=1,plot=FALSE){
+eke_dur_correl <- function(level=1,plot=FALSE,detrending=TRUE){
 	nc=open.nc("../data/eke/eke_ID.nc")
 	eke=var.get.nc(nc,"eke_sea")
 	pressure=var.get.nc(nc,"levelist")
 
-	duration_correl(plot=plot,toCor=eke[,level,,],toCor_name="eddy kynetic energy",toCor_short="eke",toCor_shortZu=paste(pressure[1],"mbar",sep=""),toCor_startYear=1979)
+	duration_correl(plot=plot,toCor=eke[,level,,],toCor_name="eddy kynetic energy",toCor_short="eke",toCor_shortZu=paste(pressure[1],"mbar",sep=""),toCor_startYear=1979,detrending=detrending)
 }
 
 
@@ -201,20 +228,23 @@ index_dur_correl <- function(dat,trendID="91_5",dataset="_TX",additional_style="
 correl_init <- function(){
 	source("load.r")
 	source("map_plot.r")
+	source("inits_plot.r")
     library(quantreg)
     library(RNetCDF)
     library(SDMTools)
     library(fields)
 
+	worldmap<<-getMap(resolution = "low")
+
 	trendID<<-"91_7"
 	dataset<<-"_TMean"
 	additional_style<<-""
-    #dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 	ntot<<-1319
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     taus<<-c(0.75,0.9,0.95,0.99)
-    ID_select<<-1:ntot
+    ID_select<-1:ntot
     noise_level<<-0.0000001
 }
 
@@ -233,12 +263,4 @@ if (1==2){
 		dur_correlation_plot(dat,dataset=dataset,additional_style=additional_style,toCor_short=indexKl,toCor_name=indexGr,toCor_shortZu="",quA=0.95,farb_mitte="0")
 	}
 }
-
-correl_init()
-ID_select<<-c(488,631,332)
-eke_dur_correl(plot=TRUE)
-
-adas
-plot_init_Had_multiple()
-dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=3,val_zusatz="_95",farb_mitte=c(-1,1))
 

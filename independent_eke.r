@@ -87,7 +87,7 @@ analyse_whole_EKE <- function(lvl=1){
     close.nc(nc_out)
 }
 
-plot_eke <- function(){
+plot_eke <- function(add_name="full"){
 	nc<-open.nc(paste("../data/eke/eke_ana_96x73_850mbar.nc",sep=""))
 	eke_ana<<-var.get.nc(nc,"eke_ana")
 	loc<<-var.get.nc(nc,"loc")
@@ -97,7 +97,8 @@ plot_eke <- function(){
 	dat$lon[dat$lon>180]=dat$lon[dat$lon>180]-360
 	dat<<-dat
 
-	topo_map_plot(filename=paste("../plots/eke/eke_1979-2014_full_LR.pdf",sep=""),reihen=eke_ana[,,2],reihen_sig=eke_ana[,,3],farb_mitte=c(-0.01,0.01),farb_palette="lila-gruen",titel=c(""))
+	topo_map_plot(filename=paste("../plots/eke/eke_1979-2014_",add_name,"_LR.pdf",sep=""),reihen=eke_ana[,,2],reihen_sig=eke_ana[,,3],farb_mitte=c(-0.01,0.01),farb_palette="lila-gruen",titel=c(""))
+	topo_map_plot(filename=paste("../plots/eke/eke_1979-2014_",add_name,"_MN.pdf",sep=""),reihen=eke_ana[,,1],farb_mitte="mean",farb_palette="regenbogen",titel=c(""))
 
 }
 
@@ -117,4 +118,7 @@ master_init <- function(){
 
 master_init()
 plot_init_multi_SH()
-plot_eke()
+
+
+plot_init_EU_Had()
+plot_eke(add_name="EU")

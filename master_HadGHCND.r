@@ -280,6 +280,22 @@ master_special_plots <- function(){
 
 }
 
+master_correlation <- function(){
+    plot_init_Had_multiple()
+
+    #eke_dur_correl(plot=FALSE,detrending=TRUE,ID_select<-1:ntot)
+
+
+    #eke_dur_correl(plot=TRUE,detrending=TRUE,ID_select<-c(488))
+
+    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=1,val_zusatz="_mean",farb_mitte=c(-3,3),ID_select<-1:ntot)
+    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=3,val_zusatz="_95",farb_mitte=c(-5,5),ID_select<-1:ntot)
+
+    plot_init_EU_Had()
+    dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=1,val_zusatz="_mean_EU",farb_mitte=c(-3,3),ID_select<-1:ntot)
+    dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=3,val_zusatz="_95_EU",farb_mitte=c(-5,5),ID_select<-1:ntot)
+}
+
 ###################################################################
 # init: loading sources, setting variables ....
 ###################################################################
@@ -290,6 +306,7 @@ master_init <- function(id){
     source("functions_duration.r")
     source("functions_regional.r")
     source("functions_MannKendall.r")
+    source("functions_correlation.r")
     source("analysis_tools.r")
     source("write.r")
     source("load.r")
@@ -318,7 +335,6 @@ master_init <- function(id){
     yearLimits<<-c(1980,2014,1950,2014,1950,1980)
     yearLimits<<-c(1980,2014)
 
-
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     state_names<<-c("cold","warm")
 
@@ -339,7 +355,7 @@ if (is.na(id)){id<-7}
 master_init(id)
 #plot_init_Had()
 #plot_init_Had_multiple()
-plot_init_multi_SH()
+#plot_init_multi_SH()
 
 #master_trend()
 #master_seasonal_median_on_detrended()
@@ -351,7 +367,7 @@ plot_init_multi_SH()
 ###################################################################
 
 #master_gridded_analysis()
-master_gridded_plots()
+#master_gridded_plots()
 
 
 ###################################################################
@@ -373,3 +389,5 @@ master_gridded_plots()
 #plot_all_changes_table(ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),hlines=c(23,20,22,8))
 
 #master_nas()
+
+#master_correlation()

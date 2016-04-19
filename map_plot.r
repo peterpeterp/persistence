@@ -167,6 +167,7 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 
 
 	if (farb_palette_loc=="gold-blau"){
+		#jet.colors <- colorRampPalette( c(rgb(0,0.5,1),rgb(0,1,1), rgb(1,1,1) ,rgb(1,1,0),rgb(1,0.5,0)))
 		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.6),rgb(0.5,1,1), rgb(0.98,0.98,0.98) ,rgb(1,1,0),rgb(0.6,0.6,0)))
 	}		
 	if (farb_palette_loc=="blau-rot"){

@@ -34,6 +34,39 @@ plot_init_midlat <- function(){
 
 }
 
+plot_init_EU_Had <- function(){
+    name_style<<-"EU"
+
+    paper<<-c(8,5)
+    margins<<-c(0,0,0,0)
+
+    outer_cut<<-10
+    inner_cut<<-1
+    
+    yAusschnitt<<-c(20,80)
+    xAusschnitt<<-c(-30,80)
+    asp<<-1
+    pointsize<<-0.44
+    pch_points<<-c(1,NA,1.875,1.25)
+
+    pch_sig<<-4
+    col_sig<<-rgb(0.1,0.1,0.1,0.6)
+    cex_sig<<-0.03
+
+    region<<-NA
+
+    season_auswahl<<-c(1,2,3,4,5)
+    sub_zusatz<<-c("75th","95th","99th")
+    name_reg_zusatz<<-""
+
+    col_row<<-c(1,1)
+    color_legend<<-"seperate"
+    layout_mat<<-c(NA)
+    subIndex<<-c("a","b")
+
+    nbcol<<-101
+}
+
 plot_init_EU <- function(){
     name_style<<-"EU"
 
