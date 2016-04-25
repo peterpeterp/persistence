@@ -32,6 +32,11 @@ plot_init_midlat <- function(){
 
     nbcol<<-101
 
+    border_col<<-"black"
+    land_col<<-NA #rgb(0.5,0.5,0.5,0.5)
+    water_col<<-rgb(0,0.2,0.8,0.0)
+
+    closePlot<<-TRUE
 }
 
 plot_init_EU_Had <- function(){
@@ -65,19 +70,25 @@ plot_init_EU_Had <- function(){
     subIndex<<-c("a","b")
 
     nbcol<<-101
+
+    border_col<<-"black"
+    land_col<<-NA #rgb(0.5,0.5,0.5,0.5)
+    water_col<<-rgb(0,0.2,0.8,0.0)
+
+    closePlot<<-TRUE
 }
 
 plot_init_EU <- function(){
     name_style<<-"EU"
 
-    paper<<-c(8,5)
+    paper<<-c(6,3.5)
     margins<<-c(0,0,0,0)
 
     outer_cut<<-10
     inner_cut<<-1
     
-    yAusschnitt<<-c(20,80)
-    xAusschnitt<<-c(-30,80)
+    yAusschnitt<<-c(25,75)
+    xAusschnitt<<-c(-13,80)
     asp<<-1
     pointsize<<-0.44
     pch_points<<-c(1,NA,0.25,0.25)
@@ -98,6 +109,12 @@ plot_init_EU <- function(){
     subIndex<<-c("a","b")
 
     nbcol<<-101
+
+    border_col<<-"black"
+    land_col<<-NA #rgb(0.5,0.5,0.5,0.5)
+    water_col<<-rgb(0,0.2,0.8,0.0)
+
+    closePlot<<-TRUE
 }
 
 plot_init_Had <- function(){
@@ -131,6 +148,12 @@ plot_init_Had <- function(){
     subIndex<<-c("a","b")
 
     nbcol<<-101
+
+    border_col<<-"black"
+    land_col<<-NA #rgb(0.5,0.5,0.5,0.5)
+    water_col<<-rgb(0,0.2,0.8,0.0)
+
+    closePlot<<-TRUE
 }
 
 plot_init_Had_multiple <- function(){
@@ -164,6 +187,50 @@ plot_init_Had_multiple <- function(){
     subIndex<<-c("a","b")
 
     nbcol<<-101
+
+    border_col<<-"black"
+    land_col<<-NA #rgb(0.5,0.5,0.5,0.5)
+    water_col<<-rgb(0,0.2,0.8,0.0)
+
+    closePlot<<-TRUE}
+
+plot_init_Had_multiple_noAA <- function(){
+    name_style<<-"noAA"
+
+    paper<<-c(7.2,3)
+    margins<<-c(0,0,0,0)
+
+    outer_cut<<-9
+    inner_cut<<-0.3
+
+    yAusschnitt<<-c(-60,90)
+    xAusschnitt<<-c(-168,192)
+    asp<<-1
+    pointsize<<-1
+    pch_points<<-c(1,NA,1.875,1.25)
+
+    pch_sig<<-4
+    col_sig<<-rgb(0.1,0.1,0.1,0.6)
+    cex_sig<<-0.1
+
+    region<<-NA
+
+    season_auswahl<<-1:5
+    sub_zusatz<<-c("75th","95th","99th")
+    name_reg_zusatz<<-""
+
+    col_row<<-c(1,1)
+    color_legend<<-"seperate"
+    layout_mat<<-c(NA)
+    subIndex<<-c("a","b")
+
+    nbcol<<-101
+
+    border_col<<-"black"
+    land_col<<-NA #rgb(0.5,0.5,0.5,0.5)
+    water_col<<-rgb(0,0.2,0.8,0.0)
+
+    closePlot<<-TRUE
 }
 
 plot_init_multi_midlat <- function(){
@@ -197,6 +264,12 @@ plot_init_multi_midlat <- function(){
     subIndex<<-c("a","b")
 
     nbcol<<-101
+
+    border_col<<-"black"
+    land_col<<-NA #rgb(0.5,0.5,0.5,0.5)
+    water_col<<-rgb(0,0.2,0.8,0.0)
+
+    closePlot<<-TRUE
 }
 
 plot_init_multi_SH <- function(){
@@ -230,4 +303,10 @@ plot_init_multi_SH <- function(){
     subIndex<<-c("a","b")
 
     nbcol<<-101
+
+    border_col<<-"black"
+    land_col<<-NA #rgb(0.5,0.5,0.5,0.5)
+    water_col<<-rgb(0,0.2,0.8,0.0)
+
+    closePlot<<-TRUE
 }

@@ -178,8 +178,11 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 		jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(0.0,0.0,0.0),rgb(1,0.5,1),rgb(1,0.7,0.7)))
 		jet.colors <- colorRampPalette( c(rgb(0.1,0.2,0.4),rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(1,1,1),rgb(1,0.7,0.7),rgb(1,0.5,1),rgb(0.4,0.1,0.4)))
 	}
-	if (farb_palette_loc=="regenbogen"){
+	if (farb_palette_loc=="regenbogen_old"){
 		jet.colors <- colorRampPalette( c( "blue","green","yellow","red") )
+	}	
+	if (farb_palette_loc=="regenbogen"){
+		jet.colors <- colorRampPalette( c( "blue","green","yellow","red","violet") )
 	}
 	if (farb_palette_loc=="weiss-rot"){
 		jet.colors <- colorRampPalette( c( "white","yellow","red") )
@@ -190,6 +193,18 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 	}
 	if (farb_palette_loc=="niederschlag"){
 		jet.colors <- colorRampPalette( c( "orange","yellow","green","blue") )
+	}
+
+	if (farb_palette_loc=="wave-goggle"){
+		jet.colors <- colorRampPalette( c(rgb(1,1,1,0),rgb(0.8,1,0.1),rgb(0,1,1),rgb(1,0.5,0)))
+	}
+
+	if (farb_palette_loc=="norm-hot"){
+		jet.colors <- colorRampPalette( c(rgb(1,1,1,0),rgb(1,1,0),rgb(1,0.5,0),rgb(1,0,0),rgb(1,0,0.5)))
+	}
+
+	if (farb_palette_loc=="norm-wet"){
+		jet.colors <- colorRampPalette( c(rgb(1,1,1,0),"lightblue",rgb(0,1,0.5),rgb(0,1,1),rgb(0,0,1)) )
 	}
 
 	if (farb_palette_loc=="dry-wet"){
@@ -236,161 +251,7 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 	return(list(y=y,color=color))
 }
 
-map_allgemein <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,
-	farb_mitte="mean",farb_palette="regenbogen",region=NA,regionColor="black",average=FALSE,pointsize=1.2,grid=FALSE,ausschnitt=c(-80,80),col_row=c(1,1),paper=c(12,8),cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),mat=c(NA),subIndex=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"),layout_mat=c(NA),topo=FALSE){
-	#dat data form data_load()
-	#filename_plot str - where to save plot
-	#worldmap background of lon lat plot
-	#ausschnitt c(lat_min,lat_max)
-	#reihen array(... dim=c(anzahl der plots, anzahl der stationen))
-	#titel liste von strings, plot-titles
-	#farb_mitte mid point of color range (white) at 0 for "0" or at the mean for "mean"
-
-	if (ausschnitt[1]!=-80 & col_row[1]==1){
-		paper[2]=paper[2]*(ausschnitt[2]-ausschnitt[1])/160+1
-	}
-
-		#if (col_row[1]>1){
-		#	paper=c(12,((col_row[1]-1)*7/5+1))
-		#	cex_axis=1.5
-		#}
-	pdf(file = filename_plot,width=paper[1],height=paper[2])
-	par(mar=c(1,1,2,4))
-	par(cex.axis=cex_axis,cex.lab=cex_axis)
-
-
-	# create layout matrix for multiplots in style c(1,2,1,2,1,2,3,4,3,4,3,4 ..)
-	if (col_row[1]>1 & col_row[2]>1 & is.na(mat[1])){
-		par(cex=cex)
-		pointsize=1
-		mat=c()
-		index=0
-		for (row in 1:(col_row[1]-1)){
-			index=index+1
-			mat[((row-1)*6+1):(row*6)]=c(index,index+1,index,index+1,index,index+1)
-			index=index+1
-		}
-
-		mat[((col_row[1]*col_row[2]-2)*3+1):((col_row[1]*col_row[2]-2)*3+4)]=c(index+1,index+1,index+1,index+1)#,index+1,index+1)
-		layout(matrix(mat,length(mat)/2,2, byrow = TRUE))
-	}
-
-	if (col_row[1]>1 & col_row[2]==1 & is.na(mat[1])){
-		par(cex=cex)
-		pointsize=1
-		mat=c()
-		for (row in 1:(col_row[1])){
-			mat[((row-1)*7+1):(row*7)]=c(row,row,row,row,row,row,col_row[1]+1)
-		}
-		layout(matrix(mat,col_row[1],length(mat)/col_row[1], byrow = TRUE))
-	}
-
-	if (col_row[1]==1 & dim(reihen)[1]==1 & is.na(mat[1]) & !topo){
-		par(cex=cex)
-		pointsize=pointsize
-		layout(matrix(c(1,1,1,1,1,1,1,1,1,1,1,2,3),1,13, byrow = TRUE))
-	}
-	if (col_row[1]==1 & dim(reihen)[1]>1){
-		pointsize=pointsize
-		par(mfrow=c(1,1))
-	}
-
-	   # use given mat
-	if (!is.na(mat[1])){
-		par(cex=cex)
-		par(mar=c(1,1,1,1))
-		pointsize=pointsize
-		print(length(mat))
-		layout(matrix(mat,col_row[1],col_row[2], byrow = TRUE), heights=c(2,2,2,2,1))#, heights=c(2,2,2,2,1)
-	}
-
-	ID_select=which(dat$lat >= ausschnitt[1] & dat$lat <= ausschnitt[2])
-
-	# if same color range scheme for all plots
-	if (farb_mitte[1]=="gemeinsam 0"){
-		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],ID_select],na.rm=TRUE)),abs(min(reihen[1:dim(reihen)[1],ID_select],na.rm=TRUE))))
-	}
-
-	if (farb_mitte[1]=="gemeinsam mean"){	
-		mi=mean(reihen[1:dim(reihen)[1],ID_select],na.rm=TRUE)
-		aushol=max(c(abs(max(reihen[1:dim(reihen)[1],ID_select],na.rm=TRUE))-mi,mi-abs(min(reihen[1:dim(reihen)[1],ID_select],na.rm=TRUE))))
-	}
-
-	subCount=0
-	for (i in 1:dim(reihen)[1]){
-		subCount=subCount+1
-		if (titel[1]!=""){print(titel[i])}
-		if (!topo){
-			if (titel[1]==""){plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5)}
-			else{plot(worldmap,ylim=c(ausschnitt[1],ausschnitt[2]), asp = 1.5, main=titel[i])}
-		}
-		if (topo){
-			if (titel[1]==""){plot(topoWorld,location="none",ylim=c(ausschnitt[1],ausschnitt[2]),xlim=c(0,360),col.land="white",col.water="white",frame.plot=FALSE)}
-			else{plot(topoWorld,location="none",ylim=c(ausschnitt[1],ausschnitt[2]),xlim=c(-180,180),col.land="white",main=titel[i])}
-		}
-		tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],ausschnitt=ausschnitt,farb_mitte=farb_mitte,farb_palette=farb_palette,signi_level=signi_level,i=i,pointsize=pointsize)
-		color=tmp$color
-		y=tmp$y
-
-		for (rad in c(1,1.5)){
-			points(dat$lon[highlight_points[i]],dat$lat[highlight_points[i]],col=highlight_color,pch=1,cex=(pointsize*rad))
-		}
-		#box("figure", col="blue") 
-
-		if (average==TRUE){
-			text(-165,ausschnitt[1]+10,paste("mean:",round(mean(y,na.rm=TRUE),02)))
-			text(-165,ausschnitt[1]+5,paste("sd:",round(sd(y,na.rm=TRUE),02)))
-		}
-		#mark nas
-		#points(dat$lon,dat$lat,pch=nas,cex=pointsize)
-
-		if (grid==TRUE){
-			for (longi in seq(-180,180,30)){
-				abline(v=longi,col="grey")
-				text(longi,-80,label=longi)
-			}
-			for (lati in seq(-60,60,10)){
-				abline(h=lati,col="grey")
-				text(-190,lati,label=lati)
-			}
-		}
-		if (!is.na(region)){
-			add_region(region,regionColor)
-		}
-		#print(y)
-
-		if (col_row[1]>1 & col_row[2]>1){
-			legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
-			if (subCount==dim(reihen)[1]){
-				plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-				image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,legend.mar=8,smallplot=c(0.1,0.9,0.85,0.95),legend.lab=color_lab)
-			}
-		}
-		if (col_row[1]>1 & col_row[2]==1){
-			legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
-			if (subCount==dim(reihen)[1]){
-				plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-				image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=FALSE,fill=TRUE,smallplot=c(0.1,0.9,0.6,0.80))
-			}
-		}
-		if (col_row[1]==1 & dim(reihen)[1]==1){
-			par(mar=c(1,0,1,0))
-			legend("topright",legend=c(subIndex[i]),bty="n",cex=cex_axis)
-			plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-			image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.2,0.1,0.90))
-			plot(NA,xlim=c(0,1),ylim=c(0,1),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-			text(0.3,0.5,label=color_lab,cex=1,srt=90)
-		}
-		if (col_row[1]==1 & dim(reihen)[1]>1){
-			#image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE,smallplot=c(0.97,0.99,0.1,0.90),legend.lab=color_lab)
-			image.plot(legend.only=T, zlim=range(y), col=color,add=TRUE,legend.lab=color_lab)
-		}
-	}
-    graphics.off()
-}
-
-
-topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",regionColor="black",average=FALSE,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),main="",ID_select=1:length(dat$ID),region_name=NA,regNumb=NA,border_col="black",land_col=rgb(0.5,0.5,0.5,0.5),water_col=rgb(0,0.2,0.8,0.0)){
+topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen*NA,titel=c(""),signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen",regionColor="black",average=FALSE,cex=1,color_lab="",cex_axis=1,highlight_points=c(NA),highlight_color=c(NA),main="",ID_select=1:length(dat$ID),region_name=NA,regNumb=NA){
 	
 	pdf(file=filename_plot,width=paper[1],height=paper[2])	
 
@@ -437,7 +298,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 
 
 		#color bar
-		color=tmp$color
+		color<<-tmp$color
 		y=tmp$y[]
 	    if (is.na(layout_mat[1]) & !is.na(color[1]) & color_legend=="right"){image.plot(legend.only=T,horizontal=FALSE, zlim=range(y), col=color,add=FALSE,legend.lab=color_lab)}
 	}
@@ -450,7 +311,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
 		image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.9,0.5,0.9))
 	}
-	graphics.off()
+	if (closePlot==TRUE){graphics.off()}
 }
 
 library(oce)

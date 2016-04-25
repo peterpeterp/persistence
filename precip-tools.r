@@ -64,7 +64,7 @@ state_ana <- function(seasonStart=c(60,152,244,335,1),seasonStop=c(151,243,334,4
     var.put.nc(nc_out,"ind_ana",ind_ana)      
 }
 
-state_ana_view <- function(yAusschnitt=c(20,50),xAusschnitt=c(220,310),asp=1,paper=c(8,3.5),pointsize=0.58){
+state_ana_view <- function(){
     print(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",period,"_state_percentage.nc",sep=""))
     nc<-open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",period,"_state_percentage.nc",sep=""))	
     ind_ana<-var.get.nc(nc,"ind_ana")
@@ -103,10 +103,10 @@ state_ana_view <- function(yAusschnitt=c(20,50),xAusschnitt=c(220,310),asp=1,pap
 
     	}
     }
-	topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",period,"_state_incrCount.pdf",sep=""),reihen=reihen1,reihen_sig=reihen_sig1,titel=titel1,signi_level=0.05,farb_mitte="0",farb_palette="lila-gruen",yAusschnitt=yAusschnitt,xAusschnitt=xAusschnitt,asp=asp,paper=paper,pointsize=pointsize)
-    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",period,"_state_incrPerc.pdf",sep=""),reihen=reihen2,reihen_sig=reihen_sig2,titel=titel2,signi_level=0.05,farb_mitte="0",farb_palette="lila-gruen",yAusschnitt=yAusschnitt,xAusschnitt=xAusschnitt,asp=asp,paper=paper,pointsize=pointsize)
-    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",period,"_state_count.pdf",sep=""),reihen=reihen3,reihen_sig=reihen_sig3,titel=titel3,farb_mitte=c(0,1),farb_palette="lila-gruen",yAusschnitt=yAusschnitt,xAusschnitt=xAusschnitt,asp=asp,paper=paper,pointsize=pointsize)
-    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",period,"_state_perc.pdf",sep=""),reihen=reihen4,reihen_sig=reihen_sig4,titel=titel4,farb_mitte=c(0,1),farb_palette="lila-gruen",yAusschnitt=yAusschnitt,xAusschnitt=xAusschnitt,asp=asp,paper=paper,pointsize=pointsize)
+	topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",period,"_state_incrCount.pdf",sep=""),reihen=reihen1,reihen_sig=reihen_sig1,titel=titel1,signi_level=0.05,farb_mitte="0",farb_palette="lila-gruen")
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",period,"_state_incrPerc.pdf",sep=""),reihen=reihen2,reihen_sig=reihen_sig2,titel=titel2,signi_level=0.05,farb_mitte="0",farb_palette="lila-gruen")
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",period,"_state_count.pdf",sep=""),reihen=reihen3,reihen_sig=reihen_sig3,titel=titel3,farb_mitte=c(0,1),farb_palette="lila-gruen")
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",period,"/",trendID,"_",period,"_state_perc.pdf",sep=""),reihen=reihen4,reihen_sig=reihen_sig4,titel=titel4,farb_mitte=c(0,1),farb_palette="lila-gruen")
 }
 
 mean_dur_no_memory <- function(p){
