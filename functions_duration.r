@@ -10,24 +10,19 @@
 per_duration <- function(ind,time,state){
     # ind: is time serie of states for one grid point
     # finds periods of duration for given state
-    act_state=ind[1]
-    period=ind*NA
-    period_mid=ind*NA    
-    state_count=1
-    period_count=1
-    nas=0
-    for (i in 2:length(ind)){
-        if (is.na(ind[i]) | is.na(act_state)){
-            nas=nas+1
-            if (is.na(act_state)){
-                act_state=ind[i]
-            }
-        }
-
-        else{
-            if (act_state==ind[i] & act_state==state){
-                state_count=state_count+1
-            } 
+    
+    if (length(which(is.na(ind)))>length(ind)/2){
+        return(list(period=NA,period_mid=NA))
+    }
+    else{
+        ind[which(is.na(ind))]=-99
+        act_state=ind[1]
+        period=ind*NA
+        period_mid=ind*NA    
+        state_count=1
+        period_count=1
+        nas=0
+        for (i in 2:length(ind)){
             if (act_state!=ind[i] & act_state==state){
                 period[period_count]=state_count
                 period_mid[period_count]=time[i]-0.5*state_count/365
@@ -35,17 +30,12 @@ per_duration <- function(ind,time,state){
                 state_count=1
                 act_state=99
             }
+            if (act_state==ind[i] & act_state==state){
+                state_count=state_count+1
+            } 
             if (act_state!=ind[i] & ind[i]==state){
                 act_state=ind[i]
             }
-        }
-    }
-    if (nas>length(ind)/2){
-        return(list(period=NA,period_mid=NA))
-    }
-    else{
-        if (act_state==state){
-            period[period_count]=state_count
         }
         return(list(period=period,period_mid=period_mid))
     }
