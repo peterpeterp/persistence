@@ -284,6 +284,11 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		if (!is.na(region_name)){region_border(region_name=region_name,border_col=border_col)}
 		if (!is.na(region)){region_border(region_name=region,border_col=border_col)}
 
+		#index topright
+		if (length(indexTopRight>=dim(reihen)[1]) & !is.na(indexTopRight[i])){text(posTopRight[1],posTopRight[2],indexTopRight[i],pos=4,cex=2)}
+		#index lowleft
+		if (length(indexBottomLeft>=dim(reihen)[1]) & !is.na(indexBottomLeft[i])){text(posBottomLeft[1],posBottomLeft[2],indexBottomLeft[i],pos=4,cex=2)}
+
 		# contour lines topography
 		if (!is.na(land_col)){
 		    par(new=TRUE)
@@ -291,8 +296,8 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		}
 		#draw over axes
 
-		polygon(x=c(-200,-200,200,200),y=c(yAusschnitt[1]-outer_cut,yAusschnitt[1]+inner_cut,yAusschnitt[1]+inner_cut,yAusschnitt[1]-outer_cut),col="white",border="white")
-		polygon(x=c(-200,-200,200,200),y=c(yAusschnitt[2]-inner_cut,yAusschnitt[2]+outer_cut,yAusschnitt[2]+outer_cut,yAusschnitt[2]-inner_cut),col="white",border="white")
+		polygon(x=c(-360,-360,360,360),y=c(yAusschnitt[1]-outer_cut,yAusschnitt[1]+inner_cut,yAusschnitt[1]+inner_cut,yAusschnitt[1]-outer_cut),col="white",border="white")
+		polygon(x=c(-360,-360,360,360),y=c(yAusschnitt[2]-inner_cut,yAusschnitt[2]+outer_cut,yAusschnitt[2]+outer_cut,yAusschnitt[2]-inner_cut),col="white",border="white")
 		polygon(x=c(xAusschnitt[1]-outer_cut,xAusschnitt[1]-outer_cut,xAusschnitt[1]+inner_cut,xAusschnitt[1]+inner_cut),y=c(yAusschnitt[1],yAusschnitt[2],yAusschnitt[2],yAusschnitt[1]),col="white",border="white")
 		polygon(x=c(xAusschnitt[2]-inner_cut,xAusschnitt[2]-inner_cut,xAusschnitt[2]+outer_cut,xAusschnitt[2]+outer_cut),y=c(yAusschnitt[1],yAusschnitt[2],yAusschnitt[2],yAusschnitt[1]),col="white",border="white")
 

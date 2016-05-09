@@ -84,13 +84,15 @@ quantiles_write <- function(filename,ID_length,ID_name,period,taus,quantile_stuf
     dim.def.nc(nc_out,"taus",dimlength=length(taus),unlim=FALSE)
     dim.def.nc(nc_out,"quant_outs",dimlength=3,unlim=FALSE)
         
+    var.def.nc(nc_out,"taus","NC_DOUBLE",c(3))
 
     var.def.nc(nc_out,"quantile_stuff","NC_DOUBLE",c(0,1,2,3,4))
     att.put.nc(nc_out, "quantile_stuff", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "quantile_stuff", "dim_explanation", "NC_CHAR", "season-ID-state-...")
-    att.put.nc(nc_out, "quantile_stuff", "explanation", "NC_CHAR", "(0.05,0.25,0.5,0.75,0.95,0.99) x (quantiles, slopes, slope_sigs)")
+    att.put.nc(nc_out, "quantile_stuff", "explanation", "NC_CHAR", "(check taus) x (quantiles, slopes, slope_sigs)")
         
     var.put.nc(nc_out,"quantile_stuff",quantile_stuff) 
+    var.put.nc(nc_out,"taus",taus) 
 
     close.nc(nc_out) 
 }

@@ -249,9 +249,9 @@ exponential_fit <- function(X,Y,start_guess=c(a=0.1,b=0.1),lower_limit=c(-Inf,-I
             exp_fit<-a*exp(-X*b)
             return(list(pars=c(a,b),ana=c(chi2,R2,tmpks$D_val,tmpks$D_pos,tmpks$ks,BIC),fit=exp_fit,cdf_Data=cdf_Data,cdf_Fit=cdf_Fit))
         }
-        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_full*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
+        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_toFit*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
     }
-    if (class(nls_fit)=="try-error"){return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_full*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
+    if (class(nls_fit)=="try-error"){return(list(pars=c(NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_toFit*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
 }
 
 combi_expo <-function(x,a1,b1,b2,thresh){
@@ -314,8 +314,8 @@ two_exp_fit <- function(X,Y,y,a1_guess=0.1,b1_guess=0.1,b2_guess=0.1,thresh_gues
             comb_fit<-combi_expo(X,a1,b1,b2,thresh)
             return(list(pars=c(a1,b1,a2,b2,thresh),ana=c(chi2,R2,tmpks$D_val,tmpks$D_pos,tmpks$ks,BIC),fit=comb_fit,cdf_Data=cdf_Data,cdf_Fit=cdf_Fit))
         }
-        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_full*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
+        if (class(summ_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_toFit*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
     }
-    if (class(combi_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_full*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
+    if (class(combi_nls)=="try-error"){return(list(pars=c(NA,NA,NA,NA,NA),ana=c(NA,NA,NA,NA,NA,NA),fit=X_toFit*NA,cdf_Data=X_toFit*NA,cdf_Fit=X_toFit*NA))}
 }
 

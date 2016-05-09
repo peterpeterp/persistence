@@ -316,7 +316,7 @@ load_name<-"_CorSdNorm"
 
 #dissimilarity_matrix(lagMax=20,timeRange=c(2000,22000),load_name="_AbsCorSdNorm",normalize=TRUE)
 
-#dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
+dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
 
 #for (method in c("ward.D2","single","centroid")){
 

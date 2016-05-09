@@ -88,7 +88,7 @@ analyse_whole_EKE <- function(lvl=1){
 }
 
 plot_eke <- function(add_name="full"){
-	nc<-open.nc(paste("../data/eke/eke_ana_96x73_850mbar.nc",sep=""))
+	nc<-open.nc(paste("../data/eke/eke_ana_96x73_500mbar.nc",sep=""))
 	eke_ana<<-var.get.nc(nc,"eke_ana")
 	loc<<-var.get.nc(nc,"loc")
 	ntot<<-96*73
@@ -113,12 +113,15 @@ master_init <- function(){
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
 }
 
-#analyse_whole_EKE()
+#analyse_whole_EKE(lvl=3)
 
 
 master_init()
 plot_init_multi_SH()
 
 
-plot_init_EU_Had()
-plot_eke(add_name="EU")
+plot_init_Had()
+land_col<<-rgb(0.5,0.5,0.5,0.5)
+xAusschnitt<<-c(-120,240)
+
+plot_eke(add_name="500_mb_ww")

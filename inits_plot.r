@@ -28,8 +28,13 @@ plot_init_midlat <- function(){
     col_row<<-c(1,1)
     color_legend<<-"right"
     layout_mat<<-c(NA)
-    subIndex<<-c("a","b")
 
+    indexTopRight<<-c(NA)
+    posTopRight<<-c(175,80)
+
+    indexBottomLeft<<-c(NA)
+    posBottomLeft<<-c(-155,-45)
+    
     nbcol<<-101
 
     border_col<<-"black"
@@ -67,8 +72,13 @@ plot_init_EU_Had <- function(){
     col_row<<-c(1,1)
     color_legend<<-"seperate"
     layout_mat<<-c(NA)
-    subIndex<<-c("a","b")
 
+    indexTopRight<<-c(NA)
+    posTopRight<<-c(175,80)
+
+    indexBottomLeft<<-c(NA)
+    posBottomLeft<<-c(-155,-45)
+    
     nbcol<<-101
 
     border_col<<-"black"
@@ -106,8 +116,13 @@ plot_init_EU <- function(){
     col_row<<-c(1,1)
     color_legend<<-"seperate"
     layout_mat<<-c(NA)
-    subIndex<<-c("a","b")
 
+    indexTopRight<<-c(NA)
+    posTopRight<<-c(175,80)
+
+    indexBottomLeft<<-c(NA)
+    posBottomLeft<<-c(-155,-45)
+    
     nbcol<<-101
 
     border_col<<-"black"
@@ -123,7 +138,7 @@ plot_init_Had <- function(){
     paper<<-c(8,3.5)
     margins<<-c(0,0,0,5)
 
-    outer_cut<<-9
+    outer_cut<<-20
     inner_cut<<-2
 
     yAusschnitt<<-c(-90,90)
@@ -145,7 +160,12 @@ plot_init_Had <- function(){
     col_row<<-c(1,1)
     color_legend<<-"right"
     layout_mat<<-c(NA)
-    subIndex<<-c("a","b")
+
+    indexTopRight<<-c(NA)
+    posTopRight<<-c(175,80)
+
+    indexBottomLeft<<-c(NA)
+    posBottomLeft<<-c(-155,-45)
 
     nbcol<<-101
 
@@ -184,7 +204,12 @@ plot_init_Had_multiple <- function(){
     col_row<<-c(1,1)
     color_legend<<-"seperate"
     layout_mat<<-c(NA)
-    subIndex<<-c("a","b")
+
+    indexTopRight<<-c(NA)
+    posTopRight<<-c(175,80)
+
+    indexBottomLeft<<-c(NA)
+    posBottomLeft<<-c(-155,-45)
 
     nbcol<<-101
 
@@ -222,7 +247,12 @@ plot_init_Had_multiple_noAA <- function(){
     col_row<<-c(1,1)
     color_legend<<-"seperate"
     layout_mat<<-c(NA)
-    subIndex<<-c("a","b")
+
+    indexTopRight<<-c("a","A","b","B","c","C","d","D","e","E")
+    posTopRight<<-c(175,80)
+
+    indexBottomLeft<<-c("MAM","MAM","JJA","JJA","SON","SON","DJF","DJF","Annual","Annual")
+    posBottomLeft<<-c(-155,-45)
 
     nbcol<<-101
 
