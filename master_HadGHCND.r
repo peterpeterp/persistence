@@ -213,7 +213,8 @@ master_gridded_plots <- function(){
 }
 
 master_regional_analysis <- function(region_name="7rect",ID_length=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:ID_length,plot_select=1:ID_length){
-    #regional_attribution(region_name=region_name)
+    #regional_attribution(region_name=region_name,toDo=c(TRUE,TRUE,FALSE))
+    regional_attribution(region_name=region_name,toDo=c(FALSE,FALSE,TRUE))
     #duration_yearly_values(folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length)
     ID_name=paste("_",region_name,sep="")
     for (i in 1:(length(yearLimits)/2)){
@@ -225,7 +226,7 @@ master_regional_analysis <- function(region_name="7rect",ID_length=7,region_name
         #duration_analysis(yearPeriod=yearPeriod,option=c(1,0,0,0,0,0,0,0),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
 
         print("quant")
-        duration_analysis(yearPeriod=yearPeriod,option=c(0,0,1,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
+        #duration_analysis(yearPeriod=yearPeriod,option=c(0,0,1,0,0,0,0,0),noise_level=c(0,0.000001),ID_name=ID_name,ID_select=ID_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
         
         print("fit")
         #duration_analysis(yearPeriod=yearPeriod,option=c(0,0,0,1,0,0,0,0),add_name="2expo_4:100",xStart=4,ID_name=ID_name,ID_select=ID_select,plot_select=plot_select,ID_names=region_names,ID_length=ID_length,folder=paste("/regional/",region_name,"/",sep=""))
@@ -362,6 +363,7 @@ master_init <- function(id){
     yearLimits<<-c(1950,2014)
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
+    seasonal_boundaries<<-array(c(60,152,244,335,1,151,243,334,424,365),c(5,2))
     state_names<<-c("cold","warm")
 
     taus<<-c(0.75,0.95,0.99)
@@ -403,7 +405,7 @@ plot_init_Had_multiple_noAA()
 # regional commands
 ###################################################################
 
-#master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
+master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
 #master_regional_plots(region_name="ward24",ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),ID_length=24,region_names=1:24,hlines=c(23,20,22,8))
 
 ###################################################################
@@ -418,6 +420,6 @@ plot_init_Had_multiple_noAA()
 
 #master_correlation()
 
-master_sensitivity()
+#master_sensitivity()
 
 #master_timeLag()

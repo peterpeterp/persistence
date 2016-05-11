@@ -70,6 +70,33 @@ reg_binned_dur_write <- function(filename,binned_dur,len,ID_length=length(dat$ID
     close.nc(nc_out) 
 }
 
+reg_daily_binned_dur_write <- function(filename,daily_binned_periods,seasonal_days){
+
+    print(filename)
+    nc_out <- create.nc(filename)
+    att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", "for regional analysis, check dimensions")
+    
+    dim.def.nc(nc_out,"states",dimlength=2,unlim=FALSE)
+    dim.def.nc(nc_out,"ID",dimlength=dim(daily_binned_periods)[2], unlim=FALSE)
+    dim.def.nc(nc_out,"grid_points",dimlength=dim(daily_binned_periods)[3], unlim=FALSE)
+
+    dim.def.nc(nc_out,"periods",dimlength=dim(daily_binned_periods)[4],unlim=FALSE)
+
+    var.def.nc(nc_out,"daily_binned_periods","NC_INT",c(0,1,2,3))
+    att.put.nc(nc_out, "daily_binned_periods", "missing_value", "NC_INT", 99999)
+    att.put.nc(nc_out, "daily_binned_periods", "dim_explanation", "NC_CHAR", "states-regNumb-q_in_reg-days")
+    att.put.nc(nc_out, "daily_binned_periods", "val_explanation", "NC_CHAR", "length of persistent period binned by midpoint on days")
+
+    var.def.nc(nc_out,"seasonal_days","NC_INT",c(3))
+    att.put.nc(nc_out, "seasonal_days", "missing_value", "NC_INT", 99999)
+    att.put.nc(nc_out, "seasonal_days", "val_explanation", "NC_CHAR", "days since 1.1.1950 used as dimensions")
+
+    var.put.nc(nc_out,"daily_binned_periods",daily_binned_periods)              
+    var.put.nc(nc_out,"seasonal_days",seasonal_days)              
+
+    close.nc(nc_out) 
+}
+
 quantiles_write <- function(filename,ID_length,ID_name,period,taus,quantile_stuff,comment="quantile_analysis"){
     print(filename)
     nc_out <- create.nc(filename)

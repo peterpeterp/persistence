@@ -66,7 +66,7 @@ duration_region <- function(regions,reg,dur,dur_mid){
     return(list(duration=duration,duration_mid=duration_mid))
 }
 
-regional_attribution <- function(region_name,IDregions=c("from file"),regNumb=7,comment="polygons",years=length(dat$year)){
+regional_attribution <- function(region_name,toDo=c(TRUE,TRUE,TRUE),IDregions=c("from file"),regNumb=7,comment="polygons",years=length(dat$year)){
     # performs the entire regional analysis of markov and duration
     # result will be written in nc file
 
@@ -91,7 +91,6 @@ regional_attribution <- function(region_name,IDregions=c("from file"),regNumb=7,
         }
     }
 
-
     for (sea in 1:5){
         season<-season_names[sea]
         filename<-paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_",season,".nc",sep="")
@@ -99,49 +98,90 @@ regional_attribution <- function(region_name,IDregions=c("from file"),regNumb=7,
         dur<-var.get.nc(nc_dur,"dur")
         dur_mid<-var.get.nc(nc_dur,"dur_mid")   
 
-        reg_dur<-array(NA,dim=c(regNumb,2,365*years*100))
-        reg_dur_mid<-array(NA,dim=c(regNumb,2,365*years*100))
-        maxis<-array(NA,dim=c(2*regNumb))
+        # regional duration series, for general analysis
+        if (toDo[1]==TRUE){
+            reg_dur<-array(NA,dim=c(regNumb,2,365*years*100))
+            reg_dur_mid<-array(NA,dim=c(regNumb,2,365*years*100))
+            maxis<-array(NA,dim=c(2*regNumb))
 
-        for (state in 1:2){
-            for (reg in 1:regNumb){   
-                tmp<-duration_region(regions=IDregions[,sea],reg=reg,dur=dur[1:ntot,state,],dur_mid=dur_mid[1:ntot,state,])
-                duration<-tmp$duration
-                duration_mid<-tmp$duration_mid
-                if (length(duration)>100){
-                    ord=order(duration_mid)
-                    maxis[(state-1)*regNumb+reg]=length(duration)
-                    reg_dur[reg,state,1:maxis[(state-1)*regNumb+reg]]=duration[ord]
-                    reg_dur_mid[reg,state,1:maxis[(state-1)*regNumb+reg]]=duration_mid[ord]
-                }
-            }
-        }
-        len=max(maxis,na.rm=TRUE)
-
-        # write regional durations in form of gridded durations
-        filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep="")
-        duration_write(filename=filename,dur=reg_dur[,,1:len],dur_mid=reg_dur_mid[,,1:len],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
-
-        # create binned duration file
-        binned_dur<-array(NA,dim=c(regNumb,2,365*100,years))
-        periods_in_yr<-array(0,regNumb*2*years)
-        index=0
-        for (reg in 1:regNumb){
             for (state in 1:2){
-                for (yr in 1:length(dat$year)){
-                    index<-index+1
-                    inYr<-which(reg_dur_mid[reg,state,]>=(yr+dat$year[1]-1) & reg_dur_mid[reg,state,]<(yr+dat$year[1]-1+1))  
-                    if (length(inYr)>0){
-                        binned_dur[reg,state,1:length(inYr),yr]=reg_dur[reg,state,inYr]
-                        periods_in_yr[index]=length(inYr)
+                for (reg in 1:regNumb){   
+                    tmp<-duration_region(regions=IDregions[,sea],reg=reg,dur=dur[1:ntot,state,],dur_mid=dur_mid[1:ntot,state,])
+                    duration<-tmp$duration
+                    duration_mid<-tmp$duration_mid
+                    if (length(duration)>100){
+                        ord=order(duration_mid)
+                        maxis[(state-1)*regNumb+reg]=length(duration)
+                        reg_dur[reg,state,1:maxis[(state-1)*regNumb+reg]]=duration[ord]
+                        reg_dur_mid[reg,state,1:maxis[(state-1)*regNumb+reg]]=duration_mid[ord]
                     }
                 }
             }
+            len=max(maxis,na.rm=TRUE)
+
+            # write regional durations in form of gridded durations
+            filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep="")
+            duration_write(filename=filename,dur=reg_dur[,,1:len],dur_mid=reg_dur_mid[,,1:len],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
         }
-        # write regional duration in form of yearly binned durations
-        len=max(periods_in_yr,na.rm=TRUE)
-        filename <- paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_binned_duration_",season,".nc",sep="")
-        reg_binned_dur_write(filename=filename,binned_dur=binned_dur[,,1:len,],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
+
+        # required for yearly shuffeling where all periods within one season are treated as dependent from each other
+        if (toDo[2]==TRUE){
+            if (toDo[1]==FALSE){
+                filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_duration_",season,".nc",sep="") ; print(filename)
+                reg_dur<-var.get.nc(nc.open(filename),"dur")
+                reg_dur_mid<-var.get.nc(nc.open(filename),"dur_mid")
+            }
+            # create binned duration file
+            binned_dur<-array(NA,dim=c(regNumb,2,365*100,years))
+            periods_in_yr<-array(0,regNumb*2*years)
+            index=0
+            for (reg in 1:regNumb){
+                for (state in 1:2){
+                    for (yr in 1:length(dat$year)){
+                        index<-index+1
+                        inYr<-which(reg_dur_mid[reg,state,]>=(yr+dat$year[1]-1) & reg_dur_mid[reg,state,]<(yr+dat$year[1]-1+1))  
+                        if (length(inYr)>0){
+                            binned_dur[reg,state,1:length(inYr),yr]=reg_dur[reg,state,inYr]
+                            periods_in_yr[index]=length(inYr)
+                        }
+                    }
+                }
+            }
+            # write regional duration in form of yearly binned durations
+            len=max(periods_in_yr,na.rm=TRUE)
+            filename <- paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_binned_duration_",season,".nc",sep="")
+            reg_binned_dur_write(filename=filename,binned_dur=binned_dur[,,1:len,],len=len,ID_length=regNumb,ID_name=region_name,comment=comment)
+        }
+
+        # huge daily matrix required for advanced bootstrapping. last significance try. Here following periods are treated as independent form each other
+        if (toDo[3]==TRUE){
+            # transform actual period midpoints into indices
+            dur_mid[which((-1)^dur<0)]=dur_mid[which((-1)^dur<0)]+0.5/365
+
+            # create matrix with days as colomns with period length if period midpoint is on day
+            daily_binned_periods<-array(NA,c(2,regNumb,120,365*65))
+            for (state in 1:2){
+                for (reg in 1:regNumb){
+                    cat(paste(reg,"-"))
+                    for (q in IDregions[,5]){
+                        indices<-(dur_mid[q,state,which(!is.na(dur_mid[q,state,]))]-1950)*365+0.5
+                        daily_binned_periods[state,reg,q,indices]=dur[q,state,1:length(indices)]
+
+                    }
+                }
+            }
+
+            # delete days outside of the season
+            seasonal_sequence<-seasonal_boundaries[sea,1]:seasonal_boundaries[sea,2]
+            seasonal_days<-seasonal_sequence
+            if (sea!=4){endYear<-length(dat$year)-1}
+            if (sea==4){endYear<-length(dat$year)-2}
+            for (yr in 1:endYear){seasonal_days<-c(seasonal_days,seasonal_sequence+365*yr)}
+
+            filename <- paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_daily_binned_duration_",season,".nc",sep="") ; print(filename)
+            reg_daily_binned_dur_write(filename=filename,daily_binned_periods=daily_binned_periods[,,,seasonal_days],seasonal_days=seasonal_days)
+
+        }
     }
 }
 
