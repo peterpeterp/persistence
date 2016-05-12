@@ -357,7 +357,7 @@ master_init <- function(id){
     dataset<<-"_TMean"
     trend_style<<-"_mean"
     additional_style<<-""
-    #dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
     ntot<<-length(dat$ID)
     yearLimits<<-c(1980,2014,1950,2014,1950,1980)
     yearLimits<<-c(1950,2014)
@@ -405,7 +405,7 @@ plot_init_Had_multiple_noAA()
 # regional commands
 ###################################################################
 
-master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
+#master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
 #master_regional_plots(region_name="ward24",ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),ID_length=24,region_names=1:24,hlines=c(23,20,22,8))
 
 ###################################################################
