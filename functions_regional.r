@@ -163,14 +163,16 @@ regional_attribution <- function(region_name,toDo=c(TRUE,TRUE,TRUE),IDregions=c(
             for (state in 1:2){
                 for (reg in 1:regNumb){
                     cat(paste(reg,"-"))
-                    for (q in IDregions[,5]){
+                    count<-0
+                    for (q in which(IDregions[,5]==reg)){
+                        #print(q)
+                        count<-count+1
                         indices<-(dur_mid[q,state,which(!is.na(dur_mid[q,state,]))]-1950)*365+0.5
-                        daily_binned_periods[state,reg,q,indices]=dur[q,state,1:length(indices)]
+                        daily_binned_periods[state,reg,count,indices]=dur[q,state,1:length(indices)]
 
                     }
                 }
             }
-
             # delete days outside of the season
             seasonal_sequence<-seasonal_boundaries[sea,1]:seasonal_boundaries[sea,2]
             seasonal_days<-seasonal_sequence
