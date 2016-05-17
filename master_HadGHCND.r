@@ -304,12 +304,17 @@ master_correlation <- function(){
 }
 
 master_sensitivity <- function(){
-    sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=1,name_zusatz="mean")
-    sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=4,name_zusatz="lr",farb_mitte=c(0,300))
-    sens_gridded(file="_quantiles",var="quantile_stuff",sub_auswahl=0.95,value_auswahl=1,name_zusatz="qu95")
 
+    #sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=1,name_zusatz="mean",farb_mitte=c(-5,5))
+
+    #sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=4,name_zusatz="lr",farb_mitte=c(-100,100))
+    #sens_gridded(file="_quantiles",var="quantile_stuff",sub_auswahl=0.95,value_auswahl=1,name_zusatz="qu95")
+
+
+    season_names<<-c("MAM","JJA","SON","DJF","Annual")
     sens_regional_fits()
     sens_regional_trends()
+    season_names<<-c("MAM","JJA","SON","DJF","4seasons")
 
 }
 
@@ -405,7 +410,7 @@ plot_init_Had_multiple_noAA()
 # regional commands
 ###################################################################
 
-master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
+#master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
 #master_regional_plots(region_name="ward24",ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),ID_length=24,region_names=1:24,hlines=c(23,20,22,8))
 
 ###################################################################
@@ -420,6 +425,6 @@ master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
 
 #master_correlation()
 
-#master_sensitivity()
+master_sensitivity()
 
 #master_timeLag()

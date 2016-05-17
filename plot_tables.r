@@ -1,5 +1,5 @@
 
-plot_reg_fit_table <- function(region_name="ward24",file="_quantiles",var="quantile_stuff",name_zusatz="quanzs",value_auswahl=c(12,14,15),val_names=c("1",2),colorRange=c(0,0.4),ID_select=1:24,hlines=c(30)){
+plot_reg_fit_table <- function(region_name="ward24",file="_quantiles",var="quantile_stuff",name_zusatz="quanzs",value_auswahl=c(12,14,15),val_names=c("1",2),colorRange=c(0,0.4),ID_select=1:24,hlines=c(30),colorbar=TRUE){
     attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
     regNumb<-length(unique(attribution[!is.na(attribution)]))
 	valNumb<-length(value_auswahl)
@@ -56,16 +56,19 @@ plot_reg_fit_table <- function(region_name="ward24",file="_quantiles",var="quant
 		lines(c(1,valNumb*10+1),c(2,2),lwd=2)
 		lines(c(1,1),c(2,length(ID_select)+2),lwd=2)
 		lines(c(valNumb*10+1,valNumb*10+1),c(2,length(ID_select)+2),lwd=2)
-		par(new=TRUE)
-		plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-		#image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.9,0.5,0.9))
-		image.plot(legend.only=T,horizontal=TRUE, zlim=range(y[1:length(y)]), col=color,add=FALSE,fill=TRUE,smallplot=c(0.15,0.93,0.1,0.15))
+
+		if (colorbar==TRUE){
+			par(new=TRUE)
+			plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+			#image.plot(legend.only=T,horizontal=TRUE, zlim=range(y), col=color,add=TRUE,fill=TRUE,smallplot=c(0.1,0.9,0.5,0.9))
+			image.plot(legend.only=T,horizontal=TRUE, zlim=range(y[1:length(y)]), col=color,add=FALSE,fill=TRUE,smallplot=c(0.15,0.93,0.1,0.15))
+		}
 	}
 	graphics.off()
 }
 
 
-plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_name="ward24",colorRange=c(0,0.4),farb_palette="lila-gruen",ID_select=1:24,hlines=c(30),season_auswahl=c(1:5),style="range"){
+plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_name="ward24",colorRange=c(0,0.4),farb_palette="lila-gruen",ID_select=1:24,hlines=c(30),season_auswahl=c(1:5),style="range",colorbar=TRUE){
     attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
     regNumb<-length(unique(attribution[!is.na(attribution)]))
 	valNumb<-dim(values)[4]
@@ -79,6 +82,7 @@ plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_
 	if (farb_palette=="lila-gruen"){jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(1,1,1),rgb(1,0.7,0.7),rgb(1,0.5,1)))}
 	if (farb_palette=="lila-gruen-inv"){jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(1,1,1),rgb(1,0.7,0.7),rgb(1,0.5,1))[5:1])}
 	if (farb_palette=="weiss-rot"){jet.colors <- colorRampPalette(c( "white","yellow","red"))}
+	if (farb_palette=="blau-rot"){jet.colors <- colorRampPalette(c("blue","white","red"))}
 	color <- jet.colors(nbcol)	
 
 	plot(NA,xlim=c(0,valNumb*10+1),ylim=c(0,29),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
@@ -129,11 +133,10 @@ plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_
 	lines(c(1,valNumb*10+1),c(2,2),lwd=2)
 	lines(c(1,1),c(2,length(ID_select)+2),lwd=2)
 	lines(c(valNumb*10+1,valNumb*10+1),c(2,length(ID_select)+2),lwd=2)
-	par(new=TRUE)
-	plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
-
-	print(y[1:100])
-	if (nbcol>5){image.plot(legend.only=T,horizontal=TRUE, zlim=range(y[1:length(y)]), col=color,add=FALSE,fill=TRUE,smallplot=c(0.15,0.93,0.1,0.15))}
-
+	if (colorbar==TRUE){
+		par(new=TRUE)
+		plot(NA,xlim=c(0,1),ylim=c(1,0),ylab="",xlab="",frame.plot=FALSE,axes=FALSE)
+		if (nbcol>5){image.plot(legend.only=T,horizontal=TRUE, zlim=range(y[1:length(y)]), col=color,add=FALSE,fill=TRUE,smallplot=c(0.15,0.93,0.1,0.15))}
+	}
 	graphics.off()
 }

@@ -3,8 +3,8 @@ ks_wilcoxon_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9")){
     wilcox_test=array(NA,c(2,3))
     ks_test=array(NA,c(2,3))
 
-    pdf(paste("../plots/",dataset,additional_style,"/dur_ks_wilcox_sensibility_ecdf.pdf",sep=""),width=3,height=3)
-    par(mar=c(3, 3, 3, 3) + 0.1)  
+    pdf(paste("../plots/",dataset,additional_style,"/dur_ks_wilcox_sensibility_no_ecdf.pdf",sep=""),width=4,height=4)
+    #par(mar=c(3, 3, 3, 3) + 0.1)  
 
     filename<-paste("../data/",dataset,additional_style,"/",trendIDs[1],"/gridded/",trendIDs[1],dataset,"_duration_4seasons.nc",sep="") ; print(filename)
     dur5<-var.get.nc(open.nc(filename),"dur")
@@ -16,27 +16,44 @@ ks_wilcoxon_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9")){
     dur9<-var.get.nc(open.nc(filename),"dur")
 
     colors=c(rgb(1,0.5,0.5,0.5),rgb(0.5,1,0.5,0.5),rgb(0.5,0.5,1,0.5))
-    for (state in 1:2){
-        y5<-as.vector(dur5[,state,])
-        y7<-as.vector(dur7[,state,])
-        y9<-as.vector(dur9[,state,])
+    colors=c("cyan","green","magenta")
+    for (state in 1:3){
+        if (state<3){
+            y5<-as.vector(dur5[,state,])
+            y7<-as.vector(dur7[,state,])
+            y9<-as.vector(dur9[,state,])
+        }
+
+        if (state==3){
+            y5<-as.vector(dur5[,,])
+            y7<-as.vector(dur7[,,])
+            y9<-as.vector(dur9[,,])
+        }
 
         br<-0:max(c(max(y5,na.rm=TRUE),max(y7,na.rm=TRUE),max(y9,na.rm=TRUE)),na.rm=TRUE)
         tmp5<<-hist(y5,breaks=br,plot=FALSE)
         tmp7<<-hist(y7,breaks=br,plot=FALSE)
         tmp9<<-hist(y9,breaks=br,plot=FALSE)
 
+        trend_labels <- c("5 years","7 years","9 years")
+
         plot(NA,xlim=c(0,50),ylim=c(0,500000),main="",ylab="",xlab="")
         points(tmp5$mids,tmp5$count,col=rgb(1,0.5,0.5,0.5),cex=0.3)
         points(tmp7$mids,tmp7$count,col=rgb(0.5,1,0.5,0.5),cex=0.3)
         points(tmp9$mids,tmp9$count,col=rgb(0.5,0.5,1,0.5),cex=0.3)
-        legend("topright",col=colors,pch=c(1,1,1),legend=trendIDs)
+        legend("topright",col=colors,pch=c(1,1,1),legend=trend_labels,bty = "n")
 
         plot(NA,xlim=c(0,50),ylim=c(100,500000),main="",ylab="",xlab="",log="y")
         points(tmp5$mids[1:50],tmp5$count[1:50],col=rgb(1,0.5,0.5,0.5),cex=0.3)
         points(tmp7$mids[1:50],tmp7$count[1:50],col=rgb(0.5,1,0.5,0.5),cex=0.3)
         points(tmp9$mids[1:50],tmp9$count[1:50],col=rgb(0.5,0.5,1,0.5),cex=0.3)
-        legend("topright",col=colors,pch=c(1,1,1),legend=trendIDs)
+        legend("topright",col=colors,pch=c(1,1,1),legend=trend_labels,bty = "n")
+
+        plot(NA,xlim=c(4,50),ylim=c(-5000,2000),main="",ylab="",xlab="")
+        abline(h=0,col="gray",lty=2)
+        points(tmp5$mids[1:50],tmp5$count[1:50]-tmp7$count[1:50],col=colors[1],cex=0.3)
+        points(tmp7$mids[1:50],tmp9$count[1:50]-tmp7$count[1:50],col=colors[3],cex=0.3)
+        legend("bottomright",col=colors[c(1,3)],pch=c(1,1,1),legend=c("5 year","9 year"),bty = "n")
 
         plot(NA,xlim=c(0,50),ylim=c(-500,15000),main="",ylab="",xlab="")
         points(tmp5$mids[1:50],tmp5$count[1:50]-tmp7$count[1:50],col=rgb(1,0.5,0.5,0.5),cex=0.3)
@@ -44,23 +61,25 @@ ks_wilcoxon_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9")){
         points(tmp9$mids[1:50],tmp7$count[1:50]-tmp9$count[1:50],col=rgb(0.5,0.5,1,0.5),cex=0.3)
         legend("topright",col=colors,pch=c(1,1,1),legend=c("5-7","5-9","7-9"))
 
-        plot.ecdf(y5,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[1],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
-        par(new=TRUE)
-        plot.ecdf(y7,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[2],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
-        par(new=TRUE)
-        plot.ecdf(y9,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[3],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
-        text(40,0.4,)
+        if (FALSE){
+            plot.ecdf(y5,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[1],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
+            par(new=TRUE)
+            plot.ecdf(y7,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[2],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
+            par(new=TRUE)
+            plot.ecdf(y9,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[3],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
+            text(40,0.4,)
 
-        ks_test[state,1]=ks.test(y5,y7)$p.value
-        wilcox_test[state,1]=wilcox.test(y5,y7)$p.value
-        ks_test[state,2]=ks.test(y5,y9)$p.value
-        wilcox_test[state,2]=wilcox.test(y5,y9)$p.value
-        ks_test[state,3]=ks.test(y7,y9)$p.value
-        wilcox_test[state,3]=wilcox.test(y5,y7)$p.value
+            ks_test[state,1]=ks.test(y5,y7)$p.value
+            wilcox_test[state,1]=wilcox.test(y5,y7)$p.value
+            ks_test[state,2]=ks.test(y5,y9)$p.value
+            wilcox_test[state,2]=wilcox.test(y5,y9)$p.value
+            ks_test[state,3]=ks.test(y7,y9)$p.value
+            wilcox_test[state,3]=wilcox.test(y5,y7)$p.value
 
-        text(40,0.5,paste("ks 5~7:",round(ks_test[state,1],02)))
-        text(40,0.3,paste("ks 5~9:",round(ks_test[state,2],02)))
-        text(40,0.1,paste("ks 7~9:",round(ks_test[state,3],02)))
+            text(40,0.5,paste("ks 5~7:",round(ks_test[state,1],02)))
+            text(40,0.3,paste("ks 5~9:",round(ks_test[state,2],02)))
+            text(40,0.1,paste("ks 7~9:",round(ks_test[state,3],02)))
+        }
 
     }
     graphics.off()
@@ -275,7 +294,8 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
 library(dgof)
 
 
-#ks_wilcoxon_trenID_sensitivity(trendIDs=c("91_5","91_7","91_9"))
+ks_wilcoxon_trenID_sensitivity(trendIDs=c("91_5","91_7","91_9"))
+adsas
 
 ks_wilcoxon_period(ID_name="ward24",yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),periods=c("1950-1980","1980-2014"),ID_select=1:24)
 
