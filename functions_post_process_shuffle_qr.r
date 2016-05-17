@@ -51,7 +51,7 @@ confidence_interval <- function(seasons=1:5){
         for (q in 1:regNumb){
             for (state in 1:2){
                 for (out in c(1,2,3,4,5)){
-                    confi_quantiles[sea,q,state,out,]=quantile(shuffled_mass[,q,state,out],c(0.025,0.05,0.5,0.95,0.975),na.rm=TRUE)
+                    confi_quantiles[sea,q,state,out,]=quantile(shuffled_mass[,q,state,out],c(0.05,0.1,0.5,0.9,0.95),na.rm=TRUE)
                     if (original_slopes[sea,q,state,out,1]>confi_quantiles[sea,q,state,out,5] | original_slopes[sea,q,state,out,1]<confi_quantiles[sea,q,state,out,1]){original_slopes[sea,q,state,out,2]=-0.05}
                     if (original_slopes[sea,q,state,out,1]>confi_quantiles[sea,q,state,out,4] | original_slopes[sea,q,state,out,1]<confi_quantiles[sea,q,state,out,2]){original_slopes[sea,q,state,out,3]=-0.1}
                 }
@@ -75,7 +75,7 @@ confidence_interval <- function(seasons=1:5){
     var.def.nc(nc_out,"confi_quantiles","NC_DOUBLE",c(0,1,2,3,4))
     att.put.nc(nc_out, "confi_quantiles", "missing_value", "NC_DOUBLE", -99999.9)
     att.put.nc(nc_out, "confi_quantiles", "dim_explanation", "NC_CHAR", "season-ID-state-...")
-    att.put.nc(nc_out, "confi_quantiles", "explanation", "NC_CHAR", "(0.5,0.75,0.95,0.99,mean) x (shuflle_slope quantiles 0.025,0.05,0.5,0.95,0.975)")
+    att.put.nc(nc_out, "confi_quantiles", "explanation", "NC_CHAR", "(0.5,0.75,0.95,0.99,mean) x (shuflle_slope quantiles 0.05,0.1,0.5,0.9,0.95)")
 
     var.def.nc(nc_out,"original_slopes","NC_DOUBLE",c(0,1,2,3,4))
     att.put.nc(nc_out, "original_slopes", "missing_value", "NC_DOUBLE", -99999.9)
@@ -114,7 +114,7 @@ init <- function(){
     library(quantreg)
     library(RNetCDF)
 
-    period<<-"1980-2014"
+    period<<-"1950-2014"
     trendID<<-"91_7"
 
     dataset<<-"_TMean"
