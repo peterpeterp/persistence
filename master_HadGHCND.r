@@ -305,10 +305,10 @@ master_correlation <- function(){
 
 master_sensitivity <- function(){
 
-    #sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=1,name_zusatz="mean",farb_mitte=c(-5,5))
+    sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=1,name_zusatz="mean",farb_mitte=c(-5,5))
 
-    #sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=4,name_zusatz="lr",farb_mitte=c(-100,100))
-    #sens_gridded(file="_quantiles",var="quantile_stuff",sub_auswahl=0.95,value_auswahl=1,name_zusatz="qu95")
+    sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=4,name_zusatz="lr",farb_mitte=c(-100,100))
+    sens_gridded(file="_quantiles",var="quantile_stuff",sub_auswahl=0.95,value_auswahl=1,name_zusatz="qu95",farb_mitte=c(-5,5))
 
 
     season_names<<-c("MAM","JJA","SON","DJF","Annual")
