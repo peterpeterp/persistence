@@ -174,14 +174,18 @@ regional_attribution <- function(region_name,toDo=c(TRUE,TRUE,TRUE),IDregions=c(
                 }
             }
             # delete days outside of the season
-            seasonal_sequence<-seasonal_boundaries[sea,1]:seasonal_boundaries[sea,2]
-            seasonal_days<-seasonal_sequence
-            if (sea!=4){endYear<-length(dat$year)-1}
-            if (sea==4){endYear<-length(dat$year)-2}
-            for (yr in 1:endYear){seasonal_days<-c(seasonal_days,seasonal_sequence+365*yr)}
+            if (FALSE){
+                seasonal_sequence<-seasonal_boundaries[sea,1]:seasonal_boundaries[sea,2]
+                seasonal_days<-seasonal_sequence
+                if (sea!=4){endYear<-length(dat$year)-1}
+                if (sea==4){endYear<-length(dat$year)-2}
+                for (yr in 1:endYear){seasonal_days<-c(seasonal_days,seasonal_sequence+365*yr)}
+                filename <- paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_daily_binned_duration_",season,".nc",sep="") ; print(filename)
+                reg_daily_binned_dur_write(filename=filename,daily_binned_periods=daily_binned_periods[,,,seasonal_days],seasonal_days=seasonal_days)
+            }
 
-            filename <- paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_daily_binned_duration_",season,".nc",sep="") ; print(filename)
-            reg_daily_binned_dur_write(filename=filename,daily_binned_periods=daily_binned_periods[,,,seasonal_days],seasonal_days=seasonal_days)
+            filename <- paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_daily_binned_dur_",season,".nc",sep="") ; print(filename)
+            reg_daily_binned_dur_write(filename=filename,daily_binned_periods=daily_binned_periods,seasonal_days=1:365)
 
         }
     }
