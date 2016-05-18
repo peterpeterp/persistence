@@ -97,7 +97,7 @@ reg_daily_binned_dur_write <- function(filename,daily_binned_periods,seasonal_da
     close.nc(nc_out) 
 }
 
-quantiles_write <- function(filename,ID_length,ID_name,period,taus,quantile_stuff,comment="quantile_analysis"){
+quantiles_write <- function(filename,ID_length,ID_name,period,quantile_stuff,comment="quantile_analysis"){
     print(filename)
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR", ID_name)

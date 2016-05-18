@@ -1,8 +1,6 @@
 
 linear_trend <- function(y,t){
-    #print(lm(y[1:length(y)]~t[1:length(t)],na.rm=TRUE))
     return(c(lm(y~t)$coef[2],rq(dither(y,value=noise_level)~t,0.95)$coef[2]))
-    #return(c(lm(y[1:length(y)]~t[1:length(t)])$coef[2],rq(dither(y[1:length(y)],value=noise_level)~t[1:length(t)],0.95)$coef[2]))
 }
 
 ks_statistics <- function(y){
@@ -45,10 +43,7 @@ bootstrap_combining_regions <- function(Matrix,gridPoints,l,R){
 	for (i in 1:dim(X)[1]){t[i,]=1:dim(X)[2]}
 	t<-as.vector(t)
 
-
-
 	statistics<-array(NA,c(R,(regNumb+1),4))
-    tstart<<-proc.time()
 
     # calculate original statistics
     pos<-0
@@ -68,13 +63,11 @@ bootstrap_combining_regions <- function(Matrix,gridPoints,l,R){
 
 	print("original slope")
 	print(statistics[1,,])
-    print(tstart-proc.time())
-    tstart<<-proc.time()
 
     # start shuffling
     percentage<-0
     cat(paste("\n0 -> -> -> -> -> 100\n"))
-    for (r in 2:5){
+    for (r in 2:R){
         if (r/R*100 > percentage){
             cat("-")
             percentage<-percentage+5
@@ -99,17 +92,13 @@ bootstrap_combining_regions <- function(Matrix,gridPoints,l,R){
         #evaluate for overRegion
         y<-as.vector(shuffled_X)
         nona<-which(!is.na(y))
-        statistics[1,q,1:2]=linear_trend(y=y[nona],t=tReg[nona])
-        statistics[1,q,3:4]=ks_statistics(y=y)
-
-        print(statistics[r,,])
-        print(tstart-proc.time())        
-
+        statistics[r,(regNumb+1),1:2]=linear_trend(y=y[nona],t=tReg[nona])
+        statistics[r,(regNumb+1),3:4]=ks_statistics(y=y)
 	}
 	return(statistics)
 }
 
-trend_bootstrap_for_large_region <- function(state=1,regions=c(3,4,7,12,16,20),over_region_name="mid-lat-3-4-7-12-16-20",replics=100,add_name=1){
+trend_bootstrap_for_large_region <- function(add_name=1){
     filename <- paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_daily_binned_dur_",season,".nc",sep="")
     durMat<-var.get.nc(open.nc(filename),"daily_binned_periods")[,,,((yearPeriod[1]-1950)*365+1):((yearPeriod[2]-1950)*365)]
     print(dim(durMat))
@@ -129,8 +118,8 @@ trend_bootstrap_for_large_region <- function(state=1,regions=c(3,4,7,12,16,20),o
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR",over_region_name)
             
+    dim.def.nc(nc_out,"replics",dimlength=replics, unlim=FALSE)
     dim.def.nc(nc_out,"regs",dimlength=(length(regions)+1), unlim=FALSE)
-    dim.def.nc(nc_out,"replics",dimlength=101, unlim=FALSE)
     dim.def.nc(nc_out,"outs",dimlength=4,unlim=FALSE)
 
     var.def.nc(nc_out,"statistics","NC_DOUBLE",c(0,1,2))
@@ -170,14 +159,14 @@ folder<-paste("/regional/",region_name,"/",sep="")
 yearPeriod<-c(1979,2011)
 period<-"1979-2011"
 season<-"JJA"
+state<-2
+regions<-c(3,4,7,12,16,20)
+over_region_name<-"mid-lat-3-4-7-12-16-20"
+replics<-1001
 
-
-#trend_bootstrap_for_large_region(state=2,add_name=id)
-
-#adsads
 
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
 
-trend_bootstrap_for_large_region(state=2,add_name=id)
+trend_bootstrap_for_large_region(add_name=id)
 
