@@ -6,21 +6,12 @@ linear_trend <- function(y,t){
 }
 
 ks_statistics <- function(y){
-
     L_half<-round(length(y)/2)
     ks_full<-ks.test(y[1:L_half],y[(L_half+1):length(y)])$statistic
-    print("ks full ")
-    print(tact-proc.time())
-    tact<<-proc.time()
 
     distr_cut<-median(y,na.rm=TRUE)
     y[y<=distr_cut]=NA
     ks_upper<-ks.test(y[1:L_half],y[(L_half+1):length(y)])$statistic
-
-    print("ks upper ")
-    print(tact-proc.time())
-    tact<<-proc.time()
-
     return(c(ks_full,ks_upper))
 }
 
@@ -56,66 +47,34 @@ bootstrap_combining_regions <- function(Matrix,gridPoints,l,R){
 
 
 
-	statistics<-array(NA,c(R,(regNumb+1),5))
+	statistics<-array(NA,c(R,(regNumb+1),4))
+    tstart<<-proc.time()
 
     # calculate original statistics
     pos<-0
     for (q in 1:regNumb){
-        print(q)
-
-        tact<<-proc.time()
-        tstart<<-proc.time()
-
         y<-as.vector(X[(pos+1):(pos+gridPoints[q]),])
-
-        print("y ")
-        print(tact-proc.time())
-        tact<<-proc.time()
-
         tReg<-array(NA,dim(X[(pos+1):(pos+gridPoints[q]),]))
         for (i in 1:dim(tReg)[1]){tReg[i,]=1:dim(tReg)[2]}
-
-        print("tReg ")
-        print(tact-proc.time())
-        tact<<-proc.time()
-
         nona<-which(!is.na(y))
         statistics[1,q,1:2]=linear_trend(y=y[nona],t=tReg[nona])
-
-        print("linear trend ")
-        print(tact-proc.time())
-        tact<<-proc.time()
-
         statistics[1,q,3:4]=ks_statistics(y=y)
-        #statistics[1,q,5]=MannKendall(y[which(!is.na(y))])$tau
-
-        print("MK ")
-        print(tact-proc.time())
-        tact<<-proc.time()
-
-        print(statistics[1,,])
     }
-    print(statistics[1,,])
 
     y<-as.vector(X)
     nona<-which(!is.na(y))
     statistics[1,(regNumb+1),1:2]=linear_trend(y=y[nona],t=t[nona])
     statistics[1,(regNumb+1),3:4]=ks_statistics(y=y)
-    #statistics[1,(regNumb+1),5]=MannKendall(y)$tau
-
 
 	print("original slope")
 	print(statistics[1,,])
     print(tstart-proc.time())
-
-    adsas
-
-
+    tstart<<-proc.time()
 
     # start shuffling
     percentage<-0
     cat(paste("\n0 -> -> -> -> -> 100\n"))
-    for (r in 2:R){
+    for (r in 2:5){
         if (r/R*100 > percentage){
             cat("-")
             percentage<-percentage+5
@@ -126,9 +85,11 @@ bootstrap_combining_regions <- function(Matrix,gridPoints,l,R){
             # shuffle one region and evaluate trends for that shuffled region
             singleRegion<-X[(pos+1):(pos+gridPoints[q]),as.vector(original_order[,sample(1:(data_length/l),data_length/l,replace=FALSE)])]
             y<-as.vector(singleRegion)
-            statistics[r,q,1:2]=linear_trend( y=y,t=t)
+            tReg<-array(NA,dim(X[(pos+1):(pos+gridPoints[q]),]))
+            for (i in 1:dim(tReg)[1]){tReg[i,]=1:dim(tReg)[2]}
+            nona<-which(!is.na(y))
+            statistics[r,q,1:2]=linear_trend(y=y[nona],t=tReg[nona])
             statistics[r,q,3:4]=ks_statistics(y=y)
-            statistics[r,q,5]=MannKendall(y=y)$tau
 
             # put shuffled region block in "shuffled overregion" matrix
 			shuffled_X[(pos+1):(pos+gridPoints[q]),1:data_length]=singleRegion
@@ -137,21 +98,20 @@ bootstrap_combining_regions <- function(Matrix,gridPoints,l,R){
 
         #evaluate for overRegion
         y<-as.vector(shuffled_X)
-        statistics[1,q,1:2]=linear_trend( y=y,t=t)
+        nona<-which(!is.na(y))
+        statistics[1,q,1:2]=linear_trend(y=y[nona],t=tReg[nona])
         statistics[1,q,3:4]=ks_statistics(y=y)
-        statistics[1,q,5]=MannKendall(y=y)$tau
 
-        print(statistics[2,,])
-        adasd
+        print(statistics[r,,])
+        print(tstart-proc.time())        
+
 	}
 	return(statistics)
 }
 
 trend_bootstrap_for_large_region <- function(state=1,regions=c(3,4,7,12,16,20),over_region_name="mid-lat-3-4-7-12-16-20",replics=100,add_name=1){
     filename <- paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_daily_binned_dur_",season,".nc",sep="")
-    #filename <- paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_daily_binned_duration_",season,".nc",sep="")
-    #print(dim(var.get.nc(open.nc(filename),"daily_binned_periods")))
-    #durMatact<<-var.get.nc(open.nc(filename),"daily_binned_periods")[,,,((yearPeriod[1]-1950)*365+1):((yearPeriod[2]-1950)*365)]
+    durMat<-var.get.nc(open.nc(filename),"daily_binned_periods")[,,,((yearPeriod[1]-1950)*365+1):((yearPeriod[2]-1950)*365)]
     print(dim(durMat))
 
 
@@ -165,18 +125,19 @@ trend_bootstrap_for_large_region <- function(state=1,regions=c(3,4,7,12,16,20),o
     print(paste(season,state_names[state],region_name,over_region_name,"(contains several regions)"))
 	statistics<-bootstrap_combining_regions(Matrix,gridPoints,7,replics)
 
-	filename <- paste("../data/",dataset,additional_style,"/",trendID,folder,"/",period,"/bootstrap/",trendID,dataset,"_",period,"_linear_trend_boot_",season,"_",state_names[state],"_",region_name,"-",over_region_name,"_",add_name,".nc",sep="") ; print(filename)
+	filename <- paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/bootstrap/",trendID,dataset,"_",period,"_linear_trend_boot_",season,"_",state_names[state],"_",region_name,"-",over_region_name,"_",add_name,".nc",sep="") ; print(filename)
     nc_out <- create.nc(filename)
     att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR",over_region_name)
             
-    dim.def.nc(nc_out,"replics",dimlength=100, unlim=FALSE)
-    dim.def.nc(nc_out,"outs",dimlength=3,unlim=FALSE)
+    dim.def.nc(nc_out,"regs",dimlength=(length(regions)+1), unlim=FALSE)
+    dim.def.nc(nc_out,"replics",dimlength=101, unlim=FALSE)
+    dim.def.nc(nc_out,"outs",dimlength=4,unlim=FALSE)
 
-    var.def.nc(nc_out,"trends","NC_DOUBLE",c(0,1))
-    att.put.nc(nc_out, "trends", "missing_value", "NC_DOUBLE", -99999)
-    att.put.nc(nc_out, "trends", "dim_explanation", "NC_CHAR", "(1-original, 99-random) - (qr 0.95, NA, mean")
+    var.def.nc(nc_out,"statistics","NC_DOUBLE",c(0,1,2))
+    att.put.nc(nc_out, "statistics", "missing_value", "NC_DOUBLE", -99999)
+    att.put.nc(nc_out, "statistics", "dim_explanation", "NC_CHAR", "(Regional values, big Region value) x (1-original, 100-random) x (lr, qr 0.95, ks_full, ks_upper")
 
-    var.put.nc(nc_out,"trends",statistics)              
+    var.put.nc(nc_out,"statistics",statistics)              
 
     close.nc(nc_out) 
 }
@@ -190,7 +151,7 @@ init <- function(){
     nday<<-91
     nyr<<-7
     trendID<<-paste(nday,"_",nyr,sep="")
-    datasetact<<-"_TMean"
+    dataset<<-"_TMean"
     additional_style<<-""
     taus<<-c(0.75,0.95,0.99)
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
@@ -211,9 +172,9 @@ period<-"1979-2011"
 season<-"JJA"
 
 
-trend_bootstrap_for_large_region(state=2,add_name=id)
+#trend_bootstrap_for_large_region(state=2,add_name=id)
 
-adsads
+#adsads
 
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
