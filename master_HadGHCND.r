@@ -289,18 +289,23 @@ master_special_plots <- function(){
 
 master_correlation <- function(){
     plot_init_Had_multiple()
+    correl_init()
 
-    #eke_dur_correl(plot=FALSE,detrending=TRUE,ID_select<-1:ntot)
-
-
+    # eke 
+    #eke_dur_correl(level=3,plot=FALSE,detrending=TRUE)
     #eke_dur_correl(plot=TRUE,detrending=TRUE,ID_select<-c(488))
 
-    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=1,val_zusatz="_mean",farb_mitte=c(-3,3),ID_select<-1:ntot)
-    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=3,val_zusatz="_95",farb_mitte=c(-5,5),ID_select<-1:ntot)
+    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=1,val_zusatz="_mean",farb_mitte=c(-3,3),ID_select=1:ntot)
+    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=3,val_zusatz="_95",farb_mitte=c(-5,5),ID_select=1:ntot)
 
-    plot_init_EU_Had()
-    dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=1,val_zusatz="_mean_EU",farb_mitte=c(-3,3),ID_select<-1:ntot)
-    dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=3,val_zusatz="_95_EU",farb_mitte=c(-5,5),ID_select<-1:ntot)
+    #plot_init_EU_Had()
+    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=1,val_zusatz="_mean_EU",farb_mitte=c(-3,3),ID_select<-1:ntot)
+    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=3,val_zusatz="_95_EU",farb_mitte=c(-5,5),ID_select<-1:ntot)
+
+    # noa
+    index_dur_correl(toCor_name="NAO",toCor_short="nao")
+    dur_correlation_plot(toCor_short="nao",toCor_name="NAO",toCor_shortZu="",val=1,val_zusatz="_mean",farb_mitte=c(-3,3),ID_select=1:ntot)
+    dur_correlation_plot(toCor_short="nao",toCor_name="NAO",toCor_shortZu="",val=1,val_zusatz="_95",farb_mitte=c(-5,5),ID_select=1:ntot)
 }
 
 master_sensitivity <- function(){
@@ -365,7 +370,7 @@ master_init <- function(id){
     dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
     ntot<<-length(dat$ID)
     yearLimits<<-c(1980,2014,1950,2014,1950,1980)
-    yearLimits<<-c(1979,2011)
+    yearLimits<<-c(1979,1995,1995,2011)
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     seasonal_boundaries<<-array(c(60,152,244,335,1,151,243,334,424,365),c(5,2))
@@ -402,16 +407,16 @@ plot_init_Had_multiple_noAA()
 # fits, quantiles etc
 ###################################################################
 
-master_gridded_analysis()
-master_gridded_plots()
+#master_gridded_analysis()
+#master_gridded_plots()
 
 
 ###################################################################
 # regional commands
 ###################################################################
 
-master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
-master_regional_plots(region_name="ward24",ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),ID_length=24,region_names=1:24,hlines=c(23,20,22,8))
+#master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
+#master_regional_plots(region_name="ward24",ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),ID_length=24,region_names=1:24,hlines=c(23,20,22,8))
 
 ###################################################################
 # special stuff
@@ -423,7 +428,7 @@ master_regional_plots(region_name="ward24",ID_select=c(1,2,6,10,13,19,23,3,4,7,1
 
 #master_nas()
 
-#master_correlation()
+master_correlation()
 
 #master_sensitivity()
 

@@ -49,11 +49,15 @@ bootstrap_combining_regions <- function(Matrix,gridPoints,l,R){
     pos<-0
     for (q in 1:regNumb){
         y<-as.vector(X[(pos+1):(pos+gridPoints[q]),])
+
         tReg<-array(NA,dim(X[(pos+1):(pos+gridPoints[q]),]))
         for (i in 1:dim(tReg)[1]){tReg[i,]=1:dim(tReg)[2]}
+        tReg<-as.vector(tReg)
+
         nona<-which(!is.na(y))
         statistics[1,q,1:2]=linear_trend(y=y[nona],t=tReg[nona])
         statistics[1,q,3:4]=ks_statistics(y=y)
+        pos<-pos+gridPoints[q]
     }
 
     y<-as.vector(X)
@@ -62,7 +66,9 @@ bootstrap_combining_regions <- function(Matrix,gridPoints,l,R){
     statistics[1,(regNumb+1),3:4]=ks_statistics(y=y)
 
 	print("original slope")
-	print(statistics[1,,])
+    print(statistics[1,,])
+    print("original slope [day/year]")
+    print(statistics[1,,]*365)
 
     # start shuffling
     percentage<-0
@@ -100,33 +106,37 @@ bootstrap_combining_regions <- function(Matrix,gridPoints,l,R){
 
 trend_bootstrap_for_large_region <- function(add_name=1){
     filename <- paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_reg_daily_binned_dur_",season,".nc",sep="")
-    durMat<-var.get.nc(open.nc(filename),"daily_binned_periods")[,,,((yearPeriod[1]-1950)*365+1):((yearPeriod[2]-1950)*365)]
+    durMat<<-var.get.nc(open.nc(filename),"daily_binned_periods")[,,,((yearPeriod[1]-1950)*365+1):((yearPeriod[2]-1950)*365)]
     print(dim(durMat))
-
 
     attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
     gridPoints<-array(NA,length(regions))
     for (i in 1:length(regions)){gridPoints[i]=length(which(attribution==regions[i]))}
 
-    Matrix<<-array(NA,c(length(regions),120,dim(durMat)[4]))
+    Matrix<-array(NA,c(length(regions),120,dim(durMat)[4]))
     for (i in 1:length(regions)){Matrix[i,,]=durMat[state,regions[i],,]}
 
     print(paste(season,state_names[state],region_name,over_region_name,"(contains several regions)"))
+    print(regions)
+
 	statistics<-bootstrap_combining_regions(Matrix,gridPoints,7,replics)
 
-	filename <- paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/bootstrap/",trendID,dataset,"_",period,"_linear_trend_boot_",season,"_",state_names[state],"_",region_name,"-",over_region_name,"_",add_name,".nc",sep="") ; print(filename)
+	filename <- paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/bootstrap/",trendID,dataset,"_",period,"_boot_",region_name,"_",over_region_name,"_",season,"_",state_names[state],"_",add_name,".nc",sep="") ; print(filename)
     nc_out <- create.nc(filename)
-    att.put.nc(nc_out, "NC_GLOBAL", "ID_explanation", "NC_CHAR",over_region_name)
+    att.put.nc(nc_out, "NC_GLOBAL", "included regions:", "NC_CHAR","see regions")
             
     dim.def.nc(nc_out,"replics",dimlength=replics, unlim=FALSE)
     dim.def.nc(nc_out,"regs",dimlength=(length(regions)+1), unlim=FALSE)
     dim.def.nc(nc_out,"outs",dimlength=4,unlim=FALSE)
 
+    var.def.nc(nc_out,"regions","NC_SHORT",c(1))
+
     var.def.nc(nc_out,"statistics","NC_DOUBLE",c(0,1,2))
     att.put.nc(nc_out, "statistics", "missing_value", "NC_DOUBLE", -99999)
-    att.put.nc(nc_out, "statistics", "dim_explanation", "NC_CHAR", "(Regional values, big Region value) x (1-original, 100-random) x (lr, qr 0.95, ks_full, ks_upper")
+    att.put.nc(nc_out, "statistics", "dim_explanation", "NC_CHAR", "(Regional values, big Region value) x (1-original, 1000-random) x (lr, qr 0.95, ks_full, ks_upper")
 
-    var.put.nc(nc_out,"statistics",statistics)              
+    var.put.nc(nc_out,"statistics",statistics)   
+    var.put.nc(nc_out,"regions",c(regions,999))           
 
     close.nc(nc_out) 
 }
@@ -158,15 +168,34 @@ region_name<-"ward24"
 folder<-paste("/regional/",region_name,"/",sep="")
 yearPeriod<-c(1979,2011)
 period<-"1979-2011"
-season<-"JJA"
-state<-2
-regions<-c(3,4,7,12,16,20)
-over_region_name<-"mid-lat-3-4-7-12-16-20"
 replics<-1001
 
+
+regions<-c(9,15,24) ; over_region_name<-"SHml"
+
+#regions<-c(5,11,14,18,21,22) ; over_region_name<-"NHst"
+
+#regions<-c(1,2,6,10,13,19,23) ; over_region_name<-"NHpo"
+
+#regions<-c(8,17) ; over_region_name<-"tro"
+
+#regions<-c(3,4,7,12,16,20) ; over_region_name<-"NHml"
+
+
+if (FALSE){
+    season<-"DJF"
+    state<-1
+    trend_bootstrap_for_large_region(add_name=1)
+}
 
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
 
-trend_bootstrap_for_large_region(add_name=id)
+for (season in season_names){
+    for (state in 1:2){
+        trend_bootstrap_for_large_region(add_name=id)
+    }
+}
+
+
 

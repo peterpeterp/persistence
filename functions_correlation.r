@@ -106,13 +106,14 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 
 					# quantile regression ------------------------------------------------------------
 					#there was a really strange bug here! problem solved with dither
+					# next strange problem: if detrending==FLASE problem with integers (possibly)
 					sf=try(summary(rq(dither(dur_ext,value=noise_level)~dither(toCor_ext,value=noise_level),taus),se="boot"))
 		               if (class(sf)!="try-error"){
 		                slope=sapply(sf, function(x) c(tau=x$tau, x$coefficients[-1,]))
 		                correlation[sea,q,state,1:length(taus),1]=slope[2,1:length(taus)]
 		                correlation[sea,q,state,1:length(taus),2]=slope[5,1:length(taus)]
 		                correlation[sea,q,state,1:length(taus),3]=sapply(sf, function(x) c(tau=x$tau, x$coefficients[1,1]))[2,]
-		            }					
+		            }	
 
 					# calculate correlation between mean duration and toCor
 					if (sd(toCor_ext,na.rm=TRUE)!=0 & sd(durQu[,(length(taus)+2)],na.rm=TRUE)!=0){
@@ -211,40 +212,23 @@ eke_dur_correl <- function(level=1,plot=FALSE,detrending=TRUE){
 	nc=open.nc("../data/eke/eke_ID.nc")
 	eke=var.get.nc(nc,"eke_sea")
 	pressure=var.get.nc(nc,"levelist")
+	print(paste(pressure[3],"mbar",sep=""))
 
-	duration_correl(plot=plot,toCor=eke[,level,,],toCor_name="eddy kynetic energy",toCor_short="eke",toCor_shortZu=paste(pressure[1],"mbar",sep=""),toCor_startYear=1979,detrending=detrending)
+	duration_correl(plot=plot,toCor=eke[,level,,],toCor_name="eddy kynetic energy",toCor_short="eke",toCor_shortZu=paste(pressure[3],"mbar",sep=""),toCor_startYear=1979,detrending=detrending)
 }
 
 
-index_dur_correl <- function(dat,trendID="91_5",dataset="_TX",additional_style="",states=2,toCor_name="NAO",toCor_short="nao",stations=seq(1,1319,1),plot=FALSE){
-	nc=open.ncdf(paste("../data/climatological_indices/",toCor_name,"_sea.nc",sep=""))
-	index_sea=get.var.ncdf(nc,toCor_short)
+index_dur_correl <- function(toCor_name="NAO",toCor_short="nao",stations=seq(1,1319,1),plot=FALSE,detrending=TRUE){
+	nc=open.nc(paste("../data/climatological_indices/",toCor_name,"_sea.nc",sep=""))
+	index_sea=var.get.nc(nc,toCor_short)
 
-	duration_correl(dat=dat,dataset=dataset,additional_style=additional_style,trendID=trendID,states=states,stations=stations,plot=plot,toCor=index_sea,toCor_name=toCor_name,toCor_short=toCor_short,toCor_shortZu="",toCor_startYear=1950)
+	duration_correl(plot=plot,toCor=index_sea,toCor_name=toCor_name,toCor_short=toCor_short,toCor_shortZu="",toCor_startYear=1950,detrending=detrending)
 }
 
 
 
 correl_init <- function(){
-	source("load.r")
-	source("map_plot.r")
-	source("inits_plot.r")
-    library(quantreg)
-    library(RNetCDF)
-    library(SDMTools)
-    library(fields)
-
-	worldmap<<-getMap(resolution = "low")
-
-	trendID<<-"91_7"
-	dataset<<-"_TMean"
-	additional_style<<-""
-    dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
-	ntot<<-1319
-
-    season_names<<-c("MAM","JJA","SON","DJF","4seasons")
-    taus<<-c(0.75,0.9,0.95,0.99)
-    ID_select<-1:ntot
+    ID_select<<-1:ntot
     noise_level<<-0.0000001
 }
 
@@ -259,8 +243,8 @@ if (1==2){
 		indexGr=indicesGr[i]
 		indexKl=indicesKl[i]
 
-		index_dur_correl(dat,dataset=dataset,additional_style=additional_style,toCor_name=indexGr,toCor_short=indexKl)
-		dur_correlation_plot(dat,dataset=dataset,additional_style=additional_style,toCor_short=indexKl,toCor_name=indexGr,toCor_shortZu="",quA=0.95,farb_mitte="0")
+		index_dur_correl(toCor_name=indexGr,toCor_short=indexKl)
+		dur_correlation_plot(toCor_short=indexKl,toCor_name=indexGr,toCor_shortZu="",quA=0.95,farb_mitte="0")
 	}
 }
 
