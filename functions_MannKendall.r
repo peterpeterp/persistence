@@ -96,11 +96,11 @@ duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_sel
  
     signis<-array(NA,c(5,ID_length,2,5,2))
     #signis[,,,1,1][which(MK[,,,2,2]>0.1)]=1
-    signis[,,,4,1][which(MK[,,,2,2]<=0.1)]=1
-    signis[,,,5,1][which(MK[,,,2,2]<=0.05)]=5
+    #signis[,,,4,1][which(MK[,,,2,2]<=0.1)]=1
+    signis[,,,5,1][which(MK[,,,2,2]<=0.05)]=1
 
     #signis[,,,1,2][which(MK[,,,5,2]>0.1)]=1
-    signis[,,,4,2][which(MK[,,,5,2]<=0.1)]=1
+    #signis[,,,4,2][which(MK[,,,5,2]<=0.1)]=1
     signis[,,,5,2][which(MK[,,,5,2]<=0.05)]=1
 
 
@@ -109,6 +109,7 @@ duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_sel
     values[,,,1][which(MK[,,,5,1]<0)]=-1
     values[,,,2][which(MK[,,,3,1]>0)]=1
     values[,,,2][which(MK[,,,3,1]<0)]=-1
+
 
     nbcol<<-2
     plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_MK.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen",ID_select=ID_select,hlines=hlines,style="yn")

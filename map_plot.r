@@ -173,6 +173,10 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 	if (farb_palette_loc=="blau-rot"){
 		jet.colors <- colorRampPalette( c("blue","white","red"))
 	}
+	if (farb_palette_loc=="cyan-magenta"){
+		jet.colors <- colorRampPalette(c("cyan","white","magenta"))
+	}
+
 	if (farb_palette_loc=="lila-gruen"){
 		jet.colors <- colorRampPalette( c(rgb(0.5,1,0.5),rgb(0.2,0.6,0.2), rgb(0.0,0.0,0.0),rgb(0.6,0.2,0.6),rgb(1,0.5,1)))
 		jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(0.0,0.0,0.0),rgb(1,0.5,1),rgb(1,0.7,0.7)))

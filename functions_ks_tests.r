@@ -100,6 +100,7 @@ distr_comparison_plot <- function(X,cdf1,cdf2,D_val,D_pos,ks,xUntil,season,state
 }
 
 ks_wilcoxon_period <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=paste("/regional/",ID_name,"/",sep=""),ID_select,ID_length=length(ID_select),distr_cut=4){
+    # this old, can only be used for plots
 
     tests=array(NA,c(5,ID_length,2,10))
 
@@ -208,6 +209,8 @@ ks_wilcoxon_period <- function(ID_name,yearPeriod1,yearPeriod2,periods,folder=pa
 }
 
 
+
+
 fit_plot_comparison <- function(distr,fits,sea,q,state,ks){
     color=c(rgb(0.2,0.7,0.2),rgb(1,0.5,0))
 
@@ -221,15 +224,17 @@ fit_plot_comparison <- function(distr,fits,sea,q,state,ks){
     plot(NA,xlab="days",ylim=c(0.00001,0.25),xlim=c(0,70),ylab="",axes=FALSE,frame.plot=TRUE,pch=20,col=color[state],cex=0.5)
     #text(40,0.18+0.06,paste("KS_full=",round(ks[1],03),"\n"," KS_upper=",round(ks[6],03)),pos=1,col="black")   
 
-    text(24,0.21,expression('KS'['full']),col="black",pos=4)   
-    if (!is.na(ks[1,3]) & !is.na(ks[1,2])){text(43,0.21,paste("<5%"),col="black",pos=4)}
-    if (!is.na(ks[1,3]) & is.na(ks[1,2])){text(43,0.21,paste("<10%"),col="black",pos=4)}
-    if (is.na(ks[1,3]) & is.na(ks[1,2])){text(43,0.21,paste(">10%"),col="black",pos=4)}
+    if (!is.na(ks[1,1])){
+        text(24,0.21,expression('KS'['full']),col="black",pos=4)   
+        if (ks[1,1]>=ks[1,7]){text(43,0.21,paste(">95%"),col="black",pos=4)}
+        if (ks[1,1]>=ks[1,6] & ks[1,1]<ks[1,7]){text(43,0.21,paste(">90%"),col="black",pos=4)}
+        if (ks[1,1]<=ks[1,6]){text(43,0.21,paste("<90%"),col="black",pos=4)}
 
-    text(20,0.18,expression('KS'['upper']),col="black",pos=4)   
-    if (!is.na(ks[2,3]) & !is.na(ks[2,2])){text(43,0.18,paste("<5%"),col="black",pos=4)}
-    if (!is.na(ks[2,3]) & is.na(ks[2,2])){text(43,0.18,paste("<10%"),col="black",pos=4)}
-    if (is.na(ks[2,3]) & is.na(ks[2,2])){text(43,0.18,paste(">10%"),col="black",pos=4)}
+        text(20,0.18,expression('KS'['upper']),col="black",pos=4)   
+        if (ks[2,1]>=ks[2,7]){text(43,0.18,paste(">95%"),col="black",pos=4)}
+        if (ks[2,1]>=ks[2,6] & ks[2,1]<ks[2,7]){text(43,0.18,paste(">90%"),col="black",pos=4)}
+        if (ks[2,1]<=ks[2,6]){text(43,0.18,paste("<90%"),col="black",pos=4)}
+    }
 
     for (i in 1:2){
         nonull<-which(distr[i,3,]>0)
@@ -248,35 +253,23 @@ fit_plot_comparison <- function(distr,fits,sea,q,state,ks){
     }              
 }
 
-distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",ID_name,"/",sep=""),ID_select,ID_length=length(ID_select),region_names=1:24,hlines=c(30)){
+distribution_comparision <- function(region_name,periods,period,ID_select,ID_length=length(ID_select),region_names=1:24,hlines=c(30)){
 
-    #old method
-   	#filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_ks_wilcox_",periods[1],"_vs_",periods[2],".nc",sep="") ; print(filename)
-    #ks_test <<- var.get.nc(open.nc(filename),"tests")
+    filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_bootstrap.nc",sep="") ; print(filename)
+    original_ks<-var.get.nc(open.nc(filename),"statistics")[,1:24,,3:4,]
 
-    #shuflled
-    filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_shuff_ks.nc",sep="")
-    original_ks<-var.get.nc(open.nc(filename),"original_ks")
-
-    fit_params=array(NA,c(2,6,ID_length,2,30))
-    quantiles=array(NA,c(2,6,ID_length,2,length(taus)+1,3))
-    distrs=array(NA,c(2,6,ID_length,2,10,100))
+    fit_params=array(NA,c(2,5,ID_length,2,30))
+    distrs=array(NA,c(2,5,ID_length,2,10,100))
     for (i in 1:length(periods)){
-    	period<-periods[i]
-    	filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_fit_","2expo_4:100",".nc",sep=""); print(filename)
-   	 	fit_params[i,,,,]=var.get.nc(open.nc(filename),"fit_stuff")
-
-        filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_quantiles",".nc",sep=""); print(filename)
-        quantiles[i,,,,1:length(taus),]=var.get.nc(open.nc(filename),"quantile_stuff")
-
-        filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_others",".nc",sep=""); print(filename)
-        quantiles[i,,,,7,1]=var.get.nc(open.nc(filename),"other_stuff")[,,,1]
+    	part_period<-periods[i]
+    	filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",part_period,"/",trendID,"_",dataset,"_",region_name,"_",part_period,"_fit_","2expo_4:100",".nc",sep=""); print(filename)
+   	 	fit_params[i,,,,]=var.get.nc(open.nc(filename),"fit_stuff")[1:5,,,]
 		
-		filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",ID_name,"_",period,"_distributions.nc",sep=""); print(filename)
-		distrs[i,,,,,]=var.get.nc(open.nc(filename),"distr_stuff")
+		filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",part_period,"/",trendID,"_",dataset,"_",region_name,"_",part_period,"_distributions.nc",sep=""); print(filename)
+		distrs[i,,,,,]=var.get.nc(open.nc(filename),"distr_stuff")[1:5,,,,]
 	}
 
-	pdf(paste("../plots/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_dur_wilcox_",periods[1],"_vs_",periods[2],".pdf",sep=""),width=3,height=3)
+	pdf(paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",trendID,dataset,"_",region_name,"_dur_wilcox_",periods[1],"_vs_",periods[2],".pdf",sep=""),width=3,height=3)
     for (sea in 1:5){ 
         season<-season_names[sea]
         cat(paste("\n",season))  
@@ -294,10 +287,11 @@ distribution_comparision <- function(ID_name,periods,folder=paste("/regional/",I
 library(dgof)
 
 
-ks_wilcoxon_trenID_sensitivity(trendIDs=c("91_5","91_7","91_9"))
-adsas
+#ks_wilcoxon_trenID_sensitivity(trendIDs=c("91_5","91_7","91_9"))
 
-ks_wilcoxon_period(ID_name="ward24",yearPeriod1=c(1950,1980),yearPeriod2=c(1980,2014),periods=c("1950-1980","1980-2014"),ID_select=1:24)
+# this old, can only be used for plots
+#ks_wilcoxon_period(ID_name="ward24",yearPeriod1=c(1979,1995),yearPeriod2=c(1995,2011),periods=c("1979-1995","1995-2011"),ID_select=1:24)
+# this old, can only be used for plots
 
 ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24)
 ID_length=24
@@ -305,4 +299,4 @@ hlines=c(23,20,22,8)
 
 
 
-distribution_comparision(ID_name="ward24",periods=c("1950-1980","1980-2014"),ID_select=ID_select,ID_length=ID_length,hlines=hlines)
+distribution_comparision(region_name="ward24",period="1979-2011",periods=c("1979-1995","1995-2011"),ID_select=ID_select,ID_length=ID_length,hlines=hlines)

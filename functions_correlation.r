@@ -190,8 +190,8 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 
 dur_correlation_plot <- function(toCor_short="nao",toCor_name="NAO",toCor_shortZu="",val=1,val_zusatz="_mean",farb_mitte=farb_mitte){
 
-    nc=open.nc(paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_eke_",toCor_shortZu,".nc",sep=""))
-    correlation=var.get.nc(nc,"correlation")
+	filename<-paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_",toCor_short,toCor_shortZu,".nc",sep="") ; print(filename)
+    correlation=var.get.nc(open.nc(filename),"correlation")
 	reihen=array(NA,dim=c(10,ntot))
 	reihen_sig=array(NA,dim=c(10,ntot))
 	titel=c()

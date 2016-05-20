@@ -171,7 +171,7 @@ period<-"1979-2011"
 replics<-1001
 
 
-regions<-c(9,15,24) ; over_region_name<-"SHml"
+#regions<-c(9,15,24) ; over_region_name<-"SHml"
 
 #regions<-c(5,11,14,18,21,22) ; over_region_name<-"NHst"
 
@@ -179,7 +179,7 @@ regions<-c(9,15,24) ; over_region_name<-"SHml"
 
 #regions<-c(8,17) ; over_region_name<-"tro"
 
-#regions<-c(3,4,7,12,16,20) ; over_region_name<-"NHml"
+regions<-c(3,4,7,12,16,20) ; over_region_name<-"NHml"
 
 
 if (FALSE){
@@ -190,6 +190,11 @@ if (FALSE){
 
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
+
+season<-"4seasons"
+state<-2
+trend_bootstrap_for_large_region(add_name=id)
+adsas
 
 for (season in season_names){
     for (state in 1:2){

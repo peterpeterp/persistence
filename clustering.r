@@ -260,6 +260,15 @@ write_cluster_region_files <- function(lagMax=20,load_name="_CorLag",add_name=""
     }
     write.table(attribution[nGroup,],paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))
     write.table(mids,paste("../data/",dataset,"/ID_regions/",region_name,"_mids_mean.txt",sep=""))
+
+    overReg_attribution<-attribution[nGroup,]*NA
+    overReg_attribution[which(attribution[nGroup,] %in% c(1,2,6,10,13,19,23))]=1
+    overReg_attribution[which(attribution[nGroup,] %in% c(3,4,7,12,16,20))]=2
+    overReg_attribution[which(attribution[nGroup,] %in% c(5,11,14,18,21,22))]=3
+    overReg_attribution[which(attribution[nGroup,] %in% c(8,17))]=4
+    overReg_attribution[which(attribution[nGroup,] %in% c(9,15,24))]=5
+
+    write.table(overReg_attribution,paste("../data/",dataset,"/ID_regions/overReg.txt",sep=""))
 }
 
 cluster_vis_map <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),nGroup=22,untilGroup=25,method="ward.D2",region_name="ward22",ID_select=1:1319){
@@ -272,10 +281,28 @@ cluster_vis_map <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=
 
     tmp=put_points(points=attribution[nGroup,],farb_palette="viele",ID_select=ID_select)
     region_border(region_name=region_name,border_col="black")
-    #for (i in c(-60,-30,0,30,60)){
-    #    abline(h=i,lty=2,col="grey")
-    #    text(-170,i,label=i)
-    #}
+    text(-70,8,8)
+
+    #draw over axes
+    polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")
+    polygon(x=c(-200,-200,200,200),y=c(100,88,88,100),col="white",border="white")
+    graphics.off()
+
+    pdf(paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",nGroup,"_vis_overReg.pdf",sep=""),width=6,height=3)
+        plot(topoWorld,xlim=xAusschnitt,ylim=c(-90,90),asp=asp,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,0))
+
+    overReg_attribution<-attribution[nGroup,]*NA
+    overReg_attribution[which(attribution[nGroup,] %in% c(1,2,6,10,13,19,23))]=1
+    overReg_attribution[which(attribution[nGroup,] %in% c(3,4,7,12,16,20))]=2
+    overReg_attribution[which(attribution[nGroup,] %in% c(5,11,14,18,21,22))]=3
+    overReg_attribution[which(attribution[nGroup,] %in% c(8,17))]=4
+    overReg_attribution[which(attribution[nGroup,] %in% c(9,15,24))]=5
+
+    nbcol<<-5
+    tmp=put_points(points=overReg_attribution,farb_palette="viele",ID_select=ID_select)
+    region_border(region_name=region_name,border_col="black")
+    text(-70,8,8)
+
     #draw over axes
     polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")
     polygon(x=c(-200,-200,200,200),y=c(100,88,88,100),col="white",border="white")
@@ -316,7 +343,7 @@ load_name<-"_CorSdNorm"
 
 #dissimilarity_matrix(lagMax=20,timeRange=c(2000,22000),load_name="_AbsCorSdNorm",normalize=TRUE)
 
-dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
+#dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
 
 #for (method in c("ward.D2","single","centroid")){
 
@@ -326,8 +353,8 @@ ID_select=1:1319
 for (method in c("ward.D2")){
     print(method)
     #cluster_evaluation(add_name="_ww",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=35)
-    cluster_view(add_name="_ww",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=35)
+    #cluster_view(add_name="_ww",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=35)
 }
 
-#write_cluster_region_files(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")
-#cluster_vis_map(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")
+write_cluster_region_files(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")
+cluster_vis_map(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")

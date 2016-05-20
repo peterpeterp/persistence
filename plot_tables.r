@@ -15,7 +15,7 @@ plot_reg_fit_table <- function(region_name="ward24",file="_quantiles",var="quant
 
 	ID_select<-ID_select[length(ID_select):1]
 
-	jet.colors <- colorRampPalette( c("red","yellow","green","blue") )
+	jet.colors <- colorRampPalette(c("blue","green","yellow","red","violet")[5:1])
 	color <- jet.colors(101)	
 
 	if (TRUE){
@@ -68,13 +68,13 @@ plot_reg_fit_table <- function(region_name="ward24",file="_quantiles",var="quant
 }
 
 
-plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_name="ward24",colorRange=c(0,0.4),farb_palette="lila-gruen",ID_select=1:24,hlines=c(30),season_auswahl=c(1:5),style="range",colorbar=TRUE){
+plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_name="ward24",colorRange=c(0,0.4),farb_palette="lila-gruen",ID_select=1:24,regLabel=1:24,hlines=c(30),season_auswahl=c(1:5),paperHeight=6,style="range",colorbar=TRUE,header=TRUE){
     attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
     regNumb<-length(unique(attribution[!is.na(attribution)]))
 	valNumb<-dim(values)[4]
 
 
-	pdf(file=filename_plot,width=valNumb*3,height=6)
+	pdf(file=filename_plot,width=valNumb*3,height=paperHeight)
 	par(mar=c(3,0,0,0))
 
 	ID_select<-ID_select[length(ID_select):1]
@@ -83,18 +83,26 @@ plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_
 	if (farb_palette=="lila-gruen-inv"){jet.colors <- colorRampPalette( c(rgb(0.5,1,1),rgb(0.5,1,0.5), rgb(1,1,1),rgb(1,0.7,0.7),rgb(1,0.5,1))[5:1])}
 	if (farb_palette=="weiss-rot"){jet.colors <- colorRampPalette(c( "white","yellow","red"))}
 	if (farb_palette=="blau-rot"){jet.colors <- colorRampPalette(c("blue","white","red"))}
+	if (farb_palette=="cyan-magenta"){jet.colors <- colorRampPalette(c("cyan","black","magenta"))}
 	color <- jet.colors(nbcol)	
 
-	plot(NA,xlim=c(0,valNumb*10+1),ylim=c(0,29),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
-	for (i in 1:length(ID_select)){text(x=0.5,y=i+1.5,label=ID_select[i])}
+	plot(NA,xlim=c(-0.5,valNumb*10+1),ylim=c(0,regNumb+5),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
+	for (i in 1:length(ID_select)){text(x=1,y=i+1.5,label=regLabel[ID_select[i]],pos=2)}
+
 	for (sea in season_auswahl){
-		if (valNumb>1){text(x=(sea-1)*2*valNumb+3,y=length(ID_select)+4.5,label=season_names[sea])}
-		if (valNumb==1){text(x=(sea-1)*2*valNumb+2,y=length(ID_select)+3.5,label=season_names[sea])}
+		if (header==TRUE){
+			if (valNumb>1){text(x=(sea-1)*2*valNumb+3,y=length(ID_select)+4.5,label=season_names[sea])}
+			if (valNumb==1){text(x=(sea-1)*2*valNumb+2,y=length(ID_select)+3.5,label=season_names[sea])}
+			for (state in 1:2){
+				if (valNumb>1){text(x=(sea-1)*2*valNumb+(state-1)*valNumb+2,y=length(ID_select)+3.5,label=state_names[state])}
+				if (valNumb==1){text(x=(sea-1)*2*valNumb+(state-1)*valNumb+1.5,y=length(ID_select)+2.5,label=c("c","w")[state])}
+				for (v in 1:valNumb){
+					text(x=(sea-1)*2*valNumb+(state-1)*valNumb+v+0.5,y=length(ID_select)+2.5,label=val_names[v])
+				}
+			}
+		}
 		for (state in 1:2){
-			if (valNumb>1){text(x=(sea-1)*2*valNumb+(state-1)*valNumb+2,y=length(ID_select)+3.5,label=state_names[state])}
-			if (valNumb==1){text(x=(sea-1)*2*valNumb+(state-1)*valNumb+1.5,y=length(ID_select)+2.5,label=c("c","w")[state])}
 			for (v in 1:valNumb){
-				text(x=(sea-1)*2*valNumb+(state-1)*valNumb+v+0.5,y=length(ID_select)+2.5,label=val_names[v])
 				val<-v
 				y<-c(values[sea,,state,val],colorRange[1],colorRange[2])
 				y[y>colorRange[2]]=colorRange[2]

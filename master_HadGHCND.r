@@ -213,9 +213,9 @@ master_gridded_plots <- function(){
 }
 
 master_regional_analysis <- function(region_name="7rect",ID_length=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:ID_length,plot_select=1:ID_length){
-    #regional_attribution(region_name=region_name,toDo=c(TRUE,TRUE,FALSE))
+    regional_attribution(region_name=region_name,toDo=c(TRUE,FALSE,FALSE))
     #regional_attribution(region_name=region_name,toDo=c(FALSE,FALSE,TRUE))
-    #duration_yearly_values(folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length)
+    duration_yearly_values(folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length)
     ID_name=paste("_",region_name,sep="")
     for (i in 1:(length(yearLimits)/2)){
         yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
@@ -243,23 +243,23 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
         print(yearPeriod)
 
         #others
-        plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
-        plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(NA),value_zusatz=c("linear regression"),name_zusatz="lm",signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
-        plot_reg_maps(region_name=region_name,file="_shuffQuant",var="original_slopes",sub_auswahl=c(5),value_auswahl=c(1),sig_auswahl=c(2),value_zusatz=c("linear regression"),name_zusatz="lmSig",signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
+        #plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
+        #plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(NA),value_zusatz=c("linear regression"),name_zusatz="lm",signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
+        #plot_reg_maps(region_name=region_name,file="_shuffQuant",var="original_slopes",sub_auswahl=c(5),value_auswahl=c(1),sig_auswahl=c(2),value_zusatz=c("linear regression"),name_zusatz="lmSig",signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
 
         #quants
-        plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),name_zusatz="quantile",farb_mitte=c(8,26),farb_palette="regenbogen")
-        plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
-        plot_reg_maps(region_name=region_name,file="_shuffQuant",var="original_slopes",sub_auswahl=c(3),value_auswahl=c(1),sig_auswahl=c(2),value_zusatz=c("qr slope"),name_zusatz="qr_slopeSig",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+        #plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("quantile"),name_zusatz="quantile",farb_mitte=c(8,26),farb_palette="regenbogen")
+        #plot_reg_maps(region_name=region_name,file="_quantiles",var="quantile_stuff",sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c("qr slope"),name_zusatz="qr_slope",farb_mitte=c(-0.35,0.35),signi_level=0.05)
+        #plot_reg_maps(region_name=region_name,file="_shuffQuant",var="original_slopes",sub_auswahl=c(3),value_auswahl=c(1),sig_auswahl=c(2),value_zusatz=c("qr slope"),name_zusatz="qr_slopeSig",farb_mitte=c(-0.35,0.35),signi_level=0.05)
 
-        plot_reg_boxplots(region_name=region_name,file="_quantiles",var="quantile_stuff",name_zusatz="quants",ID_select=ID_select,hlines=hlines)
+        #plot_reg_boxplots(region_name=region_name,file="_quantiles",var="quantile_stuff",name_zusatz="quants",ID_select=ID_select,hlines=hlines)
 
         #fits
-        plot_reg_maps(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(10,12,13,20),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),name_zusatz="fit_2expo_4:100",signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="regenbogen")
+        #plot_reg_maps(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(10,12,13,20),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),name_zusatz="fit_2expo_4:100",signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="regenbogen")
    
 
-        plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="slopeTab",value_auswahl=c(12,14),val_names=c("b1","b2"),colorRange=c(0.1,0.4),ID_select=ID_select,hlines=hlines)
-        plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="threshTab",value_auswahl=c(15),val_names=c(""),colorRange=c(4,15),ID_select=ID_select,hlines=hlines)
+        plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="slopeTab",value_auswahl=c(12,14),val_names=c("b1","b2"),colorRange=c(0.05,0.35),ID_select=ID_select,hlines=hlines)
+        plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="threshTab",value_auswahl=c(15),val_names=c(""),colorRange=c(4,14),ID_select=ID_select,hlines=hlines)
 
         print("MannKendall")
         duration_MannKendall(yearPeriod=yearPeriod,folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length,hlines=hlines)
@@ -303,22 +303,22 @@ master_correlation <- function(){
     #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=3,val_zusatz="_95_EU",farb_mitte=c(-5,5),ID_select<-1:ntot)
 
     # noa
-    index_dur_correl(toCor_name="NAO",toCor_short="nao")
-    dur_correlation_plot(toCor_short="nao",toCor_name="NAO",toCor_shortZu="",val=1,val_zusatz="_mean",farb_mitte=c(-3,3),ID_select=1:ntot)
-    dur_correlation_plot(toCor_short="nao",toCor_name="NAO",toCor_shortZu="",val=1,val_zusatz="_95",farb_mitte=c(-5,5),ID_select=1:ntot)
+    #index_dur_correl(toCor_name="NAO",toCor_short="nao")
+    dur_correlation_plot(toCor_short="nao",toCor_name="NAO",toCor_shortZu="",val=1,val_zusatz="_mean",farb_mitte=c(-3,3))
+    dur_correlation_plot(toCor_short="nao",toCor_name="NAO",toCor_shortZu="",val=1,val_zusatz="_95",farb_mitte=c(-5,5))
 }
 
 master_sensitivity <- function(){
+    
+    #sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=1,name_zusatz="mean",farb_mitte=c(-5,5))
 
-    sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=1,name_zusatz="mean",farb_mitte=c(-5,5))
-
-    sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=4,name_zusatz="lr",farb_mitte=c(-100,100))
-    sens_gridded(file="_quantiles",var="quantile_stuff",sub_auswahl=0.95,value_auswahl=1,name_zusatz="qu95",farb_mitte=c(-5,5))
+    #sens_gridded(period="1979-2011",file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=4,name_zusatz="lr",farb_mitte=c(-100,100))
+    #sens_gridded(file="_quantiles",var="quantile_stuff",sub_auswahl=0.95,value_auswahl=1,name_zusatz="qu95",farb_mitte=c(-5,5))
 
 
     season_names<<-c("MAM","JJA","SON","DJF","Annual")
     sens_regional_fits()
-    sens_regional_trends()
+    sens_regional_trends(period="1979-2011")
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
 
 }
@@ -370,7 +370,8 @@ master_init <- function(id){
     dat<<-dat_load(paste("../data/",dataset,"/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
     ntot<<-length(dat$ID)
     yearLimits<<-c(1980,2014,1950,2014,1950,1980)
-    yearLimits<<-c(1979,1995,1995,2011)
+    yearLimits<<-c(1979,2011,1979,1995,1995,2011)
+    #yearLimits<<-c(1950,2014)
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     seasonal_boundaries<<-array(c(60,152,244,335,1,151,243,334,424,365),c(5,2))
@@ -386,7 +387,7 @@ print(id)
 if (!is.na(id)){id<-id*2+3}
 if (is.na(id)){id<-7}
 
-#if (id!=7){dasdas}
+if (id!=7){dasdas}
 
 
 ###################################################################
@@ -418,6 +419,8 @@ plot_init_Had_multiple_noAA()
 #master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
 #master_regional_plots(region_name="ward24",ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),ID_length=24,region_names=1:24,hlines=c(23,20,22,8))
 
+master_regional_analysis(region_name="overReg",ID_length=5,region_names=1:5)
+
 ###################################################################
 # special stuff
 ###################################################################
@@ -428,7 +431,7 @@ plot_init_Had_multiple_noAA()
 
 #master_nas()
 
-master_correlation()
+#master_correlation()
 
 #master_sensitivity()
 
