@@ -51,9 +51,10 @@ duration_yearly_values <- function(folder="/gridded/",ID_name="",ID_select=1:len
     close.nc(nc_out) 
 }
 
-duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_select=1:length(dat$ID),ID_length=length(ID_select),region_names=1:ID_length,hlines=c(30)){
+duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_select=1:length(dat$ID),ID_length=length(ID_select),region_names=1:ID_length,hlines=c(30),colorbar=FALSE,header=TRUE,regLabel=1:length(dat$ID)){
     filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,trendID,dataset,"_",ID_name,"_yearly_values.nc",sep="") ; print(filename)
     yearly_values<-var.get.nc(open.nc(filename),"yearly_values")
+    period<-paste(yearPeriod[1],"-",yearPeriod[2],sep="")
 
     pdf(file=paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_yearlyAverages.pdf",sep=""),width=6,height=4)
     color=c(rgb(0,1,0),rgb(1,0.5,0),rgb(1,0,0),"black","blue")
@@ -96,12 +97,12 @@ duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_sel
  
     signis<-array(NA,c(5,ID_length,2,5,2))
     #signis[,,,1,1][which(MK[,,,2,2]>0.1)]=1
-    #signis[,,,4,1][which(MK[,,,2,2]<=0.1)]=1
-    signis[,,,5,1][which(MK[,,,2,2]<=0.05)]=1
+    signis[,,,5,1][which(MK[,,,2,2]<=0.1)]=1
+    signis[,,,4,1][which(MK[,,,2,2]<=0.05)]=1
 
     #signis[,,,1,2][which(MK[,,,5,2]>0.1)]=1
-    #signis[,,,4,2][which(MK[,,,5,2]<=0.1)]=1
-    signis[,,,5,2][which(MK[,,,5,2]<=0.05)]=1
+    signis[,,,5,2][which(MK[,,,5,2]<=0.1)]=1
+    signis[,,,4,2][which(MK[,,,5,2]<=0.05)]=1
 
 
     values<-array(NA,c(5,ID_length,2,2))
@@ -112,5 +113,5 @@ duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_sel
 
 
     nbcol<<-2
-    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_MK.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen",ID_select=ID_select,hlines=hlines,style="yn")
+    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,dataset,"_",ID_name,"_",period,"_MK.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen",ID_select=ID_select,hlines=hlines,style="yn",colorbar=colorbar,header=header,regLabel=regLabel)
 }

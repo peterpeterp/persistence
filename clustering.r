@@ -94,9 +94,11 @@ dissimilarity_view <- function(lagMax=15,load_name="_Cor",add_name="",timeRange=
     #choiceMat[is.na(choiceMat)]=-15
 
     reihen=choiceMat[auswahl,]
+    indexBottomLeft<<-c("a","a","a","a","a")
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,add_name,"_best_lag.pdf",sep=""),reihen=reihen,farb_mitte=0,farb_palette="lila-gruen",highlight_points=auswahl,highlight_color="red",paper=c(8,10),ausschnitt=c(30,70),layout_mat=matrix(c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6),nrow=16),pointsize=1.5)
     topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_best_lag.pdf",sep=""),reihen=-reihen,farb_palette="lila-gruen",highlight_points=auswahl,highlight_color="red")
-
+    
+    indexBottomLeft<<-c("b","b","b","b","b","b")
     reihen=distMat[auswahl,]
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,add_name,"_distance.pdf",sep=""),reihen=reihen,farb_mitte=c(0,1),farb_palette="regenbogen",highlight_points=auswahl,highlight_color="red",paper=c(8,10),ausschnitt=c(30,70),layout_mat=matrix(c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6),nrow=16),pointsize=1.5)
     topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_distance.pdf",sep=""),reihen=reihen,farb_palette="regenbogen",highlight_points=auswahl,highlight_color="white")
@@ -271,25 +273,24 @@ write_cluster_region_files <- function(lagMax=20,load_name="_CorLag",add_name=""
     write.table(overReg_attribution,paste("../data/",dataset,"/ID_regions/overReg.txt",sep=""))
 }
 
-cluster_vis_map <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),nGroup=22,untilGroup=25,method="ward.D2",region_name="ward22",ID_select=1:1319){
+cluster_vis_map <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),nGroup=22,untilGroup=25,method="ward.D2",region_name="ward24",ID_select=1:1319){
     print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
     nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
     attribution<<-var.get.nc(nc,"attribution")
 
-    pdf(paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",nGroup,"_vis.pdf",sep=""),width=6,height=3)
-        plot(topoWorld,xlim=xAusschnitt,ylim=c(-90,90),asp=asp,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,0))
+    pdf(paste("../plots/",dataset,additional_style,"/lag_",lagMax,load_name,add_name,"_",region_name,"_",nGroup,"_vis.pdf",sep=""),width=paper[1],height=paper[2])
+    #plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,0))
+    map("world", col=1, interior=FALSE,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,resolution=0,mar=c(0,0,0,0))
 
     tmp=put_points(points=attribution[nGroup,],farb_palette="viele",ID_select=ID_select)
     region_border(region_name=region_name,border_col="black")
     text(-70,8,8)
-
-    #draw over axes
-    polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")
-    polygon(x=c(-200,-200,200,200),y=c(100,88,88,100),col="white",border="white")
+    text(-175,-45,"a",cex=2,pos=4)
     graphics.off()
 
-    pdf(paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_",method,"_",nGroup,"_vis_overReg.pdf",sep=""),width=6,height=3)
-        plot(topoWorld,xlim=xAusschnitt,ylim=c(-90,90),asp=asp,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=c(0,0,0,0))
+
+    pdf(paste("../plots/",dataset,additional_style,"/lag_",lagMax,load_name,add_name,"_",region_name,"_",nGroup,"_vis_overReg.pdf",sep=""),width=paper[1],height=paper[2])
+    map("world", col=1, interior=FALSE,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,resolution=0,mar=c(0,0,0,0))
 
     overReg_attribution<-attribution[nGroup,]*NA
     overReg_attribution[which(attribution[nGroup,] %in% c(1,2,6,10,13,19,23))]=1
@@ -302,10 +303,7 @@ cluster_vis_map <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=
     tmp=put_points(points=overReg_attribution,farb_palette="viele",ID_select=ID_select)
     region_border(region_name=region_name,border_col="black")
     text(-70,8,8)
-
-    #draw over axes
-    polygon(x=c(-200,-200,200,200),y=c(-100,-88,-88,-100),col="white",border="white")
-    polygon(x=c(-200,-200,200,200),y=c(100,88,88,100),col="white",border="white")
+    text(-175,-45,"b",cex=2,pos=4)
     graphics.off()
 }
 
@@ -321,6 +319,7 @@ init <- function(){
     source("write.r")
     source("functions_regional.r")
     library(fields)
+    require(maps)
 
     library(cluster)
     library(clusterCrit)
@@ -336,14 +335,17 @@ init <- function(){
 
 
 
-
 init()
 
 load_name<-"_CorSdNorm"
 
 #dissimilarity_matrix(lagMax=20,timeRange=c(2000,22000),load_name="_AbsCorSdNorm",normalize=TRUE)
 
-#dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
+plot_init_midlat()
+
+
+dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
+
 
 #for (method in c("ward.D2","single","centroid")){
 
@@ -355,6 +357,8 @@ for (method in c("ward.D2")){
     #cluster_evaluation(add_name="_ww",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=35)
     #cluster_view(add_name="_ww",load_name=load_name,ID_select=ID_select,timeRange=c(2000,22000),method=method,untilGroup=35)
 }
+
+plot_init_Had_multiple_noAA()
 
 write_cluster_region_files(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")
 cluster_vis_map(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")

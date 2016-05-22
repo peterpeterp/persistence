@@ -168,6 +168,7 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 
 	if (farb_palette_loc=="gold-blau"){
 		#jet.colors <- colorRampPalette( c(rgb(0,0.5,1),rgb(0,1,1), rgb(1,1,1) ,rgb(1,1,0),rgb(1,0.5,0)))
+		jet.colors <- colorRampPalette( c("blue",rgb(1,1,1),"red"))
 		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.6),rgb(0.5,1,1), rgb(0.98,0.98,0.98) ,rgb(1,1,0),rgb(0.6,0.6,0)))
 	}		
 	if (farb_palette_loc=="blau-rot"){
@@ -269,13 +270,26 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	if (is.na(layout_mat[1])){par(mfrow=c(1,1))}
 	for (i in 1:dim(reihen)[1]){
 	    #mapPlot(coastlineWorld,latitudelim=yAusschnitt,longitudelim=xAusschnitt,proj="stereographic",axes=FALSE, fill='white',mar=c(2,3,2,5),main=titel[i])
-	    plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=margins,main=titel[i])
+	    #plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=rgb(0,0,0,0),col.water=rgb(0,0,0,0),mar=margins,main=titel[i])
+	    #map("world",col=1,interior=FALSE,xlim=xAusschnitt,ylim=yAusschnitt,projection="rectangular",param=0,resolution=0,mar=margins)
+	    #points(1:100,1:100,col="green")
+	    #map("world",col=1,interior=FALSE,xlim=xAusschnitt,ylim=yAusschnitt,resolution=0,mar=margins)
+		#plot(worldmap,fill=TRUE,col="black",border="black",xlim=xAusschnitt,ylim=yAusschnitt)
+		#par(new=TRUE)
+		#plot(worldmap,fill=TRUE,col="white",border=rgb(0,0,0,0),xlim=xAusschnitt,ylim=yAusschnitt)
+
+
+		par(mar=margins)
+		plot(NA,xlim=xAusschnitt,ylim=yAusschnitt,axes=FALSE,frame.plot=FALSE)
+		lines(worlCoast)
+
 	    if (titel[1]!=""){
 	    	main<-titel[i]
 	    	print(titel[i])
 	    	#text(0,-85,main)
 	    }
-	    axis(2,at=seq(yAusschnitt[1],yAusschnitt[2],10))
+	    #axis(2,at=seq(yAusschnitt[1],yAusschnitt[2],10))
+	    #axis(1,at=seq(xAusschnitt[1],xAusschnitt[2],10))
 
 	    #data points
 	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,ID_select=ID_select)
@@ -289,22 +303,9 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		if (!is.na(region)){region_border(region_name=region,border_col=border_col)}
 
 		#index topright
-		if (length(indexTopRight>=dim(reihen)[1]) & !is.na(indexTopRight[i])){text(posTopRight[1],posTopRight[2],indexTopRight[i],pos=4,cex=2)}
+		if (length(indexTopRight>=dim(reihen)[1]) & !is.na(indexTopRight[i])){text(posTopRight[1],posTopRight[2],indexTopRight[i],pos=4,cex=cexIndex)}
 		#index lowleft
-		if (length(indexBottomLeft>=dim(reihen)[1]) & !is.na(indexBottomLeft[i])){text(posBottomLeft[1],posBottomLeft[2],indexBottomLeft[i],pos=4,cex=2)}
-
-		# contour lines topography
-		if (!is.na(land_col)){
-		    par(new=TRUE)
-		    try(plot(topoWorld,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,location="none",col.land=land_col,col.water=water_col,mar=margins),silent=TRUE)
-		}
-		#draw over axes
-
-		polygon(x=c(-360,-360,360,360),y=c(yAusschnitt[1]-outer_cut,yAusschnitt[1]+inner_cut,yAusschnitt[1]+inner_cut,yAusschnitt[1]-outer_cut),col="white",border="white")
-		polygon(x=c(-360,-360,360,360),y=c(yAusschnitt[2]-inner_cut,yAusschnitt[2]+outer_cut,yAusschnitt[2]+outer_cut,yAusschnitt[2]-inner_cut),col="white",border="white")
-		polygon(x=c(xAusschnitt[1]-outer_cut,xAusschnitt[1]-outer_cut,xAusschnitt[1]+inner_cut,xAusschnitt[1]+inner_cut),y=c(yAusschnitt[1],yAusschnitt[2],yAusschnitt[2],yAusschnitt[1]),col="white",border="white")
-		polygon(x=c(xAusschnitt[2]-inner_cut,xAusschnitt[2]-inner_cut,xAusschnitt[2]+outer_cut,xAusschnitt[2]+outer_cut),y=c(yAusschnitt[1],yAusschnitt[2],yAusschnitt[2],yAusschnitt[1]),col="white",border="white")
-
+		if (length(indexBottomLeft>=dim(reihen)[1]) & !is.na(indexBottomLeft[i])){text(posBottomLeft[1],posBottomLeft[2],indexBottomLeft[i],pos=4,cex=cexIndex)}
 
 		#color bar
 		color<<-tmp$color
@@ -323,9 +324,8 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	if (closePlot==TRUE){graphics.off()}
 }
 
-library(oce)
-data(topoWorld)
-data(coastlineWorld)
 library(RColorBrewer)
 library(rworldmap)
 library(fields)
+require(maps)
+worlCoast<-map(interior=FALSE,resolution=0,plot=FALSE)

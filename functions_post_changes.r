@@ -179,25 +179,25 @@ write_slope_table <- function(period="1979-2011",region_name="ward24"){
     values[which(is.na(values))]=0
     values<-values*3650
 
-    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name,"_",period,"_slope_boot_overReg.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-1,1),farb_palette="lila-gruen",ID_select=1:5,regLabel=c("NHml","NHpo","NHst","Tro","SHml"),paperHeight=6,hlines=c(30),colorbar=TRUE,header=FALSE)
+    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name,"_",period,"_slope_boot_overReg.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-1,1),farb_palette="lila-gruen",ID_select=1:5,regLabel=c("NHml","NHpo","NHst","Tro","SHml"),hlines=c(30),colorbar=TRUE,header=FALSE)
 }
 
-plot_distr_compa_table <- function(period="1979-2011",periods=c("1979-1995","1995-2011"),regNumb=24,region_name="ward24"){
+plot_distr_compa_table <- function(period="1979-2011",periods=c("1979-1995","1995-2011"),regNumb=24,regPos=1:24,regLabel=1:24,region_name="ward24",region_name2="ward24",colorbar=FALSE,header=TRUE){
 
     filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_bootstrap.nc",sep="") ; print(filename)
-    original_ks<-var.get.nc(open.nc(filename),"statistics")[,1:24,,3:4,]
+    original_ks<-var.get.nc(open.nc(filename),"statistics")[,regPos,,3:4,]
 
     fit_params=array(NA,c(2,5,regNumb,2,30))
     quantiles=array(NA,c(2,5,regNumb,2,2,3))
     for (i in 1:length(periods)){
         part_period<-periods[i]
-        filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",part_period,"/",trendID,"_",dataset,"_",region_name,"_",part_period,"_fit_","2expo_4:100",".nc",sep=""); print(filename)
+        filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name2,"/",part_period,"/",trendID,"_",dataset,"_",region_name2,"_",part_period,"_fit_","2expo_4:100",".nc",sep=""); print(filename)
         fit_params[i,,,,]=var.get.nc(open.nc(filename),"fit_stuff")[1:5,,,]
 
-        filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",part_period,"/",trendID,"_",dataset,"_",region_name,"_",part_period,"_quantiles",".nc",sep=""); print(filename)
+        filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name2,"/",part_period,"/",trendID,"_",dataset,"_",region_name2,"_",part_period,"_quantiles",".nc",sep=""); print(filename)
         quantiles[i,,,,2,]=var.get.nc(open.nc(filename),"quantile_stuff")[1:5,,,2,]
 
-        filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",part_period,"/",trendID,"_",dataset,"_",region_name,"_",part_period,"_others",".nc",sep=""); print(filename)
+        filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name2,"/",part_period,"/",trendID,"_",dataset,"_",region_name2,"_",part_period,"_others",".nc",sep=""); print(filename)
         quantiles[i,,,,1,1]=var.get.nc(open.nc(filename),"other_stuff")[1:5,,,1]
     }
 
@@ -211,7 +211,7 @@ plot_distr_compa_table <- function(period="1979-2011",periods=c("1979-1995","199
     values[,,,1]=quantiles[2,,,,1,1]-quantiles[1,,,,1,1]
     values[,,,2]=quantiles[2,,,,2,1]-quantiles[1,,,,2,1]
 
-    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-2,2),farb_palette="lila-gruen",ID_select=reg_order,hlines=hlines)
+    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name2,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_quantile_diff.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-2,2),farb_palette="lila-gruen",ID_select=reg_order,hlines=hlines,colorbar=colorbar,header=header,regLabel=regLabel)
 
 
 
@@ -234,14 +234,13 @@ plot_distr_compa_table <- function(period="1979-2011",periods=c("1979-1995","199
     signis[,,,4,2][which(original_ks[,,,2,1]>original_ks[,,,2,7])]=1
 
 
-    plot_reg_table_general(values=values,signis=signis,filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_slopeDiff.pdf",sep=""),val_names=c("b1","b2"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen-inv",ID_select=reg_order,hlines=hlines)
+    plot_reg_table_general(values=values,signis=signis,filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name2,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_slopeDiff.pdf",sep=""),val_names=c("b1","b2"),region_name="ward24",colorRange=c(-0.1,0.1),farb_palette="lila-gruen-inv",ID_select=reg_order,hlines=hlines,colorbar=colorbar,header=header,regLabel=regLabel)
 
     values<-array(NA,c(5,regNumb,2,1))
     values[,,,1]=fit_params[2,,,,15]-fit_params[1,,,,15]   
     values[is.na(values)]=3
 
-    plot_reg_table_general(values=values,signis=signis,filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_threshDiff.pdf",sep=""),val_names=c(""),region_name="ward24",colorRange=c(-4,4),farb_palette="lila-gruen-inv",ID_select=reg_order,hlines=hlines)
-
+    plot_reg_table_general(values=values,signis=signis,filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name2,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_threshDiff.pdf",sep=""),val_names=c(""),region_name="ward24",colorRange=c(-4,4),farb_palette="lila-gruen-inv",ID_select=reg_order,hlines=hlines,colorbar=colorbar,header=header,regLabel=regLabel)
 }
 
 
@@ -259,7 +258,6 @@ init <- function(){
     state_names<<-c("cold","warm")
 
     reg_order<<-c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24)
-
     hlines<<-c(23,20,22,8)
 }
 
@@ -269,5 +267,14 @@ init()
 
 write_slope_table()
 write_slope_table_control()
+
 plot_distr_compa_table()
+
+
+reg_order<-c(1:5)
+hlines<-c(30)
+plot_distr_compa_table(region_name2="overReg",regNumb=5,regPos=26:30,colorbar=TRUE,header=FALSE,regLabel=c("NHml","NHpo","NHst","Tro","SHml"))
+
+
+adsas
 plot_ks_statistic_distrs()

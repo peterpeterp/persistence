@@ -199,8 +199,9 @@ master_gridded_plots <- function(){
         print(period)
 
         #others
-        plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
+        #plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
         plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c(""),name_zusatz="lr",period=period,signi_level=0.05,farb_mitte=c(-0.1,0.1),farb_palette="lila-gruen")
+        adas
 
         # quantiles
         plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="qu_95",farb_mitte=c(8,26),farb_palette="regenbogen")
@@ -213,9 +214,9 @@ master_gridded_plots <- function(){
 }
 
 master_regional_analysis <- function(region_name="7rect",ID_length=7,region_names=c("wNA","cNA","eNA","Eu","wA","cA","eA"),ID_select=1:ID_length,plot_select=1:ID_length){
-    regional_attribution(region_name=region_name,toDo=c(TRUE,FALSE,FALSE))
+    #regional_attribution(region_name=region_name,toDo=c(TRUE,TRUE,FALSE))
     #regional_attribution(region_name=region_name,toDo=c(FALSE,FALSE,TRUE))
-    duration_yearly_values(folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length)
+    #duration_yearly_values(folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length)
     ID_name=paste("_",region_name,sep="")
     for (i in 1:(length(yearLimits)/2)){
         yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
@@ -258,8 +259,8 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
         #plot_reg_maps(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(10,12,13,20),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),name_zusatz="fit_2expo_4:100",signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="regenbogen")
    
 
-        plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="slopeTab",value_auswahl=c(12,14),val_names=c("b1","b2"),colorRange=c(0.05,0.35),ID_select=ID_select,hlines=hlines)
-        plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="threshTab",value_auswahl=c(15),val_names=c(""),colorRange=c(4,14),ID_select=ID_select,hlines=hlines)
+        #plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="slopeTab",value_auswahl=c(12,14),val_names=c("b1","b2"),colorRange=c(0.05,0.35),ID_select=ID_select,hlines=hlines)
+        #plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="threshTab",value_auswahl=c(15),val_names=c(""),colorRange=c(4,14),ID_select=ID_select,hlines=hlines)
 
         print("MannKendall")
         duration_MannKendall(yearPeriod=yearPeriod,folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length,hlines=hlines)
@@ -288,24 +289,27 @@ master_special_plots <- function(){
 }
 
 master_correlation <- function(){
-    plot_init_Had_multiple()
+    #plot_init_Had_multiple()
     correl_init()
 
     # eke 
     #eke_dur_correl(level=3,plot=FALSE,detrending=TRUE)
-    #eke_dur_correl(plot=TRUE,detrending=TRUE,ID_select<-c(488))
+    #eke_dur_correl(plot=TRUE,detrending=TRUE,ID_select=c(488))
 
-    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=1,val_zusatz="_mean",farb_mitte=c(-3,3),ID_select=1:ntot)
-    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=3,val_zusatz="_95",farb_mitte=c(-5,5),ID_select=1:ntot)
 
+    indexTopRight<<-c("","","","")
+    indexBottomLeft<<-c("MAM\ncold","MAM\nwarm","JJA\ncold","JJA\nwarm","SON\ncold","SON\nwarm","DJF\ncold","DJF\nwarm","Annual\ncold","Annual\nwarm")
+    dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="_500mbar",val=1,val_zusatz="_mean",farb_mitte=c(-1,1))
+    dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="_500mbar",val=3,val_zusatz="_95",farb_mitte=c(-5,5))
+    
     #plot_init_EU_Had()
-    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=1,val_zusatz="_mean_EU",farb_mitte=c(-3,3),ID_select<-1:ntot)
-    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="850mbar",val=3,val_zusatz="_95_EU",farb_mitte=c(-5,5),ID_select<-1:ntot)
-
+    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="_500mbar",val=1,val_zusatz="_mean_EU",farb_mitte=c(-3,3))
+    #dur_correlation_plot(toCor_short="eke",toCor_name="EKE",toCor_shortZu="_500mbar",val=3,val_zusatz="_95_EU",farb_mitte=c(-5,5))
+    
     # noa
     #index_dur_correl(toCor_name="NAO",toCor_short="nao")
-    dur_correlation_plot(toCor_short="nao",toCor_name="NAO",toCor_shortZu="",val=1,val_zusatz="_mean",farb_mitte=c(-3,3))
-    dur_correlation_plot(toCor_short="nao",toCor_name="NAO",toCor_shortZu="",val=1,val_zusatz="_95",farb_mitte=c(-5,5))
+    #dur_correlation_plot(toCor_short="nao",toCor_name="NAO",toCor_shortZu="",val=1,val_zusatz="_mean",farb_mitte=c(-3,3))
+    #dur_correlation_plot(toCor_short="nao",toCor_name="NAO",toCor_shortZu="",val=1,val_zusatz="_95",farb_mitte=c(-5,5))
 }
 
 master_sensitivity <- function(){
@@ -419,7 +423,8 @@ plot_init_Had_multiple_noAA()
 #master_regional_analysis(region_name="ward24",ID_length=24,region_names=1:24)
 #master_regional_plots(region_name="ward24",ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),ID_length=24,region_names=1:24,hlines=c(23,20,22,8))
 
-master_regional_analysis(region_name="overReg",ID_length=5,region_names=1:5)
+#master_regional_analysis(region_name="overReg",ID_length=5,region_names=1:5)
+#duration_MannKendall(yearPeriod=c(1979,2011),folder=paste("/regional/","overReg","/",sep=""),ID_name="overReg",ID_select=1:5,ID_length=5,hlines=c(30),colorbar=TRUE,header=FALSE,regLabel=c("NHml","NHpo","NHst","Tro","SHml"))
 
 ###################################################################
 # special stuff
@@ -431,7 +436,7 @@ master_regional_analysis(region_name="overReg",ID_length=5,region_names=1:5)
 
 #master_nas()
 
-#master_correlation()
+master_correlation()
 
 #master_sensitivity()
 
