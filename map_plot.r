@@ -280,7 +280,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 
 
 		par(mar=margins)
-		plot(NA,xlim=xAusschnitt,ylim=yAusschnitt,axes=FALSE,frame.plot=FALSE)
+		plot(NA,xlim=xAusschnitt,ylim=yAusschnitt,axes=FALSE,frame.plot=FALSE,asp=asp)
 		lines(worlCoast)
 
 	    if (titel[1]!=""){

@@ -199,9 +199,8 @@ master_gridded_plots <- function(){
         print(period)
 
         #others
-        #plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
+        plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
         plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c(""),name_zusatz="lr",period=period,signi_level=0.05,farb_mitte=c(-0.1,0.1),farb_palette="lila-gruen")
-        adas
 
         # quantiles
         plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="qu_95",farb_mitte=c(8,26),farb_palette="regenbogen")
@@ -271,9 +270,12 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
 
 master_special_plots <- function(){
     # results climatology
-    #color_legend<<-"right" ; margins<<-c(0,0,0,5)
-    #plot_state_mean_maps(file="_others",var="other_stuff",period="1950-2014",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="mean_cowa",signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen")
-    #color_legend<<-"seperate" ; margins<<-c(0,0,0,0)
+    color_legend<<-"right" ; margins<<-c(0,0,0,5)
+    indexTopRight<<-c("")
+    indexBottomLeft<<-c("")
+
+    plot_state_mean_maps(file="_others",var="other_stuff",period="1950-2014",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="mean_cowa",signi_level=0.05,farb_mitte="mean",farb_palette="regenbogen")
+    color_legend<<-"seperate" ; margins<<-c(0,0,0,0)
 
     # seas
     indexBottomLeft<<-c("MAM","JJA","SON","DJF","Annual")
@@ -284,8 +286,8 @@ master_special_plots <- function(){
     indexTopRight<<-c("a","b","c","d")
 
     # quant
-    #plot_state_mean_maps(file="_quantiles",var="quantile_stuff",period="1950-2014",sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="qu95_cowa_multi",signi_level=0.05,farb_mitte=c(8,26),farb_palette="regenbogen")
-    #plot_state_diff_maps(file="_quantiles",var="quantile_stuff",period="1950-2014",sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="diff_qu95_cowa_multi",signi_level=0.05,farb_mitte=c(-3,3),farb_palette="lila-gruen")
+    plot_state_mean_maps(file="_quantiles",var="quantile_stuff",period="1950-2014",sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="qu95_cowa_multi",signi_level=0.05,farb_mitte=c(8,26),farb_palette="regenbogen")
+    plot_state_diff_maps(file="_quantiles",var="quantile_stuff",period="1950-2014",sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="diff_qu95_cowa_multi",signi_level=0.05,farb_mitte=c(-3,3),farb_palette="lila-gruen")
 }
 
 master_correlation <- function(){
@@ -314,10 +316,10 @@ master_correlation <- function(){
 
 master_sensitivity <- function(){
     
-    #sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=1,name_zusatz="mean",farb_mitte=c(-5,5))
+    sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=1,name_zusatz="mean",farb_mitte=c(-5,5))
 
-    #sens_gridded(period="1979-2011",file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=4,name_zusatz="lr",farb_mitte=c(-100,100))
-    #sens_gridded(file="_quantiles",var="quantile_stuff",sub_auswahl=0.95,value_auswahl=1,name_zusatz="qu95",farb_mitte=c(-5,5))
+    sens_gridded(period="1979-2011",file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=4,name_zusatz="lr",farb_mitte=c(-100,100))
+    sens_gridded(file="_quantiles",var="quantile_stuff",sub_auswahl=0.95,value_auswahl=1,name_zusatz="qu95",farb_mitte=c(-5,5))
 
 
     season_names<<-c("MAM","JJA","SON","DJF","Annual")
@@ -375,7 +377,8 @@ master_init <- function(id){
     ntot<<-length(dat$ID)
     yearLimits<<-c(1980,2014,1950,2014,1950,1980)
     yearLimits<<-c(1979,2011,1979,1995,1995,2011)
-    #yearLimits<<-c(1950,2014)
+    yearLimits<<-c(1979,2011)
+    yearLimits<<-c(1950,2014)
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     seasonal_boundaries<<-array(c(60,152,244,335,1,151,243,334,424,365),c(5,2))
@@ -430,13 +433,13 @@ plot_init_Had_multiple_noAA()
 # special stuff
 ###################################################################
 
-#master_special_plots()
+master_special_plots()
 
 #plot_all_changes_table(ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),hlines=c(23,20,22,8))
 
 #master_nas()
 
-master_correlation()
+#master_correlation()
 
 #master_sensitivity()
 
