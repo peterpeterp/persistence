@@ -1,6 +1,6 @@
 
 
-evaluate_bootstraping <- function(overRegions=c("NHml","NHpo","NHst","tro","SHml"),period="1979-2011",region_name="ward24"){
+evaluate_bootstraping <- function(overRegions=c("NHpo","NHml","NHst","tro","SHml"),period="1979-2011",region_name="ward24"){
 	result<-array(NA,c(5,2,30,4,10))
 	for (sea in 1:5){
 		for (state in 1:2){
@@ -141,15 +141,15 @@ write_slope_table <- function(period="1979-2011",region_name="ward24"){
     original_slopes<-var.get.nc(open.nc(filename),"statistics")
 
     signis<-array(NA,c(5,24,2,5,2))
-    signis[,,,5,1][which(original_slopes[,1:24,,1,1]>original_slopes[,1:24,,1,6])]=1
-    signis[,,,5,1][which(original_slopes[,1:24,,1,1]<original_slopes[,1:24,,1,5])]=1
-    signis[,,,4,1][which(original_slopes[,1:24,,1,1]>original_slopes[,1:24,,1,7])]=1
-    signis[,,,4,1][which(original_slopes[,1:24,,1,1]<original_slopes[,1:24,,1,4])]=1
+    signis[,,,5,1][which(original_slopes[,1:24,,1,1]>original_slopes[,1:24,,1,7])]=1
+    signis[,,,5,1][which(original_slopes[,1:24,,1,1]<original_slopes[,1:24,,1,4])]=1
+    signis[,,,4,1][which(original_slopes[,1:24,,1,1]>original_slopes[,1:24,,1,8])]=1
+    signis[,,,4,1][which(original_slopes[,1:24,,1,1]<original_slopes[,1:24,,1,3])]=1
 
-    signis[,,,5,2][which(original_slopes[,1:24,,2,1]>original_slopes[,1:24,,2,6])]=1
-    signis[,,,5,2][which(original_slopes[,1:24,,2,1]<original_slopes[,1:24,,2,5])]=1
-    signis[,,,4,2][which(original_slopes[,1:24,,2,1]>original_slopes[,1:24,,2,7])]=1
-    signis[,,,4,2][which(original_slopes[,1:24,,2,1]<original_slopes[,1:24,,2,4])]=1
+    signis[,,,5,2][which(original_slopes[,1:24,,2,1]>original_slopes[,1:24,,2,7])]=1
+    signis[,,,5,2][which(original_slopes[,1:24,,2,1]<original_slopes[,1:24,,2,4])]=1
+    signis[,,,4,2][which(original_slopes[,1:24,,2,1]>original_slopes[,1:24,,2,8])]=1
+    signis[,,,4,2][which(original_slopes[,1:24,,2,1]<original_slopes[,1:24,,2,3])]=1
 
     values<-array(NA,c(5,24,2,2))
     values[,,,1]=original_slopes[,1:24,,1,1]
@@ -158,18 +158,19 @@ write_slope_table <- function(period="1979-2011",region_name="ward24"){
     values[which(is.na(values))]=0
     values<-values*3650
 
+    nbcol<<-101
     plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name,"_",period,"_slope_boot.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-1,1),farb_palette="lila-gruen",ID_select=reg_order,regLabel=1:24,hlines=hlines,colorbar=FALSE)
 
     signis<-array(NA,c(5,5,2,5,2))
-    #signis[,,,4,1][which(original_slopes[,,,1,1]>original_slopes[,,,1,6])]=1
-    #signis[,,,4,1][which(original_slopes[,,,1,1]<original_slopes[,,,1,5])]=1
     signis[,,,5,1][which(original_slopes[,26:30,,1,1]>original_slopes[,26:30,,1,7])]=1
     signis[,,,5,1][which(original_slopes[,26:30,,1,1]<original_slopes[,26:30,,1,4])]=1
+    signis[,,,5,1][which(original_slopes[,26:30,,1,1]>original_slopes[,26:30,,1,8])]=1
+    signis[,,,5,1][which(original_slopes[,26:30,,1,1]<original_slopes[,26:30,,1,3])]=1
 
-    #signis[,,,4,2][which(original_slopes[,,,2,1]>original_slopes[,,,2,6])]=1
-    #signis[,,,4,2][which(original_slopes[,,,2,1]<original_slopes[,,,2,5])]=1
     signis[,,,5,2][which(original_slopes[,26:30,,2,1]>original_slopes[,26:30,,2,7])]=1
     signis[,,,5,2][which(original_slopes[,26:30,,2,1]<original_slopes[,26:30,,2,4])]=1
+    signis[,,,5,2][which(original_slopes[,26:30,,2,1]>original_slopes[,26:30,,2,8])]=1
+    signis[,,,5,2][which(original_slopes[,26:30,,2,1]<original_slopes[,26:30,,2,3])]=1
 
 
     values<-array(NA,c(5,5,2,2))
@@ -179,7 +180,7 @@ write_slope_table <- function(period="1979-2011",region_name="ward24"){
     values[which(is.na(values))]=0
     values<-values*3650
 
-    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name,"_",period,"_slope_boot_overReg.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-1,1),farb_palette="lila-gruen",ID_select=1:5,regLabel=c("NHml","NHpo","NHst","Tro","SHml"),hlines=c(30),colorbar=TRUE,header=FALSE)
+    plot_reg_table_general(values=values,signis=signis,filename=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name,"_",period,"_slope_boot_overReg.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-1,1),farb_palette="lila-gruen",ID_select=1:5,regLabel=c("NHpo","NHml","NHst","Tro","SHml"),hlines=c(30),colorbar=TRUE,header=FALSE)
 }
 
 plot_distr_compa_table <- function(period="1979-2011",periods=c("1979-1995","1995-2011"),regNumb=24,regPos=1:24,regLabel=1:24,region_name="ward24",region_name2="ward24",colorbar=FALSE,header=TRUE){
@@ -219,13 +220,18 @@ plot_distr_compa_table <- function(period="1979-2011",periods=c("1979-1995","199
     values[,,,1]=fit_params[2,,,,12]-fit_params[1,,,,12]
     values[,,,2]=fit_params[2,,,,14]-fit_params[1,,,,14]
 
+    signis[,,,2,][which(is.na(values))]=1
     values[is.na(values)]=0 
-    signis[,,,2,][is.na(values)]=1
 
     signis[,,,2,1][which(fit_params[1,1:5,,,21]<0.99)]=1
     signis[,,,2,2][which(fit_params[1,1:5,,,21]<0.99)]=1
     signis[,,,2,1][which(fit_params[2,1:5,,,21]<0.99)]=1
     signis[,,,2,2][which(fit_params[2,1:5,,,21]<0.99)]=1
+
+    signis[,,,3,1][which(fit_params[1,1:5,,,24]>0)]=1
+    signis[,,,3,2][which(fit_params[1,1:5,,,24]>0)]=1
+    signis[,,,3,1][which(fit_params[2,1:5,,,24]>0)]=1
+    signis[,,,3,2][which(fit_params[2,1:5,,,24]>0)]=1
 
     signis[,,,4:5,1:2]=NA
     signis[,,,5,1][which(original_ks[,,,2,1]>original_ks[,,,2,6])]=1
@@ -238,7 +244,7 @@ plot_distr_compa_table <- function(period="1979-2011",periods=c("1979-1995","199
 
     values<-array(NA,c(5,regNumb,2,1))
     values[,,,1]=fit_params[2,,,,15]-fit_params[1,,,,15]   
-    values[is.na(values)]=3
+    values[which(is.na(values))]=0
 
     plot_reg_table_general(values=values,signis=signis,filename_plot=paste("../plots/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name2,"_dur_ks_test_",periods[1],"_vx_",periods[2],"_threshDiff.pdf",sep=""),val_names=c(""),region_name="ward24",colorRange=c(-4,4),farb_palette="lila-gruen-inv",ID_select=reg_order,hlines=hlines,colorbar=colorbar,header=header,regLabel=regLabel)
 }
@@ -266,14 +272,14 @@ init()
 #evaluate_bootstraping()
 
 write_slope_table()
-write_slope_table_control()
+#write_slope_table_control()
 
 plot_distr_compa_table()
 
 
 reg_order<-c(1:5)
 hlines<-c(30)
-plot_distr_compa_table(region_name2="overReg",regNumb=5,regPos=26:30,colorbar=TRUE,header=FALSE,regLabel=c("NHml","NHpo","NHst","Tro","SHml"))
+plot_distr_compa_table(region_name2="overReg",regNumb=5,regPos=26:30,colorbar=TRUE,header=FALSE,regLabel=c("NHpo","NHml","NHst","Tro","SHml"))
 
 
 adsas

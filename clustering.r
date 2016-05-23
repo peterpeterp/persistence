@@ -96,6 +96,7 @@ dissimilarity_view <- function(lagMax=15,load_name="_Cor",add_name="",timeRange=
     reihen=choiceMat[auswahl,]
     indexBottomLeft<<-c("a","a","a","a","a")
     #topo_map_plot(filename_plot=paste("../plots/",trendID,"/",dataset,additional_style,"/clustering/lag_",lagMax,add_name,"_best_lag.pdf",sep=""),reihen=reihen,farb_mitte=0,farb_palette="lila-gruen",highlight_points=auswahl,highlight_color="red",paper=c(8,10),ausschnitt=c(30,70),layout_mat=matrix(c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6),nrow=16),pointsize=1.5)
+    #closePlot<<-FALSE
     topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/clustering/lag_",lagMax,load_name,add_name,"_best_lag.pdf",sep=""),reihen=-reihen,farb_palette="lila-gruen",highlight_points=auswahl,highlight_color="red")
     
     indexBottomLeft<<-c("b","b","b","b","b","b")
@@ -331,8 +332,6 @@ init <- function(){
     source("inits_plot.r")
     plot_init_Had()
 }
-
-
 
 
 init()

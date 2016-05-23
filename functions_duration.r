@@ -178,7 +178,7 @@ duration_analysis <- function(yearPeriod,season_auswahl=c(1,2,3,4,5),option=c(1,
                     # data to be fitted
                     # wie sollte breaks definiert sein ....
                     br<-seq(0.5,max(y,na.rm=TRUE)+0.5,1)
-                    histo<-hist(y,breaks=br,plot=FALSE)
+                    histo<-hist(y[y>=xStart],breaks=br,plot=FALSE)
                         
                     counts<-histo$counts
                     Y<-histo$density

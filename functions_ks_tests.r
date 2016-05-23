@@ -225,15 +225,15 @@ fit_plot_comparison <- function(distr,fits,sea,q,state,ks){
     #text(40,0.18+0.06,paste("KS_full=",round(ks[1],03),"\n"," KS_upper=",round(ks[6],03)),pos=1,col="black")   
 
     if (!is.na(ks[1,1])){
-        text(24,0.21,expression('KS'['full']),col="black",pos=4)   
-        if (ks[1,1]>=ks[1,7]){text(43,0.21,paste(">95%"),col="black",pos=4)}
-        if (ks[1,1]>=ks[1,6] & ks[1,1]<ks[1,7]){text(43,0.21,paste(">90%"),col="black",pos=4)}
-        if (ks[1,1]<=ks[1,6]){text(43,0.21,paste("<90%"),col="black",pos=4)}
+        #text(24,0.21,expression('KS'['full']),col="black",pos=4)   
+        #if (ks[1,1]>=ks[1,7]){text(43,0.21,paste(">95%"),col="black",pos=4)}
+        #if (ks[1,1]>=ks[1,6] & ks[1,1]<ks[1,7]){text(43,0.21,paste(">90%"),col="black",pos=4)}
+        #if (ks[1,1]<=ks[1,6]){text(43,0.21,paste("<90%"),col="black",pos=4)}
 
-        text(20,0.18,expression('KS'['upper']),col="black",pos=4)   
-        if (ks[2,1]>=ks[2,7]){text(43,0.18,paste(">95%"),col="black",pos=4)}
-        if (ks[2,1]>=ks[2,6] & ks[2,1]<ks[2,7]){text(43,0.18,paste(">90%"),col="black",pos=4)}
-        if (ks[2,1]<=ks[2,6]){text(43,0.18,paste("<90%"),col="black",pos=4)}
+        text(20,0.19,expression('KS'['upper']),col="black",pos=4)   
+        if (ks[2,1]>=ks[2,7]){text(43,0.20,paste(">95%"),col="black",pos=4)}
+        if (ks[2,1]>=ks[2,6] & ks[2,1]<ks[2,7]){text(43,0.20,paste(">90%"),col="black",pos=4)}
+        if (ks[2,1]<=ks[2,6]){text(43,0.20,paste("<90%"),col="black",pos=4)}
     }
 
     for (i in 1:2){

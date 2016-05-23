@@ -98,7 +98,7 @@ plot_init_midlat <- function(){
 
     yAusschnitt<<-c(0,90)
     xAusschnitt<<-c(-180,180)
-    asp<<-1.5
+    asp<<-1
     pointsize<<-1
     pch_points<<-c(1,NA,1.875,1.25)
 
