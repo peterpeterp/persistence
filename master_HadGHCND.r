@@ -8,9 +8,11 @@
 ###################################################################
 
 master_nas <- function(){
+    margins<<-c(0,0,0,5)
+    color_legend<<-"right"
     indexTopRight<<-c(NA)
     indexBottomLeft<<-c(NA)
-    if (FALSE){
+    if (TRUE){
         # count nas
         naRatio=array(NA,c(5,ntot))
         for (q in 1:ntot){naRatio[1,q]<-length(which(is.na(dat$tas[q,,])))/(365*length(dat$year))}
@@ -23,7 +25,7 @@ master_nas <- function(){
         topo_map_plot(filename=paste("../plots/",dataset,"/na_ratio.pdf",sep=""),reihen=array(naRatio[1,],c(1,ntot)),farb_mitte=c(0,0.7),farb_palette="weiss-rot",titel=c(""))
     }
 
-    if (TRUE){
+    if (FALSE){
         naseries<-dat$tas*0
         naRatio=array(NA,c(2,ntot))
         x=1:(365*65)
@@ -33,15 +35,15 @@ master_nas <- function(){
             naRatio[1:2,q]=summary(lm(y~x))$coef[c(2,8)]
         }
         indexBottomLeft<<-c("b")
-        topo_map_plot(filename=paste("../plots/",dataset,"/na_increase.pdf",sep=""),reihen=array(naRatio[1,],c(1,ntot)),farb_mitte="0",farb_palette="lila-gruen")
+        topo_map_plot(filename=paste("../plots/",dataset,"/na_increase.pdf",sep=""),reihen=array(naRatio[1,]*3650,c(1,ntot)),farb_mitte="0",farb_palette="lila-gruen")
     }
 
     if (FALSE){
         calc_global_dur(ind=naseries,states=c(0,1),filename=paste("../data/",dataset,"/na_duration.nc",sep=""))
     }
 
-    if (FALSE){
-        if (FALSE){
+    if (TRUE){
+        if (TRUE){
             nc=open.nc(paste("../data/",dataset,"/na_duration.nc",sep=""))
             dur<<-var.get.nc(nc,"dur")
             dur_mid<<-var.get.nc(nc,"dur_mid")
@@ -64,14 +66,14 @@ master_nas <- function(){
         }
 
         indexBottomLeft<<-c("b")
-        topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect_increase.pdf",sep=""),reihen=array(intersect_increase[2,],c(1,ntot)),farb_mitte="0",farb_palette="lila-gruen")
+        topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect_increase.pdf",sep=""),reihen=array(intersect_increase[2,]*10,c(1,ntot)),farb_mitte="0",farb_palette="lila-gruen")
         indexBottomLeft<<-c("a")
         topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect.pdf",sep=""),reihen=array(intersect_increase[1,],c(1,ntot)),farb_mitte=c(0,1500),farb_palette="weiss-rot")
 
     }
 
     # for the period after 1979
-    if (FALSE){
+    if (TRUE){
         # count nas
         naRatio=array(NA,c(5,ntot))
         for (q in 1:ntot){naRatio[1,q]<-length(which(is.na(dat$tas[q,,30:62])))/(365*length(dat$year))}  
@@ -89,11 +91,11 @@ master_nas <- function(){
             naRatio[1:2,q]=summary(lm(y~x))$coef[c(2,8)]
         }
         indexBottomLeft<<-c("b")
-        topo_map_plot(filename=paste("../plots/",dataset,"/na_increase_1979.pdf",sep=""),reihen=array(naRatio[1,],c(1,ntot)),farb_mitte="0",farb_palette="lila-gruen")
+        topo_map_plot(filename=paste("../plots/",dataset,"/na_increase_1979.pdf",sep=""),reihen=array(naRatio[1,]*3650,c(1,ntot)),farb_mitte="0",farb_palette="lila-gruen")
     }
 
-    if (FALSE){
-        if (FALSE){
+    if (TRUE){
+        if (TRUE){
             nc=open.nc(paste("../data/",dataset,"/na_duration.nc",sep=""))
             dur<<-var.get.nc(nc,"dur")
             dur_mid<<-var.get.nc(nc,"dur_mid")
@@ -111,15 +113,16 @@ master_nas <- function(){
                     intersect_increase[2:3,q]=summary(lm(intersects[q,]~x))$coef[c(2,8)]
                     intersect_increase[1,q]=sum(intersects[q,],na.rm=TRUE)
                 }
+                else{intersect_increase[,q]=0}
             }
             intersects<<-intersects
             intersect_increase<<-intersect_increase
         }
 
         indexBottomLeft<<-c("b")        
-        topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect_increase_1979.pdf",sep=""),reihen=array(intersect_increase[2,],c(1,ntot)),farb_mitte="0",farb_palette="lila-gruen")
+        topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect_increase_1979.pdf",sep=""),reihen=array(intersect_increase[2,]*10,c(1,ntot)),farb_mitte="0",farb_palette="lila-gruen")
         indexBottomLeft<<-c("a")
-        topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect_1979.pdf",sep=""),reihen=array(intersect_increase[1,],c(1,ntot)),farb_mitte=c(0,1500),farb_palette="weiss-rot")
+        topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect_1979.pdf",sep=""),reihen=array(intersect_increase[1,],c(1,ntot)),farb_mitte=c(0,1000),farb_palette="weiss-rot")
 
     }
 
@@ -257,16 +260,19 @@ master_gridded_plots <- function(){
         print(period)
 
         #others
-        plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
-        plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c(""),name_zusatz="lr",period=period,signi_level=0.05,farb_mitte=c(-0.1,0.1),farb_palette="lila-gruen")
+        #plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
+
+        #indexTopRight<<-c("")
+        #indexBottomLeft<<-c("MAM\ncold","MAM\nwarm","JJA\ncold","JJA\nwarm","SON\ncold","SON\nwarm","DJF\ncold","DJF\nwarm","Annual\ncold","Annual\nwarm")
+        #plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c(""),name_zusatz="lr",period=period,signi_level=0.05,farb_mitte=c(-0.1,0.1),farb_palette="lila-gruen")
 
         # quantiles
-        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="qu_95",farb_mitte=c(8,26),farb_palette="regenbogen")
+        #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="qu_95",farb_mitte=c(8,26),farb_palette="regenbogen")
         plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_95",farb_mitte=c(-0.4,0.4),signi_level=0.05)
-        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(1),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_75",farb_mitte=c(-0.2,0.2),signi_level=0.05)
+        #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(1),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_75",farb_mitte=c(-0.2,0.2),signi_level=0.05)
         
         #fits
-        plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(10,12,13,20),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
+        #plot_maps(file="_fit_2expo_4:100",var="fit_stuff",sub_auswahl=c(NA),value_auswahl=c(10,12,13,20),sig_auswahl=c(17,17,17,17),value_zusatz=c("b1","b2","threshold","distr_size"),name_zusatz="fit_2expo_4:100",period=period,signi_level=0,farb_mitte=c(0.1,0.3,0.1,0.3,5,15,20,50),farb_palette="lila-gruen")
     }
 }
 
@@ -301,8 +307,8 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
         print(yearPeriod)
 
         #others
-        plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
-        plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(NA),value_zusatz=c("linear regression"),name_zusatz="lm",signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
+        #plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="mean",signi_level=0.05,farb_mitte=c(2,9),farb_palette="regenbogen")
+        #plot_reg_maps(region_name=region_name,file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(NA),value_zusatz=c("linear regression"),name_zusatz="lm",signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
         #plot_reg_maps(region_name=region_name,file="_shuffQuant",var="original_slopes",sub_auswahl=c(5),value_auswahl=c(1),sig_auswahl=c(2),value_zusatz=c("linear regression"),name_zusatz="lmSig",signi_level=0.05,farb_mitte=c(-0.07,0.07),farb_palette="lila-gruen")  
 
         #quants
@@ -320,7 +326,7 @@ master_regional_plots <- function(region_name="7rect",ID_length=7,region_names=c
         #plot_reg_fit_table(region_name=region_name,file="_fit_2expo_4:100",var="fit_stuff",name_zusatz="threshTab",value_auswahl=c(15),val_names=c(""),colorRange=c(4,14),ID_select=ID_select,hlines=hlines)
 
         print("MannKendall")
-        #duration_MannKendall(yearPeriod=yearPeriod,folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length,hlines=hlines)
+        duration_MannKendall(yearPeriod=yearPeriod,folder=paste("/regional/",region_name,"/",sep=""),ID_name=region_name,ID_select=ID_select,ID_length=ID_length,hlines=hlines)
 
 
     }
@@ -339,9 +345,9 @@ master_special_plots <- function(){
     indexBottomLeft<<-c("MAM","JJA","SON","DJF","Annual")
     plot_state_mean_maps(file="_others",var="other_stuff",period="1950-2014",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="mean_cowa_multi",signi_level=0.05,farb_mitte=c(3,9),farb_palette="regenbogen")
     plot_state_diff_maps(file="_others",var="other_stuff",period="1950-2014",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="diff_cowa_multi",signi_level=0.05,farb_mitte=c(-0.2,0.2),farb_palette="lila-gruen")
-    indexTopRight<<-c("e","f","g","h")
+    #indexTopRight<<-c("e","f","g","h")
     plot_seasonal_anomaly_maps(file="_others",var="other_stuff",period="1950-2014",sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c("mean period length"),name_zusatz="seas_anom_cowa_mean",signi_level=0.05,farb_mitte=c(-2,2),farb_palette="lila-gruen")
-    indexTopRight<<-c("a","b","c","d")
+    #indexTopRight<<-c("a","b","c","d")
 
     # quant
     plot_state_mean_maps(file="_quantiles",var="quantile_stuff",period="1950-2014",sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="qu95_cowa_multi",signi_level=0.05,farb_mitte=c(8,26),farb_palette="regenbogen")
@@ -373,7 +379,7 @@ master_correlation <- function(){
 }
 
 master_sensitivity <- function(){
-    
+    indexTopRight<<-c("","","","")
     sens_gridded(file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=1,name_zusatz="mean",farb_mitte=c(-5,5))
 
     sens_gridded(period="1979-2011",file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=4,name_zusatz="lr",farb_mitte=c(-100,100))
@@ -383,6 +389,7 @@ master_sensitivity <- function(){
     season_names<<-c("MAM","JJA","SON","DJF","Annual")
     sens_regional_fits()
     sens_regional_trends(period="1979-2011")
+    #sens_regional_trends(period="1979-2011",region_name="overReg",regPos=26:30,regNumb=5)
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
 
 }
@@ -435,11 +442,11 @@ master_init <- function(id){
     ntot<<-length(dat$ID)
     yearLimits<<-c(1980,2014,1950,2014,1950,1980)
     yearLimits<<-c(1979,2011,1979,1995,1995,2011)
-    yearLimits<<-c(1979,2011)
+
 
     yearLimits<<-c(1979,1995,1995,2011)
     yearLimits<<-c(1950,2014)
-
+    yearLimits<<-c(1979,2011)
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     seasonal_boundaries<<-array(c(60,152,244,335,1,151,243,334,424,365),c(5,2))
@@ -462,10 +469,10 @@ if (id!=7){dasdas}
 # basic analysis
 ###################################################################
 master_init(id)
-#plot_init_Had()
+plot_init_Had()
 #plot_init_Had_multiple()
 plot_init_Had_multiple_noAA()
-#plot_init_multi_SH()
+plot_init_multi_SH()
 
 #master_trend()
 #master_seasonal_median_on_detrended()
@@ -477,7 +484,7 @@ plot_init_Had_multiple_noAA()
 ###################################################################
 
 #master_gridded_analysis()
-#master_gridded_plots()
+master_gridded_plots()
 
 
 ###################################################################
@@ -488,7 +495,7 @@ plot_init_Had_multiple_noAA()
 #master_regional_plots(region_name="ward24",ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),ID_length=24,region_names=1:24,hlines=c(23,20,22,8))
 
 #master_regional_analysis(region_name="overReg",ID_length=5,region_names=1:5)
-duration_MannKendall(yearPeriod=c(1979,2011),folder=paste("/regional/","overReg","/",sep=""),ID_name="overReg",ID_select=1:5,ID_length=5,hlines=c(30),colorbar=TRUE,header=FALSE,regLabel=c("NHpo","NHml","NHst","Tro","SHml"))
+#duration_MannKendall(yearPeriod=c(1979,2011),folder=paste("/regional/","overReg","/",sep=""),ID_name="overReg",ID_select=1:5,ID_length=5,hlines=c(30),colorbar=TRUE,header=FALSE,regLabel=c("NHpo","NHml","NHst","Tro","SHml"))
 
 ###################################################################
 # special stuff

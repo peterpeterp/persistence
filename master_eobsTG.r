@@ -110,23 +110,24 @@ master_duration <- function(){
 master_gridded_analysis <- function(ID_select=1:1319){
     for (i in 1:(length(yearLimits)/2)){
         yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
+        period<<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
         print(yearPeriod)
 
         print("others")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0,0))
+        duration_analysis(yearPeriod=yearPeriod,option=c(1,0,0,0,0,0,0,0))
 
         print("quant")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0),noise_level=0.00001)
+        duration_analysis(yearPeriod=yearPeriod,option=c(0,1,0,0,0,0,0,0),noise_level=0.00001)
         
         print("fit")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),plot_select=c(NA),ID_select=ID_select,add_name="2expo_4:100",xStart=1,write=TRUE)
+        #duration_analysis(yearPeriod=yearPeriod,option=c(0,0,0,1,0,0,0,0),plot_select=c(NA),ID_select=ID_select,add_name="2expo_4:100",xStart=1,write=TRUE)
     }
 
 }
 
 master_gridded_plots <- function(){
     for (i in 1:(length(yearLimits)/2)){
-        period<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
+        period<<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
         print(period)
 
         #others
@@ -134,7 +135,7 @@ master_gridded_plots <- function(){
         #plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c(""),name_zusatz="lr",period=period,signi_level=0.05,farb_mitte=c(-0.05,0.05),farb_palette="lila-gruen")
         # quantiles
         plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="qu_95",farb_mitte=c(12,20),farb_palette="regenbogen")
-       plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_95",farb_mitte=c(-0.2,0.2),signi_level=0.1)
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_95",farb_mitte=c(-0.2,0.2),signi_level=0.1)
         #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(1),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_75",farb_mitte=c(-0.1,0.1),signi_level=0.1)
         
         #fits
@@ -175,10 +176,15 @@ master_init <- function(id){
     dat <<- dat_load(filename<-paste("../data/",dataset,"/tg_0.50deg_reg_v12.0_end.nc",sep="")) ; print(filename)
     ntot<<-length(dat$ID)
     yearLimits<<-c(1980,2015,1950,2015,1950,1980)
+    yearLimits<<-c(1950,2015,1979,2015)
+    yearLimits<<-c(1979,2015)
+    yearLimits<<-c(1950,2015)
 
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
     state_names<<-c("cold","warm")
+
+    taus<<-c(0.75,0.95,0.99)
 }
 
 

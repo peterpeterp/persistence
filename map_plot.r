@@ -170,6 +170,7 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 		#jet.colors <- colorRampPalette( c(rgb(0,0.5,1),rgb(0,1,1), rgb(1,1,1) ,rgb(1,1,0),rgb(1,0.5,0)))
 		jet.colors <- colorRampPalette( c("blue",rgb(1,1,1),"red"))
 		jet.colors <- colorRampPalette( c(rgb(0.2,0.6,0.6),rgb(0.5,1,1), rgb(0.98,0.98,0.98) ,rgb(1,1,0),rgb(0.6,0.6,0)))
+		jet.colors <- colorRampPalette( c("blue","cyan",rgb(1,1,1),"magenta","red"))
 	}		
 	if (farb_palette_loc=="blau-rot"){
 		jet.colors <- colorRampPalette( c("blue","white","red"))
@@ -246,8 +247,9 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 		for (q in ID_select){
 			polygon(x=c(lon[q]-pch_points[3],lon[q]+pch_points[3],lon[q]+pch_points[3],lon[q]-pch_points[3]),y=c(lat[q]-pch_points[4],lat[q]-pch_points[4],lat[q]+pch_points[4],lat[q]+pch_points[4]),border=rgb(1,1,1,0.0),col=farben[q])
 			if (!is.na(sig[q])){
-				lines(c(lon[q]-pch_points[3],lon[q]),c(lat[q]-pch_points[4],lat[q]+pch_points[4]),col=col_sig,cex=cex_sig)
-				lines(c(lon[q],lon[q]+pch_points[3]),c(lat[q]-pch_points[4],lat[q]+pch_points[4]),col=col_sig,cex=cex_sig)
+				points(lon[q],lat[q],pch=3,cex=pointsize)
+				#lines(c(lon[q]-pch_points[3],lon[q]),c(lat[q]-pch_points[4],lat[q]+pch_points[4]),col=col_sig,cex=cex_sig)
+				#lines(c(lon[q],lon[q]+pch_points[3]),c(lat[q]-pch_points[4],lat[q]+pch_points[4]),col=col_sig,cex=cex_sig)
 			}
 		}
 		#points(lon[ID_select],lat[ID_select],pch=sig[ID_select],cex=pointsize,col=col_sig)
@@ -281,7 +283,7 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 
 		par(mar=margins)
 		plot(NA,xlim=xAusschnitt,ylim=yAusschnitt,axes=FALSE,frame.plot=FALSE,asp=asp)
-		lines(worlCoast)
+		
 
 	    if (titel[1]!=""){
 	    	main<-titel[i]
@@ -291,8 +293,23 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 	    #axis(2,at=seq(yAusschnitt[1],yAusschnitt[2],10))
 	    #axis(1,at=seq(xAusschnitt[1],xAusschnitt[2],10))
 
+	    # color land in grey for no coverage
+	    if (greyLand==TRUE){
+		    lon<-allPoints$Var1
+		    lat<-allPoints$Var2
+			for (q in 1:7081){
+				polygon(x=c(lon[q]-pch_points[3],lon[q]+pch_points[3],lon[q]+pch_points[3],lon[q]-pch_points[3]),y=c(lat[q]-pch_points[4],lat[q]-pch_points[4],lat[q]+pch_points[4],lat[q]+pch_points[4]),border=rgb(1,1,1,0.0),col=c("white","gray")[land[q]])
+			}
+		}
+
 	    #data points
 	    tmp=put_points(points=reihen[i,],points_sig=reihen_sig[i,],signi_level=signi_level,i=i,farb_mitte=farb_mitte,farb_palette=farb_palette,ID_select=ID_select)
+
+	    #caostline
+	    worldCoast<-map(interior=FALSE,resolution=0,plot=FALSE,xlim=xAusschnitt,ylim=yAusschnitt)
+	    lines(worldCoast)
+	    #worldCoast<<-worldCoast
+
 	    #highlight points
 		for (rad in c(1,1.5,2,2.5)){
 			points(dat$lon[highlight_points[i]],dat$lat[highlight_points[i]],col=highlight_color,pch=1,cex=(pointsize*rad))
@@ -306,6 +323,9 @@ topo_map_plot <- function(filename_plot=filename_plot,reihen=reihen,reihen_sig=r
 		if (length(indexTopRight>=dim(reihen)[1]) & !is.na(indexTopRight[i])){text(posTopRight[1],posTopRight[2],indexTopRight[i],pos=4,cex=cexIndex)}
 		#index lowleft
 		if (length(indexBottomLeft>=dim(reihen)[1]) & !is.na(indexBottomLeft[i])){text(posBottomLeft[1],posBottomLeft[2],indexBottomLeft[i],pos=4,cex=cexIndex)}
+
+		# delete outer coastline
+		if (!is.na(outer_cut)){polygon(x=c(xAusschnitt[1]-outer_cut,xAusschnitt[2]+outer_cut,xAusschnitt[2]+outer_cut,xAusschnitt[1]-outer_cut),y=c(yAusschnitt[1]-outer_cut,yAusschnitt[1]-outer_cut,yAusschnitt[2]+outer_cut,yAusschnitt[2]+outer_cut),col=rgb(1,1,1,0),border="white",lwd=inner_cut)}
 
 		#color bar
 		color<<-tmp$color
@@ -328,4 +348,12 @@ library(RColorBrewer)
 library(rworldmap)
 library(fields)
 require(maps)
-worlCoast<-map(interior=FALSE,resolution=0,plot=FALSE)
+library(maptools)
+data(wrld_simpl)
+
+
+allPoints <- expand.grid(seq(-180,180,3.75), seq(-90,90,2.5))
+allPoints <- SpatialPoints(allPoints, proj4string=CRS(proj4string(wrld_simpl)))
+land<-array(1,7081)
+land[which(!is.na(over(allPoints, wrld_simpl)$FIPS))]=2
+

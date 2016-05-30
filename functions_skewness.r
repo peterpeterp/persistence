@@ -197,6 +197,8 @@ worldmap = getMap(resolution = "low")
 
 #calc_runskew(dataset="_TMean")
 #plot_daily_skew_cycle(dataset="_TMean")
+source("inits_plot.r")
+plot_init_Had_multiple_noAA()
 plot_seasonal_skewness(dataset="_TMean")
 #plot_skewness()
 #plot_detrended_seasonal_skewness(grid=FALSE,ausschnitt=c(-80,80),trendID="91_5",trend_style="_mean",dataset=dataset,additional_style="")

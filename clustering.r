@@ -344,7 +344,7 @@ plot_init_midlat()
 
 
 dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
-
+adeasd
 
 #for (method in c("ward.D2","single","centroid")){
 

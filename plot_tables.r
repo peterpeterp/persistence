@@ -129,6 +129,26 @@ plot_reg_table_general <- function(values,signis,filename_plot,val_names,region_
 					if(!is.na(signis[sea,ID_select[i],state,5,val])){
 			            points(xPos+0.5,yPos+0.5,pch=6,cex=1.5,col="black")	     
 					}
+					if (dim(signis)[4]>10){
+						if(!is.na(signis[sea,ID_select[i],state,11,val])){
+				            text(xPos+0.2,yPos+0.6,"1",cex=0.5)	     
+						}
+						if(!is.na(signis[sea,ID_select[i],state,12,val])){
+				            text(xPos+0.4,yPos+0.6,"2",cex=0.5)	     
+						}
+						if(!is.na(signis[sea,ID_select[i],state,13,val])){
+				            text(xPos+0.6,yPos+0.6,"3",cex=0.5)	       
+						}
+						if(!is.na(signis[sea,ID_select[i],state,14,val])){
+				            text(xPos+0.2,yPos+0.6,"4",cex=0.5)	     
+						}
+						if(!is.na(signis[sea,ID_select[i],state,15,val])){
+				            text(xPos+0.4,yPos+0.6,"5",cex=0.5)	     
+						}
+						if(!is.na(signis[sea,ID_select[i],state,16,val])){
+				            text(xPos+0.6,yPos+0.6,"6",cex=0.5)	       
+						}
+					}
 				}
 			}
 		}

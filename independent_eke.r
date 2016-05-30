@@ -117,11 +117,11 @@ master_init <- function(){
 
 
 master_init()
-plot_init_multi_SH()
 
 
 plot_init_Had()
-land_col<<-rgb(0.5,0.5,0.5,0.5)
-xAusschnitt<<-c(-120,240)
 
-plot_eke(add_name="500_mb_ww")
+plot_eke(add_name="500_mb")
+
+plot_init_multi_SH()
+plot_eke(add_name="500_mb_SH")

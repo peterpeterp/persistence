@@ -24,9 +24,6 @@ sens_gridded <- function(trendIDs=c("91_5","91_7","91_9"),period="1950-2014",fil
 		}
 	}
 
-    indexTopRight<<-c("a","A","a","A","a","A","a","A","a","A")
-    indexBottomLeft<<-c("cold","warm","cold","warm","cold","warm","cold","warm","cold","warm")
-	filename_plot<-paste("../plots/",dataset,additional_style,"/sensitivity/","sensitivity_",name_zusatz,"_",period,"_",name_style,"_5-7.pdf",sep="") ; print(filename_plot)
 
     print(paste("ann >0:",length(which(reihen[9:10,]>0))/length(reihen[9:10,])))
     print(paste("ann abs<5:",length(which(abs(reihen[9:10,])<5))/length(reihen[9:10,])))
@@ -36,6 +33,8 @@ sens_gridded <- function(trendIDs=c("91_5","91_7","91_9"),period="1950-2014",fil
     print(paste("seas abs<5:",length(which(abs(reihen[1:8,])<5))/length(reihen[1:8,])))
     print(paste("seas abs<10:",length(which(abs(reihen[1:8,])<10))/length(reihen[1:8,])))
 
+    filename_plot<-paste("../plots/",dataset,additional_style,"/sensitivity/","sensitivity_",name_zusatz,"_",period,"_",name_style,"_5-7.pdf",sep="") ; print(filename_plot)
+    indexBottomLeft<<-c("5 years\ncold","5 years\nwarm","5 years\ncold","5 years\nwarm","5 years\ncold","5 years\nwarm","5 years\ncold","5 years\nwarm","5 years\ncold","5 years\nwarm")
 	topo_map_plot(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen_sig,farb_mitte=farb_mitte,farb_palette=farb_palette,signi_level=signi_level)
 
     reihen<-array(NA,dim=c(length(season_auswahl)*2,ntot))
@@ -49,10 +48,6 @@ sens_gridded <- function(trendIDs=c("91_5","91_7","91_9"),period="1950-2014",fil
         }
     }
 
-    indexTopRight<<-c("b","B","b","B","b","B","b","B","b","B")
-    indexBottomLeft<<-c("cold","warm","cold","warm","cold","warm","cold","warm","cold","warm")
-    filename_plot<-paste("../plots/",dataset,additional_style,"/sensitivity/","sensitivity_",name_zusatz,"_",period,"_",name_style,"_9-7.pdf",sep="") ; print(filename_plot)
-
     print(paste("ann >0:",length(which(reihen[9:10,]>0))/length(reihen[9:10,])))
     print(paste("ann abs<5:",length(which(abs(reihen[9:10,])<5))/length(reihen[9:10,])))
     print(paste("ann abs<10:",length(which(abs(reihen[9:10,])<10))/length(reihen[9:10,])))
@@ -61,10 +56,10 @@ sens_gridded <- function(trendIDs=c("91_5","91_7","91_9"),period="1950-2014",fil
     print(paste("seas abs<5:",length(which(abs(reihen[1:8,])<5))/length(reihen[1:8,])))
     print(paste("seas abs<10:",length(which(abs(reihen[1:8,])<10))/length(reihen[1:8,])))
 
+    filename_plot<-paste("../plots/",dataset,additional_style,"/sensitivity/","sensitivity_",name_zusatz,"_",period,"_",name_style,"_9-7.pdf",sep="") ; print(filename_plot)
+    indexBottomLeft<<-c("9 years\ncold","9 years\nwarm","9 years\ncold","9 years\nwarm","9 years\ncold","9 years\nwarm","9 years\ncold","9 years\nwarm","9 years\ncold","9 years\nwarm")
     topo_map_plot(filename_plot=filename_plot,reihen=reihen,reihen_sig=reihen_sig,farb_mitte=farb_mitte,farb_palette=farb_palette,signi_level=signi_level)
 
-    indexTopRight<<-c("a","A","b","B","c","C","d","D","e","E")
-    indexBottomLeft<<-c("MAM","MAM","JJA","JJA","SON","SON","DJF","DJF","Annual","Annual")
 }
 
 
@@ -156,19 +151,26 @@ sens_regional_fits <- function(region_name="ward24",regNumb=24,trendIDs=c("91_5"
     plot_reg_table_general(values=reihen,signis=signis,filename=paste("../plots/",dataset,additional_style,"/sensitivity/",region_name,"_sensitivity_",name_zusatz,"_",period,"_tresh_9-7.pdf",sep=""),val_names=c(""),region_name="ward24",colorRange=c(-10,10),farb_palette=farb_palette,ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),hlines=c(23,20,22,8))
 }
 
-sens_regional_trends <- function(region_name="ward24",regNumb=24,trendIDs=c("91_5","91_7","91_9"),period="1950-2014",name_zusatz="mean",farb_mitte="",farb_palette="weiss-rot",signi_level=0.05){
+sens_regional_trends <- function(region_name="ward24",region_name2="ward24",regNumb=24,regPos=1:24,regLabel=1:24,trendIDs=c("91_5","91_7","91_9"),period="1950-2014",name_zusatz="mean",farb_mitte="",farb_palette="weiss-rot",signi_level=0.05){
 
-    #filename<-paste("../data/",dataset,additional_style,"/",trendID,folder,period,"/",trendID,"_",dataset,"_",region_name,"_",period,"_shuffQuant.nc",sep="") ; print(filename)
-    #original_slopes<-var.get.nc(open.nc(filename),"original_slopes")
+    filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name2,"/",period,"/",trendID,"_",dataset,"_",region_name2,"_",period,"_bootstrap.nc",sep="") ; print(filename)
+    original_slopes<-var.get.nc(open.nc(filename),"statistics")[,regPos,,,]
 
-    signis<-array(NA,c(5,regNumb,2,5,2))
-    #signis[,,,4,1][which(!is.na(original_slopes[,,,5,3]))]=1
-    #signis[,,,5,1][which(!is.na(original_slopes[,,,5,2]))]=1
-
-    #signis[,,,4,2][which(!is.na(original_slopes[,,,3,3]))]=1
-    #signis[,,,5,2][which(!is.na(original_slopes[,,,3,2]))]=1
+    filename<-paste("../data/",dataset,additional_style,"/",trendID,"/regional/",region_name,"/",period,"/",trendID,dataset,"_",region_name,"_",period,"_MK.nc",sep="") ; print(filename)
+    MK<-var.get.nc(open.nc(filename),"MK")[,,,,]
 
 
+    signis<-array(NA,c(5,regNumb,2,20,2))
+    signis[,,,11,1][which(original_slopes[,,,1,1]>original_slopes[,,,1,8])]=1
+    signis[,,,11,1][which(original_slopes[,,,1,1]<original_slopes[,,,1,3])]=1
+    signis[,,,14,2][which(original_slopes[,,,2,1]>original_slopes[,,,2,8])]=1
+    signis[,,,14,2][which(original_slopes[,,,2,1]<original_slopes[,,,2,3])]=1
+
+    signis[,,,12,1][which(original_slopes[,,,3,1]>original_slopes[,,,3,7])]=1
+    signis[,,,15,2][which(original_slopes[,,,4,1]>original_slopes[,,,4,7])]=1
+
+    signis[,,,13,1][which(MK[,,,5,2]<=0.05 & MK[,,,5,1]!=0)]=1
+    signis[,,,16,2][which(MK[,,,2,2]<=0.05 & MK[,,,2,1]!=0)]=1
 
     values<-array(NA,c(3,5,regNumb,2,2))
     for (i in 1:length(trendIDs)){

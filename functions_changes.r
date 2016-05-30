@@ -191,10 +191,7 @@ if (FALSE){
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)
 
-season<-"4seasons"
-state<-2
-trend_bootstrap_for_large_region(add_name=id)
-adsas
+
 
 for (season in season_names){
     for (state in 1:2){

@@ -144,26 +144,27 @@ master_duration <- function(){
     duration_seasons(dur,dur_mid,season=c(335,424),filename=paste("../data/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_duration_DJF.nc",sep=""))
 }
 
-master_gridded_analysis <- function(){
+master_gridded_analysis <- function(ID_select=1:1319){
     for (i in 1:(length(yearLimits)/2)){
         yearPeriod=c(yearLimits[(2*(i-1)+1)],yearLimits[(2*(i-1)+2)])
+        period<<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
         print(yearPeriod)
 
         print("others")
-        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(1,0,0,0,0,0,0,0))
+        duration_analysis(yearPeriod=yearPeriod,option=c(1,0,0,0,0,0,0,0))
 
         print("quant")
-        #duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,1,0,0,0,0,0,0),noise_level=0.00001)
-
+        duration_analysis(yearPeriod=yearPeriod,option=c(0,1,0,0,0,0,0,0),noise_level=0.00001)
+        
         print("fit")
-        duration_analysis(yearPeriod=yearPeriod,trendID=trendID,dataset=dataset,option=c(0,0,0,1,0,0,0,0),plot_select=c(1690,243,710,361,952,2274,4388,4380,1757,4412,6234,4896),add_name="2expo_4:100",xStart=4,write=TRUE)
+        #duration_analysis(yearPeriod=yearPeriod,option=c(0,0,0,1,0,0,0,0),plot_select=c(NA),ID_select=ID_select,add_name="2expo_4:100",xStart=1,write=TRUE)
     }
 
 }
 
 master_gridded_plots <- function(){
     for (i in 1:(length(yearLimits)/2)){
-        period<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
+        period<<-paste(yearLimits[(2*(i-1)+1)],"-",yearLimits[(2*(i-1)+2)],sep="")
         print(period)
 
         #others
@@ -238,13 +239,15 @@ master_init <- function(){
     trendID<<-"0p5"
     dataset<<-"_eobsPP"
     additional_style<<-""
-    #dat <<- dat_load_precipitation(paste("../data/",dataset,"/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
+    dat <<- dat_load_precipitation(paste("../data/",dataset,"/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
     ntot<<-length(dat$ID)
-    yearLimits<<-c(1980,2015,1950,2015)
+    yearLimits<<-c(1950,2015,1979,2015)
+    yearLimits<<-c(1979,2015)
+    yearLimits<<-c(1950,2015)
 
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
-    state_names<<-c("dry","wet")
+    state_names<<-c("cold","warm")
 
     taus<<-c(0.75,0.95,0.99)
 }
