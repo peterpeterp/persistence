@@ -1,9 +1,9 @@
 
-ks_wilcoxon_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9")){
+ks_wilcoxon_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9"),add_name="7",legend=c("5 year","9 year"),yAxis=TRUE){
     wilcox_test=array(NA,c(2,3))
     ks_test=array(NA,c(2,3))
 
-    pdf(paste("../plots/",dataset,additional_style,"/dur_ks_wilcox_sensibility_no_ecdf.pdf",sep=""),width=4,height=4)
+    pdf(paste("../plots/",dataset,additional_style,"/sensitivity/dur_ks_wilcox_sensibility_no_ecdf_",add_name,".pdf",sep=""),width=4,height=4)
     #par(mar=c(3, 3, 3, 3) + 0.1)  
 
     filename<-paste("../data/",dataset,additional_style,"/",trendIDs[1],"/gridded/",trendIDs[1],dataset,"_duration_4seasons.nc",sep="") ; print(filename)
@@ -49,11 +49,13 @@ ks_wilcoxon_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9")){
         points(tmp9$mids[1:50],tmp9$count[1:50],col=rgb(0.5,0.5,1,0.5),cex=0.3)
         legend("topright",col=colors,pch=c(1,1,1),legend=trend_labels,bty = "n")
 
-        plot(NA,xlim=c(4,50),ylim=c(-5000,2000),main="",ylab="",xlab="")
-        abline(h=0,col="gray",lty=2)
+        plot(NA,xlim=c(1,40),ylim=c(-11000,11000),main="",ylab="",xlab="",axes=FALSE,frame.plot=TRUE)
+        axis(1)
+        if (yAxis==TRUE){axis(2)}
+        abline(h=0,col=rgb(0.4,0.4,0.4,1),lty=2)
         points(tmp5$mids[1:50],tmp5$count[1:50]-tmp7$count[1:50],col=colors[1],cex=0.3)
         points(tmp7$mids[1:50],tmp9$count[1:50]-tmp7$count[1:50],col=colors[3],cex=0.3)
-        legend("bottomright",col=colors[c(1,3)],pch=c(1,1,1),legend=c("5 year","9 year"),bty = "n")
+        legend("bottomright",col=colors[c(1,3)],pch=c(1,1,1),legend=legend,bty = "n")
 
         plot(NA,xlim=c(0,50),ylim=c(-500,15000),main="",ylab="",xlab="")
         points(tmp5$mids[1:50],tmp5$count[1:50]-tmp7$count[1:50],col=rgb(1,0.5,0.5,0.5),cex=0.3)
@@ -287,7 +289,8 @@ distribution_comparision <- function(region_name,periods,period,ID_select,ID_len
 library(dgof)
 
 
-#ks_wilcoxon_trenID_sensitivity(trendIDs=c("91_5","91_7","91_9"))
+ks_wilcoxon_trenID_sensitivity(trendIDs=c("91_5","91_7","91_9"),add_name="7",legend=c("5-year","9-year"))
+ks_wilcoxon_trenID_sensitivity(trendIDs=c("61_7","91_7","121_7"),add_name="91",legend=c("61-day","121-day"),yAxis=FALSE)
 
 # this old, can only be used for plots
 #ks_wilcoxon_period(ID_name="ward24",yearPeriod1=c(1979,1995),yearPeriod2=c(1995,2011),periods=c("1979-1995","1995-2011"),ID_select=1:24)
@@ -299,4 +302,4 @@ hlines=c(23,20,22,8)
 
 
 
-distribution_comparision(region_name="ward24",period="1979-2011",periods=c("1979-1995","1995-2011"),ID_select=ID_select,ID_length=ID_length,hlines=hlines)
+#distribution_comparision(region_name="ward24",period="1979-2011",periods=c("1979-1995","1995-2011"),ID_select=ID_select,ID_length=ID_length,hlines=hlines)

@@ -1,4 +1,4 @@
-
+# calculates the time lag between max(abs(anomaly)) and mid-point of period or beginning of period
 
 timeLag_analysis <- function(period="1950-2014",ID_select=1:length(dat$ID),add_name="quant_other",folder="/gridded/",ID_name="",ID_names=1:length(dat$ID)){    
 

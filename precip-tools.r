@@ -1,3 +1,4 @@
+# here I made some tests about the number of wet days, increase in number of wet days etc.
 
 state_ana <- function(seasonStart=c(60,152,244,335,1),seasonStop=c(151,243,334,424,365)){
     ntot<-length(dat$ID)

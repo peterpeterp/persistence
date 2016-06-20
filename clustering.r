@@ -308,6 +308,33 @@ cluster_vis_map <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=
     graphics.off()
 }
 
+cluster_vis_map_paper <- function(lagMax=20,load_name="_CorLag",add_name="",timeRange=c(2000,22000),nGroup=22,untilGroup=25,method="ward.D2",region_name="ward24",ID_select=1:1319){
+    print(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    nc=open.nc(paste("../data/",dataset,additional_style,"/clustering/",timeRange[1],"-",timeRange[2],load_name,"_",lagMax,"_clustering",add_name,"_",method,"_",1,"-",untilGroup,".nc",sep=""))
+    attribution<<-var.get.nc(nc,"attribution")
+
+    #pdf(paste("../plots/",dataset,additional_style,"/lag_",lagMax,load_name,add_name,"_",region_name,"_",nGroup,"_vis_paper.pdf",sep=""),width=paper[1],height=paper[2])
+    #map("world", col=1, interior=FALSE,xlim=xAusschnitt,ylim=yAusschnitt,asp=asp,resolution=0,mar=c(0,0,0,0))
+
+    overReg_attribution<-attribution[nGroup,]*NA
+    overReg_attribution[which(attribution[nGroup,] %in% c(1,2,6,10,13,19,23))]=1
+    overReg_attribution[which(attribution[nGroup,] %in% c(3,4,7,12,16,20))]=2
+    overReg_attribution[which(attribution[nGroup,] %in% c(5,11,14,18,21,22))]=3
+    #overReg_attribution[which(attribution[nGroup,] %in% c(8,17))]=4
+    #overReg_attribution[which(attribution[nGroup,] %in% c(9,15,24))]=5
+
+    nbcol<<-5
+    closePlot<<-FALSE
+    indexBottomLeft<<-c("")
+    color_legend<<-"no"
+    greyLand<<-FALSE
+    topo_map_plot(filename_plot=paste("../plots/",dataset,additional_style,"/lag_",lagMax,load_name,add_name,"_",region_name,"_",nGroup,"_vis_paper.pdf",sep=""),reihen=array(overReg_attribution,c(1,ntot)),farb_mitte=c(1,5),farb_palette="viele")
+
+    tmp=put_points(points=overReg_attribution,farb_palette="drei",ID_select=ID_select)
+    region_border(region_name=region_name,reg_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22),reg_names=1:24,border_col="black")
+    graphics.off()
+}
+
 init <- function(){
     source("load.r")
 
@@ -327,10 +354,9 @@ init <- function(){
     library(RNetCDF)
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
 
-    dat<<-dat_load(paste("../data/_TMean/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
+    #dat<<-dat_load(paste("../data/_TMean/HadGHCND",dataset,"_data3D.day1-365.1950-2014.nc",sep=""))
 
     source("inits_plot.r")
-    plot_init_Had()
 }
 
 
@@ -340,11 +366,9 @@ load_name<-"_CorSdNorm"
 
 #dissimilarity_matrix(lagMax=20,timeRange=c(2000,22000),load_name="_AbsCorSdNorm",normalize=TRUE)
 
-plot_init_midlat()
+#plot_init_midlat()
+#dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
 
-
-dissimilarity_view(lagMax=20,timeRange=c(2000,22000),load_name=load_name)
-adeasd
 
 #for (method in c("ward.D2","single","centroid")){
 
@@ -358,6 +382,8 @@ for (method in c("ward.D2")){
 }
 
 plot_init_Had_multiple_noAA()
+#write_cluster_region_files(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")
+#cluster_vis_map(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")
 
-write_cluster_region_files(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")
-cluster_vis_map(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")
+plot_init_Had_multiple_NH()
+#cluster_vis_map_paper(add_name="_ww",load_name=load_name,ID_select=1:1319,timeRange=c(2000,22000),method="ward.D2",nGroup=24,region_name="ward24")

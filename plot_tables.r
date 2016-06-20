@@ -1,5 +1,6 @@
+# these 2 functions are used to create tables of trend results and tables of fit parameters
 
-plot_reg_fit_table <- function(region_name="ward24",file="_quantiles",var="quantile_stuff",name_zusatz="quanzs",value_auswahl=c(12,14,15),val_names=c("1",2),colorRange=c(0,0.4),ID_select=1:24,hlines=c(30),colorbar=TRUE){
+plot_reg_fit_table <- function(region_name="ward24",file="_quantiles",var="quantile_stuff",name_zusatz="quanzs",value_auswahl=c(12,14,15),val_names=c("1",2),colorRange=c(0,0.4),ID_select=1:24,regLabel=1:24,hlines=c(30),colorbar=TRUE){
     attribution<-read.table(paste("../data/",dataset,"/ID_regions/",region_name,".txt",sep=""))[,1]
     regNumb<-length(unique(attribution[!is.na(attribution)]))
 	valNumb<-length(value_auswahl)
@@ -14,13 +15,15 @@ plot_reg_fit_table <- function(region_name="ward24",file="_quantiles",var="quant
 	par(mar=c(3,0,0,0))
 
 	ID_select<-ID_select[length(ID_select):1]
+	regLabel<-regLabel[length(regLabel):1]
 
 	jet.colors <- colorRampPalette(c("blue","green","yellow","red","violet")[5:1])
 	color <- jet.colors(101)	
 
 	if (TRUE){
 		plot(NA,xlim=c(0,valNumb*10+1),ylim=c(0,29),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
-		for (i in 1:length(ID_select)){text(x=0.5,y=i+1.5,label=ID_select[i])}
+		#for (i in 1:length(ID_select)){text(x=0.5,y=i+1.5,label=ID_select[i])}
+		for (i in 1:length(regLabel)){text(x=0.5,y=i+1.5,label=regLabel[i])}
 		for (sea in season_auswahl){
 			if (valNumb>1){text(x=(sea-1)*2*valNumb+3,y=length(ID_select)+4.5,label=season_names[sea])}
 			if (valNumb==1){text(x=(sea-1)*2*valNumb+2,y=length(ID_select)+3.5,label=season_names[sea])}

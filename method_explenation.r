@@ -1,4 +1,4 @@
-source("load.r")
+# this only creates explanatory plots
 
 method_explanation <- function(yearReal=2003,todo=c(1,1,1,1),name="full",q=661){
     year=yearReal-1949
@@ -39,11 +39,11 @@ method_explanation <- function(yearReal=2003,todo=c(1,1,1,1),name="full",q=661){
         for (i in 1:4){
             sea=sea_limit[i]
             #lines(c(yearReal+sea/365,yearReal+sea/365),c(min(detrended[q,,year:(year+1)],na.rm=TRUE)-2.5,max(detrended[q,,year:(year+1)],na.rm=TRUE)+2.5),col=rgb(0.5,0.5,0.5,0.5))
-            abline(v=yearReal+sea/365,col=rgb(0.5,0.5,0.5,0.5))
-            abline(v=yearReal+1+sea/365,col=rgb(0.5,0.5,0.5,0.5))
+            abline(v=yearReal+sea/365,col=rgb(0.5,0.5,0.5,1))
+            abline(v=yearReal+1+sea/365,col=rgb(0.5,0.5,0.5,1))
             #lines(c(yearReal+1+sea/365,yearReal+1+sea/365),c(min(detrended[q,,year:(year+1)],na.rm=TRUE)-2.5,max(detrended[q,,year:(year+1)],na.rm=TRUE)+2.5),col=rgb(0.5,0.5,0.5,0.5))
-            text(yearReal+(sea+45)/365,16,label=season_names[i],col=rgb(0.5,0.5,0.5,0.5))
-            text(yearReal+1+(sea+45)/365,16,label=season_names[i],col=rgb(0.5,0.5,0.5,0.5))
+            text(yearReal+(sea+45)/365,16,label=season_names[i],col=rgb(0.5,0.5,0.5,1))
+            text(yearReal+1+(sea+45)/365,16,label=season_names[i],col=rgb(0.5,0.5,0.5,1))
 
         }
 

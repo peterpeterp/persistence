@@ -7,75 +7,6 @@
 # Year: 2015
 ###################################################################
 
-master_nas <- function(){
-    if (FALSE){
-        # count nas
-        naRatio=array(NA,c(5,ntot))
-        for (q in 1:ntot){naRatio[1,q]<-length(which(is.na(dat$pp[q,,])))/(365*length(dat$year))}
-        naRatio[2,which(naRatio[1,]<0.3)]=naRatio[1,which(naRatio[1,]<0.3)]
-        naRatio[3,which(naRatio[1,]<0.2)]=naRatio[1,which(naRatio[1,]<0.2)]
-        naRatio[4,which(naRatio[1,]<0.1)]=naRatio[1,which(naRatio[1,]<0.1)]
-        naRatio[5,which(naRatio[1,]<0.01)]=naRatio[1,which(naRatio[1,]<0.01)]
-        
-        topo_map_plot(filename=paste("../plots/",dataset,"/na_ratio.pdf",sep=""),reihen=array(naRatio[1,],c(1,ntot)),farb_mitte=c(0,0.7),farb_palette="weiss-rot",titel=c(""))
-    }
-
-    if (FALSE){
-        naseries<-dat$pp*0
-        naRatio=array(NA,c(2,ntot))
-        x=1:(365*length(dat$year))
-        for (q in 1:ntot){
-            naseries[q,,][which(is.na(dat$pp[q,,]))]=1
-            y<-as.vector(naseries[q,,])
-            naRatio[1:2,q]=summary(lm(y~x))$coef[c(2,8)]
-        }
-        topo_map_plot(filename=paste("../plots/",dataset,"/na_increase.pdf",sep=""),reihen=array(naRatio[1,],c(1,ntot)),farb_mitte="0",farb_palette="lila-gruen")
-    }
-
-    if (FALSE){
-        calc_global_dur(ind=naseries,states=c(0,1),filename=paste("../data/",dataset,"/na_duration.nc",sep=""))
-    }
-
-    if (TRUE){
-        if (TRUE){
-            nc=open.nc(paste("../data/",dataset,"/na_duration.nc",sep="")) ; print(paste("../data/",dataset,"/na_duration.nc",sep=""))
-            dur<<-var.get.nc(nc,"dur")
-            dur_mid<<-var.get.nc(nc,"dur_mid")
-            intersects<-array(0,c(ntot,length(dat$year)))
-            intersect_increase<-array(NA,c(3,ntot))
-            x<-1:length(dat$year)
-            for (q in 1:ntot){
-                for (yr in 1:length(dat$year)){
-                    intersects[q,yr]=length(which(dur_mid[q,2,]>(1949+yr) & dur_mid[q,2,]<(1949+yr+1)))
-                }
-                if (sum(intersects[q,],na.rm=TRUE)>0){
-                    #print(summary(lm(intersects[q,]~x))$coef[c(2,8)])
-                    intersect_increase[2:3,q]=summary(lm(intersects[q,]~x))$coef[c(2,8)]
-                    intersect_increase[1,q]=sum(intersects[q,],na.rm=TRUE)
-                }
-            }
-            intersects<<-intersects
-            intersect_increase<<-intersect_increase
-        }
-
-
-        topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect_increase_perYr.pdf",sep=""),reihen=array(intersect_increase[2,]/length(dat$year),c(1,ntot)),farb_mitte="0",farb_palette="lila-gruen")
-        topo_map_plot(filename=paste("../plots/",dataset,"/na_intersect_perYr.pdf",sep=""),reihen=array(intersect_increase[1,]/length(dat$year),c(1,ntot)),farb_mitte=c(0,15),farb_palette="weiss-rot")
-
-    }
-
-    if (TRUE){
-        nc=open.nc(paste("../data/",dataset,"/na_duration.nc",sep=""))
-        dur<<-var.get.nc(nc,"dur")  
-        pdf(paste("../plots/",dataset,"/na_pdf.pdf",sep=""),width=4,height=4)
-        tmp=hist(dur[,2,],breaks=(0:25000+0.5),plot=FALSE)
-        plot(tmp$mids,tmp$density,xlim=c(1,10000),ylim=c(0.00001,1),xlab="",ylab="",log="xy",pch=20)
-        abline(v=365,col="gray",lty=2)
-        text(365,0.5,365,col="gray")
-        graphics.off()
-    }
-
-}
 
 master_state_attribution <- function(threshold=0.5){
     ## User parameters 
@@ -252,6 +183,9 @@ master_init <- function(){
     taus<<-c(0.75,0.95,0.99)
 }
 
+###################################################################
+# this is just a copy of master_HadGHCND.r
+# for comments see master_HadGHCND.r
 
 ###################################################################
 # basic analysis

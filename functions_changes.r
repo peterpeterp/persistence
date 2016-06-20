@@ -1,3 +1,4 @@
+# this script has to be called parallely 10 times for each region
 
 linear_trend <- function(y,t){
     return(c(lm(y~t)$coef[2],rq(dither(y,value=noise_level)~t,0.95)$coef[2]))
@@ -170,6 +171,7 @@ yearPeriod<-c(1979,2011)
 period<-"1979-2011"
 replics<-1001
 
+# run one of the following options gives results for each region in climate zone and for climate zone
 
 #regions<-c(9,15,24) ; over_region_name<-"SHml"
 
@@ -182,11 +184,6 @@ replics<-1001
 regions<-c(3,4,7,12,16,20) ; over_region_name<-"NHml"
 
 
-if (FALSE){
-    season<-"DJF"
-    state<-1
-    trend_bootstrap_for_large_region(add_name=1)
-}
 
 id<-as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 print(id)

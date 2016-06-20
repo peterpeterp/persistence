@@ -1,4 +1,5 @@
 library(Kendall)
+# can be used to calculate regional mann-kendall test for yeraly averages
 
 duration_yearly_values <- function(folder="/gridded/",ID_name="",ID_select=1:length(dat$ID),ID_length=length(ID_select)){
 
@@ -110,6 +111,9 @@ duration_MannKendall <- function(yearPeriod,folder="/gridded/",ID_name="",ID_sel
     values[,,,1][which(MK[,,,5,1]<0)]=-1
     values[,,,2][which(MK[,,,3,1]>0)]=1
     values[,,,2][which(MK[,,,3,1]<0)]=-1
+
+    signis[,,,5,][is.na(values)]=NA
+    signis[,,,4,][is.na(values)]=NA
 
 
     nbcol<<-2

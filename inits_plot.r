@@ -45,6 +45,49 @@ plot_init_Had_multiple_noAA <- function(){
     closePlot<<-TRUE
 }
 
+plot_init_Had_multiple_NH <- function(){
+    name_style<<-"NH"
+
+    paper<<-c(7.2,1.8)
+    margins<<-c(0,0,0,0)
+
+    outer_cut<<-10
+    inner_cut<<-33
+
+    xAusschnitt<<-c(-168.75,191.75)    
+    yAusschnitt<<-c(0,90)
+
+    greyLand<<-TRUE
+
+    asp<<-1
+    pointsize<<-0.3
+    pch_points<<-c(1,NA,1.875,1.25)
+
+    pch_sig<<-4
+    col_sig<<-rgb(0.1,0.1,0.1,0.6)
+    cex_sig<<-0.1
+
+    region<<-NA
+    name_reg_zusatz<<-""
+
+    season_auswahl<<-1:5
+
+    color_legend<<-"seperate"
+
+    cexIndex<<-2
+    #indexTopRight<<-c("a","A","b","B","c","C","d","D","e","E")
+    indexTopRight<<-c("")
+    posTopRight<<-c(172,80)
+
+    indexBottomLeft<<-c("MAM","MAM","JJA","JJA","SON","SON","DJF","DJF","Annual","Annual")
+    posBottomLeft<<-c(-175,10)
+
+    nbcol<<-101
+
+    closePlot<<-TRUE
+}
+
+
 plot_init_multi_SH <- function(){
     name_style<<-"SH"
 

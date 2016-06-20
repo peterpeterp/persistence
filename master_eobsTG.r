@@ -7,10 +7,6 @@
 # Year: 2015
 ###################################################################
 
-master_nas <- function(){
-    print("no nas in this dataset!!!")
-}
-
 master_trend_control <- function(){
     # trend control
     source("trend_view.r")
@@ -196,6 +192,10 @@ if (!is.na(id)){id<-id*2+3}
 if (is.na(id)){id<-7}
 #break for single runs
 if (id!=7){asdasd}
+
+###################################################################
+# this is just a copy of master_HadGHCND.r
+# for comments see master_HadGHCND.r
 
 
 ###################################################################

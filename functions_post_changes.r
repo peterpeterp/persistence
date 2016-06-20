@@ -1,4 +1,4 @@
-
+# evaluation of bootstrapped results
 
 evaluate_bootstraping <- function(overRegions=c("NHpo","NHml","NHst","tro","SHml"),period="1979-2011",region_name="ward24"){
 	result<-array(NA,c(5,2,30,4,10))
@@ -260,7 +260,7 @@ init <- function(){
     dataset<<-"_TMean"
     additional_style<<-""
     taus<<-c(0.75,0.95,0.99)
-    season_names<<-c("MAM","JJA","SON","DJF","4seasons")
+    season_names<<-c("MAM","JJA","SON","DJF","Annual")
     state_names<<-c("cold","warm")
 
     reg_order<<-c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24)
@@ -269,10 +269,12 @@ init <- function(){
 
 init()
 
-#evaluate_bootstraping()
+# loads all files written during bootstrapping (see "functions_changes.r")
+evaluate_bootstraping()
 
+# plot results
 write_slope_table()
-#write_slope_table_control()
+write_slope_table_control()
 
 plot_distr_compa_table()
 

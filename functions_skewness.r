@@ -1,6 +1,5 @@
-#!/home/pepflei/R/bin/Rscript
-library(moments)
-source("load.r")
+# analysze skewness of temp anomaly distributions
+# plot skewness etc
 
 calc_runskew <- function(nday=91,trendID="91_5",trend_style="_mean",dataset="_TX",additional_style=""){
     # calculates running mean for each grid point
@@ -193,12 +192,13 @@ library(rworldmap)
 library(fields)
 worldmap = getMap(resolution = "low")
 
-#dat<<-dat_load("../data/_TMean/HadGHCND_TMean_data3D.day1-365.1950-2014.nc")
+dat<<-dat_load("../data/_TMean/HadGHCND_TMean_data3D.day1-365.1950-2014.nc")
 
 #calc_runskew(dataset="_TMean")
 #plot_daily_skew_cycle(dataset="_TMean")
 source("inits_plot.r")
 plot_init_Had_multiple_noAA()
+indexBottomLeft<<-c("MAM","JJA","SON","DJF","Annual")
 plot_seasonal_skewness(dataset="_TMean")
 #plot_skewness()
 #plot_detrended_seasonal_skewness(grid=FALSE,ausschnitt=c(-80,80),trendID="91_5",trend_style="_mean",dataset=dataset,additional_style="")

@@ -1,4 +1,5 @@
-
+# sensitivity tests for the mean results
+# sensitivity is tested to number of years and days in averaging window
 
 sens_gridded <- function(trendIDs=c("91_5","91_7","91_9"),period="1950-2014",file="_others",var="other_stuff",sub_auswahl=NA,value_auswahl=1,name_zusatz="mean",farb_mitte=c(-10,10),farb_palette="blau-rot",signi_level=0.05){
 
@@ -71,6 +72,10 @@ sens_regional_fits <- function(region_name="ward24",regNumb=24,trendIDs=c("91_5"
         values[i,,,,]<-var.get.nc(open.nc(filename),"fit_stuff")[1:5,,,]
 	}
 	
+    values<<-values
+
+
+    
     signis<-array(NA,c(5,regNumb,2,5,2))
 
     signis[,,,4,1][which(values[1,1:5,,,24]>0)]=1
@@ -201,4 +206,80 @@ sens_regional_trends <- function(region_name="ward24",region_name2="ward24",regN
     }
     reihen[which(is.na(reihen))]=0
     plot_reg_table_general(values=reihen,signis=signis,filename=paste("../plots/",dataset,additional_style,"/sensitivity/",region_name,"_sensitivity_",name_zusatz,"_",period,"_",name_style,"_9-7.pdf",sep=""),val_names=c("mn","95"),region_name="ward24",colorRange=c(-100,100),farb_palette="blau-rot",ID_select=c(1,2,6,10,13,19,23,3,4,7,12,16,20,5,11,14,18,21,22,17,8,9,15,24),hlines=c(23,20,22,8))
+}
+
+general_trenID_sensitivity <- function(trendIDs=c("91_5","91_7","91_9"),add_name="7",legend=c("5 year","9 year"),yAxis=TRUE){
+    wilcox_test=array(NA,c(2,3))
+    ks_test=array(NA,c(2,3))
+
+    pdf(paste("../plots/",dataset,additional_style,"/sensitivity/general_",add_name,".pdf",sep=""),width=4,height=4)
+
+    filename<-paste("../data/",dataset,additional_style,"/",trendIDs[1],"/gridded/",trendIDs[1],dataset,"_duration_4seasons.nc",sep="") ; print(filename)
+    dur5<-var.get.nc(open.nc(filename),"dur")
+
+    filename<-paste("../data/",dataset,additional_style,"/",trendIDs[2],"/gridded/",trendIDs[2],dataset,"_duration_4seasons.nc",sep="") ; print(filename)
+    dur7<-var.get.nc(open.nc(filename),"dur")
+
+    filename<-paste("../data/",dataset,additional_style,"/",trendIDs[3],"/gridded/",trendIDs[3],dataset,"_duration_4seasons.nc",sep="") ; print(filename)
+    dur9<-var.get.nc(open.nc(filename),"dur")
+
+    colors=c(rgb(1,0.5,0.5,0.5),rgb(0.5,1,0.5,0.5),rgb(0.5,0.5,1,0.5))
+    colors=c("cyan","green","magenta")
+    for (state in 1:3){
+        if (state<3){
+            y5<-as.vector(dur5[,state,])
+            y7<-as.vector(dur7[,state,])
+            y9<-as.vector(dur9[,state,])
+        }
+
+        if (state==3){
+            y5<-as.vector(dur5[,,])
+            y7<<-as.vector(dur7[,,])
+            y9<-as.vector(dur9[,,])
+        }
+
+        br<-0:max(c(max(y5,na.rm=TRUE),max(y7,na.rm=TRUE),max(y9,na.rm=TRUE)),na.rm=TRUE)
+        tmp5<<-hist(y5,breaks=br,plot=FALSE)
+        tmp7<<-hist(y7,breaks=br,plot=FALSE)
+        tmp9<<-hist(y9,breaks=br,plot=FALSE)
+
+        plot(NA,xlim=c(1,50),ylim=c(-11000,11000),main="",ylab="",xlab="",axes=FALSE,frame.plot=TRUE)
+        #axis(1)
+        if (yAxis==TRUE){axis(2,at=c(-10000,-5000,0,5000,10000),label=c("-10","-5","0","5","10"))}
+        abline(h=0,col=rgb(0.4,0.4,0.4,1),lty=2)
+        points(tmp5$mids[1:50],tmp5$count[1:50]-tmp7$count[1:50],col=colors[1],cex=0.3)
+        points(tmp7$mids[1:50],tmp9$count[1:50]-tmp7$count[1:50],col=colors[3],cex=0.3)
+        legend("bottomright",col=colors[c(1,3)],pch=c(1,1,1),legend=legend,bty = "n")
+
+        plot(NA,xlim=c(1,50),ylim=c(-10,10),main="",ylab="",xlab="",axes=FALSE,frame.plot=TRUE)
+        axis(1)
+        if (yAxis==TRUE){axis(2)}
+        abline(h=0,col=rgb(0.4,0.4,0.4,1),lty=2)
+        points(tmp5$mids[1:50],(tmp5$count[1:50]-tmp7$count[1:50])/tmp7$count[1:50]*100,col=colors[1],cex=0.3)
+        points(tmp7$mids[1:50],(tmp9$count[1:50]-tmp7$count[1:50])/tmp7$count[1:50]*100,col=colors[3],cex=0.3)
+        legend("bottomright",col=colors[c(1,3)],pch=c(1,1,1),legend=legend,bty = "n")
+
+
+        if (FALSE){
+            plot.ecdf(y5,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[1],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
+            par(new=TRUE)
+            plot.ecdf(y7,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[2],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
+            par(new=TRUE)
+            plot.ecdf(y9,xlim=c(0,60),ylim=c(0,1),main="",cex=0.1,col=colors[3],ylab="",xlab="",axes=TRUE,frame.plot=TRUE)
+            text(40,0.4,)
+
+            ks_test[state,1]=ks.test(y5,y7)$p.value
+            wilcox_test[state,1]=wilcox.test(y5,y7)$p.value
+            ks_test[state,2]=ks.test(y5,y9)$p.value
+            wilcox_test[state,2]=wilcox.test(y5,y9)$p.value
+            ks_test[state,3]=ks.test(y7,y9)$p.value
+            wilcox_test[state,3]=wilcox.test(y5,y7)$p.value
+
+            text(40,0.5,paste("ks 5~7:",round(ks_test[state,1],02)))
+            text(40,0.3,paste("ks 5~9:",round(ks_test[state,2],02)))
+            text(40,0.1,paste("ks 7~9:",round(ks_test[state,3],02)))
+        }
+
+    }
+    graphics.off()
 }

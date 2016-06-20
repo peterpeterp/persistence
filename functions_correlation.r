@@ -137,13 +137,15 @@ duration_correl <- function(toCor,toCor_name,toCor_short,toCor_shortZu,plot=FALS
 						plot(NA,xlim=c(1,10),ylim=c(1,10),frame.plot=FALSE,axes=FALSE,xlab="",ylab="")
 						text(5,5,paste(season_names[sea],state_names[state],"durations"))
 
-						plot(toCor_ext,dur_ext,xlab="",ylab="",ylim=ylim_,main="",pch=20,col="gray",frame.plot=TRUE,axes=FALSE)
+						plot(toCor_ext,dur_ext,xlab="",ylab="",ylim=ylim_,main="",pch=20,col=rgb(0.5,0.5,0.5,1),frame.plot=TRUE,axes=FALSE)
 						for (y in 1:toCor_years){
 							#abline(v=as.vector(toCor_loc[order])[y],col="grey",lty=2)
-							lines(c(toCor_loc[order][y],toCor_loc[order][y]),c(-10,max(dur_ext[which(toCor_ext==toCor_loc[order][y])],na.rm=TRUE)),col="grey",lty=2)
-							text(toCor_loc[order][y],(-6+3*(-1)^y),label=year[y],srt=90,cex=0.5)
+							lines(c(toCor_loc[order][y],toCor_loc[order][y]),c(-3.5+2.5*(-1)^y,max(dur_ext[which(toCor_ext==toCor_loc[order][y])],na.rm=TRUE)),col=rgb(0.5,0.5,0.5,1),lty=2)
+							text(toCor_loc[order][y],(-7+2.5*(-1)^y),label=year[y],srt=90,cex=0.5)
 						}
 						for (qu in c(2,5)){
+							print(paste(sea,q,state,qu))
+							print(correlation[sea,q,state,qu,])
 							title[qu]=paste(round(correlation[sea,q,state,qu,1],03),sep="")
 							if (correlation[sea,q,state,qu,2]<0.1){title[qu]=paste(title[qu],"*",sep="")}
 							if (correlation[sea,q,state,qu,2]<0.05){title[qu]=paste(title[qu],"*",sep="")}
@@ -202,7 +204,6 @@ dur_correlation_plot <- function(toCor_short="nao",toCor_name="NAO",toCor_shortZ
 		}
 	}
 	filename_plot<-paste("../plots/",dataset,additional_style,"/",trendID,"/gridded/",trendID,dataset,"_correl_",toCor_name,"_",toCor_shortZu,val_zusatz,".pdf",sep="")
-
 	topo_map_plot(filename=filename_plot,reihen=reihen,reihen_sig=reihen_sig,farb_mitte=farb_mitte,farb_palette="gold-blau",titel=c(""))
 }
 

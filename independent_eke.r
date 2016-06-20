@@ -1,6 +1,4 @@
-
-
-
+# I used that to make EKE plots
 
 analyse_whole_EKE <- function(lvl=1){
 	nc<-open.nc("../data/sonstiges/eke_roh/EKE_ERA_Interim_1979-2014_calendar_96x73.nc")
