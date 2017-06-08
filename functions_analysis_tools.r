@@ -198,9 +198,30 @@ fit_plot_combi <- function(distrs,fitstuff,fit_style,sea,q,state,xUntil=60){
     lines(distrs[4,],col=color[3],lty=2)
     lines(distrs[8,],col=color[4],lty=1)  
 
-    text(50,0.22,paste("b=",round(fitstuff[2],02)),pos=1,col=color[3])                 
-    text(50,0.05,paste("b1=",round(fitstuff[12],02)),pos=1,col=color[4])                 
-    text(50,0.02,paste("b2=",round(fitstuff[14],02)),pos=1,col=color[4])                
+    #text(50,0.22,paste("b=",round(fitstuff[2],02)),pos=1,col=color[3])                 
+    #text(50,0.05,paste("b1=",round(fitstuff[12],02)),pos=1,col=color[4])                 
+    #text(50,0.02,paste("b2=",round(fitstuff[14],02)),pos=1,col=color[4])
+
+
+
+    text(42,0.22,TeX('$\\P$ $=$'),pos=1,col=color[3])                 
+    text(54,0.22,paste(round(exp(-fitstuff[2])*100,01),"",sep=""),pos=1,col=color[3])    
+
+    text(42,0.055,TeX('$\\P_1$$=$'),pos=1,col=color[4])                 
+    text(54,0.055,paste(round(exp(-fitstuff[12])*100,01),"",sep=""),pos=1,col=color[4])                 
+
+    text(42,0.02,TeX('$\\P_2$$=$'),pos=1,col=color[4])                 
+    text(54,0.02,paste(round(exp(-fitstuff[14])*100,01),"",sep=""),pos=1,col=color[4])   
+
+
+    # text(42,0.22,TeX('$\\tau$ $=$'),pos=1,col=color[3])                 
+    # text(54,0.22,round(1/fitstuff[2],02),pos=1,col=color[3])    
+
+    # text(42,0.055,TeX('$\\tau_1=$'),pos=1,col=color[4])                 
+    # text(54,0.055,round(1/fitstuff[12],02),pos=1,col=color[4])                 
+
+    # text(42,0.02,TeX('$\\tau_2=$'),pos=1,col=color[4])                 
+    # text(54,0.02,round(1/fitstuff[14],02),pos=1,col=color[4])
 
     plot(NA,xlim=c(0,xUntil),ylim=c(0,1),xlab="days",ylab="",axes=FALSE,frame.plot=TRUE)
     points(distrs[5,],col=color[state],pch=20,cex=0.4)
@@ -212,7 +233,14 @@ fit_plot_combi <- function(distrs,fitstuff,fit_style,sea,q,state,xUntil=60){
     lines(distrs[10,],col=color[4])
     
     text(40,0.4,paste("D=",round(fitstuff[6],03)),col=color[3],pos=1)                 
-    text(40,0.3,paste("D=",round(fitstuff[19],03)),col=color[4],pos=1)               
+    text(40,0.3,paste("D=",round(fitstuff[19],03)),col=color[4],pos=1) 
+
+    #plot(NA,xlim=c(0,60),ylim=c(10,sum(distrs[3,nonull])),cex=0.5,log="y")    
+    #for (i in 4:60){
+    #    points(i,sum(distrs[3,i:60],na.rm=TRUE),pch=20,col=color[state],cex=0.5)
+    #}
+
+
 }
 
 

@@ -102,8 +102,9 @@ master_gridded_plots <- function(){
         #plot_maps(file="_others",var="other_stuff",period=period,sub_auswahl=c(NA),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="mean",signi_level=0.1,farb_mitte=c(2,9),farb_palette="regenbogen")
         #plot_maps(file="_others",var="other_stuff",sub_auswahl=c(NA),value_auswahl=c(4),sig_auswahl=c(10),value_zusatz=c(""),name_zusatz="lr",period=period,signi_level=0.05,farb_mitte=c(-0.02,0.02),farb_palette="lila-gruen")
         # quantiles
-        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="qu_95",farb_mitte=c(4,23),farb_palette="regenbogen")
-        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_95",farb_mitte=c(-0.08,0.08),signi_level=0.1)
+        #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(1),sig_auswahl=c(NA),value_zusatz=c(""),name_zusatz="qu_95",farb_mitte=c(4,23),farb_palette="regenbogen")
+        #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_95",farb_mitte=c(-0.15,0.15),signi_level=0.1,farb_palette="for_dim")  #,farb_mitte=c(-0.08,0.08)
+        plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(2),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_95_JJA_dry",farb_mitte=c(-0.15,0.15),signi_level=0.1,farb_palette="for_dim")  #,farb_mitte=c(-0.08,0.08)
         #plot_maps(file="_quantiles",var="quantile_stuff",period=period,sub_auswahl=c(1),value_auswahl=c(2),sig_auswahl=c(3),value_zusatz=c(""),name_zusatz="qr_sl_75",farb_mitte=c(-0.1,0.1),signi_level=0.1)
         
         #fits
@@ -151,7 +152,7 @@ master_init <- function(){
     source("functions_regional.r")
     source("functions_MannKendall.r")
     source("functions_correlation.r")
-    source("analysis_tools.r")
+    source("functions_analysis_tools.r")
     source("write.r")
     source("load.r")
     source("plot_master.r")
@@ -170,15 +171,14 @@ master_init <- function(){
     trendID<<-"0p5"
     dataset<<-"_eobsPP"
     additional_style<<-""
-    dat <<- dat_load_precipitation(paste("../data/",dataset,"/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
+    #dat <<- dat_load_precipitation(paste("../data/",dataset,"/rr_0.50deg_reg_v12.0_1950-2015.nc",sep=""))
     ntot<<-length(dat$ID)
-    yearLimits<<-c(1950,2015,1979,2015)
-    yearLimits<<-c(1979,2015)
-    yearLimits<<-c(1950,2015)
+    yearLimits<<-c(1980,2015)
+    #yearLimits<<-c(1950,2015)
 
 
     season_names<<-c("MAM","JJA","SON","DJF","4seasons")
-    state_names<<-c("cold","warm")
+    state_names<<-c("dry","wet")
 
     taus<<-c(0.75,0.95,0.99)
 }

@@ -87,6 +87,7 @@ plot_diff_maps <- function(trendID="91_5",dataset="_TMean",additional_style="",p
 
 value <-function(x){return(x)}
 inverse <-function(x){return(1/x)}
+prob <-function(x){return(exp(-x)*100)}
 
 plot_reg_maps <- function(region_name="ward23",file="_others",var="other_stuff",sub_auswahl=c(NA,NA),value_auswahl=c(1,2),value2_auswahl=c(NA),sig_auswahl=c(NA,NA),value_zusatz=c("mean","sd"),name_zusatz="mean_sd",farb_mitte="mean",farb_palette="lila-gruen",sig_style=c(NA),signi_level=0.05,ntot=1319,reg_select=1:24,operation=value){
 	# plot regional map

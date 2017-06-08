@@ -204,6 +204,10 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 	if (farb_palette_loc=="spacy"){
 		jet.colors <- colorRampPalette(c("blue","red","green","yellow","orange","violet"))
 	}
+	if (farb_palette_loc=="for_dim"){
+		jet.colors <- colorRampPalette(c(rgb(0,0.316,0),rgb(0,0.526,0),rgb(0,0.737,0),rgb(0,0.947,0),rgb(0.316,1,0.316),rgb(0.526,1,0.526),rgb(1,1,1),rgb(1,0.737,1),rgb(1,0.526,1),rgb(1,0.316,1),rgb(0.947,0,0.947),rgb(0.737,0,0.737),rgb(0.526,0,0.526),rgb(0.316,0,0.316)))
+		#jet.colors <- colorRampPalette(c(rgb(0,0.316,0),rgb(0,0.526,0),rgb(0,0.737,0),rgb(0,0.947,0),rgb(0.316,1,0.316),rgb(0.526,1,0.526),rgb(0.737,1,0.737),rgb(1,1,1),rgb(1,0.947,1),rgb(1,0.737,1),rgb(1,0.526,1),rgb(1,0.316,1),rgb(0.947,0,0.947),rgb(0.737,0,0.737),rgb(0.526,0,0.526),rgb(0.316,0,0.316)))
+	}
 	if (farb_palette_loc=="niederschlag"){
 		jet.colors <- colorRampPalette( c( "orange","yellow","green","blue") )
 	}
@@ -256,8 +260,8 @@ put_points <- function(points,points_sig=points*NA,farb_mitte="mean",farb_palett
 		for (q in 1:length(ID_select_local)){
 			polygon(x=c(lon[q]-pch_points[3],lon[q]+pch_points[3],lon[q]+pch_points[3],lon[q]-pch_points[3]),y=c(lat[q]-pch_points[4],lat[q]-pch_points[4],lat[q]+pch_points[4],lat[q]+pch_points[4]),border=rgb(1,1,1,0.0),col=farben[q])
 			if (!is.na(sig[q])){
-				points(lon[q],lat[q],pch=3,cex=pointsize)
-				#lines(c(lon[q]-pch_points[3],lon[q]),c(lat[q]-pch_points[4],lat[q]+pch_points[4]),col=col_sig,cex=cex_sig)
+				#points(lon[q],lat[q],pch=3,cex=pointsize)
+				lines(c(lon[q]-pch_points[3],lon[q]+pch_points[3]),c(lat[q]-pch_points[4],lat[q]+pch_points[4]),col=col_sig,cex=cex_sig)
 				#lines(c(lon[q],lon[q]+pch_points[3]),c(lat[q]-pch_points[4],lat[q]+pch_points[4]),col=col_sig,cex=cex_sig)
 			}
 		}

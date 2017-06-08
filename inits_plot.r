@@ -140,7 +140,7 @@ plot_init_EU <- function(){
     name_style<<-"EU"
 
     paper<<-c(6,3.5)
-    margins<<-c(0,0,0,0)
+    margins<<-c(0,0,0,4)    #c(0,0,0,0)
 
     outer_cut<<-10
     inner_cut<<-1
@@ -154,8 +154,8 @@ plot_init_EU <- function(){
     greyLand<<-FALSE
 
     pch_sig<<-4
-    col_sig<<-rgb(0.1,0.1,0.1,0.6)
-    cex_sig<<-0.03
+    col_sig<<-rgb(0,0,0)#rgb(0.1,0.1,0.1,0.6)
+    cex_sig<<-0.005
 
     region<<-NA
 
@@ -164,7 +164,7 @@ plot_init_EU <- function(){
     name_reg_zusatz<<-""
 
     col_row<<-c(1,1)
-    color_legend<<-"seperate"
+    color_legend<<-"right" #"seperate"
     layout_mat<<-c(NA)
 
     cexIndex<<-1
